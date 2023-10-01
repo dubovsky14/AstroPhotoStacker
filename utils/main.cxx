@@ -1,6 +1,7 @@
 #include "../headers/raw_file_reader.h"
 #include "../headers/StarFinder.h"
 #include "../headers/ReferencePhotoHandler.h"
+#include "../headers/PhotoAlignmentHandler.h"
 
 #include <string>
 #include <iostream>
@@ -28,6 +29,11 @@ int main(int argc, const char **argv) {
     const string reference_file_address = argv[1];
     const string directory_with_raw_files = argv[2];
 
+    PhotoAlignmentHandler photo_alignment_handler;
+    photo_alignment_handler.AlignAllFilesInFolder(reference_file_address, directory_with_raw_files);
+    photo_alignment_handler.SaveToTextFile(directory_with_raw_files + "/alignment.txt");
+
+/*
     // list files in the directory
     vector<string> files;
     for (const auto & entry : filesystem::directory_iterator(directory_with_raw_files)) {
@@ -48,7 +54,6 @@ int main(int argc, const char **argv) {
         }
     }
 
-/*
     ReferencePhotoHandler referencePhotoHandler(argv[1]);
     float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
     referencePhotoHandler.plate_solve(argv[2], &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
