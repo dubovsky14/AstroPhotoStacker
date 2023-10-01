@@ -7,10 +7,10 @@
 #include <stdexcept>
 
 using namespace std;
-using namespace PlateSolver;
+using namespace AstroPhotoStacker;
 
 // for more details see chapter 2.2 here: https://arxiv.org/pdf/0910.2233.pdf
-bool PlateSolver::calculate_asterism_hash(const vector<tuple<float, float, int> > &stars, tuple<float,float,float,float> *result,
+bool AstroPhotoStacker::calculate_asterism_hash(const vector<tuple<float, float, int> > &stars, tuple<float,float,float,float> *result,
     unsigned int *index_star_A, unsigned int *index_star_B, unsigned int *index_star_C, unsigned int *index_star_D)   {
 
     if (stars.size() != 4)  {
@@ -86,7 +86,7 @@ bool PlateSolver::calculate_asterism_hash(const vector<tuple<float, float, int> 
     return true;
 };
 
-void PlateSolver::get_indices_of_most_distant_stars(const std::vector<std::tuple<float, float, int> > &stars, int *star1, int *star2)   {
+void AstroPhotoStacker::get_indices_of_most_distant_stars(const std::vector<std::tuple<float, float, int> > &stars, int *star1, int *star2)   {
     float max_distance2 = -1;
     for (unsigned int i_star1 = 0; i_star1 < 4; i_star1++)  {
         const float star1_x(get<0>(stars[i_star1])), star1_y(get<1>(stars[i_star1]));
@@ -102,6 +102,6 @@ void PlateSolver::get_indices_of_most_distant_stars(const std::vector<std::tuple
     }
 };
 
-float PlateSolver::get_star_distance_squared(const std::tuple<float, float, int> &star1, const std::tuple<float, float, int> &star2)  {
+float AstroPhotoStacker::get_star_distance_squared(const std::tuple<float, float, int> &star1, const std::tuple<float, float, int> &star2)  {
     return pow2(get<0>(star1) - get<0>(star2)) + pow2(get<1>(star1) - get<1>(star2));
 };

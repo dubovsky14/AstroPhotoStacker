@@ -4,7 +4,7 @@
 #include <tuple>
 #include <vector>
 
-namespace PlateSolver   {
+namespace AstroPhotoStacker   {
 
     /**
      * @brief Calculate asterism hash as defined in this paper: https://arxiv.org/pdf/0910.2233.pdf

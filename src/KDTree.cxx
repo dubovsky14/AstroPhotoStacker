@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <cstring>
 
-using namespace PlateSolver;
+using namespace AstroPhotoStacker;
 using namespace std;
 
 PointInKDTree::PointInKDTree()  {
@@ -41,13 +41,6 @@ PointIndexType PointInKDTree::get_child_index(const CoordinateDataType *coordina
 
 KDTree::KDTree(unsigned int n_points)   {
     m_points_in_tree.reserve(n_points);
-};
-
-KDTree::KDTree(const std::string &kd_tree_binary_file, unsigned int cache_size)  {
-    m_input_file = make_unique<ifstream>(kd_tree_binary_file, std::ios::binary | std::ios::out);
-    m_number_of_points_in_tree = filesystem::file_size(kd_tree_binary_file) / (sizeof(PointInKDTree) + sizeof(PointIndexType));
-    m_chache_size = cache_size;
-    m_input_file->read(reinterpret_cast<char *>(&m_root_node_index), sizeof(m_root_node_index));
 };
 
 void KDTree::add_point(const PointCoordinatesTuple &coordinates, const StarIndices &star_indices) {
@@ -264,20 +257,6 @@ void KDTree::add_node_to_vector_index_distance(float distance, vector<tuple <uns
     });
 };
 
-void KDTree::save_to_file(const std::string &output_file_address)   const  {
-    ofstream output_file(output_file_address, std::ios::binary | std::ios::out);
-    auto write_data = [&output_file](const auto &data)  {
-        output_file.write(reinterpret_cast<const char *>(&data), sizeof(data));
-    };
-
-    write_data(m_root_node_index);
-    for (const PointInKDTree &node : m_points_in_tree)  {
-        write_data(node);
-    }
-
-    output_file.close();
-};
-
 void KDTree::get_point(unsigned int node_index, PointCoordinatesArray coordinates, StarIndices *star_indices) const    {
     const PointInKDTree &point_in_tree = get_point_in_tree(node_index);
     memcpy(coordinates, point_in_tree.m_coordinates, sizeof(point_in_tree.m_coordinates));
@@ -285,26 +264,5 @@ void KDTree::get_point(unsigned int node_index, PointCoordinatesArray coordinate
 };
 
 PointInKDTree KDTree::get_point_in_tree(unsigned int node_index) const   {
-    if (m_input_file == nullptr)    {
-        return m_points_in_tree[node_index];
-    }
-    else    {
-        if (m_index_to_node_map.find(node_index) != m_index_to_node_map.end())   {
-            return m_index_to_node_map[node_index];
-        }
-
-        PointInKDTree result;
-        m_input_file->seekg(sizeof(m_root_node_index) + (unsigned long long)(node_index)*sizeof(result));
-        m_input_file->read(reinterpret_cast<char *>(&result), sizeof(result));
-
-        if (m_index_to_node_map.size() < m_chache_size) {
-            m_index_to_node_map[node_index] = result;
-        }
-        return result;
-    }
+    return m_points_in_tree[node_index];
 };
-
-float PlateSolver::RandomUniform()  {
-    // Be carefull about the brackets, otherwise RAND_MAX will overflow
-    return (float(rand())) / (float(RAND_MAX)+1);
-}

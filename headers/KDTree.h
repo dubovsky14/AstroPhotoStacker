@@ -8,7 +8,7 @@
 #include<fstream>
 #include <stdlib.h>
 
-namespace PlateSolver   {
+namespace AstroPhotoStacker   {
     typedef float CoordinateDataType;
     typedef std::tuple<CoordinateDataType, CoordinateDataType, CoordinateDataType, CoordinateDataType> PointCoordinatesTuple;
     typedef CoordinateDataType PointCoordinatesArray[4];
@@ -45,14 +45,6 @@ namespace PlateSolver   {
             KDTree(unsigned int n_points);
 
             /**
-             * @brief Construct a new KDTree object from a binary file previously created by "save_to_file" method
-             *
-             * @param kd_tree_binary_file - binary file where the kd-tree is stored
-             * @param cache_size - how many nodes should be stored in memory cache (the rest will be read from disk when looking for neighbors)
-             */
-            KDTree(const std::string &kd_tree_binary_file, unsigned int cache_size = 100000);
-
-            /**
              * @brief Add point to the tree
              *
              * @param coordinates coordinates of the point in 4-dimensional space
@@ -83,13 +75,6 @@ namespace PlateSolver   {
              * @return std::vector<unsigned int> - indices of the nodes (leafs) of the nearest neighbors
              */
             std::vector<unsigned int> get_k_nearest_neighbors_indices(const PointCoordinatesTuple &query_point, unsigned int n_points);
-
-            /**
-             * @brief Save the kd-tree to a binary file
-             *
-             * @param output_file_address  address of the output binary file
-             */
-            void save_to_file(const std::string &output_file_address)   const;
 
             void get_point(unsigned int node_index, PointCoordinatesArray coordinates, StarIndices *star_indices) const;
 
@@ -122,19 +107,6 @@ namespace PlateSolver   {
             // add point to the vector of the nearest neighbors if it is closer than the furthest neighbor - keep only n_points points in vector
             static void add_node_to_vector_index_distance(float distance, std::vector<std::tuple <unsigned int, float> > *vector_index_distance, unsigned int n_points, unsigned int node_index);
 
-            // for reading from disk implementation
-            std::unique_ptr<std::ifstream> m_input_file = nullptr;
-            void clean_cache();
-
-            mutable std::map<unsigned int, PointInKDTree>   m_index_to_node_map;    // cache
-            unsigned int                            m_points_in_map = 0;
-            unsigned int                            m_chache_size   = 0;
-
             PointInKDTree get_point_in_tree(unsigned int node_index) const;
-
-
     };
-
-
-    float RandomUniform();
 }
