@@ -38,7 +38,4 @@ namespace PlateSolver   {
     inline float calculate_coordinate_along_axis(const float *original_vector, const float *axis)   {
         return (original_vector[0]*axis[0] + original_vector[1]*axis[1]);
     };
-
-    template<typename X>
-    inline X pow2(X x) {return x*x;};
 }

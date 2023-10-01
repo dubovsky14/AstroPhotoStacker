@@ -1,10 +1,12 @@
+#pragma once
+
 #include <vector>
 #include <tuple>
 #include <map>
 #include <memory>
 #include <iostream>
 #include <algorithm>
-
+#include <climits>
 
 template<typename pixel_type>
 void fill_cluster(  const pixel_type *brightness, int width, int height,

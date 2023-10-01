@@ -1,4 +1,5 @@
 #include "../headers/AsterismHasher.h"
+#include "../headers/Common.h"
 
 #include <string>
 #include <iostream>
