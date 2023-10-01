@@ -1,6 +1,7 @@
 #include <memory>
 #include <string>
 #include <libraw/libraw.h>
+#include <iostream>
 
 template<typename output_type = unsigned short>
 std::unique_ptr<output_type[]> read_raw_file(const std::string &raw_file_address, int *width, int *height)   {
@@ -30,6 +31,7 @@ std::unique_ptr<output_type[]> read_raw_file(const std::string &raw_file_address
             brightness[index] = image_data[index][rawProcessor.COLOR(row,col)];
         }
     }
+    std::cout << "bps: " << bps << std::endl;
 
     // close the file
     rawProcessor.recycle();
