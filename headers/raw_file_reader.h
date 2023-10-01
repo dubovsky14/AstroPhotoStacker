@@ -33,7 +33,6 @@ std::unique_ptr<output_type[]> read_raw_file(const std::string &raw_file_address
             brightness[index] = image_data[index][rawProcessor.COLOR(row,col)];
         }
     }
-    std::cout << "bps: " << bps << std::endl;
 
     // close the file
     rawProcessor.recycle();

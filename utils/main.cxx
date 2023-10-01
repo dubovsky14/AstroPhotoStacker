@@ -7,6 +7,8 @@
 #include <memory>
 #include <opencv2/opencv.hpp>
 
+#include <filesystem>
+
 using namespace std;
 
 using namespace cv;
@@ -23,7 +25,30 @@ void createImage(unsigned short* arr, int width, int height, const char* filenam
 }
 
 int main(int argc, const char **argv) {
+    const string reference_file_address = argv[1];
+    const string directory_with_raw_files = argv[2];
 
+    // list files in the directory
+    vector<string> files;
+    for (const auto & entry : filesystem::directory_iterator(directory_with_raw_files)) {
+        if (entry.path().extension() == ".txt") {
+            continue;
+        }
+        files.push_back(entry.path());
+    }
+    sort(files.begin(), files.end());
+
+
+    // read reference file
+    ReferencePhotoHandler referencePhotoHandler(reference_file_address);
+    for (const std::string &file : files)   {
+        float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
+        if (referencePhotoHandler.plate_solve(file, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation)) {
+            cout << file << " " << shift_x << " " << shift_y << " " << rot_center_x << " " << rot_center_y << " " << rotation << endl;
+        }
+    }
+
+/*
     ReferencePhotoHandler referencePhotoHandler(argv[1]);
     float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
     referencePhotoHandler.plate_solve(argv[2], &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
@@ -31,8 +56,6 @@ int main(int argc, const char **argv) {
     cout << "Rotation: " << rotation << endl;
     cout << "Rotation center: " << rot_center_x << " " << rot_center_y << endl;
 
-
-/*
     ReferencePhotoHandler referencePhotoHandler(argv[1]);
     cout << "Width: " << referencePhotoHandler.get_width() << endl;
     cout << "Height: " << referencePhotoHandler.get_height() << endl;
