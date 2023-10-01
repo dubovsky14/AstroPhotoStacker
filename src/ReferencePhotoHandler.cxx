@@ -21,6 +21,7 @@ void ReferencePhotoHandler::Initialize(const std::vector<std::tuple<float, float
     m_width = width;
     m_height = height;
     CalculateAndStoreHashes();
+    m_plate_solver = make_unique<PlateSolver>(m_kd_tree.get(), &m_stars, m_width, m_height);
 };
 
 tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> ReferencePhotoHandler::get_hash(unsigned int hash_index) const  {
@@ -41,6 +42,26 @@ tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, u
         get<2>(indices),
         get<3>(indices)
     );
+};
+
+
+bool ReferencePhotoHandler::plate_solve(const std::string &file_address,
+                                        float *shift_x, float *shift_y,
+                                        float *rot_center_x, float *rot_center_y, float *rotation) const    {
+    int width, height;
+    unique_ptr<unsigned short[]> brightness = read_raw_file(file_address, &width, &height);
+    const unsigned short threshold = get_threshold_value<unsigned short>(&brightness[0], width*height, 0.0005);
+    vector<tuple<float,float,int> > stars = get_stars(&brightness[0], width, height, threshold);
+    keep_only_stars_above_size(&stars, 9);
+    sort_stars_by_size(&stars);
+    return plate_solve(stars, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+};
+
+
+bool ReferencePhotoHandler::plate_solve(const std::vector<std::tuple<float, float, int> > &stars,
+                                        float *shift_x, float *shift_y,
+                                        float *rot_center_x, float *rot_center_y, float *rotation) const    {
+    return m_plate_solver->plate_solve(stars, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
 };
 
 void ReferencePhotoHandler::CalculateAndStoreHashes()  {

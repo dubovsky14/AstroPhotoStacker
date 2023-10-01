@@ -23,6 +23,16 @@ void createImage(unsigned short* arr, int width, int height, const char* filenam
 }
 
 int main(int argc, const char **argv) {
+
+    ReferencePhotoHandler referencePhotoHandler(argv[1]);
+    float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
+    referencePhotoHandler.plate_solve(argv[2], &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
+    cout << "Shift: " << shift_x << " " << shift_y << endl;
+    cout << "Rotation: " << rotation << endl;
+    cout << "Rotation center: " << rot_center_x << " " << rot_center_y << endl;
+
+
+/*
     ReferencePhotoHandler referencePhotoHandler(argv[1]);
     cout << "Width: " << referencePhotoHandler.get_width() << endl;
     cout << "Height: " << referencePhotoHandler.get_height() << endl;
@@ -42,7 +52,6 @@ int main(int argc, const char **argv) {
         cout << "\t" << get<4>(hash) << endl;
     }
 
-/*
     int width, height;
     unique_ptr<unsigned short[]> brightness = read_raw_file(argv[1], &width, &height);
 
