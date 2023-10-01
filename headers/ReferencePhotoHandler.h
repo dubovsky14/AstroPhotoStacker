@@ -25,6 +25,13 @@ namespace AstroPhotoStacker   {
             int get_width()     const   { return m_width; };
             int get_height()    const   { return m_height; };
 
+
+            unsigned int get_number_of_hashes() const { return m_kd_tree->get_number_of_points_in_tree(); };
+
+            bool plate_solve(const std::vector<std::tuple<float, float, int> > &stars, float *shift_x, float *shift_y, float *rotation) const;
+
+            std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> get_hash(unsigned int hash_index) const;
+
         private:
             int m_width;
             int m_height;

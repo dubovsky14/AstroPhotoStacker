@@ -65,7 +65,7 @@ namespace AstroPhotoStacker   {
              * @param n_points how many closest neighbors do you want
              * @return std::vector<std::tuple<PointCoordinatesTuple, StarIndices> > coordinates (hashes) and indices of the stars A,B,C and D from this point
              */
-            std::vector<std::tuple<PointCoordinatesTuple, StarIndices> > get_k_nearest_neighbors(const PointCoordinatesTuple &query_point, unsigned int n_points);
+            std::vector<std::tuple<PointCoordinatesTuple, StarIndices> > get_k_nearest_neighbors(const PointCoordinatesTuple &query_point, unsigned int n_points)   const;
 
             /**
              * @brief Get indices of the k nearest neighbors
@@ -74,7 +74,7 @@ namespace AstroPhotoStacker   {
              * @param n_points how many closest neighbors do you want
              * @return std::vector<unsigned int> - indices of the nodes (leafs) of the nearest neighbors
              */
-            std::vector<unsigned int> get_k_nearest_neighbors_indices(const PointCoordinatesTuple &query_point, unsigned int n_points);
+            std::vector<unsigned int> get_k_nearest_neighbors_indices(const PointCoordinatesTuple &query_point, unsigned int n_points)  const;
 
             void get_point(unsigned int node_index, PointCoordinatesArray coordinates, StarIndices *star_indices) const;
 
@@ -102,7 +102,7 @@ namespace AstroPhotoStacker   {
                                         std::map<unsigned int, char> *visited_nodes,
                                         std::vector<std::tuple <unsigned int, float> > *vector_index_distance,
                                         const CoordinateDataType *query_point_array
-                                        );
+                                        )   const;
 
             // add point to the vector of the nearest neighbors if it is closer than the furthest neighbor - keep only n_points points in vector
             static void add_node_to_vector_index_distance(float distance, std::vector<std::tuple <unsigned int, float> > *vector_index_distance, unsigned int n_points, unsigned int node_index);

@@ -23,6 +23,26 @@ void ReferencePhotoHandler::Initialize(const std::vector<std::tuple<float, float
     CalculateAndStoreHashes();
 };
 
+tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> ReferencePhotoHandler::get_hash(unsigned int hash_index) const  {
+    tuple<unsigned int, unsigned int, unsigned int, unsigned int> indices;
+    float coordinates[4];
+
+    m_kd_tree->get_point(hash_index, coordinates, &indices);
+
+    return make_tuple(
+        make_tuple(
+            coordinates[0],
+            coordinates[1],
+            coordinates[2],
+            coordinates[3]
+        ),
+        get<0>(indices),
+        get<1>(indices),
+        get<2>(indices),
+        get<3>(indices)
+    );
+};
+
 void ReferencePhotoHandler::CalculateAndStoreHashes()  {
     m_kd_tree = make_unique<KDTree>(10000);
 
@@ -104,4 +124,6 @@ void ReferencePhotoHandler::CalculateAndStoreHashes()  {
 
         m_kd_tree->add_point(asterism_hash, asterism_hash_indices);
     }
+
+    m_kd_tree->create_tree_structure();
 }
