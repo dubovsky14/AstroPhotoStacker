@@ -4,7 +4,7 @@
 
 #include <string>
 #include <memory>
-
+#include <vector>
 
 namespace AstroPhotoStacker {
     class ShiftedPhotoHandler {
@@ -21,9 +21,9 @@ namespace AstroPhotoStacker {
             int m_width;
             int m_height;
 
-            std::unique_ptr<GeometricTransformer> m_geometric_transformer = nullptr;
-            std::unique_ptr<short unsigned int[]> m_data_shifted    = nullptr;
-            std::unique_ptr<short unsigned int[]> m_data            = nullptr;
+            std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
+            std::unique_ptr<short unsigned int[]> m_data                    = nullptr;
+            std::vector<char> m_colors;
     };
 
 }
