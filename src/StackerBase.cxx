@@ -59,7 +59,7 @@ void StackerBase::save_stacked_photo_as_png(const std::string &file_address) con
     cv::Mat image(m_height, m_width, CV_16UC3);
     for (int y = 0; y < m_height; y++) {
         for (int x = 0; x < m_width; x++) {
-            cv::Vec3b& pixel = image.at<cv::Vec3b>(y, x);
+            cv::Vec3w& pixel = image.at<cv::Vec3w>(y, x);
             const unsigned int index = y*m_width + x;
             pixel[0] = m_stacked_image_double[0][index];
             pixel[1] = m_stacked_image_double[1][index];
