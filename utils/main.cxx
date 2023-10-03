@@ -16,7 +16,7 @@ using namespace std;
 using namespace cv;
 using namespace AstroPhotoStacker;
 
-void createImage(unsigned short* arr, int width, int height, const char* filename) {
+void create_gray_scale_image(unsigned short* arr, int width, int height, const char* filename) {
     Mat image(height, width, CV_8UC1);
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
@@ -26,11 +26,35 @@ void createImage(unsigned short* arr, int width, int height, const char* filenam
     imwrite(filename, image);
 }
 
+void create_rgb_image(unsigned short* arr, char* color_arr, int width, int height, const char* filename) {
+    Mat image(height, width, CV_8UC3);
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            char color = color_arr[y*width + x];
+            Vec3b& pixel = image.at<Vec3b>(y, x);
+            if (color == 0) {
+                pixel[0] = arr[y*width + x]/64;
+                pixel[1] = 0;
+                pixel[2] = 0;
+            } else if (color == 1) {
+                pixel[0] = 0;
+                pixel[1] = arr[y*width + x]/64;
+                pixel[2] = 0;
+            } else if (color == 2) {
+                pixel[0] = 0;
+                pixel[1] = 0;
+                pixel[2] = arr[y*width + x]/64;
+            }
+        }
+    }
+    imwrite(filename, image);
+}
+
 int main(int argc, const char **argv) {
     try {
 
-        const string &alignment_file = argv[1];
-        const string &input_raw_file = argv[2];
+        const string &alignment_file  = argv[1];
+        const string &input_raw_file  = argv[2];
         const string &output_png_file = argv[3];
 
         PhotoAlignmentHandler photo_alignment_handler;
@@ -43,23 +67,24 @@ int main(int argc, const char **argv) {
 
         int width, height;
         unique_ptr<unsigned short[]> brightness = read_raw_file(input_raw_file, &width, &height);
+        vector<char> colors(width*height);
         memset(&brightness[0], 0, width*height*sizeof(unsigned short));
+        memset(&colors[0], 0, width*height);
 
         for (int y = 0; y < height; y++)  {
-            if (y % 100 == 0)   {
-                cout << "y = " << y << endl;
-            }
             for (int x = 0; x < width; x++)   {
                 unsigned int value;
                 char color;
                 shifted_photo_handler.get_value_by_reference_frame_coordinates(x, y, &value, &color);
                 if (color >= 0) {
                     brightness[y*width + x] = value;
+                    colors[y*width + x] = color;
                 }
             }
         }
 
-        createImage(&brightness[0], width, height, output_png_file.c_str());
+        create_rgb_image(&brightness[0], &colors[0], width, height, output_png_file.c_str());
+        //create_gray_scale_image(&brightness[0], width, height, output_png_file.c_str());
 
 
     /*
@@ -134,7 +159,7 @@ int main(int argc, const char **argv) {
         std::cout << "Image width: " << width << std::endl;
         std::cout << "Image height: " << height << std::endl;
 
-        createImage(&brightness[0], width, height, "brightness.png");
+        create_gray_scale_image(&brightness[0], width, height, "brightness.png");
     */
     } catch (const exception &e) {
         cout << e.what() << endl;

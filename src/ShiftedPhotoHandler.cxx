@@ -10,7 +10,7 @@ ShiftedPhotoHandler::ShiftedPhotoHandler(float shift_x, float shift_y, float rot
 
 void ShiftedPhotoHandler::add_raw_data(const std::string &raw_file_address) {
     m_data = read_raw_file<unsigned short>(raw_file_address, &m_width, &m_height, &m_colors);
-    cout << "width = " << m_width << ", height = " << m_height << endl;
+    m_color_conversion_table = get_color_info_as_number(raw_file_address);
 };
 
 void ShiftedPhotoHandler::get_value_by_reference_frame_coordinates(float x, float y, unsigned int *value, char *color) const {
@@ -24,5 +24,5 @@ void ShiftedPhotoHandler::get_value_by_reference_frame_coordinates(float x, floa
     }
     const unsigned int index = y_int*m_width + x_int;
     *value = m_data[index];
-    *color = m_colors[index];
+    *color = m_color_conversion_table[ m_colors[index] ];
 };

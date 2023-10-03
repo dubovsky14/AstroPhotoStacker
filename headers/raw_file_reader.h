@@ -5,41 +5,42 @@
 #include <libraw/libraw.h>
 #include <iostream>
 #include <vector>
+#include <map>
 
 namespace AstroPhotoStacker   {
 
     template<typename output_type = unsigned short>
     std::unique_ptr<output_type[]> read_raw_file(const std::string &raw_file_address, int *width, int *height, std::vector<char> *colors = nullptr)   {
         // create a LibRaw object
-        LibRaw rawProcessor;
+        LibRaw raw_processor;
 
         // open the file
-        if (rawProcessor.open_file(raw_file_address.c_str()) != LIBRAW_SUCCESS) {
+        if (raw_processor.open_file(raw_file_address.c_str()) != LIBRAW_SUCCESS) {
             throw std::runtime_error("Cannot open raw file " + raw_file_address);
         }
 
         // unpack the raw data
-        if (rawProcessor.unpack() != LIBRAW_SUCCESS) {
+        if (raw_processor.unpack() != LIBRAW_SUCCESS) {
             throw std::runtime_error("Cannot unpack raw data from file " + raw_file_address);
         }
 
-        rawProcessor.raw2image();
+        raw_processor.raw2image();
 
         int col, bps;
-        rawProcessor.get_mem_image_format(width, height, &col, &bps);
+        raw_processor.get_mem_image_format(width, height, &col, &bps);
 
         std::unique_ptr<output_type[]> brightness = std::unique_ptr<output_type[]>(new output_type[(*width)*(*height)]);
         if (colors != nullptr)   {
             colors->resize((*width)*(*height));
         }
-        const unsigned short int (*image_data)[4] = rawProcessor.imgdata.image;
+        const unsigned short int (*image_data)[4] = raw_processor.imgdata.image;
 
         if (colors != nullptr)   {
             for (int row = 0; row < *height; ++row) {
                 for (int col = 0; col < *width; ++col) {
                     const unsigned int index = row * (*width) + col;
-                    brightness[index] = image_data[index][rawProcessor.COLOR(row,col)];
-                    (*colors)[index] = rawProcessor.COLOR(row,col);
+                    brightness[index] = image_data[index][raw_processor.COLOR(row,col)];
+                    (*colors)[index] = raw_processor.COLOR(row,col);
                 }
             }
         }
@@ -47,14 +48,18 @@ namespace AstroPhotoStacker   {
             for (int row = 0; row < *height; ++row) {
                 for (int col = 0; col < *width; ++col) {
                     const unsigned int index = row * (*width) + col;
-                    brightness[index] = image_data[index][rawProcessor.COLOR(row,col)];
+                    brightness[index] = image_data[index][raw_processor.COLOR(row,col)];
                 }
             }
         }
 
         // close the file
-        rawProcessor.recycle();
+        raw_processor.recycle();
 
         return brightness;
     };
+    std::vector<char> get_color_info_as_char_vector(const std::string &raw_file);
+
+    // Standard indexing of colors (from RGB): 0 = red, 1 = green, 2 = blue
+    std::vector<char> get_color_info_as_number(const std::string &raw_file);
 }

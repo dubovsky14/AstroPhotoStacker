@@ -24,6 +24,6 @@ namespace AstroPhotoStacker {
             std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
             std::unique_ptr<short unsigned int[]> m_data                    = nullptr;
             std::vector<char> m_colors;
+            std::vector<char> m_color_conversion_table; // color number from the raw file usually can take values 0,1,2,3. 3 is usually green, but it is not guaranteed, so we need to convert it to 0,1,2
     };
-
 }
