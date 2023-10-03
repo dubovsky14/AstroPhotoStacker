@@ -1,0 +1,32 @@
+#pragma once
+
+#include "../headers/ShiftedPhotoHandler.h"
+
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace AstroPhotoStacker {
+    class StackerBase   {
+        public:
+            StackerBase(int number_of_colors, int width, int height);
+            virtual ~StackerBase()  {};
+
+
+            virtual void add_photo(const ShiftedPhotoHandler &photo);
+
+            virtual void calculate_stacked_photo();
+
+            void save_stacked_photo_as_png(const std::string &file_address) const;
+
+        private:
+            int m_number_of_colors;
+            int m_width;
+            int m_height;
+
+            std::vector<std::vector<unsigned int>>   m_stacked_image;
+            std::vector<std::vector<unsigned short>> m_number_of_stacked_pixels;
+
+            std::vector<std::vector<double>>         m_stacked_image_double;
+    };
+}

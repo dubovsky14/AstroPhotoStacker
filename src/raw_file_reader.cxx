@@ -42,3 +42,14 @@ std::vector<char> AstroPhotoStacker::get_color_info_as_number(const std::string 
     }
     return result;
 };
+
+
+bool AstroPhotoStacker::get_photo_resolution(const std::string &raw_file, int *width, int *height) {
+    LibRaw raw_processor;
+    raw_processor.open_file(raw_file.c_str());
+    raw_processor.unpack();
+    raw_processor.raw2image();
+    int n_colors, bps;
+    raw_processor.get_mem_image_format(width, height, &n_colors, &bps);
+    raw_processor.recycle();
+};

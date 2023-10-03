@@ -62,4 +62,6 @@ namespace AstroPhotoStacker   {
 
     // Standard indexing of colors (from RGB): 0 = red, 1 = green, 2 = blue
     std::vector<char> get_color_info_as_number(const std::string &raw_file);
+
+    bool get_photo_resolution(const std::string &raw_file, int *width, int *height);
 }

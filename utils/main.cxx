@@ -3,6 +3,7 @@
 #include "../headers/ReferencePhotoHandler.h"
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/ShiftedPhotoHandler.h"
+#include "../headers/StackerBase.h"
 
 #include <string>
 #include <iostream>
@@ -52,9 +53,34 @@ void create_rgb_image(unsigned short* arr, char* color_arr, int width, int heigh
 
 int main(int argc, const char **argv) {
     try {
-
         const string &alignment_file  = argv[1];
-        const string &input_raw_file  = argv[2];
+        const string &output_png_file = argv[2];
+
+        PhotoAlignmentHandler photo_alignment_handler;
+        photo_alignment_handler.ReadFromTextFile(alignment_file);
+        vector<string> input_files = photo_alignment_handler.get_file_addresses();
+        if (input_files.size() == 0) {
+            throw runtime_error("No input files found in the alignment file");
+        }
+        int width, height;
+        get_photo_resolution(input_files[0], &width, &height);
+
+        StackerBase stacker(3, width, height);
+        for (const string &input_file : input_files)    {
+            cout << "Adding file " << input_file << endl;
+            float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
+            photo_alignment_handler.get_alignment_parameters(input_file, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
+            ShiftedPhotoHandler shifted_photo_handler(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+            shifted_photo_handler.add_raw_data(input_file);
+            stacker.add_photo(shifted_photo_handler);
+        }
+        stacker.calculate_stacked_photo();
+        stacker.save_stacked_photo_as_png(output_png_file);
+
+
+    /*
+        const string &alignment_file  = argv[1];
+        const string &input_raw_files  = argv[2];
         const string &output_png_file = argv[3];
 
         PhotoAlignmentHandler photo_alignment_handler;
@@ -87,7 +113,6 @@ int main(int argc, const char **argv) {
         //create_gray_scale_image(&brightness[0], width, height, output_png_file.c_str());
 
 
-    /*
         const string reference_file_address = argv[1];
         const string directory_with_raw_files = argv[2];
 

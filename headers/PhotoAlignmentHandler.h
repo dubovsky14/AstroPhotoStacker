@@ -21,6 +21,8 @@ namespace   AstroPhotoStacker   {
 
             void get_alignment_parameters(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const;
 
+            std::vector<std::string> get_file_addresses() const { return m_file_addresses; };
+
         private:
             std::string m_reference_file_address = "";
             std::vector<std::string> m_file_addresses;
