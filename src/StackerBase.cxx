@@ -14,7 +14,7 @@ StackerBase::StackerBase(int number_of_colors, int width, int height)   {
     m_number_of_stacked_pixels = vector<vector<unsigned short>>(m_number_of_colors, vector<unsigned short>(m_width*m_height, 0));
 };
 
-void StackerBase::add_photo(const ShiftedPhotoHandler &photo)    {
+void StackerBase::add_photo(const CalibratedPhotoHandler &photo)    {
     for (int y = 0; y < m_height; y++)  {
         for (int x = 0; x < m_width; x++)   {
             unsigned int value;

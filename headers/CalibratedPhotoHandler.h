@@ -7,9 +7,9 @@
 #include <vector>
 
 namespace AstroPhotoStacker {
-    class ShiftedPhotoHandler {
+    class CalibratedPhotoHandler {
         public:
-            ShiftedPhotoHandler(float shift_x, float shift_y, float rotation_center_x, float rotation_center_y, float rotation);
+            CalibratedPhotoHandler(float shift_x, float shift_y, float rotation_center_x, float rotation_center_y, float rotation);
 
             void add_raw_data(const std::string &raw_file_address);
 

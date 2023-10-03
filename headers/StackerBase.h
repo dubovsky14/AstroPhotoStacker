@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/ShiftedPhotoHandler.h"
+#include "../headers/CalibratedPhotoHandler.h"
 
 #include <memory>
 #include <string>
@@ -13,7 +13,7 @@ namespace AstroPhotoStacker {
             virtual ~StackerBase()  {};
 
 
-            virtual void add_photo(const ShiftedPhotoHandler &photo);
+            virtual void add_photo(const CalibratedPhotoHandler &photo);
 
             virtual void calculate_stacked_photo();
 
