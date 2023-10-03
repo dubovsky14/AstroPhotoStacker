@@ -2,6 +2,7 @@
 #include "../headers/StarFinder.h"
 #include "../headers/ReferencePhotoHandler.h"
 #include "../headers/PhotoAlignmentHandler.h"
+#include "../headers/ShiftedPhotoHandler.h"
 
 #include <string>
 #include <iostream>
@@ -26,6 +27,41 @@ void createImage(unsigned short* arr, int width, int height, const char* filenam
 }
 
 int main(int argc, const char **argv) {
+    try {
+    const string &alignment_file = argv[1];
+    const string &input_raw_file = argv[2];
+    const string &output_png_file = argv[3];
+
+    PhotoAlignmentHandler photo_alignment_handler;
+    photo_alignment_handler.ReadFromTextFile(alignment_file);
+    float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
+    photo_alignment_handler.get_alignment_parameters(input_raw_file, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
+
+    ShiftedPhotoHandler shifted_photo_handler(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+    shifted_photo_handler.add_raw_data(input_raw_file);
+
+    int width, height;
+    unique_ptr<unsigned short[]> brightness = read_raw_file(input_raw_file, &width, &height);
+    memset(&brightness[0], 0, width*height*sizeof(unsigned short));
+
+    for (int y = 0; y < height; y++)  {
+        if (y % 100 == 0)   {
+            cout << "y = " << y << endl;
+        }
+        for (int x = 0; x < width; x++)   {
+            unsigned int value;
+            char color;
+            shifted_photo_handler.get_value_by_reference_frame_coordinates(x, y, &value, &color);
+            if (color == 0) {
+                brightness[y*width + x] = value;
+            }
+        }
+    }
+
+    createImage(&brightness[0], width, height, output_png_file.c_str());
+
+
+/*
     const string reference_file_address = argv[1];
     const string directory_with_raw_files = argv[2];
 
@@ -33,7 +69,6 @@ int main(int argc, const char **argv) {
     photo_alignment_handler.AlignAllFilesInFolder(reference_file_address, directory_with_raw_files);
     photo_alignment_handler.SaveToTextFile(directory_with_raw_files + "/alignment.txt");
 
-/*
     // list files in the directory
     vector<string> files;
     for (const auto & entry : filesystem::directory_iterator(directory_with_raw_files)) {
@@ -100,6 +135,9 @@ int main(int argc, const char **argv) {
 
     createImage(&brightness[0], width, height, "brightness.png");
 */
+    } catch (const exception &e) {
+        cout << e.what() << endl;
+    }
 
     return 0;
 }

@@ -11,23 +11,33 @@ void PhotoAlignmentHandler::ReadFromTextFile(const std::string &alignment_file_a
     ifstream alignment_file(alignment_file_address);
     string line;
     while (getline(alignment_file, line)) {
-        if (line[0] == '#') continue; // Ignore comments (lines starting with #)
-        if (StartsWith(line, c_reference_file_header)) {
-            m_reference_file_address = line.substr(c_reference_file_header.length()+3);
-        }
+        StripString(&line);
         if (line.empty()) continue;
-        vector<string> tokens;
-        string token;
-        istringstream token_stream(line);
-        while (getline(token_stream, token, '|')) {
-            tokens.push_back(token);
+        if (line[0] == '#') continue; // Ignore comments (lines starting with #)
+
+        vector<string> elements = SplitAndStripString(line, "|");
+        if (StartsWith(line, c_reference_file_header)) {
+            if (elements.size() != 2) {
+                throw runtime_error("Invalid reference file header.");
+            }
+            m_reference_file_address = elements[1];
+            continue;
         }
-        m_file_addresses.push_back(tokens[0]);
-        m_shift_x.push_back(stof(tokens[1]));
-        m_shift_y.push_back(stof(tokens[2]));
-        m_rotation_center_x.push_back(stof(tokens[3]));
-        m_rotation_center_y.push_back(stof(tokens[4]));
-        m_rotation.push_back(stof(tokens[5]));
+
+        if (elements.size() != 6) {
+            throw runtime_error("Invalid alignment file. Could not read line: " + line);
+        }
+
+        if (!StringIsFloat(elements[1]) || !StringIsFloat(elements[2]) || !StringIsFloat(elements[3]) || !StringIsFloat(elements[4]) || !StringIsFloat(elements[5])) {
+            throw runtime_error("Invalid alignment file. Could not read line: " + line);
+        }
+
+        m_file_addresses.push_back(elements[0]);
+        m_shift_x.push_back(stof(elements[1]));
+        m_shift_y.push_back(stof(elements[2]));
+        m_rotation_center_x.push_back(stof(elements[3]));
+        m_rotation_center_y.push_back(stof(elements[4]));
+        m_rotation.push_back(stof(elements[5]));
     }
     alignment_file.close();
 }
@@ -83,4 +93,18 @@ void PhotoAlignmentHandler::Reset() {
     m_rotation_center_y.clear();
     m_rotation.clear();
     m_reference_photo_handler = nullptr;
+}
+
+void PhotoAlignmentHandler::get_alignment_parameters(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const    {
+    for (unsigned int i = 0; i < m_file_addresses.size(); i++) {
+        if (m_file_addresses[i] == file_address) {
+            *shift_x = m_shift_x[i];
+            *shift_y = m_shift_y[i];
+            *rot_center_x = m_rotation_center_x[i];
+            *rot_center_y = m_rotation_center_y[i];
+            *rotation = m_rotation[i];
+            return;
+        }
+    }
+    throw runtime_error("File not found in alignment file: " + file_address);
 }

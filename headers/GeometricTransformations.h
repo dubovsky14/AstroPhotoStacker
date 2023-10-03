@@ -22,6 +22,13 @@ namespace AstroPhotoStacker {
                 *y = x_new*sinx + y_new*cosx + m_rotation_center_y + m_shift_y;
             };
 
+            void transform_from_reference_to_shifted_frame(float *x, float *y)   const   {
+                float x_new = *x - m_rotation_center_x - m_shift_x;
+                float y_new = *y - m_rotation_center_y - m_shift_y;
+                *x = x_new*cosx + y_new*sinx + m_rotation_center_x;
+                *y = -x_new*sinx + y_new*cosx + m_rotation_center_y;
+            };
+
         private:
             float m_shift_x;
             float m_shift_y;
