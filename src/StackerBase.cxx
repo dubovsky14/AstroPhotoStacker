@@ -56,14 +56,14 @@ void StackerBase::calculate_stacked_photo() {
 
 
 void StackerBase::save_stacked_photo_as_png(const std::string &file_address) const {
-    cv::Mat image(m_height, m_width, CV_8UC3);
+    cv::Mat image(m_height, m_width, CV_16UC3);
     for (int y = 0; y < m_height; y++) {
         for (int x = 0; x < m_width; x++) {
             cv::Vec3b& pixel = image.at<cv::Vec3b>(y, x);
             const unsigned int index = y*m_width + x;
-            pixel[0] = m_stacked_image_double[0][index]/64;
-            pixel[1] = m_stacked_image_double[1][index]/64;
-            pixel[2] = m_stacked_image_double[2][index]/64;
+            pixel[0] = m_stacked_image_double[0][index];
+            pixel[1] = m_stacked_image_double[1][index];
+            pixel[2] = m_stacked_image_double[2][index];
         }
     }
     cv::imwrite(file_address, image);
