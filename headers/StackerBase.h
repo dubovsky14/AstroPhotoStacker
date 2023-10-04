@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../headers/CalibratedPhotoHandler.h"
+#include "../headers/FlatFrameHandler.h"
 
 #include <memory>
 #include <string>
@@ -12,6 +13,7 @@ namespace AstroPhotoStacker {
             StackerBase(int number_of_colors, int width, int height);
             virtual ~StackerBase()  {};
 
+            void add_flat_frame(const FlatFrameHandler &flat_frame_handler);
 
             virtual void add_photo(const CalibratedPhotoHandler &photo);
 
@@ -24,9 +26,10 @@ namespace AstroPhotoStacker {
             int m_width;
             int m_height;
 
-            std::vector<std::vector<unsigned int>>   m_stacked_image;
-            std::vector<std::vector<unsigned short>> m_number_of_stacked_pixels;
+            std::vector<std::vector<unsigned int>>      m_stacked_image;
+            std::vector<std::vector<unsigned short>>    m_number_of_stacked_pixels;
 
-            std::vector<std::vector<double>>         m_stacked_image_double;
+            std::vector<std::vector<double>>            m_stacked_image_double;
+            std::unique_ptr<FlatFrameHandler>           m_flat_frame_handler    = nullptr;
     };
 }

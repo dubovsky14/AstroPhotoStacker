@@ -13,6 +13,14 @@ void CalibratedPhotoHandler::define_alignment(float shift_x, float shift_y, floa
     m_geometric_transformer = make_unique<GeometricTransformer>(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation);
 };
 
+void CalibratedPhotoHandler::apply_flat_frame(const FlatFrameHandler &flat_frame_handler)   {
+    for (int y = 0; y < m_height; y++)  {
+        for (int x = 0; x < m_width; x++)   {
+            m_data_original[y*m_width + x] *= flat_frame_handler.get_pixel_value(x, y);
+        }
+    }
+};
+
 void CalibratedPhotoHandler::calibrate() {
     m_data_shifted   = vector<unsigned short int>(m_width*m_height);
     m_colors_shifted = vector<char>(m_width*m_height, -1);

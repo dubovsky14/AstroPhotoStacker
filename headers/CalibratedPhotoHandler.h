@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../headers/GeometricTransformations.h"
+#include "../headers/FlatFrameHandler.h"
 
 #include <string>
 #include <memory>
@@ -15,9 +16,9 @@ namespace AstroPhotoStacker {
 
             void calibrate();
 
-            void add_flat_frame()   {}; // TODO: implement
+            void apply_flat_frame(const FlatFrameHandler &flat_frame_handler);
 
-            void add_dark_frame()   {}; // TODO: implement
+            void apply_dark_frame()   {}; // TODO: implement
 
             // if color is negative, the pixel coordinates are out of the image boundaries
             void get_value_by_reference_frame_coordinates(float x, float y, unsigned int *value, char *color) const;
