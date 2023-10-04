@@ -70,8 +70,9 @@ int main(int argc, const char **argv) {
             cout << "Adding file " << input_file << endl;
             float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
             photo_alignment_handler.get_alignment_parameters(input_file, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
-            CalibratedPhotoHandler shifted_photo_handler(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
-            shifted_photo_handler.add_raw_data(input_file);
+            CalibratedPhotoHandler shifted_photo_handler(input_file);
+            shifted_photo_handler.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+            shifted_photo_handler.calibrate();
             stacker.add_photo(shifted_photo_handler);
         }
         stacker.calculate_stacked_photo();
