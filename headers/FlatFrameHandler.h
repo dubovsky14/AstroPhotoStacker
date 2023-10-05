@@ -10,7 +10,9 @@ namespace AstroPhotoStacker {
         public:
             FlatFrameHandler(const std::string &input_file);
 
-            float get_pixel_value(int x, int y) const;
+            FlatFrameHandler(const FlatFrameHandler &other);
+
+            float get_pixel_value_inverted(int x, int y) const;
 
 
         private:
@@ -20,6 +22,8 @@ namespace AstroPhotoStacker {
             std::unique_ptr<unsigned short int[]>   m_data_original;
             std::vector<float>                      m_data_calibrated;
             std::vector<char>                       m_colors;
+
+            bool                                    m_read_from_raw_file = false;
 
     };
 }

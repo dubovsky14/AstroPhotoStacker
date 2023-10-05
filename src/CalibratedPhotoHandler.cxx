@@ -16,7 +16,7 @@ void CalibratedPhotoHandler::define_alignment(float shift_x, float shift_y, floa
 void CalibratedPhotoHandler::apply_flat_frame(const FlatFrameHandler &flat_frame_handler)   {
     for (int y = 0; y < m_height; y++)  {
         for (int x = 0; x < m_width; x++)   {
-            m_data_original[y*m_width + x] *= flat_frame_handler.get_pixel_value(x, y);
+            m_data_original[y*m_width + x] *= flat_frame_handler.get_pixel_value_inverted(x, y);
         }
     }
 };

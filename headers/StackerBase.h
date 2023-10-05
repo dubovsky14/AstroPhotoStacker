@@ -13,8 +13,6 @@ namespace AstroPhotoStacker {
             StackerBase(int number_of_colors, int width, int height);
             virtual ~StackerBase()  {};
 
-            void add_flat_frame(const FlatFrameHandler &flat_frame_handler);
-
             virtual void add_photo(const CalibratedPhotoHandler &photo);
 
             virtual void calculate_stacked_photo();

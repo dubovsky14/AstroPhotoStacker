@@ -4,6 +4,7 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/StackerBase.h"
+#include "../headers/FlatFrameHandler.h"
 
 #include <string>
 #include <iostream>
@@ -53,8 +54,29 @@ void create_rgb_image(unsigned short* arr, char* color_arr, int width, int heigh
 
 int main(int argc, const char **argv) {
     try {
-        const string &alignment_file  = argv[1];
-        const string &output_png_file = argv[2];
+        const string input_file  = argv[1];
+        const string output_file = argv[2];
+
+
+        int width, height;
+        get_photo_resolution(input_file, &width, &height);
+
+        StackerBase stacker(3, width, height);
+        FlatFrameHandler flat_frame_handler("/home/dubovsky/Documents/temp/20231004_flats_test/600mm_f6.3/IMG_9212.CR2");
+
+        CalibratedPhotoHandler calibrated_photo_handler(input_file);
+        calibrated_photo_handler.define_alignment(0,0,0,0,0);
+        calibrated_photo_handler.apply_flat_frame(flat_frame_handler);
+        calibrated_photo_handler.calibrate();
+        stacker.add_photo(calibrated_photo_handler);
+
+
+        stacker.calculate_stacked_photo();
+        stacker.save_stacked_photo_as_png(output_file);
+    /*
+        const string alignment_file  = argv[1];
+        const string output_png_file = argv[2];
+        const string flat_frame_file = argv[3];
 
         PhotoAlignmentHandler photo_alignment_handler;
         photo_alignment_handler.ReadFromTextFile(alignment_file);
@@ -66,20 +88,24 @@ int main(int argc, const char **argv) {
         get_photo_resolution(input_files[0], &width, &height);
 
         StackerBase stacker(3, width, height);
+
+        FlatFrameHandler flat_frame_handler(flat_frame_file);
+
+
         for (const string &input_file : input_files)    {
             cout << "Adding file " << input_file << endl;
             float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
             photo_alignment_handler.get_alignment_parameters(input_file, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
-            CalibratedPhotoHandler shifted_photo_handler(input_file);
-            shifted_photo_handler.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
-            shifted_photo_handler.calibrate();
-            stacker.add_photo(shifted_photo_handler);
+            CalibratedPhotoHandler calibrated_photo_handler(input_file);
+            calibrated_photo_handler.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+            calibrated_photo_handler.apply_flat_frame(flat_frame_handler);
+            calibrated_photo_handler.calibrate();
+            stacker.add_photo(calibrated_photo_handler);
         }
         stacker.calculate_stacked_photo();
         stacker.save_stacked_photo_as_png(output_png_file);
 
 
-    /*
         const string &alignment_file  = argv[1];
         const string &input_raw_files  = argv[2];
         const string &output_png_file = argv[3];
