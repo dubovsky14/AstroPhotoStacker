@@ -5,6 +5,7 @@
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/StackerBase.h"
 #include "../headers/FlatFrameHandler.h"
+#include "../headers/ImageFilesInputOutput.h"
 
 #include <string>
 #include <iostream>
@@ -18,42 +19,63 @@ using namespace std;
 using namespace cv;
 using namespace AstroPhotoStacker;
 
-void create_gray_scale_image(unsigned short* arr, int width, int height, const char* filename) {
-    Mat image(height, width, CV_8UC1);
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            image.at<uchar>(y, x) = arr[y*width + x]/64;
-        }
-    }
-    imwrite(filename, image);
-}
-
-void create_rgb_image(unsigned short* arr, char* color_arr, int width, int height, const char* filename) {
-    Mat image(height, width, CV_8UC3);
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            char color = color_arr[y*width + x];
-            Vec3b& pixel = image.at<Vec3b>(y, x);
-            if (color == 0) {
-                pixel[0] = arr[y*width + x]/64;
-                pixel[1] = 0;
-                pixel[2] = 0;
-            } else if (color == 1) {
-                pixel[0] = 0;
-                pixel[1] = arr[y*width + x]/64;
-                pixel[2] = 0;
-            } else if (color == 2) {
-                pixel[0] = 0;
-                pixel[1] = 0;
-                pixel[2] = arr[y*width + x]/64;
-            }
-        }
-    }
-    imwrite(filename, image);
-}
-
 int main(int argc, const char **argv) {
     try {
+
+        const string input_raw_file = argv[1];
+        const string output_jpg_file = argv[2];
+
+        int width, height;
+        vector<char> colors;
+        unique_ptr<unsigned short[]> brightness = read_raw_file(input_raw_file, &width, &height, &colors);
+
+        for (unsigned int i = 0; i < width*height; i++) {
+            brightness[i] = brightness[i] / (2 << 6);
+        }
+
+        vector<vector<unsigned short> > rgb_data = convert_raw_data_to_rgb_image(&brightness[0], &colors[0], width, height);
+        crate_color_image(&rgb_data[0][0], &rgb_data[1][0], &rgb_data[2][0], width, height, output_jpg_file, CV_8UC3);
+
+
+        return 0;
+
+        const string alignment_file  = argv[1];
+        const string output_png_file = argv[2];
+        const string flat_frame_file = argv[3];
+
+        PhotoAlignmentHandler photo_alignment_handler;
+        photo_alignment_handler.ReadFromTextFile(alignment_file);
+        vector<string> input_files = photo_alignment_handler.get_file_addresses();
+        if (input_files.size() == 0) {
+            throw runtime_error("No input files found in the alignment file");
+        }
+        //int width, height;
+        get_photo_resolution(input_files[0], &width, &height);
+
+        StackerBase stacker(3, width, height);
+
+        FlatFrameHandler flat_frame_handler(flat_frame_file);
+
+        for (unsigned int i_width = width/2; i_width < width; i_width++) {
+            cout << flat_frame_handler.get_pixel_value_inverted(i_width, height/2) << endl;
+        }
+        return 0;
+
+        for (const string &input_file : input_files)    {
+            cout << "Adding file " << input_file << endl;
+            float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
+            photo_alignment_handler.get_alignment_parameters(input_file, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
+            CalibratedPhotoHandler calibrated_photo_handler(input_file);
+            calibrated_photo_handler.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+            calibrated_photo_handler.apply_flat_frame(flat_frame_handler);
+            calibrated_photo_handler.calibrate();
+            stacker.add_photo(calibrated_photo_handler);
+        }
+        stacker.calculate_stacked_photo();
+        stacker.save_stacked_photo_as_png(output_png_file);
+
+/*
+
         const string input_file  = argv[1];
         const string output_file = argv[2];
 
@@ -73,37 +95,7 @@ int main(int argc, const char **argv) {
 
         stacker.calculate_stacked_photo();
         stacker.save_stacked_photo_as_png(output_file);
-    /*
-        const string alignment_file  = argv[1];
-        const string output_png_file = argv[2];
-        const string flat_frame_file = argv[3];
 
-        PhotoAlignmentHandler photo_alignment_handler;
-        photo_alignment_handler.ReadFromTextFile(alignment_file);
-        vector<string> input_files = photo_alignment_handler.get_file_addresses();
-        if (input_files.size() == 0) {
-            throw runtime_error("No input files found in the alignment file");
-        }
-        int width, height;
-        get_photo_resolution(input_files[0], &width, &height);
-
-        StackerBase stacker(3, width, height);
-
-        FlatFrameHandler flat_frame_handler(flat_frame_file);
-
-
-        for (const string &input_file : input_files)    {
-            cout << "Adding file " << input_file << endl;
-            float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
-            photo_alignment_handler.get_alignment_parameters(input_file, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
-            CalibratedPhotoHandler calibrated_photo_handler(input_file);
-            calibrated_photo_handler.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
-            calibrated_photo_handler.apply_flat_frame(flat_frame_handler);
-            calibrated_photo_handler.calibrate();
-            stacker.add_photo(calibrated_photo_handler);
-        }
-        stacker.calculate_stacked_photo();
-        stacker.save_stacked_photo_as_png(output_png_file);
 
 
         const string &alignment_file  = argv[1];
