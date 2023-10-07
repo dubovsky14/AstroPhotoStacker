@@ -9,15 +9,15 @@
 namespace   AstroPhotoStacker   {
     class PhotoAlignmentHandler    {
         public:
-            void ReadFromTextFile(const std::string &alignment_file_address);
+            void read_from_text_file(const std::string &alignment_file_address);
 
-            void SaveToTextFile(const std::string &alignment_file_address);
+            void save_to_text_file(const std::string &alignment_file_address);
 
-            void AlignFiles(const std::string &reference_file_address, const std::vector<std::string> &files);
+            void align_files(const std::string &reference_file_address, const std::vector<std::string> &files);
 
-            void AlignAllFilesInFolder(const std::string &reference_file_address, const std::string &raw_files_folder);
+            void align_all_files_in_folder(const std::string &reference_file_address, const std::string &raw_files_folder);
 
-            void Reset();
+            void reset();
 
             void get_alignment_parameters(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const;
 

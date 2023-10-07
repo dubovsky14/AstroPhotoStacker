@@ -7,7 +7,7 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-void PhotoAlignmentHandler::ReadFromTextFile(const std::string &alignment_file_address) {
+void PhotoAlignmentHandler::read_from_text_file(const std::string &alignment_file_address) {
     ifstream alignment_file(alignment_file_address);
     string line;
     while (getline(alignment_file, line)) {
@@ -42,7 +42,7 @@ void PhotoAlignmentHandler::ReadFromTextFile(const std::string &alignment_file_a
     alignment_file.close();
 }
 
-void PhotoAlignmentHandler::SaveToTextFile(const std::string &alignment_file_address)   {
+void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_address)   {
     ofstream alignment_file(alignment_file_address);
     alignment_file << c_reference_file_header << " | " << m_reference_file_address << endl;
     alignment_file << "# File address | shift_x | shift_y | rotation_center_x | rotation_center_y | rotation" << endl;
@@ -57,7 +57,7 @@ void PhotoAlignmentHandler::SaveToTextFile(const std::string &alignment_file_add
     alignment_file.close();
 };
 
-void PhotoAlignmentHandler::AlignFiles(const std::string &reference_file_address, const std::vector<std::string> &files) {
+void PhotoAlignmentHandler::align_files(const std::string &reference_file_address, const std::vector<std::string> &files) {
     m_reference_photo_handler = make_unique<ReferencePhotoHandler>(reference_file_address, 0.0005);
     m_reference_file_address = reference_file_address;
     for (const std::string &file : files)   {
@@ -73,7 +73,7 @@ void PhotoAlignmentHandler::AlignFiles(const std::string &reference_file_address
     }
 };
 
-void PhotoAlignmentHandler::AlignAllFilesInFolder(const std::string &reference_file_address, const std::string &raw_files_folder) {
+void PhotoAlignmentHandler::align_all_files_in_folder(const std::string &reference_file_address, const std::string &raw_files_folder) {
     vector<string> files;
     for (const auto & entry : filesystem::directory_iterator(raw_files_folder)) {
         if (entry.path().extension() == ".txt") {
@@ -82,10 +82,10 @@ void PhotoAlignmentHandler::AlignAllFilesInFolder(const std::string &reference_f
         files.push_back(entry.path());
     }
     sort(files.begin(), files.end());
-    AlignFiles(reference_file_address, files);
+    align_files(reference_file_address, files);
 }
 
-void PhotoAlignmentHandler::Reset() {
+void PhotoAlignmentHandler::reset() {
     m_file_addresses.clear();
     m_shift_x.clear();
     m_shift_y.clear();

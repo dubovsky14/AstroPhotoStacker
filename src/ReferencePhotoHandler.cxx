@@ -13,14 +13,14 @@ using namespace AstroPhotoStacker;
 
 ReferencePhotoHandler::ReferencePhotoHandler(const std::string &raw_file_address, float threshold_fraction) {
     unique_ptr<unsigned short[]> brightness = read_raw_file(raw_file_address, &m_width, &m_height);
-    Initialize(&brightness[0], m_width, m_height, threshold_fraction);
+    initialize(&brightness[0], m_width, m_height, threshold_fraction);
 };
 
-void ReferencePhotoHandler::Initialize(const std::vector<std::tuple<float, float, int> > &stars, int width, int height)  {
+void ReferencePhotoHandler::initialize(const std::vector<std::tuple<float, float, int> > &stars, int width, int height)  {
     m_stars = stars;
     m_width = width;
     m_height = height;
-    CalculateAndStoreHashes();
+    calculate_and_store_hashes();
     m_plate_solver = make_unique<PlateSolver>(m_kd_tree.get(), &m_stars, m_width, m_height);
 };
 
@@ -64,7 +64,7 @@ bool ReferencePhotoHandler::plate_solve(const std::vector<std::tuple<float, floa
     return m_plate_solver->plate_solve(stars, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
 };
 
-void ReferencePhotoHandler::CalculateAndStoreHashes()  {
+void ReferencePhotoHandler::calculate_and_store_hashes()  {
     m_kd_tree = make_unique<KDTree>(10000);
 
     const unsigned int n_stars = m_stars.size();

@@ -28,7 +28,7 @@ int main(int argc, const char **argv) {
         const string flat_frame_file = argv[3];
 
         PhotoAlignmentHandler photo_alignment_handler;
-        photo_alignment_handler.ReadFromTextFile(alignment_file);
+        photo_alignment_handler.read_from_text_file(alignment_file);
         vector<string> input_files = photo_alignment_handler.get_file_addresses();
         if (input_files.size() == 0) {
             throw runtime_error("No input files found in the alignment file");

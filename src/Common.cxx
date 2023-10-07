@@ -106,7 +106,7 @@ std::string  AstroPhotoStacker::to_upper_copy(const std::string &input_string)  
 };
 
 // convert both strings to uppercase and compare
-bool AstroPhotoStacker::CompareCaseInsensitive(const std::string &x, const std::string &y)    {
+bool AstroPhotoStacker::compare_case_insensitive(const std::string &x, const std::string &y)    {
     const string x_upper = AstroPhotoStacker::to_upper_copy(x);
     const string y_upper = AstroPhotoStacker::to_upper_copy(y);
     return x_upper == y_upper;
