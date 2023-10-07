@@ -63,18 +63,15 @@ void FlatFrameHandler::calibrate() {
 
     // get maximum values
     unsigned short int max_values[3] = {1, 1, 1};   // to avoid division by zero if not initialized
-    int coordinates_of_maxima[3][2] = {{0,0}, {0,0}, {0,0}};
     for (int i = 0; i < m_width*m_height; i++) {
-        if (m_data_original[i] > max_values[m_colors[i]]) {
-            max_values[m_colors[i]] = m_data_original[i];
-            coordinates_of_maxima[m_colors[i]][0] = i % m_width;
-            coordinates_of_maxima[m_colors[i]][1] = i / m_width;
+        if (m_data_original[i] > max_values[int(m_colors[i])]) {
+            max_values[int(m_colors[i])] = m_data_original[i];
         }
     }
 
     // normalize
     for (int i = 0; i < m_width*m_height; i++) {
-        m_data_calibrated[i] = double(max_values[m_colors[i]]) / m_data_original[i];
+        m_data_calibrated[i] = double(max_values[int(m_colors[i])]) / m_data_original[i];
     }
 
     // smooth it because of the bayer filter/fluctuations:

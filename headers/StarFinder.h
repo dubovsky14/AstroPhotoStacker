@@ -41,8 +41,8 @@ namespace AstroPhotoStacker {
         std::map<std::tuple<int, int>, char> visited_pixels;
 
         std::vector<std::tuple<int, int> >  this_cluster;
-        for (unsigned int y_pos = 0; y_pos < height; y_pos++)    {
-            for (unsigned int x_pos = 0; x_pos < width; x_pos++)    {
+        for (int y_pos = 0; y_pos < height; y_pos++)    {
+            for (int x_pos = 0; x_pos < width; x_pos++)    {
                 fill_cluster(brightness, width, height, x_pos, y_pos, &this_cluster, threshold, &visited_pixels);
                 if (this_cluster.size())    {
                     result.push_back(this_cluster);
