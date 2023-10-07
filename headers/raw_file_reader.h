@@ -25,6 +25,7 @@ namespace AstroPhotoStacker   {
         }
 
         raw_processor.raw2image();
+        raw_processor.subtract_black();
 
         int col, bps;
         raw_processor.get_mem_image_format(width, height, &col, &bps);

@@ -22,22 +22,6 @@ using namespace AstroPhotoStacker;
 int main(int argc, const char **argv) {
     try {
 
-        const string input_raw_file = argv[1];
-        const string output_jpg_file = argv[2];
-
-        int width, height;
-        vector<char> colors;
-        unique_ptr<unsigned short[]> brightness = read_raw_file(input_raw_file, &width, &height, &colors);
-
-        for (unsigned int i = 0; i < width*height; i++) {
-            brightness[i] = brightness[i] / (2 << 6);
-        }
-
-        vector<vector<unsigned short> > rgb_data = convert_raw_data_to_rgb_image(&brightness[0], &colors[0], width, height);
-        crate_color_image(&rgb_data[0][0], &rgb_data[1][0], &rgb_data[2][0], width, height, output_jpg_file, CV_8UC3);
-
-
-        return 0;
 
         const string alignment_file  = argv[1];
         const string output_png_file = argv[2];
@@ -49,17 +33,15 @@ int main(int argc, const char **argv) {
         if (input_files.size() == 0) {
             throw runtime_error("No input files found in the alignment file");
         }
+
+
+        int width, height;
         //int width, height;
         get_photo_resolution(input_files[0], &width, &height);
 
         StackerBase stacker(3, width, height);
 
         FlatFrameHandler flat_frame_handler(flat_frame_file);
-
-        for (unsigned int i_width = width/2; i_width < width; i_width++) {
-            cout << flat_frame_handler.get_pixel_value_inverted(i_width, height/2) << endl;
-        }
-        return 0;
 
         for (const string &input_file : input_files)    {
             cout << "Adding file " << input_file << endl;
@@ -75,6 +57,26 @@ int main(int argc, const char **argv) {
         stacker.save_stacked_photo_as_png(output_png_file);
 
 /*
+
+        const string input_raw_file = argv[1];
+        const string output_jpg_file = argv[2];
+
+        int width, height;
+        vector<char> colors;
+        unique_ptr<unsigned short[]> brightness = read_raw_file(input_raw_file, &width, &height, &colors);
+
+        for (unsigned int i = 0; i < width*height; i++) {
+            brightness[i] = brightness[i] / (2 << 6);
+        }
+
+        vector<vector<unsigned short> > rgb_data = convert_raw_data_to_rgb_image(&brightness[0], &colors[0], width, height);
+        crate_color_image(&rgb_data[0][0], &rgb_data[1][0], &rgb_data[2][0], width, height, output_jpg_file, CV_16UC3);
+
+
+        return 0;
+
+
+
 
         const string input_file  = argv[1];
         const string output_file = argv[2];
