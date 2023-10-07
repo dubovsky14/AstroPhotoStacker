@@ -16,7 +16,9 @@ namespace AstroPhotoStacker {
 
             void calibrate();
 
-            void apply_flat_frame(const FlatFrameHandler &flat_frame_handler);
+            void limit_y_range(int y_min, int y_max);
+
+            void register_flat_frame(const FlatFrameHandler *flat_frame_handler);
 
             void apply_dark_frame()   {}; // TODO: implement
 
@@ -27,6 +29,11 @@ namespace AstroPhotoStacker {
         private:
             int m_width;
             int m_height;
+
+            int m_y_min = -1;
+            int m_y_max = -1;
+
+            const FlatFrameHandler *m_flat_frame = nullptr;
 
             std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
             std::unique_ptr<short unsigned int[]> m_data_original           = nullptr;

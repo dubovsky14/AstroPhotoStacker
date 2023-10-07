@@ -64,7 +64,7 @@ void StackerMedian::add_photo_to_stack(const std::string &file_address)  {
     CalibratedPhotoHandler calibrated_photo(file_address);
     calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
     if (m_flat_frame_handler != nullptr) {
-        calibrated_photo.apply_flat_frame(*m_flat_frame_handler);
+        calibrated_photo.register_flat_frame(m_flat_frame_handler.get());
     }
     calibrated_photo.calibrate();
 
