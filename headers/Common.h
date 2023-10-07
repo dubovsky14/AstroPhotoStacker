@@ -5,29 +5,28 @@
 
 namespace AstroPhotoStacker {
 
-    float RandomUniform();
+    float random_uniform();
 
     template <class X>
     inline X pow2(X x) {return x*x;};
 
-    bool Contains(const std::string &main_string, const std::string &substring);
+    bool contains(const std::string &main_string, const std::string &substring);
 
-    bool StartsWith(const std::string &main_string, const std::string &prefix);
+    bool starts_with(const std::string &main_string, const std::string &prefix);
 
-    bool EndsWith(const std::string &main_string, const std::string &suffix);
+    bool ends_with(const std::string &main_string, const std::string &suffix);
 
+    bool string_is_int(const std::string &x);
 
-    bool StringIsInt(const std::string &x);
+    bool string_is_float(const std::string &x);
 
-    bool StringIsFloat(const std::string &x);
+    std::vector<std::string> split_and_strip_string(std::string input_string, const std::string &separator);
 
-    std::vector<std::string> SplitAndStripString(std::string input_string, const std::string &separator);
+    std::vector<std::string> split_string(std::string input_string, const std::string &separator);
 
-    std::vector<std::string> SplitString(std::string input_string, const std::string &separator);
+    std::vector<std::string> split_by_whitespaces(std::string line);
 
-    std::vector<std::string> SplitByWhitespaces(std::string line);
-
-    void StripString(std::string *input_string, const std::string &chars_to_remove = " \n\t\r");
+    void strip_string(std::string *input_string, const std::string &chars_to_remove = " \n\t\r");
 
     void         to_upper(std::string *input_string);
 
@@ -79,8 +78,8 @@ namespace AstroPhotoStacker {
     template <> inline
     std::vector<int> ConvertStringTo(const std::string &input_string)    {
         std::string stripped_string = input_string;
-        StripString(&stripped_string, "([{}})");
-        std::vector<std::string> elements = SplitAndStripString(stripped_string, ",");
+        strip_string(&stripped_string, "([{}})");
+        std::vector<std::string> elements = split_and_strip_string(stripped_string, ",");
 
         std::vector<int> result;
         for (const std::string &element : elements) {
@@ -92,8 +91,8 @@ namespace AstroPhotoStacker {
     template <> inline
     std::vector<unsigned long long int> ConvertStringTo(const std::string &input_string)    {
         std::string stripped_string = input_string;
-        StripString(&stripped_string, "([{}})");
-        std::vector<std::string> elements = SplitAndStripString(stripped_string, ",");
+        strip_string(&stripped_string, "([{}})");
+        std::vector<std::string> elements = split_and_strip_string(stripped_string, ",");
 
         std::vector<unsigned long long int> result;
         for (const std::string &element : elements) {

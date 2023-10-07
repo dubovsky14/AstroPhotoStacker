@@ -174,7 +174,7 @@ CoordinateDataType KDTree::get_median_and_its_index_from_sample(const std::vecto
     }
     else {
         for (unsigned int i = 0; i < 200; i++)  {
-            unsigned int random_index = RandomUniform()*sub_indices.size();
+            unsigned int random_index = random_uniform()*sub_indices.size();
             if (random_index == sub_indices.size()) random_index--;
             subsample_indices.push_back(sub_indices.at(random_index));
         }

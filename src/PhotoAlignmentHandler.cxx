@@ -11,12 +11,12 @@ void PhotoAlignmentHandler::ReadFromTextFile(const std::string &alignment_file_a
     ifstream alignment_file(alignment_file_address);
     string line;
     while (getline(alignment_file, line)) {
-        StripString(&line);
+        strip_string(&line);
         if (line.empty()) continue;
         if (line[0] == '#') continue; // Ignore comments (lines starting with #)
 
-        vector<string> elements = SplitAndStripString(line, "|");
-        if (StartsWith(line, c_reference_file_header)) {
+        vector<string> elements = split_and_strip_string(line, "|");
+        if (starts_with(line, c_reference_file_header)) {
             if (elements.size() != 2) {
                 throw runtime_error("Invalid reference file header.");
             }
@@ -28,7 +28,7 @@ void PhotoAlignmentHandler::ReadFromTextFile(const std::string &alignment_file_a
             throw runtime_error("Invalid alignment file. Could not read line: " + line);
         }
 
-        if (!StringIsFloat(elements[1]) || !StringIsFloat(elements[2]) || !StringIsFloat(elements[3]) || !StringIsFloat(elements[4]) || !StringIsFloat(elements[5])) {
+        if (!string_is_float(elements[1]) || !string_is_float(elements[2]) || !string_is_float(elements[3]) || !string_is_float(elements[4]) || !string_is_float(elements[5])) {
             throw runtime_error("Invalid alignment file. Could not read line: " + line);
         }
 
