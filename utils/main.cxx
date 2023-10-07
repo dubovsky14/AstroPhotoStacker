@@ -3,7 +3,7 @@
 #include "../headers/ReferencePhotoHandler.h"
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/CalibratedPhotoHandler.h"
-#include "../headers/StackerBase.h"
+#include "../headers/MeanValueStacker.h"
 #include "../headers/FlatFrameHandler.h"
 #include "../headers/ImageFilesInputOutput.h"
 
@@ -39,7 +39,7 @@ int main(int argc, const char **argv) {
         //int width, height;
         get_photo_resolution(input_files[0], &width, &height);
 
-        StackerBase stacker(3, width, height);
+        MeanValueStacker stacker(3, width, height);
 
         FlatFrameHandler flat_frame_handler(flat_frame_file);
 

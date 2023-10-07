@@ -8,10 +8,10 @@
 #include <vector>
 
 namespace AstroPhotoStacker {
-    class StackerBase   {
+    class MeanValueStacker   {
         public:
-            StackerBase(int number_of_colors, int width, int height);
-            virtual ~StackerBase()  {};
+            MeanValueStacker(int number_of_colors, int width, int height);
+            virtual ~MeanValueStacker()  {};
 
             virtual void add_photo(const CalibratedPhotoHandler &photo);
 

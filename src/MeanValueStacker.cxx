@@ -1,4 +1,4 @@
-#include "../headers/StackerBase.h"
+#include "../headers/MeanValueStacker.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -6,7 +6,7 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 
-StackerBase::StackerBase(int number_of_colors, int width, int height)   {
+MeanValueStacker::MeanValueStacker(int number_of_colors, int width, int height)   {
     m_number_of_colors = number_of_colors;
     m_width = width;
     m_height = height;
@@ -14,7 +14,7 @@ StackerBase::StackerBase(int number_of_colors, int width, int height)   {
     m_number_of_stacked_pixels = vector<vector<unsigned short>>(m_number_of_colors, vector<unsigned short>(m_width*m_height, 0));
 };
 
-void StackerBase::add_photo(const CalibratedPhotoHandler &photo)    {
+void MeanValueStacker::add_photo(const CalibratedPhotoHandler &photo)    {
     for (int y = 0; y < m_height; y++)  {
         for (int x = 0; x < m_width; x++)   {
             unsigned int value;
@@ -29,7 +29,7 @@ void StackerBase::add_photo(const CalibratedPhotoHandler &photo)    {
     }
 };
 
-void StackerBase::calculate_stacked_photo() {
+void MeanValueStacker::calculate_stacked_photo() {
     m_stacked_image_double = vector<vector<double>>(m_number_of_colors, vector<double>(m_width*m_height, 0));
     for (int y = 0; y < m_height; y++)  {
         for (int x = 0; x < m_width; x++)   {
@@ -55,7 +55,7 @@ void StackerBase::calculate_stacked_photo() {
 };
 
 
-void StackerBase::save_stacked_photo_as_png(const std::string &file_address) const {
+void MeanValueStacker::save_stacked_photo_as_png(const std::string &file_address) const {
     double max_value = 0;
     for (int color = 0; color < m_number_of_colors; color++) {
         for (int y = 0; y < m_height; y++)  {
