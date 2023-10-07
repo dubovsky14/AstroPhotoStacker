@@ -46,9 +46,6 @@ int main(int argc, const char **argv) {
         for (const string &file : input_files) {
             stacker.add_photo(file);
             n++;
-            if (n > 4) {
-                break;
-            }
         }
         stacker.calculate_stacked_photo();
         stacker.save_stacked_photo(output_png_file, CV_16UC3);
