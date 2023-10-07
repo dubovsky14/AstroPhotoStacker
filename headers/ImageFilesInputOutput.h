@@ -95,7 +95,7 @@ namespace AstroPhotoStacker {
         else if ((image_settings & CV_16F) == CV_16F) {
             crate_color_image_3d_template<pixel_values_type, cv::Vec3w>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
         }
-        else if ((image_settings & CV_8U) == CV_8U) {
+        else if ((image_settings & CV_8U) == CV_8U) {   // it has to be on the bottom since it is special case CV_8U == 0
             crate_color_image_3d_template<pixel_values_type, cv::Vec3b>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
         }
         else    {

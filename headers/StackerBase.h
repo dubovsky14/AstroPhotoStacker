@@ -21,7 +21,7 @@ namespace AstroPhotoStacker {
 
             virtual void add_flat_frame(const std::string &file_address);
 
-            virtual void save_stacked_photo(const std::string &file_address, int image_options = 2) const;
+            virtual void save_stacked_photo(const std::string &file_address, int image_options = 18) const;
 
             virtual void calculate_stacked_photo() = 0;
 

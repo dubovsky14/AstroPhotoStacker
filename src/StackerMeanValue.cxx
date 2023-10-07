@@ -63,38 +63,3 @@ void StackerMeanValue::add_photo_to_stack(const std::string &file_address)  {
         }
     }
 };
-
-
-void StackerMeanValue::save_stacked_photo_as_png(const std::string &file_address) const {
-    double max_value = 0;
-    for (int color = 0; color < m_number_of_colors; color++) {
-        for (int y = 0; y < m_height; y++)  {
-            for (int x = 0; x < m_width; x++)   {
-                const unsigned int index = y*m_width + x;
-                if (m_stacked_image[color][index] > max_value) {
-                    max_value = m_stacked_image[color][index];
-                }
-            }
-        }
-    }
-    double scale_factor = 65534 / max_value;
-
-
-    std::cout << "save_stacked_photo_as_png:\n";
-    std::cout << "width: " << m_width << "\n";
-    std::cout << "height: " << m_height << "\n";
-    std::cout << "image_settings: " << CV_16UC3 << "\n\n";
-        std::cout << "sizeof(cv::Vec3w): " << sizeof(cv::Vec3w) << "\n\n";
-
-    cv::Mat image(m_height, m_width, CV_16UC3);
-    for (int y = 0; y < m_height; y++) {
-        for (int x = 0; x < m_width; x++) {
-            cv::Vec3w& pixel = image.at<cv::Vec3w>(y, x);
-            const unsigned int index = y*m_width + x;
-            pixel[0] = scale_factor*m_stacked_image[0][index];
-            pixel[1] = scale_factor*m_stacked_image[1][index];
-            pixel[2] = scale_factor*m_stacked_image[2][index];
-        }
-    }
-    cv::imwrite(file_address, image);
-};

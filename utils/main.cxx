@@ -3,7 +3,6 @@
 #include "../headers/ReferencePhotoHandler.h"
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/CalibratedPhotoHandler.h"
-#include "../headers/MeanValueStacker.h"
 #include "../headers/FlatFrameHandler.h"
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/StackerMeanValue.h"
@@ -52,7 +51,6 @@ int main(int argc, const char **argv) {
         }
         stacker.calculate_stacked_photo();
         stacker.save_stacked_photo(output_png_file, CV_16UC3);
-        stacker.save_stacked_photo_as_png("alternative" + output_png_file);
 
         return 0;
 
