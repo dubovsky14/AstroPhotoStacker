@@ -51,11 +51,6 @@ namespace AstroPhotoStacker {
     void crate_color_image_3d_template( const pixel_values_type* arr_red, const pixel_values_type* arr_green, const pixel_values_type* arr_blue,
                             int width, int height, const std::string& filename, int image_settings = CV_8UC3) {
 
-        std::cout << "crate_color_image_3d_template:\n";
-        std::cout << "width: " << width << "\n";
-        std::cout << "height: " << height << "\n";
-        std::cout << "image_settings: " << image_settings << "\n\n";
-        std::cout << "sizeof(pixel_3d_type): " << sizeof(pixel_3d_type) << "\n\n";
         cv::Mat image(height, width, image_settings);
         for (int y = 0; y < height-1; y++) {
             for (int x = 0; x < width-1; x++) {

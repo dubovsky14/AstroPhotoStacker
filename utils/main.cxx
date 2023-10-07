@@ -6,6 +6,7 @@
 #include "../headers/FlatFrameHandler.h"
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/StackerMeanValue.h"
+#include "../headers/StackerMedian.h"
 
 #include <string>
 #include <iostream>
@@ -38,7 +39,7 @@ int main(int argc, const char **argv) {
         int width, height;
         get_photo_resolution(input_files[0], &width, &height);
 
-        StackerMeanValue stacker(3, width, height);
+        StackerMedian stacker(3, width, height);
         stacker.add_alignment_text_file(alignment_file);
         stacker.add_flat_frame(flat_frame_file);
         int n   = 0;
