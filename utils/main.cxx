@@ -6,6 +6,7 @@
 #include "../headers/MeanValueStacker.h"
 #include "../headers/FlatFrameHandler.h"
 #include "../headers/ImageFilesInputOutput.h"
+#include "../headers/StackerMeanValue.h"
 
 #include <string>
 #include <iostream>
@@ -36,25 +37,26 @@ int main(int argc, const char **argv) {
 
 
         int width, height;
-        //int width, height;
         get_photo_resolution(input_files[0], &width, &height);
 
-        MeanValueStacker stacker(3, width, height);
-
-        FlatFrameHandler flat_frame_handler(flat_frame_file);
-
-        for (const string &input_file : input_files)    {
-            cout << "Adding file " << input_file << endl;
-            float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
-            photo_alignment_handler.get_alignment_parameters(input_file, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
-            CalibratedPhotoHandler calibrated_photo_handler(input_file);
-            calibrated_photo_handler.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
-            calibrated_photo_handler.apply_flat_frame(flat_frame_handler);
-            calibrated_photo_handler.calibrate();
-            stacker.add_photo(calibrated_photo_handler);
+        StackerMeanValue stacker(3, width, height);
+        stacker.add_alignment_text_file(alignment_file);
+        stacker.add_flat_frame(flat_frame_file);
+        int n   = 0;
+        for (const string &file : input_files) {
+            stacker.add_photo(file);
+            n++;
+            if (n > 4) {
+                break;
+            }
         }
         stacker.calculate_stacked_photo();
-        stacker.save_stacked_photo_as_png(output_png_file);
+        stacker.save_stacked_photo(output_png_file, CV_16UC3);
+        stacker.save_stacked_photo_as_png("alternative" + output_png_file);
+
+        return 0;
+
+
 
 /*
 
