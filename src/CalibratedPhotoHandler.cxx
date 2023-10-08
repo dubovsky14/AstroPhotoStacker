@@ -34,6 +34,10 @@ void CalibratedPhotoHandler::register_flat_frame(const FlatFrameHandler *flat_fr
     m_flat_frame = flat_frame_handler;
 };
 
+void CalibratedPhotoHandler::set_bit_depth(unsigned short int bit_depth)    {
+    m_max_allowed_pixel_value = 1 << bit_depth;
+};
+
 void CalibratedPhotoHandler::calibrate() {
     m_data_shifted   = vector<unsigned short int>(m_width*m_height);
     m_colors_shifted = vector<char>(m_width*m_height, -1);
@@ -52,7 +56,8 @@ void CalibratedPhotoHandler::calibrate() {
                     m_data_shifted[index_shifted] = m_data_original[index_original];
                 }
                 else {
-                    m_data_shifted[index_shifted] = m_data_original[index_original]*m_flat_frame->get_pixel_value_inverted(x_int, y_int);
+                    const float value = m_data_original[index_original]*m_flat_frame->get_pixel_value_inverted(x_int, y_int);
+                    m_data_shifted[index_shifted] = min(m_max_allowed_pixel_value, (unsigned int)(value)); // stars in corners can "overflow" without this check
                 }
                 m_colors_shifted[index_shifted] = m_colors_original[index_original];
             }

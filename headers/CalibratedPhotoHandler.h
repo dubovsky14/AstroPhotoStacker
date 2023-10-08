@@ -14,6 +14,8 @@ namespace AstroPhotoStacker {
 
             void define_alignment(float shift_x, float shift_y, float rotation_center_x, float rotation_center_y, float rotation);
 
+            void set_bit_depth(unsigned short int bit_depth);
+
             void calibrate();
 
             void limit_y_range(int y_min, int y_max);
@@ -32,6 +34,7 @@ namespace AstroPhotoStacker {
 
             int m_y_min = -1;
             int m_y_max = -1;
+            unsigned int m_max_allowed_pixel_value = 1 << 14;
 
             const FlatFrameHandler *m_flat_frame = nullptr;
 
