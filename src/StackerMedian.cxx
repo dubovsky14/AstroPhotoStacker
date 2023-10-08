@@ -149,10 +149,6 @@ void StackerMedian::calculate_median_at_line(int y_index_final_array, int y_inde
 
         sort(slice_begin, slice_end);
 
-        if (*slice_begin >=0 && *(slice_end-1) < 0) {
-            cout << "Something is wrong: " << *slice_begin << "\t\t" << *slice_end << endl;
-        }
-
         if (number_of_stacked_pixels == 0) {
             m_stacked_image[i_color][pixel_index] = 0;
         }
