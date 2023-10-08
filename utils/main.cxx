@@ -2,6 +2,7 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/StackerMeanValue.h"
 #include "../headers/StackerMedian.h"
+#include "../headers/StackerKappaSigmaClipping.h"
 #include "../headers/InputArgumentsParser.h"
 
 #include <string>
@@ -43,7 +44,7 @@ int main(int argc, const char **argv) {
         int width, height;
         get_photo_resolution(input_files[0], &width, &height);
 
-        StackerMedian stacker(3, width, height);
+        StackerKappaSigmaClipping stacker(3, width, height);
         stacker.set_memory_usage_limit(memory_limit);
         stacker.set_number_of_cpu_threads(n_cpu);
         stacker.add_alignment_text_file(alignment_file);

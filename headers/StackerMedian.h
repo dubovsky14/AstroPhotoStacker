@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../headers/StackerBase.h"
 
 #include <vector>
@@ -20,6 +22,6 @@ namespace AstroPhotoStacker {
 
             int get_height_range_limit()    const;
 
-            void calculate_median_at_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color);
+            virtual void calculate_median_at_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color);
     };
 }
