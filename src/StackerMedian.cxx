@@ -26,9 +26,12 @@ void StackerMedian::calculate_stacked_photo()  {
         m_number_of_stacked_pixels.push_back(vector<unsigned short>(m_width*m_height, 0));
     }
 
+    int i_slice = 0;
+    int n_slices = m_height/height_range + (m_height % height_range > 0);
     for (int y_min = 0; y_min < m_height; y_min += height_range) {
+        i_slice++;
         const int y_max = min(y_min + height_range, m_height);
-        cout << "y_min = " << y_min << ", y_max = " << y_max << endl;
+        cout << "Stacking slice " << i_slice << " of " << n_slices << endl;
         for (const string &file_address : m_files_to_stack) {
             cout << "Adding " << file_address << " to stack" << endl;
             add_photo_to_stack(file_address, y_min, y_max);
