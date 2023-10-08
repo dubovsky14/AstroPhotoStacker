@@ -1,5 +1,6 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/Common.h"
+#include "../headers/thread_pool.h"
 
 #include <fstream>
 #include <filesystem>
@@ -60,17 +61,37 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
 void PhotoAlignmentHandler::align_files(const std::string &reference_file_address, const std::vector<std::string> &files) {
     m_reference_photo_handler = make_unique<ReferencePhotoHandler>(reference_file_address, 0.0005);
     m_reference_file_address = reference_file_address;
-    for (const std::string &file : files)   {
+
+    const unsigned int n_files = files.size();
+    m_file_addresses.resize(n_files);
+    m_shift_x.resize(n_files);
+    m_shift_y.resize(n_files);
+    m_rotation_center_x.resize(n_files);
+    m_rotation_center_y.resize(n_files);
+    m_rotation.resize(n_files);
+
+    auto align_file_multicore = [this](const std::string &file_name, unsigned int file_index) {
         float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
-        if (m_reference_photo_handler->plate_solve(file, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation)) {
-            m_file_addresses.push_back(file);
-            m_shift_x.push_back(shift_x);
-            m_shift_y.push_back(shift_y);
-            m_rotation_center_x.push_back(rot_center_x);
-            m_rotation_center_y.push_back(rot_center_y);
-            m_rotation.push_back(rotation);
+        if (m_reference_photo_handler->plate_solve(file_name, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation)) {
+            m_file_addresses[file_index] = file_name;
+            m_shift_x[file_index] = shift_x;
+            m_shift_y[file_index] = shift_y;
+            m_rotation_center_x[file_index] = rot_center_x;
+            m_rotation_center_y[file_index] = rot_center_y;
+            m_rotation[file_index] = rotation;
+        }
+    };
+
+    thread_pool pool(m_n_cpu);
+    for (unsigned int i_file = 0; i_file < files.size(); i_file++)   {
+        if (m_n_cpu == 1)   {
+            align_file_multicore(files[i_file], i_file);
+        }
+        else    {
+            pool.submit(align_file_multicore, files[i_file], i_file);
         }
     }
+    pool.wait_for_tasks();
 };
 
 void PhotoAlignmentHandler::align_all_files_in_folder(const std::string &reference_file_address, const std::string &raw_files_folder) {

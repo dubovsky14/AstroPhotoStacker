@@ -17,6 +17,7 @@ int main(int argc, const char **argv) {
         const string output_alignment_file = argc > 3 ? argv[3] : directory_with_raw_files + "/alignment.txt";
 
         PhotoAlignmentHandler photo_alignment_handler;
+        photo_alignment_handler.set_number_of_cpu_threads(8);
         photo_alignment_handler.align_all_files_in_folder(reference_file_address, directory_with_raw_files);
         photo_alignment_handler.save_to_text_file(output_alignment_file);
 }
