@@ -10,6 +10,8 @@ namespace AstroPhotoStacker {
 
             virtual void calculate_stacked_photo() override;
 
+            virtual void set_number_of_cpu_threads(unsigned int n_cpu) override;
+
         protected:
             std::vector<std::vector<unsigned short>> m_number_of_stacked_pixels;
             std::vector<std::unique_ptr<short[]>> m_values_to_stack;

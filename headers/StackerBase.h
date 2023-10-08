@@ -23,12 +23,16 @@ namespace AstroPhotoStacker {
 
             virtual void save_stacked_photo(const std::string &file_address, int image_options = 18) const;
 
+            virtual void set_number_of_cpu_threads(unsigned int n_cpu) = 0;
+
             virtual void calculate_stacked_photo() = 0;
 
         protected:
             int m_number_of_colors;
             int m_width;
             int m_height;
+
+            unsigned int m_n_cpu = 1;
 
             int m_memory_usage_limit_in_mb = -1;
 

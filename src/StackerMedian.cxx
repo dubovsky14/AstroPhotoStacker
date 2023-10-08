@@ -1,6 +1,8 @@
 #include "../headers/StackerMedian.h"
 #include "../headers/CalibratedPhotoHandler.h"
 
+#include "../headers/thread_pool.h"
+
 #include <opencv2/opencv.hpp>
 
 #include <iostream>
@@ -39,10 +41,21 @@ void StackerMedian::calculate_stacked_photo()  {
             }
         }
 
+        auto submit_photo_stack = [this, y_min, y_max](unsigned int file_index) {
+            cout << string("Adding ") + m_files_to_stack[file_index] + string(" to stack\n");
+            add_photo_to_stack(file_index, y_min, y_max);
+        };
+
+        thread_pool pool(m_n_cpu);
         for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
-            cout << "Adding " << m_files_to_stack[i_file] << " to stack" << endl;
-            add_photo_to_stack(i_file, y_min, y_max);
+            if (m_n_cpu > 1) {
+                pool.submit(submit_photo_stack, i_file);
+            }
+            else {
+                submit_photo_stack(i_file);
+            }
         }
+        pool.wait_for_tasks();
 
         for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
             for (int i_pixel = m_width*y_min; i_pixel < m_width*y_max; i_pixel++) {
@@ -90,6 +103,9 @@ void StackerMedian::calculate_stacked_photo()  {
     }
 };
 
+void StackerMedian::set_number_of_cpu_threads(unsigned int n_cpu) {
+    m_n_cpu = n_cpu;
+};
 
 void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y_max)  {
     const string &file_address = m_files_to_stack[file_index];

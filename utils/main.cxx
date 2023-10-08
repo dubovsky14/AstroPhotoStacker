@@ -41,8 +41,9 @@ int main(int argc, const char **argv) {
 
         StackerMedian stacker(3, width, height);
         stacker.set_memory_usage_limit(16000);
+        stacker.set_number_of_cpu_threads(8);
         stacker.add_alignment_text_file(alignment_file);
-        //stacker.add_flat_frame(flat_frame_file);
+        stacker.add_flat_frame(flat_frame_file);
         int n   = 0;
         for (const string &file : input_files) {
             stacker.add_photo(file);
