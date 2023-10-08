@@ -2,6 +2,7 @@
 #include <cmath>
 #include <vector>
 #include <string>
+#include <stdexcept>
 
 namespace AstroPhotoStacker {
 
@@ -37,12 +38,17 @@ namespace AstroPhotoStacker {
 
     template <class ResultType>
     ResultType convert_string_to(const std::string &input_string) {
-        throw std::string ("Requested type not implemented!");
+        throw std::runtime_error ("Requested type not implemented!");
     };
 
     template <> inline
     int convert_string_to(const std::string &input_string)    {
         return std::stoi(input_string);
+    };
+
+    template <> inline
+    unsigned int convert_string_to(const std::string &input_string)    {
+        return std::stoul(input_string);
     };
 
     template <> inline
@@ -71,7 +77,7 @@ namespace AstroPhotoStacker {
         if      (input_upper == "TRUE")  return true;
         else if (input_upper == "FALSE") return false;
         else {
-            throw std::string("String \"" + input_string + "\" can't be converted to bool value!");
+            throw std::runtime_error("String \"" + input_string + "\" can't be converted to bool value!");
         }
     };
 

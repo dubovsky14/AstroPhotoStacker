@@ -35,19 +35,19 @@ How to checkout and compile the code:
 --------------------------------------
 
 ```
-    git clone git@github.com:dubovsky14/AstroPhotoStacker.git
+git clone git@github.com:dubovsky14/AstroPhotoStacker.git
 
-    cd AstroPhotoStacker
+cd AstroPhotoStacker
 
-    mkdir bin
+mkdir bin
 
-    cd bin
+cd bin
 
-    cmake ../.
+cmake ../.
 
-    make # optionally use "make -j4" for compiling on 4 CPUs, or "make -j" to compile on all available CPUs
+make # optionally use "make -j4" for compiling on 4 CPUs, or "make -j" to compile on all available CPUs
 
-    cd ..
+cd ..
 ```
 
 How to run the code:
@@ -57,20 +57,42 @@ You need to run two steps. The first one will calculate how to shift and rotate 
 So firstly look at your photos and choose one of them, that you want to use as a reference (stacked photo will cover this field of view).
 Then run the following command:
 
+**Alignment step:**
 ```
-./bin/produce_alignment_file <reference_file_address> <directory_with_raw_files> <output_alignment_file (optional)>
-```
-
-Where ```<reference_file_address``` is address of your reference file,
-```<directory_with_raw_files>``` is directory with your raw files - this directory can contain only raw files or some text files, nothing else.
-The last argument, ```<output_alignment_file (optional)>``` is optional, it is address of the created text file with the alignment information,
-if the address is not specified, it will create ```alignment.txt``` file in directory with raw files.
-
-After this step, you know how to move and rotate all the files so that they will be aligned with the reference photo. You can run stacking step now:
-
-```
-./bin/AstroPhotoStacker <path_to_alignment_file>  <output file address> <flat file address>
+./bin/produce_alignment_file -option1 <option1_value> -option2 <option2_value> ...
 ```
 
+Where the following options are mandatory:
+
+```reference_file``` -> this is address of the reference photo. The final stacked image will have this field of view - i.e. all other pictures will be aligned to this photo.
+
+```raw_files_dir``` -> directory with the raw files. It can contain only raw files or some text files, nothing else.
+
+Few arguments are optional:
+
+```alignment_file``` -> address of the output text file with the alignments. If not specified, file called ```alignment.txt``` will be created in the raw files directory.
+
+```n_cpu``` -> number of CPUs to run on
 
 
+**Stacking step:**
+
+After producing the alignment file, you can run the stacking itself:
+
+```
+./bin/AstroPhotoStacker -option1 <option1_value> -option2 <option2_value> ...
+```
+
+Where the following options are mandatory:
+
+```alignment_file``` -> path to the alignment file. The list of raw files to stack will be  read from this file.
+
+```output``` -> address of the output stacked image that is going to be created.
+
+and these arguments are optional:
+
+```flat_frame``` -> address of the flat frame
+
+```memory_limit``` -> limit on used memory in MB
+
+```n_cpu``` -> number of CPUs to run on

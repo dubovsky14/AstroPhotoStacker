@@ -1,19 +1,13 @@
 #include "../headers/raw_file_reader.h"
-#include "../headers/StarFinder.h"
-#include "../headers/ReferencePhotoHandler.h"
 #include "../headers/PhotoAlignmentHandler.h"
-#include "../headers/CalibratedPhotoHandler.h"
-#include "../headers/FlatFrameHandler.h"
-#include "../headers/ImageFilesInputOutput.h"
 #include "../headers/StackerMeanValue.h"
 #include "../headers/StackerMedian.h"
+#include "../headers/InputArgumentsParser.h"
 
 #include <string>
 #include <iostream>
 #include <memory>
 #include <opencv2/opencv.hpp>
-
-#include <filesystem>
 
 using namespace std;
 
@@ -22,11 +16,22 @@ using namespace AstroPhotoStacker;
 
 int main(int argc, const char **argv) {
     try {
+        InputArgumentsParser input_arguments_parser(argc, argv);
 
+        const string alignment_file     = input_arguments_parser.get_argument<string>("alignment_file");
+        const string output_file        = input_arguments_parser.get_argument<string>("output");
+        const string flat_frame_file    = input_arguments_parser.get_optional_argument<string>("flat_frame", "");
 
-        const string alignment_file  = argv[1];
-        const string output_png_file = argv[2];
-        const string flat_frame_file = argc > 3 ? argv[3] : "";
+        const unsigned int memory_limit = input_arguments_parser.get_optional_argument<unsigned int>("memory_limit", 16000);
+        const unsigned int n_cpu        = input_arguments_parser.get_optional_argument<unsigned int>("n_cpu", 8);
+
+        cout << "\n";
+        cout << "Alignment file: " << alignment_file << "\n";
+        cout << "Output file: " << output_file << "\n";
+        cout << "Flat frame file: " << flat_frame_file << "\n";
+        cout << "Memory limit: " << memory_limit << "\n";
+        cout << "Number of CPU threads: " << n_cpu << "\n";
+        cout << "\n";
 
         PhotoAlignmentHandler photo_alignment_handler;
         photo_alignment_handler.read_from_text_file(alignment_file);
@@ -39,8 +44,8 @@ int main(int argc, const char **argv) {
         get_photo_resolution(input_files[0], &width, &height);
 
         StackerMedian stacker(3, width, height);
-        stacker.set_memory_usage_limit(16000);
-        stacker.set_number_of_cpu_threads(8);
+        stacker.set_memory_usage_limit(memory_limit);
+        stacker.set_number_of_cpu_threads(n_cpu);
         stacker.add_alignment_text_file(alignment_file);
         if (flat_frame_file != "")  {
             stacker.add_flat_frame(flat_frame_file);
@@ -50,12 +55,13 @@ int main(int argc, const char **argv) {
             stacker.add_photo(file);
         }
         stacker.calculate_stacked_photo();
-        stacker.save_stacked_photo(output_png_file, CV_16UC3);
+        stacker.save_stacked_photo(output_file, CV_16UC3);
 
         return 0;
 
     } catch (const exception &e) {
         cout << e.what() << endl;
+        abort();
     }
 
     return 0;
