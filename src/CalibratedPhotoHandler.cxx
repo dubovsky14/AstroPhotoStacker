@@ -48,7 +48,12 @@ void CalibratedPhotoHandler::calibrate() {
             if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
                 const unsigned int index_shifted = y_shifted*m_width + x_shifted;
                 const unsigned int index_original = y_int*m_width + x_int;
-                m_data_shifted[index_shifted]   = m_data_original[index_original]*m_flat_frame->get_pixel_value_inverted(x_int, y_int);
+                if (m_flat_frame == nullptr) {
+                    m_data_shifted[index_shifted] = m_data_original[index_original];
+                }
+                else {
+                    m_data_shifted[index_shifted] = m_data_original[index_original]*m_flat_frame->get_pixel_value_inverted(x_int, y_int);
+                }
                 m_colors_shifted[index_shifted] = m_colors_original[index_original];
             }
         }

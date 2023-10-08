@@ -40,9 +40,9 @@ int main(int argc, const char **argv) {
         get_photo_resolution(input_files[0], &width, &height);
 
         StackerMedian stacker(3, width, height);
-        stacker.set_memory_usage_limit(4096);
+        stacker.set_memory_usage_limit(16000);
         stacker.add_alignment_text_file(alignment_file);
-        stacker.add_flat_frame(flat_frame_file);
+        //stacker.add_flat_frame(flat_frame_file);
         int n   = 0;
         for (const string &file : input_files) {
             stacker.add_photo(file);

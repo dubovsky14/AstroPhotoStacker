@@ -12,9 +12,9 @@ namespace AstroPhotoStacker {
 
         protected:
             std::vector<std::vector<unsigned short>> m_number_of_stacked_pixels;
-            std::vector<std::unique_ptr<unsigned short[]>> m_values_to_stack;
+            std::vector<std::unique_ptr<short[]>> m_values_to_stack;
 
-            void add_photo_to_stack(const std::string &file_address, int y_min, int y_max);
+            void add_photo_to_stack(unsigned int file_index, int y_min, int y_max);
 
             int get_height_range_limit()    const;
     };

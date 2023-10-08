@@ -14,7 +14,7 @@ StackerMedian::StackerMedian(int number_of_colors, int width, int height) :
 };
 
 void StackerMedian::calculate_stacked_photo()  {
-    const unsigned int n_files = m_files_to_stack.size();
+    const int n_files = m_files_to_stack.size();
     const int height_range = get_height_range_limit();
 
     if (height_range == 0) {
@@ -22,36 +22,58 @@ void StackerMedian::calculate_stacked_photo()  {
     }
 
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
-        m_values_to_stack.push_back(std::move(make_unique<unsigned short[]>(m_width*height_range*n_files)));
-        m_number_of_stacked_pixels.push_back(vector<unsigned short>(m_width*m_height, 0));
+        m_values_to_stack.push_back(std::move(make_unique<short[]>(m_width*height_range*n_files)));
     }
 
     int i_slice = 0;
     int n_slices = m_height/height_range + (m_height % height_range > 0);
     for (int y_min = 0; y_min < m_height; y_min += height_range) {
+
         i_slice++;
         const int y_max = min(y_min + height_range, m_height);
         cout << "Stacking slice " << i_slice << " of " << n_slices << endl;
-        for (const string &file_address : m_files_to_stack) {
-            cout << "Adding " << file_address << " to stack" << endl;
-            add_photo_to_stack(file_address, y_min, y_max);
+        // set all values to -1
+        for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
+            for (int i_pixel = 0; i_pixel < m_width*height_range*n_files; i_pixel++) {
+                m_values_to_stack[i_color][i_pixel] = -1;
+            }
+        }
+
+        for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
+            cout << "Adding " << m_files_to_stack[i_file] << " to stack" << endl;
+            add_photo_to_stack(i_file, y_min, y_max);
         }
 
         for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
             for (int i_pixel = m_width*y_min; i_pixel < m_width*y_max; i_pixel++) {
                 const unsigned long long int pixel_index = n_files*i_pixel;
-                const unsigned int number_of_stacked_pixels = m_number_of_stacked_pixels[i_color][i_pixel];
                 const unsigned long long int pixel_index_stacking_array = pixel_index - n_files*m_width*y_min;
-                sort(&m_values_to_stack[i_color][pixel_index_stacking_array], &m_values_to_stack[i_color][pixel_index_stacking_array+number_of_stacked_pixels]);
+
+                short *slice_begin = &m_values_to_stack[i_color][pixel_index_stacking_array];
+                short *slice_end   = &m_values_to_stack[i_color][pixel_index_stacking_array + n_files];
+
+                int number_of_stacked_pixels = 0;
+                for (int i = 0; i < n_files; i++) {
+                    if (slice_begin[i] >= 0) {
+                        number_of_stacked_pixels++;
+                    }
+                }
+                const unsigned long long int start_of_non_negative_values = pixel_index_stacking_array + n_files - number_of_stacked_pixels;
+
+                sort(slice_begin, slice_end);
+
+                if (*slice_begin >=0 && *(slice_end-1) < 0) {
+                    cout << "Something is wrong: " << *slice_begin << "\t\t" << *slice_end << endl;
+                }
 
                 if (number_of_stacked_pixels == 0) {
                     m_stacked_image[i_color][i_pixel] = 0;
                 }
                 else if (number_of_stacked_pixels % 2 == 0) {
-                    m_stacked_image[i_color][i_pixel] = (m_values_to_stack[i_color][pixel_index_stacking_array + number_of_stacked_pixels/2] + m_values_to_stack[i_color][pixel_index_stacking_array + number_of_stacked_pixels/2 - 1])/2;
+                    m_stacked_image[i_color][i_pixel] = (m_values_to_stack[i_color][start_of_non_negative_values + number_of_stacked_pixels/2] + m_values_to_stack[i_color][start_of_non_negative_values + number_of_stacked_pixels/2 - 1])/2;
                 }
                 else {
-                    m_stacked_image[i_color][i_pixel] = m_values_to_stack[i_color][pixel_index_stacking_array + number_of_stacked_pixels/2];
+                    m_stacked_image[i_color][i_pixel] = m_values_to_stack[i_color][start_of_non_negative_values + number_of_stacked_pixels/2];
                 }
             }
         }
@@ -59,7 +81,6 @@ void StackerMedian::calculate_stacked_photo()  {
 
 
     m_values_to_stack.clear();
-    m_number_of_stacked_pixels.clear();
 
     // fix green pixels
     if (m_number_of_colors == 3) {
@@ -70,7 +91,8 @@ void StackerMedian::calculate_stacked_photo()  {
 };
 
 
-void StackerMedian::add_photo_to_stack(const std::string &file_address, int y_min, int y_max)  {
+void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y_max)  {
+    const string &file_address = m_files_to_stack[file_index];
     const unsigned int n_files = m_files_to_stack.size();
     float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
     m_photo_alignment_handler->get_alignment_parameters(file_address, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
@@ -88,11 +110,9 @@ void StackerMedian::add_photo_to_stack(const std::string &file_address, int y_mi
     for (int y = y_min; y < y_max; y++)  {
         for (int x = 0; x < m_width; x++)   {
             calibrated_photo.get_value_by_reference_frame_coordinates(x, y, &value, &color);
+            const unsigned int index_stacking_array = (y-y_min)*m_width + x;
             if (color >= 0) {
-                const unsigned int index = y*m_width + x;
-                const unsigned int index_stacking_array = (y-y_min)*m_width + x;
-                m_values_to_stack[color][n_files*index_stacking_array + m_number_of_stacked_pixels[color][index]] = value;
-                m_number_of_stacked_pixels[color][index] += 1;
+                m_values_to_stack[color][n_files*index_stacking_array + file_index] = value;
             }
         }
     }
