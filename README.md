@@ -96,3 +96,5 @@ and these arguments are optional:
 ```memory_limit``` -> limit on used memory in MB
 
 ```n_cpu``` -> number of CPUs to run on
+
+```stacker_type``` -> stacking algorithm to be used. The list of available algorithms can be found in ```headers/StackerFactory.h``` header file. Default is ```kappa_sigma_clipping```

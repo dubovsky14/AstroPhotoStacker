@@ -39,7 +39,9 @@ void StackerMeanValue::calculate_stacked_photo()  {
 };
 
 void StackerMeanValue::set_number_of_cpu_threads(unsigned int n_cpu) {
-    throw runtime_error("StackerMeanValue does not support multithreading");
+    if (n_cpu > 1) {
+        throw runtime_error("StackerMeanValue does not support multithreading");
+    }
 };
 
 void StackerMeanValue::add_photo_to_stack(const std::string &file_address)  {
