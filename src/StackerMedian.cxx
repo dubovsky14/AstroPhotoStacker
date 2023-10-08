@@ -57,39 +57,22 @@ void StackerMedian::calculate_stacked_photo()  {
         }
         pool.wait_for_tasks();
 
+        auto submit_median_calculation = [this, y_min, y_max](int i_color, int y_final_array, int y_values_to_stack_array ) {
+            calculate_median_at_line(y_final_array, y_values_to_stack_array, i_color);
+        };
+
         for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
-            for (int i_pixel = m_width*y_min; i_pixel < m_width*y_max; i_pixel++) {
-                const unsigned long long int pixel_index = n_files*i_pixel;
-                const unsigned long long int pixel_index_stacking_array = pixel_index - n_files*m_width*y_min;
-
-                short *slice_begin = &m_values_to_stack[i_color][pixel_index_stacking_array];
-                short *slice_end   = &m_values_to_stack[i_color][pixel_index_stacking_array + n_files];
-
-                int number_of_stacked_pixels = 0;
-                for (int i = 0; i < n_files; i++) {
-                    if (slice_begin[i] >= 0) {
-                        number_of_stacked_pixels++;
-                    }
-                }
-                const unsigned long long int start_of_non_negative_values = pixel_index_stacking_array + n_files - number_of_stacked_pixels;
-
-                sort(slice_begin, slice_end);
-
-                if (*slice_begin >=0 && *(slice_end-1) < 0) {
-                    cout << "Something is wrong: " << *slice_begin << "\t\t" << *slice_end << endl;
-                }
-
-                if (number_of_stacked_pixels == 0) {
-                    m_stacked_image[i_color][i_pixel] = 0;
-                }
-                else if (number_of_stacked_pixels % 2 == 0) {
-                    m_stacked_image[i_color][i_pixel] = (m_values_to_stack[i_color][start_of_non_negative_values + number_of_stacked_pixels/2] + m_values_to_stack[i_color][start_of_non_negative_values + number_of_stacked_pixels/2 - 1])/2;
+            for (int y_final_array = y_min; y_final_array < y_max; y_final_array++) {
+                const int y_values_to_stack_array = y_final_array - y_min;
+                if (m_n_cpu > 1) {
+                    pool.submit(submit_median_calculation, i_color, y_final_array, y_values_to_stack_array);
                 }
                 else {
-                    m_stacked_image[i_color][i_pixel] = m_values_to_stack[i_color][start_of_non_negative_values + number_of_stacked_pixels/2];
+                    submit_median_calculation(i_color, y_final_array, y_values_to_stack_array);
                 }
             }
         }
+        pool.wait_for_tasks();
     }
 
 
@@ -144,4 +127,41 @@ int StackerMedian::get_height_range_limit() const {
         height_range = min(height_range, int(memory_usage_limit/memory_usage_per_line));
     }
     return height_range;
+};
+
+
+void StackerMedian::calculate_median_at_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color)    {
+    const int n_files = m_files_to_stack.size();
+    for (int i_width = 0; i_width < m_width; i_width++) {
+        const unsigned long long int pixel_index = m_width*y_index_final_array + i_width;
+        const unsigned long long int pixel_index_stacking_array = m_width*y_index_values_to_stack_array*n_files + i_width*n_files;
+
+        short *slice_begin = &m_values_to_stack[i_color][pixel_index_stacking_array];
+        short *slice_end   = &m_values_to_stack[i_color][pixel_index_stacking_array + n_files];
+
+        int number_of_stacked_pixels = 0;
+        for (int i = 0; i < n_files; i++) {
+            if (slice_begin[i] >= 0) {
+                number_of_stacked_pixels++;
+            }
+        }
+        const unsigned long long int start_of_non_negative_values = pixel_index_stacking_array + n_files - number_of_stacked_pixels;
+
+        sort(slice_begin, slice_end);
+
+        if (*slice_begin >=0 && *(slice_end-1) < 0) {
+            cout << "Something is wrong: " << *slice_begin << "\t\t" << *slice_end << endl;
+        }
+
+        if (number_of_stacked_pixels == 0) {
+            m_stacked_image[i_color][pixel_index] = 0;
+        }
+        else if (number_of_stacked_pixels % 2 == 0) {
+            m_stacked_image[i_color][pixel_index] = (m_values_to_stack[i_color][start_of_non_negative_values + number_of_stacked_pixels/2] + m_values_to_stack[i_color][start_of_non_negative_values + number_of_stacked_pixels/2 - 1])/2;
+        }
+        else {
+            m_stacked_image[i_color][pixel_index] = m_values_to_stack[i_color][start_of_non_negative_values + number_of_stacked_pixels/2];
+        }
+    }
+
 };
