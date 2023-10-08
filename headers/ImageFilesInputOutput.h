@@ -12,30 +12,32 @@ namespace AstroPhotoStacker {
     template <typename pixel_values_type>
     void create_gray_scale_image(const pixel_values_type* arr, int width, int height, const std::string& filename, int image_settings = CV_8UC1) {
         cv::Mat image(height, width, image_settings);
+
+        const int mask = 0b111;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                if ((image_settings & CV_8U) == CV_8U) {
+                if ((image_settings & mask) == CV_8U) {
                     image.at<uchar>(y, x) = arr[y*width + x];
                 }
-                else if ((image_settings & CV_16U) == CV_16U) {
+                else if ((image_settings & mask) == CV_16U) {
                     image.at<ushort>(y, x) = arr[y*width + x];
                 }
-                else if ((image_settings & CV_8S) == CV_8S) {
+                else if ((image_settings & mask) == CV_8S) {
                     image.at<schar>(y, x) = arr[y*width + x];
                 }
-                else if ((image_settings & CV_16S) == CV_16S) {
+                else if ((image_settings & mask) == CV_16S) {
                     image.at<short>(y, x) = arr[y*width + x];
                 }
-                else if ((image_settings & CV_32S) == CV_32S) {
+                else if ((image_settings & mask) == CV_32S) {
                     image.at<int>(y, x) = arr[y*width + x];
                 }
-                else if ((image_settings & CV_32F) == CV_32F) {
+                else if ((image_settings & mask) == CV_32F) {
                     image.at<float>(y, x) = arr[y*width + x];
                 }
-                else if ((image_settings & CV_64F) == CV_64F) {
+                else if ((image_settings & mask) == CV_64F) {
                     image.at<double>(y, x) = arr[y*width + x];
                 }
-                else if ((image_settings & CV_16F) == CV_16F) {
+                else if ((image_settings & mask) == CV_16F) {
                     image.at<ushort>(y, x) = arr[y*width + x];
                 }
                 else    {
@@ -68,30 +70,30 @@ namespace AstroPhotoStacker {
     void crate_color_image( const pixel_values_type* arr_red, const pixel_values_type* arr_green, const pixel_values_type* arr_blue,
                             int width, int height, const std::string& filename, int image_settings = CV_8UC3) {
 
-
-        if ((image_settings & CV_16U) == CV_16U) {
+        const int mask = 0b111;
+        if ((image_settings & mask) == CV_8U) {
+            crate_color_image_3d_template<pixel_values_type, cv::Vec3b>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
+        }
+        else if ((image_settings & mask) == CV_16U) {
             crate_color_image_3d_template<pixel_values_type, cv::Vec3w>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
         }
-        else if ((image_settings & CV_8S) == CV_8S) {
+        else if ((image_settings & mask) == CV_8S) {
             crate_color_image_3d_template<pixel_values_type, cv::Vec3s>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
         }
-        else if ((image_settings & CV_16S) == CV_16S) {
+        else if ((image_settings & mask) == CV_16S) {
             crate_color_image_3d_template<pixel_values_type, cv::Vec3s>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
         }
-        else if ((image_settings & CV_32S) == CV_32S) {
+        else if ((image_settings & mask) == CV_32S) {
             crate_color_image_3d_template<pixel_values_type, cv::Vec3i>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
         }
-        else if ((image_settings & CV_32F) == CV_32F) {
+        else if ((image_settings & mask) == CV_32F) {
             crate_color_image_3d_template<pixel_values_type, cv::Vec3f>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
         }
-        else if ((image_settings & CV_64F) == CV_64F) {
+        else if ((image_settings & mask) == CV_64F) {
             crate_color_image_3d_template<pixel_values_type, cv::Vec3d>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
         }
-        else if ((image_settings & CV_16F) == CV_16F) {
+        else if ((image_settings & mask) == CV_16F) {
             crate_color_image_3d_template<pixel_values_type, cv::Vec3w>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
-        }
-        else if ((image_settings & CV_8U) == CV_8U) {   // it has to be on the bottom since it is special case CV_8U == 0
-            crate_color_image_3d_template<pixel_values_type, cv::Vec3b>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
         }
         else    {
             throw std::runtime_error("Unsupported image type");
