@@ -58,7 +58,7 @@ void StackerMedian::calculate_stacked_photo()  {
         pool.wait_for_tasks();
 
         auto submit_median_calculation = [this, y_min, y_max](int i_color, int y_final_array, int y_values_to_stack_array ) {
-            calculate_median_at_line(y_final_array, y_values_to_stack_array, i_color);
+            process_line(y_final_array, y_values_to_stack_array, i_color);
         };
 
         for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
@@ -130,7 +130,7 @@ int StackerMedian::get_height_range_limit() const {
 };
 
 
-void StackerMedian::calculate_median_at_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color)    {
+void StackerMedian::process_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color)    {
     const int n_files = m_files_to_stack.size();
     for (int i_width = 0; i_width < m_width; i_width++) {
         const unsigned long long int pixel_index = m_width*y_index_final_array + i_width;

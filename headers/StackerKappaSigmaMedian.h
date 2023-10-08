@@ -3,9 +3,9 @@
 #include "../headers/StackerMedian.h"
 
 namespace AstroPhotoStacker {
-    class StackerKappaSigmaClipping : public StackerMedian {
+    class StackerKappaSigmaMedian : public StackerMedian {
     public:
-            StackerKappaSigmaClipping(int number_of_colors, int width, int height);
+            StackerKappaSigmaMedian(int number_of_colors, int width, int height);
 
             void set_kappa_and_n_iterations(float kappa, int n_iterations);
 
