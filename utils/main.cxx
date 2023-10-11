@@ -31,6 +31,7 @@ int main(int argc, const char **argv) {
         cout << "Flat frame file: " << flat_frame_file << "\n";
         cout << "Memory limit: " << memory_limit << "\n";
         cout << "Number of CPU threads: " << n_cpu << "\n";
+        cout << "Stacking algorithm: " << stacker_type << "\n";
         cout << "\n";
 
         PhotoAlignmentHandler photo_alignment_handler;

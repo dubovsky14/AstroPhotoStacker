@@ -7,7 +7,9 @@ namespace AstroPhotoStacker {
     public:
             StackerKappaSigmaClipping(int number_of_colors, int width, int height);
 
-            void set_kappa_and_n_iterations(float kappa, int n_iterations);
+            void set_kappa(float kappa);
+
+            void set_number_of_iterations(int n_iterations);
 
     protected:
             virtual void process_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color) override;

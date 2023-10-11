@@ -10,8 +10,11 @@ StackerKappaSigmaClipping::StackerKappaSigmaClipping(int number_of_colors, int w
     StackerMedian(number_of_colors, width, height)   {
 };
 
-void StackerKappaSigmaClipping::set_kappa_and_n_iterations(float kappa, int n_iterations) {
+void StackerKappaSigmaClipping::set_kappa(float kappa) {
     m_kappa = kappa;
+}
+
+void StackerKappaSigmaClipping::set_number_of_iterations(int n_iterations) {
     m_n_iterations = n_iterations;
 }
 
