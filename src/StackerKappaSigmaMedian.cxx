@@ -7,16 +7,9 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 StackerKappaSigmaMedian::StackerKappaSigmaMedian(int number_of_colors, int width, int height) :
-    StackerMedian(number_of_colors, width, height)   {
+    StackerKappaSigmaBase(number_of_colors, width, height)   {
 };
 
-void StackerKappaSigmaMedian::set_kappa(float kappa) {
-    m_kappa = kappa;
-}
-
-void StackerKappaSigmaMedian::set_number_of_iterations(int n_iterations) {
-    m_n_iterations = n_iterations;
-}
 void StackerKappaSigmaMedian::process_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color)    {
     const int n_files = m_files_to_stack.size();
     for (int i_width = 0; i_width < m_width; i_width++) {

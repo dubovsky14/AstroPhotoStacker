@@ -7,16 +7,8 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 StackerKappaSigmaClipping::StackerKappaSigmaClipping(int number_of_colors, int width, int height) :
-    StackerMedian(number_of_colors, width, height)   {
+    StackerKappaSigmaBase(number_of_colors, width, height)   {
 };
-
-void StackerKappaSigmaClipping::set_kappa(float kappa) {
-    m_kappa = kappa;
-}
-
-void StackerKappaSigmaClipping::set_number_of_iterations(int n_iterations) {
-    m_n_iterations = n_iterations;
-}
 
 void StackerKappaSigmaClipping::process_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color)    {
     const int n_files = m_files_to_stack.size();
