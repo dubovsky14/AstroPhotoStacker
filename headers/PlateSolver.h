@@ -8,6 +8,8 @@
 namespace AstroPhotoStacker {
     class PlateSolver   {
         public:
+            PlateSolver() = delete;
+
             PlateSolver(const KDTree *kdtree,
                         const std::vector<std::tuple<float,float,int> > *reference_stars,
                         unsigned int reference_photo_width, unsigned int reference_photo_height);

@@ -11,6 +11,9 @@
 namespace AstroPhotoStacker {
     class StackerBase   {
         public:
+            StackerBase()                   = delete;
+            StackerBase(const StackerBase&) = delete;
+
             StackerBase(int number_of_colors, int width, int height);
 
             void set_memory_usage_limit(int memory_usage_limit_in_mb);

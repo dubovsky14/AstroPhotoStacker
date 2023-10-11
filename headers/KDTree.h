@@ -37,6 +37,8 @@ namespace AstroPhotoStacker   {
      */
     class KDTree    {
         public:
+            KDTree() = delete;
+
             /**
              * @brief Construct a new KDTree object
              *

@@ -9,6 +9,8 @@
 namespace AstroPhotoStacker {
     class InputArgumentsParser {
         public:
+            InputArgumentsParser() = delete;
+
             InputArgumentsParser(int argc, const char **argv);
 
             template<typename return_type>

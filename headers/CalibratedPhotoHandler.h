@@ -10,6 +10,8 @@
 namespace AstroPhotoStacker {
     class CalibratedPhotoHandler {
         public:
+            CalibratedPhotoHandler() = delete;
+
             CalibratedPhotoHandler(const std::string &raw_file_address);
 
             void define_alignment(float shift_x, float shift_y, float rotation_center_x, float rotation_center_y, float rotation);

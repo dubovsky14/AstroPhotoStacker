@@ -8,6 +8,8 @@
 namespace AstroPhotoStacker {
     class FlatFrameHandler  {
         public:
+            FlatFrameHandler() = delete;
+
             FlatFrameHandler(const std::string &input_file);
 
             FlatFrameHandler(const FlatFrameHandler &other);

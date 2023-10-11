@@ -5,6 +5,7 @@
 namespace AstroPhotoStacker {
     class GeometricTransformer {
         public:
+            GeometricTransformer() = delete;
             GeometricTransformer(float shift_x, float shift_y, float rotation_center_x, float rotation_center_y, float rotation) :
                 m_shift_x(shift_x),
                 m_shift_y(shift_y),

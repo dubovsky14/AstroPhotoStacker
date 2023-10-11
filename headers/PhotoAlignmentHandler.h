@@ -9,6 +9,8 @@
 namespace   AstroPhotoStacker   {
     class PhotoAlignmentHandler    {
         public:
+            PhotoAlignmentHandler() = default;
+
             void read_from_text_file(const std::string &alignment_file_address);
 
             void save_to_text_file(const std::string &alignment_file_address);

@@ -12,6 +12,9 @@
 namespace AstroPhotoStacker   {
     class ReferencePhotoHandler {
         public:
+            ReferencePhotoHandler()                             = delete;
+            ReferencePhotoHandler(const ReferencePhotoHandler&) = delete;
+
             ReferencePhotoHandler(const std::string &raw_file_address, float threshold_fraction = 0.0005);
 
             template<typename pixel_brightness_type = unsigned short>
