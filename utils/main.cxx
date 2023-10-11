@@ -13,6 +13,39 @@ using namespace std;
 using namespace cv;
 using namespace AstroPhotoStacker;
 
+void configure_stacker_with_optional_arguments(StackerBase *stacker, const InputArgumentsParser &input_parser, bool print_info = true)  {
+    const string flat_frame_file    = input_parser.get_optional_argument<string>("flat_frame", "");
+    if (flat_frame_file != "")  {
+        stacker->add_flat_frame(flat_frame_file);
+        if (print_info) cout << "Flat frame file: " << flat_frame_file << "\n";
+    }
+
+    // StackerMean does not support memory and n_cpu configuration
+    if (dynamic_cast<StackerMeanValue*>(stacker) == nullptr) {
+        const unsigned int memory_limit = input_parser.get_optional_argument<unsigned int>("memory_limit", 16000);
+        const unsigned int n_cpu        = input_parser.get_optional_argument<unsigned int>("n_cpu", 8);
+
+        stacker->set_memory_usage_limit(memory_limit);
+        stacker->set_number_of_cpu_threads(n_cpu);
+
+        if (print_info) cout << "Memory limit: " << memory_limit << "\n";
+        if (print_info) cout << "Number of CPU threads: " << n_cpu << "\n";
+    }
+
+    StackerKappaSigmaBase *stacker_kappa_sigma = dynamic_cast<StackerKappaSigmaBase*>(stacker);
+    if (stacker_kappa_sigma != nullptr) {
+        const float kappa = input_parser.get_optional_argument<float>("kappa", 3.0);
+        const int n_iterations = input_parser.get_optional_argument<int>("n_iterations", 3);
+
+        stacker_kappa_sigma->set_kappa(kappa);
+        stacker_kappa_sigma->set_number_of_iterations(n_iterations);
+
+        if (print_info) cout << "Kappa: " << kappa << "\n";
+        if (print_info) cout << "Number of iterations: " << n_iterations << "\n";
+    }
+    cout << "\n";
+}
+
 int main(int argc, const char **argv) {
     try {
         InputArgumentsParser input_arguments_parser(argc, argv);
@@ -20,19 +53,11 @@ int main(int argc, const char **argv) {
         const string alignment_file     = input_arguments_parser.get_argument<string>("alignment_file");
         const string output_file        = input_arguments_parser.get_argument<string>("output");
         const string stacker_type       = input_arguments_parser.get_optional_argument<string>("stacker_type", "kappa_sigma_clipping");
-        const string flat_frame_file    = input_arguments_parser.get_optional_argument<string>("flat_frame", "");
-
-        const unsigned int memory_limit = input_arguments_parser.get_optional_argument<unsigned int>("memory_limit", 16000);
-        const unsigned int n_cpu        = input_arguments_parser.get_optional_argument<unsigned int>("n_cpu", 8);
 
         cout << "\n";
         cout << "Alignment file: " << alignment_file << "\n";
         cout << "Output file: " << output_file << "\n";
-        cout << "Flat frame file: " << flat_frame_file << "\n";
-        cout << "Memory limit: " << memory_limit << "\n";
-        cout << "Number of CPU threads: " << n_cpu << "\n";
         cout << "Stacking algorithm: " << stacker_type << "\n";
-        cout << "\n";
 
         PhotoAlignmentHandler photo_alignment_handler;
         photo_alignment_handler.read_from_text_file(alignment_file);
@@ -45,12 +70,7 @@ int main(int argc, const char **argv) {
         get_photo_resolution(input_files[0], &width, &height);
 
         unique_ptr<StackerBase> stacker = create_stacker(stacker_type, 3, width, height);
-        stacker->set_memory_usage_limit(memory_limit);
-        stacker->set_number_of_cpu_threads(n_cpu);
-        stacker->add_alignment_text_file(alignment_file);
-        if (flat_frame_file != "")  {
-            stacker->add_flat_frame(flat_frame_file);
-        }
+        configure_stacker_with_optional_arguments(stacker.get(), input_arguments_parser);
 
         for (const string &file : input_files) {
             stacker->add_photo(file);
