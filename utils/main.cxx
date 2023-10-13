@@ -68,8 +68,10 @@ int main(int argc, const char **argv) {
 
         int width, height;
         get_photo_resolution(input_files[0], &width, &height);
+        cout << "Photo resolution: " << width << "x" << height << "\n";
 
         unique_ptr<StackerBase> stacker = create_stacker(stacker_type, 3, width, height);
+        stacker->add_alignment_text_file(alignment_file);
         configure_stacker_with_optional_arguments(stacker.get(), input_arguments_parser);
 
         for (const string &file : input_files) {

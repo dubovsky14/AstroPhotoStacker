@@ -17,10 +17,14 @@ add_library(AstroPhotoStackerLib SHARED ${SOURCES})
 # add the executable
 add_executable(AstroPhotoStacker utils/main.cxx)
 add_executable(produce_alignment_file utils/produce_alignment_file.cxx)
+add_executable(convert_raw_to_jpg utils/convert_raw_to_jpg.cxx)
 
 add_dependencies(AstroPhotoStacker AstroPhotoStackerLib)
 add_dependencies(produce_alignment_file AstroPhotoStackerLib)
+add_dependencies(convert_raw_to_jpg AstroPhotoStackerLib)
+
 
 # link the libraw library
 target_link_libraries(AstroPhotoStacker AstroPhotoStackerLib -lraw ${OpenCV_LIBS})
 target_link_libraries(produce_alignment_file AstroPhotoStackerLib -lraw ${OpenCV_LIBS})
+target_link_libraries(convert_raw_to_jpg AstroPhotoStackerLib -lraw ${OpenCV_LIBS})
