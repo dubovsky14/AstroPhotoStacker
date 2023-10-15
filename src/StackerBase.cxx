@@ -51,3 +51,8 @@ void StackerBase::save_stacked_photo(const string &file_address, int image_optio
 
     crate_color_image(&data_for_plotting.at(0)[0], &data_for_plotting.at(1)[0], &data_for_plotting.at(2)[0] , m_width, m_height, file_address, image_options);
 };
+
+void StackerBase::stretch_stacked_photo(StretchingType stretching_type, unsigned int n_bits)  {
+    const double max_value = pow(2, n_bits) - 1;
+    stretch_image(&m_stacked_image, max_value, stretching_type);
+};

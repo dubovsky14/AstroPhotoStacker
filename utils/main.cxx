@@ -78,6 +78,8 @@ int main(int argc, const char **argv) {
             stacker->add_photo(file);
         }
         stacker->calculate_stacked_photo();
+        stacker->stretch_stacked_photo(StretchingType::logarithmic);
+        stacker->stretch_stacked_photo(StretchingType::quadratic);
         stacker->save_stacked_photo(output_file, CV_16UC3);
 
         return 0;

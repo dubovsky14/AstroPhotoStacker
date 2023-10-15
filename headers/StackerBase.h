@@ -2,6 +2,8 @@
 
 #include "../headers/FlatFrameHandler.h"
 #include "../headers/PhotoAlignmentHandler.h"
+#include "../headers/ImageStretching.h"
+
 
 #include <memory>
 #include <string>
@@ -29,6 +31,8 @@ namespace AstroPhotoStacker {
             virtual void set_number_of_cpu_threads(unsigned int n_cpu) = 0;
 
             virtual void calculate_stacked_photo() = 0;
+
+            virtual void stretch_stacked_photo(StretchingType stretching_type, unsigned int n_bits = 14);
 
         protected:
             int m_number_of_colors;
