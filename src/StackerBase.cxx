@@ -53,6 +53,16 @@ void StackerBase::save_stacked_photo(const string &file_address, int image_optio
 };
 
 void StackerBase::stretch_stacked_photo(StretchingType stretching_type, unsigned int n_bits)  {
-    const double max_value = pow(2, n_bits) - 1;
-    stretch_image(&m_stacked_image, max_value, stretching_type);
+    if (m_image_stretcher == nullptr) {
+        m_image_stretcher = make_unique<ImageStretcher>(&m_stacked_image);
+    }
+    m_image_stretcher->set_max_value( pow(2, n_bits) - 1. );
+    m_image_stretcher->stretch_image(stretching_type);
+};
+
+void StackerBase::apply_black_point(double black_pixels_fraction)  {
+    if (m_image_stretcher == nullptr) {
+        m_image_stretcher = make_unique<ImageStretcher>(&m_stacked_image);
+    }
+    m_image_stretcher->apply_black_point(black_pixels_fraction);
 };

@@ -5,11 +5,32 @@
 
 
 namespace AstroPhotoStacker {
-    enum class StretchingType{logarithmic, quadratic, linear, linear_and_logarithmic};
+    enum class StretchingType{logarithmic, quadratic, linear};
 
-    double get_scale_factor(double pixel_value, double max_value, StretchingType stretching_type);
+    class ImageStretcher {
+        public:
+            ImageStretcher(std::vector<std::vector<double>> *image) : m_image(image) {};
 
-    void stretch_image(std::vector<std::vector<double> > *image, double max_value, StretchingType stretching_type, bool keep_rgb_ratio = true);
+            void set_max_value(double max_value)            {m_max_value = max_value;};
+
+            void stretch_image(StretchingType stretching_type);
+
+            void apply_black_point(double black_pixels_fraction);
+
+        private:
+            double get_scale_factor(double pixel_value, StretchingType stretching_type);
+            double get_rgb_brightness(unsigned int i_pixel);
+
+            std::vector<std::vector<double>> *m_image   = nullptr;
+            double m_max_value                          = 1 << 14;
+
+            void initialize_linear_to_logarithmic_variables();
+            std::vector<double> m_integrated_histogram;
+            unsigned int    m_linear_to_logarithmic_transition_point_x = 0;
+            double          m_linear_to_logarithmic_transition_point_y = 0;
+
+
+    };
 
     template <typename input_array_type>
     std::vector<unsigned int> get_histogram_from_monochrome_image(const input_array_type *input_array, unsigned int array_size, int output_size)  {
@@ -24,6 +45,8 @@ namespace AstroPhotoStacker {
 
     // fraction of events with value less than or equal to the given value
     std::vector<double> get_integrated_histogram_from_rgb_image(const std::vector<std::vector<double>> &image, int output_size);
+
+    unsigned int get_brightness_from_fraction(const std::vector<std::vector<double>> &image, double fraction);
 
 }
 

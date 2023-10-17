@@ -34,6 +34,8 @@ namespace AstroPhotoStacker {
 
             virtual void stretch_stacked_photo(StretchingType stretching_type, unsigned int n_bits = 14);
 
+            virtual void apply_black_point(double black_pixels_fraction);
+
         protected:
             int m_number_of_colors;
             int m_width;
@@ -49,5 +51,6 @@ namespace AstroPhotoStacker {
             std::vector<std::vector<double> > m_stacked_image;
             std::unique_ptr<FlatFrameHandler> m_flat_frame_handler              = nullptr;
             std::unique_ptr<PhotoAlignmentHandler> m_photo_alignment_handler    = nullptr;
+            std::unique_ptr<ImageStretcher> m_image_stretcher                   = nullptr;
     };
 }
