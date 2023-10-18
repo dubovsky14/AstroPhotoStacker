@@ -119,7 +119,7 @@ namespace AstroPhotoStacker {
                 }
 
                 // usually there are 2 green pixels
-                this_pixel_rgb[1] /= 3;
+                this_pixel_rgb[1] /= 2;
 
                 // save the result
                 for (int color = 0; color < 3; color++) {

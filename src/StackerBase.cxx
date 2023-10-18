@@ -32,24 +32,32 @@ void StackerBase::add_flat_frame(const string &file_address) {
 
 void StackerBase::save_stacked_photo(const string &file_address, int image_options) const {
     auto data_for_plotting = m_stacked_image;
-    double max_value = 0;
-    for (int color = 0; color < m_number_of_colors; color++) {
-        for (int index = 0; index < m_width*m_height; index++) {
-            if (data_for_plotting[color][index] > max_value) {
-                max_value = data_for_plotting[color][index];
-            }
-        }
-    }
 
-    const double scale_factor = 65534 / max_value;
 
     for (int color = 0; color < m_number_of_colors; color++) {
+        const double max_value = *max_element(data_for_plotting[color].begin(), data_for_plotting[color].end());
+        const double scale_factor = 65534 / max_value;
         for (int index = 0; index < m_width*m_height; index++) {
             data_for_plotting[color][index] *= scale_factor;
         }
     }
 
-    crate_color_image(&data_for_plotting.at(0)[0], &data_for_plotting.at(1)[0], &data_for_plotting.at(2)[0] , m_width, m_height, file_address, image_options);
+    const bool is_color_image = m_number_of_colors == 3;
+
+    if (is_color_image) {
+        // scale down green (we have 2 green channels)
+        std::transform(data_for_plotting[1].begin(), data_for_plotting[1].end(), data_for_plotting[1].begin(), [](double value) { return value / 2; });
+
+        // for some reason, the max of blue and red has to be 32767, not 65534
+        std::transform(data_for_plotting[0].begin(), data_for_plotting[0].end(), data_for_plotting[0].begin(), [](double value) { return std::min<double>(value, 32767); });
+        std::transform(data_for_plotting[2].begin(), data_for_plotting[2].end(), data_for_plotting[2].begin(), [](double value) { return std::min<double>(value, 32767); });
+
+        crate_color_image(&data_for_plotting.at(0)[0], &data_for_plotting.at(1)[0], &data_for_plotting.at(2)[0] , m_width, m_height, file_address, image_options);
+    }
+    else {
+        create_gray_scale_image(&data_for_plotting.at(0)[0], m_width, m_height, file_address, image_options);
+    }
+
 };
 
 void StackerBase::stretch_stacked_photo(StretchingType stretching_type, unsigned int n_bits)  {

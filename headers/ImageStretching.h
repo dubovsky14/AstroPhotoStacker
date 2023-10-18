@@ -5,7 +5,7 @@
 
 
 namespace AstroPhotoStacker {
-    enum class StretchingType{logarithmic, quadratic, linear};
+    enum class StretchingType{logarithmic, quadratic, linear, lin_log_sigmoid};
 
     class ImageStretcher {
         public:
@@ -24,7 +24,7 @@ namespace AstroPhotoStacker {
             std::vector<std::vector<double>> *m_image   = nullptr;
             double m_max_value                          = 1 << 14;
 
-            void initialize_linear_to_logarithmic_variables();
+            void initialize_ling_log_sigmoid_variables();
             std::vector<double> m_integrated_histogram;
             unsigned int    m_linear_to_logarithmic_transition_point_x = 0;
             double          m_linear_to_logarithmic_transition_point_y = 0;
@@ -47,6 +47,8 @@ namespace AstroPhotoStacker {
     std::vector<double> get_integrated_histogram_from_rgb_image(const std::vector<std::vector<double>> &image, int output_size);
 
     unsigned int get_brightness_from_fraction(const std::vector<std::vector<double>> &image, double fraction);
+
+    float sigmoid(float x, float center, float width);
 
 }
 

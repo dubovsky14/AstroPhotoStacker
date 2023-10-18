@@ -78,7 +78,9 @@ int main(int argc, const char **argv) {
             stacker->add_photo(file);
         }
         stacker->calculate_stacked_photo();
+        //stacker->stretch_stacked_photo(StretchingType::lin_log_sigmoid, 14);
         //stacker->stretch_stacked_photo(StretchingType::logarithmic, 14);
+        //stacker->stretch_stacked_photo(StretchingType::linear, 16);
         //stacker->stretch_stacked_photo(StretchingType::quadratic, 14);
         //stacker->apply_black_point(0.02);
         stacker->save_stacked_photo(output_file, CV_16UC3);
