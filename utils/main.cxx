@@ -2,6 +2,7 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/StackerFactory.h"
 #include "../headers/InputArgumentsParser.h"
+#include "../headers/PhotoRanker.h"
 
 #include <string>
 #include <iostream>
@@ -48,6 +49,14 @@ void configure_stacker_with_optional_arguments(StackerBase *stacker, const Input
 
 int main(int argc, const char **argv) {
     try {
+        //PhotoRanker photo_ranker(argv[1]);
+        //photo_ranker.rank_all_files();
+        //const vector<tuple<string,float>> ranking = photo_ranker.get_ranking();
+        //for (const auto &file : ranking) {
+        //    cout << get<0>(file) << " " << get<1>(file) << "\n";
+        //}
+        //return 0;
+
         InputArgumentsParser input_arguments_parser(argc, argv);
 
         const string alignment_file     = input_arguments_parser.get_argument<string>("alignment_file");
