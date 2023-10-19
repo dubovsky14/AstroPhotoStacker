@@ -16,7 +16,7 @@ StackerMedian::StackerMedian(int number_of_colors, int width, int height) :
 };
 
 void StackerMedian::calculate_stacked_photo()  {
-    const int n_files = m_files_to_stack.size();
+    const long long int n_files = m_files_to_stack.size();
     const int height_range = get_height_range_limit();
 
     if (height_range == 0) {
@@ -36,7 +36,7 @@ void StackerMedian::calculate_stacked_photo()  {
         cout << "Stacking slice " << i_slice << " of " << n_slices << endl;
         // set all values to -1
         for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
-            for (int i_pixel = 0; i_pixel < m_width*height_range*n_files; i_pixel++) {
+            for (long long i_pixel = 0; i_pixel < m_width*height_range*n_files; i_pixel++) {
                 m_values_to_stack[i_color][i_pixel] = -1;
             }
         }
@@ -92,7 +92,7 @@ void StackerMedian::set_number_of_cpu_threads(unsigned int n_cpu) {
 
 void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y_max)  {
     const string &file_address = m_files_to_stack[file_index];
-    const unsigned int n_files = m_files_to_stack.size();
+    const unsigned long long int n_files = m_files_to_stack.size();
     float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
     m_photo_alignment_handler->get_alignment_parameters(file_address, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
 
@@ -120,7 +120,7 @@ void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y
 
 int StackerMedian::get_height_range_limit() const {
     int height_range = m_height;
-    const int n_files = m_files_to_stack.size();
+    const long long int n_files = m_files_to_stack.size();
     if (m_memory_usage_limit_in_mb > 0) {
         const unsigned long long int memory_usage_limit = m_memory_usage_limit_in_mb*1024ULL*1024ULL - 10ULL*m_width*m_height;
         const unsigned long long int memory_usage_per_line = m_number_of_colors*m_width*n_files*sizeof(unsigned short);
@@ -131,7 +131,7 @@ int StackerMedian::get_height_range_limit() const {
 
 
 void StackerMedian::process_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color)    {
-    const int n_files = m_files_to_stack.size();
+    const long long int n_files = m_files_to_stack.size();
     for (int i_width = 0; i_width < m_width; i_width++) {
         const unsigned long long int pixel_index = m_width*y_index_final_array + i_width;
         const unsigned long long int pixel_index_stacking_array = m_width*y_index_values_to_stack_array*n_files + i_width*n_files;
