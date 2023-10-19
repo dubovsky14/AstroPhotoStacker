@@ -35,6 +35,7 @@ namespace   AstroPhotoStacker   {
             std::vector<float> m_rotation_center_x;
             std::vector<float> m_rotation_center_y;
             std::vector<float> m_rotation;
+            std::vector<float> m_ranking;
 
             unsigned int m_n_cpu = 1;
 

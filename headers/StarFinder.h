@@ -65,14 +65,6 @@ namespace AstroPhotoStacker {
         std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters(brightness, width, height, threshold);
 
         auto cluster_shifts = get_cluster_smearing_vector(clusters);
-        for (unsigned int i = 0 ; i < cluster_shifts.size(); i++) {
-            if (clusters[i].size() < 30) continue;
-            const auto &shift = cluster_shifts[i];
-            float shift_size = std::sqrt(std::get<0>(shift)*std::get<0>(shift) + std::get<1>(shift)*std::get<1>(shift));
-            std::cout << std::get<0>(shift) << "\t\t" << std::get<1>(shift) << "\n";
-        }
-        std::cout << "\n\n\n\n";
-
         for (auto cluster : clusters)   {
             auto [x_mean, y_mean] = get_center_of_cluster(cluster);
             const int n_pixels = cluster.size();

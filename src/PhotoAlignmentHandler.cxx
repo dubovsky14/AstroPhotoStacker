@@ -1,5 +1,6 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/Common.h"
+#include "../headers/PhotoRanker.h"
 #include "../headers/thread_pool.h"
 
 #include <fstream>
@@ -25,7 +26,7 @@ void PhotoAlignmentHandler::read_from_text_file(const std::string &alignment_fil
             continue;
         }
 
-        if (elements.size() != 6) {
+        if (elements.size() != 7) {
             throw runtime_error("Invalid alignment file. Could not read line: " + line);
         }
 
@@ -39,21 +40,29 @@ void PhotoAlignmentHandler::read_from_text_file(const std::string &alignment_fil
         m_rotation_center_x.push_back(stof(elements[3]));
         m_rotation_center_y.push_back(stof(elements[4]));
         m_rotation.push_back(stof(elements[5]));
+        m_ranking.push_back(stof(elements[6]));
     }
     alignment_file.close();
 }
 
 void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_address)   {
+    vector<unsigned int> sorted_indices;
+    for (unsigned int i = 0; i < m_ranking.size(); i++) {
+        sorted_indices.push_back(i);
+    }
+    sort(sorted_indices.begin(), sorted_indices.end(), [this](unsigned int i1, unsigned int i2) {return m_ranking[i1] < m_ranking[i2];});
+
     ofstream alignment_file(alignment_file_address);
     alignment_file << c_reference_file_header << " | " << m_reference_file_address << endl;
-    alignment_file << "# File address | shift_x | shift_y | rotation_center_x | rotation_center_y | rotation" << endl;
-    for (unsigned int i = 0; i < m_file_addresses.size(); i++) {
+    alignment_file << "# File address | shift_x | shift_y | rotation_center_x | rotation_center_y | rotation | ranking" << endl;
+    for (unsigned int i : sorted_indices) {
         alignment_file  << m_file_addresses[i]
                         << " | " << m_shift_x[i]
                         << " | " << m_shift_y[i]
                         << " | " << m_rotation_center_x[i]
                         << " | " << m_rotation_center_y[i]
-                        << " | " << m_rotation[i] << endl;
+                        << " | " << m_rotation[i]
+                        << " | " << m_ranking[i] << endl;
     }
     alignment_file.close();
 };
@@ -69,6 +78,7 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
     m_rotation_center_x.resize(n_files);
     m_rotation_center_y.resize(n_files);
     m_rotation.resize(n_files);
+    m_ranking.resize(n_files);
 
     auto align_file_multicore = [this](const std::string &file_name, unsigned int file_index) {
         float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
@@ -79,7 +89,9 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
             m_rotation_center_x[file_index] = rot_center_x;
             m_rotation_center_y[file_index] = rot_center_y;
             m_rotation[file_index] = rotation;
+            m_ranking[file_index] = PhotoRanker::calculate_file_ranking(file_name);
         }
+
     };
 
     thread_pool pool(m_n_cpu);
