@@ -5,7 +5,7 @@
 
 
 namespace AstroPhotoStacker {
-    enum class StretchingType{logarithmic, quadratic, linear, lin_log_sigmoid};
+    enum class StretchingType{logarithmic, quadratic, linear, lin_log_sigmoid, sqrt, sqrt_and_lin};
 
     class ImageStretcher {
         public:

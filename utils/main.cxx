@@ -61,7 +61,7 @@ int main(int argc, const char **argv) {
 
         const string alignment_file     = input_arguments_parser.get_argument<string>("alignment_file");
         const string output_file        = input_arguments_parser.get_argument<string>("output");
-        const string stacker_type       = input_arguments_parser.get_optional_argument<string>("stacker_type", "kappa_sigma_clipping");
+        const string stacker_type       = input_arguments_parser.get_optional_argument<string>("stacker_type", "kappa_sigma_median");
 
         const int n_files              = input_arguments_parser.get_optional_argument<int>("n_files", -1);
         const float fraction_of_files  = input_arguments_parser.get_optional_argument<float>("fraction_of_files", -1.0);
@@ -104,7 +104,7 @@ int main(int argc, const char **argv) {
         }
         stacker->calculate_stacked_photo();
         //stacker->stretch_stacked_photo(StretchingType::lin_log_sigmoid, 14);
-        //stacker->stretch_stacked_photo(StretchingType::logarithmic, 14);
+        //stacker->stretch_stacked_photo(StretchingType::sqrt_and_lin, 14);
         //stacker->stretch_stacked_photo(StretchingType::linear, 16);
         //stacker->stretch_stacked_photo(StretchingType::quadratic, 14);
         //stacker->apply_black_point(0.02);

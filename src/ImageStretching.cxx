@@ -14,6 +14,14 @@ double ImageStretcher::get_scale_factor(double pixel_value, StretchingType stret
         return (m_max_value/pixel_value)*std::pow(pixel_value, 2) / std::pow(m_max_value, 2);
     } else if (stretching_type == StretchingType::linear) {
         return 1.;
+    } else if (stretching_type == StretchingType::sqrt) {
+        return (m_max_value/pixel_value)*std::sqrt(pixel_value) / std::sqrt(m_max_value);
+    }
+    else if (stretching_type == StretchingType::sqrt_and_lin) {
+        const double sqrt_sf = get_scale_factor(pixel_value, StretchingType::sqrt);
+        const double lin_sf = get_scale_factor(pixel_value, StretchingType::linear);
+        const double wight_linear = pixel_value / m_max_value;
+        return wight_linear*lin_sf + (1 - wight_linear)*sqrt_sf;
     }
     else if (stretching_type == StretchingType::lin_log_sigmoid) {
         const double sigmoid_value = sigmoid(pixel_value, m_linear_to_logarithmic_transition_point_x, m_linear_to_logarithmic_transition_point_x*0.3);
