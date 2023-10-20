@@ -93,8 +93,13 @@ void StackerMedian::set_number_of_cpu_threads(unsigned int n_cpu) {
 void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y_max)  {
     const string &file_address = m_files_to_stack[file_index];
     const unsigned long long int n_files = m_files_to_stack.size();
-    float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
-    m_photo_alignment_handler->get_alignment_parameters(file_address, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation);
+
+    const FileAlignmentInformation alignment_info = m_photo_alignment_handler->get_alignment_parameters(file_address);
+    const float shift_x         = alignment_info.shift_x;
+    const float shift_y         = alignment_info.shift_y;
+    const float rot_center_x    = alignment_info.rotation_center_x;
+    const float rot_center_y    = alignment_info.rotation_center_y;
+    const float rotation        = alignment_info.rotation;
 
     CalibratedPhotoHandler calibrated_photo(file_address);
     calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
