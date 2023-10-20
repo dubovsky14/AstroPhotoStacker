@@ -7,9 +7,15 @@
 #include <iostream>
 #include <algorithm>
 #include <climits>
-
+#include<cmath>
 
 namespace AstroPhotoStacker {
+
+    // for each cluster calculate the difference between maximum and minimum radius
+    std::vector<std::tuple<float,float>> get_cluster_smearing_vector(const std::vector< std::vector<std::tuple<int, int> > > &clusters);
+
+    std::tuple<float,float> get_center_of_cluster(const std::vector<std::tuple<int,int>> &cluster);
+
     template<typename pixel_type>
     void fill_cluster(  const pixel_type *brightness, int width, int height,
                         int x_pos, int y_pos,
@@ -57,15 +63,10 @@ namespace AstroPhotoStacker {
     std::vector<std::tuple<float, float,int>> get_stars(const pixel_type *brightness, int width, int height, pixel_type threshold) {
         std::vector<std::tuple<float, float, int>> stars;
         std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters(brightness, width, height, threshold);
+
+        auto cluster_shifts = get_cluster_smearing_vector(clusters);
         for (auto cluster : clusters)   {
-            float x_sum = 0;
-            float y_sum = 0;
-            for (auto pixel : cluster)  {
-                x_sum += std::get<0>(pixel);
-                y_sum += std::get<1>(pixel);
-            }
-            const float x_mean = x_sum / cluster.size();
-            const float y_mean = y_sum / cluster.size();
+            auto [x_mean, y_mean] = get_center_of_cluster(cluster);
             const int n_pixels = cluster.size();
             stars.push_back(std::make_tuple(x_mean, y_mean, n_pixels));
         }
@@ -98,4 +99,30 @@ namespace AstroPhotoStacker {
     void sort_stars_by_size(std::vector<std::tuple<float, float,int> > *stars);
 
     void keep_only_stars_above_size(std::vector<std::tuple<float, float,int> > *stars, int min_size);
+
+    bool is_border_pixel(const std::tuple<int,int> &pixel, const std::vector<std::tuple<int,int> > &cluster);
+
+    float get_distance_squared(const std::tuple<float,float> &vec);
+}
+
+namespace MyTupleArithmetics {
+    template<typename T1, typename T2>
+    auto operator+(const std::tuple<T1,T1> &a, const std::tuple<T2,T2> &b)  {
+        return std::make_tuple(std::get<0>(a) + std::get<0>(b), std::get<1>(a) + std::get<1>(b));
+    };
+
+    template<typename T1, typename T2>
+    auto operator-(const std::tuple<T1,T1> &a, const std::tuple<T2,T2> &b)  {
+        return std::make_tuple(std::get<0>(a) - std::get<0>(b), std::get<1>(a) - std::get<1>(b));
+    };
+
+    template<typename T, typename NumberType>
+    std::tuple<T,T> operator*(const std::tuple<T,T> &a, NumberType b)  {
+        return std::make_tuple(std::get<0>(a) * b, std::get<1>(a) * b);
+    };
+
+    template<typename T, typename NumberType>
+    std::tuple<T,T> operator*(NumberType b, const std::tuple<T,T> &a)  {
+        return std::make_tuple(std::get<0>(a) * b, std::get<1>(a) * b);
+    };
 }

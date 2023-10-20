@@ -11,7 +11,7 @@ StackerKappaSigmaMedian::StackerKappaSigmaMedian(int number_of_colors, int width
 };
 
 void StackerKappaSigmaMedian::process_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color)    {
-    const int n_files = m_files_to_stack.size();
+    const long long int n_files = m_files_to_stack.size();
     for (int i_width = 0; i_width < m_width; i_width++) {
         const unsigned long long int pixel_index = m_width*y_index_final_array + i_width;
         const unsigned long long int pixel_index_stacking_array = m_width*y_index_values_to_stack_array*n_files + i_width*n_files;

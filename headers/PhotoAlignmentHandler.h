@@ -7,6 +7,15 @@
 #include <vector>
 
 namespace   AstroPhotoStacker   {
+    struct FileAlignmentInformation    {
+        std::string file_address;
+        float shift_x;
+        float shift_y;
+        float rotation_center_x;
+        float rotation_center_y;
+        float rotation;
+        float ranking;
+    };
     class PhotoAlignmentHandler    {
         public:
             PhotoAlignmentHandler() = default;
@@ -23,18 +32,17 @@ namespace   AstroPhotoStacker   {
 
             void set_number_of_cpu_threads(unsigned int n_cpu)  { m_n_cpu = n_cpu; }
 
-            void get_alignment_parameters(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const;
+            FileAlignmentInformation get_alignment_parameters(const std::string &file_address) const;
 
-            std::vector<std::string> get_file_addresses() const { return m_file_addresses; };
+            std::vector<std::string> get_file_addresses() const;
+
+            void limit_number_of_files(int n_files);
+
+            void limit_fraction_of_files(float fraction);
 
         private:
             std::string m_reference_file_address = "";
-            std::vector<std::string> m_file_addresses;
-            std::vector<float> m_shift_x;
-            std::vector<float> m_shift_y;
-            std::vector<float> m_rotation_center_x;
-            std::vector<float> m_rotation_center_y;
-            std::vector<float> m_rotation;
+            std::vector<FileAlignmentInformation>   m_alignment_information_vector;
 
             unsigned int m_n_cpu = 1;
 

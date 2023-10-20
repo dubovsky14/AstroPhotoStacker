@@ -2,6 +2,7 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/StackerFactory.h"
 #include "../headers/InputArgumentsParser.h"
+#include "../headers/PhotoRanker.h"
 
 #include <string>
 #include <iostream>
@@ -48,11 +49,27 @@ void configure_stacker_with_optional_arguments(StackerBase *stacker, const Input
 
 int main(int argc, const char **argv) {
     try {
+        //PhotoRanker photo_ranker(argv[1]);
+        //photo_ranker.rank_all_files();
+        //const vector<tuple<string,float>> ranking = photo_ranker.get_ranking();
+        //for (const auto &file : ranking) {
+        //    cout << get<0>(file) << " " << get<1>(file) << "\n";
+        //}
+        //return 0;
+
         InputArgumentsParser input_arguments_parser(argc, argv);
 
         const string alignment_file     = input_arguments_parser.get_argument<string>("alignment_file");
         const string output_file        = input_arguments_parser.get_argument<string>("output");
         const string stacker_type       = input_arguments_parser.get_optional_argument<string>("stacker_type", "kappa_sigma_clipping");
+
+        const int n_files              = input_arguments_parser.get_optional_argument<int>("n_files", -1);
+        const float fraction_of_files  = input_arguments_parser.get_optional_argument<float>("fraction_of_files", -1.0);
+
+        if (n_files >= 0 && fraction_of_files >= 0.0) {
+            throw runtime_error("Only one of n_files and fraction_of_files can be set");
+        }
+
 
         cout << "\n";
         cout << "Alignment file: " << alignment_file << "\n";
@@ -61,6 +78,14 @@ int main(int argc, const char **argv) {
 
         PhotoAlignmentHandler photo_alignment_handler;
         photo_alignment_handler.read_from_text_file(alignment_file);
+        if (n_files >= 0) {
+            cout << "Limiting number of files to " << n_files << "\n";
+            photo_alignment_handler.limit_number_of_files(n_files);
+        }
+        if (fraction_of_files >= 0.0) {
+            cout << "Limiting fraction of files to " << fraction_of_files << "\n";
+            photo_alignment_handler.limit_fraction_of_files(fraction_of_files);
+        }
         vector<string> input_files = photo_alignment_handler.get_file_addresses();
         if (input_files.size() == 0) {
             throw runtime_error("No input files found in the alignment file");
