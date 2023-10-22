@@ -11,6 +11,9 @@ using namespace AstroPhotoStacker;
 
 void PhotoAlignmentHandler::read_from_text_file(const std::string &alignment_file_address) {
     ifstream alignment_file(alignment_file_address);
+    if (!alignment_file.is_open()) {
+        throw runtime_error("Could not open alignment file: " + alignment_file_address);
+    }
     string line;
     while (getline(alignment_file, line)) {
         strip_string(&line);

@@ -108,6 +108,7 @@ int main(int argc, const char **argv) {
         return 0;
 
     } catch (const exception &e) {
+        cout << endl << endl;
         cout << e.what() << endl;
         abort();
     }
