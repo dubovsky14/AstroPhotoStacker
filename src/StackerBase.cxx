@@ -32,24 +32,31 @@ void StackerBase::add_flat_frame(const string &file_address) {
 
 void StackerBase::save_stacked_photo(const string &file_address, int image_options) const {
     auto data_for_plotting = m_stacked_image;
-    double max_value = 0;
-    for (int color = 0; color < m_number_of_colors; color++) {
-        for (int index = 0; index < m_width*m_height; index++) {
-            if (data_for_plotting[color][index] > max_value) {
-                max_value = data_for_plotting[color][index];
-            }
-        }
-    }
 
-    const double scale_factor = 65534 / max_value;
-
+    const unsigned int max_value_output = pow(2, get_output_bit_depth(image_options)) -1;
     for (int color = 0; color < m_number_of_colors; color++) {
+        const double max_value_input = *max_element(data_for_plotting[color].begin(), data_for_plotting[color].end());
+        const double scale_factor = max_value_output / max_value_input;
         for (int index = 0; index < m_width*m_height; index++) {
             data_for_plotting[color][index] *= scale_factor;
         }
     }
+    const bool is_color_image = m_number_of_colors == 3;
 
-    crate_color_image(&data_for_plotting.at(0)[0], &data_for_plotting.at(1)[0], &data_for_plotting.at(2)[0] , m_width, m_height, file_address, image_options);
+    if (is_color_image) {
+        // scale down green (we have 2 green channels)
+        std::transform(data_for_plotting[1].begin(), data_for_plotting[1].end(), data_for_plotting[1].begin(), [](double value) { return value / 2; });
+
+        // for some reason, the max of blue and red has to be 32767, not 65534
+        std::transform(data_for_plotting[0].begin(), data_for_plotting[0].end(), data_for_plotting[0].begin(), [max_value_output](double value) { return std::min<double>(value, max_value_output/2 + 1); });
+        std::transform(data_for_plotting[2].begin(), data_for_plotting[2].end(), data_for_plotting[2].begin(), [max_value_output](double value) { return std::min<double>(value, max_value_output/2 + 1); });
+
+        crate_color_image(&data_for_plotting.at(0)[0], &data_for_plotting.at(1)[0], &data_for_plotting.at(2)[0] , m_width, m_height, file_address, image_options);
+    }
+    else {
+        create_gray_scale_image(&data_for_plotting.at(0)[0], m_width, m_height, file_address, image_options);
+    }
+
 };
 
 void StackerBase::fix_empty_pixels()    {
@@ -74,5 +81,37 @@ void StackerBase::fix_empty_pixels()    {
                 color[i_pixel] = get_average_from_pixels_around(color, m_width, i_pixel);
             }
         }
+    }
+};
+
+int StackerBase::get_output_bit_depth(int open_cv_image_type)    {
+    const int bit_depth_mask = 0b111;
+    const int bit_depth_code = open_cv_image_type & bit_depth_mask;
+    if (bit_depth_code == CV_8U) {
+        return 8;
+    }
+    else if (bit_depth_code == CV_16U) {
+        return 16;
+    }
+    else if (bit_depth_code == CV_8S) {
+        return 7;
+    }
+    else if (bit_depth_code == CV_16S) {
+        return 15;
+    }
+    else if (bit_depth_code == CV_32S) {
+        return 32;
+    }
+    else if (bit_depth_code == CV_32F) {
+        return 32;
+    }
+    else if (bit_depth_code == CV_64F) {
+        return 64;
+    }
+    else if (bit_depth_code == CV_16F) {
+        return 16;
+    }
+    else    {
+        throw runtime_error("Unsupported image type");
     }
 };

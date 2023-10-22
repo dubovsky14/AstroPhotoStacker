@@ -32,6 +32,8 @@ namespace AstroPhotoStacker {
 
             virtual void fix_empty_pixels();
 
+            static int get_output_bit_depth(int open_cv_image_type);
+
         protected:
             int m_number_of_colors;
             int m_width;
