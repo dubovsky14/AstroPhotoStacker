@@ -28,24 +28,42 @@ double ImageStretcher::get_scale_factor(double pixel_value, StretchingType stret
         const double log_scale_factor = get_scale_factor(pixel_value, StretchingType::logarithmic);
         return (1 - sigmoid_value) + sigmoid_value*log_scale_factor;
     }
+    else if (stretching_type == StretchingType::uniform) {
+        return m_uniform_stretching_scale_factors[pixel_value]/pixel_value;
+    }
+
 
     throw std::runtime_error("Unknown stretching type");
 
 };
 
 double ImageStretcher::get_rgb_brightness(unsigned int i_pixel) {
+    return AstroPhotoStacker::get_rgb_brightness(i_pixel, *m_image);
+};
+
+double AstroPhotoStacker::get_rgb_brightness(unsigned int i_pixel, const std::vector<std::vector<double>> &image) {
     double rgb_brightness = 0;
-    for (unsigned int i_color = 0; i_color < m_image->size(); i_color++) {
-        rgb_brightness += m_image->at(i_color)[i_pixel];
+    for (unsigned int i_color = 0; i_color < image.size(); i_color++) {
+        if (i_color != 1)   {
+            rgb_brightness += image.at(i_color)[i_pixel];
+        }
+        else {
+            rgb_brightness += 0.5*image.at(i_color)[i_pixel];
+        }
     }
-    rgb_brightness /= m_image->size();
+    rgb_brightness /= image.size();
     return rgb_brightness;
 };
+
 
 void ImageStretcher::stretch_image(StretchingType stretching_type) {
     if (stretching_type == StretchingType::lin_log_sigmoid) {
         initialize_ling_log_sigmoid_variables();
     }
+    if (stretching_type == StretchingType::uniform) {
+        initialize_uniform_stretching_variables();
+    }
+
     for (unsigned int i_pixel = 0; i_pixel < m_image->at(0).size(); i_pixel++)  {
         // calculate overall brightness of the pixels from all (usually 3) channels
         double rgb_sum = get_rgb_brightness(i_pixel);
@@ -55,6 +73,18 @@ void ImageStretcher::stretch_image(StretchingType stretching_type) {
         for (unsigned int i_color = 0; i_color < m_image->size(); i_color++) {
             vector<double> &color = m_image->at(i_color);
             color[i_pixel] = min((i_color == 1 ? 2. : 1)*scale_factor*color[i_pixel], m_max_value);
+        }
+    }
+
+    // check if uniform stretching works
+    if (stretching_type == StretchingType::uniform) {
+        vector<float> thresholds = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9};
+        vector<float> brightnesses(thresholds.size(), 0);
+        for (unsigned int i = 0; i < thresholds.size(); i++) {
+            brightnesses[i] = get_brightness_from_fraction(*m_image, thresholds[i]);
+        }
+        for (unsigned int i = 0; i < thresholds.size(); i++) {
+            cout << "Threshold: " << thresholds[i] << " brightness: " << brightnesses[i] << "\n";
         }
     }
 }
@@ -86,6 +116,15 @@ void ImageStretcher::initialize_ling_log_sigmoid_variables()   {
     }
 };
 
+
+void ImageStretcher::initialize_uniform_stretching_variables()  {
+    m_integrated_histogram = get_integrated_histogram_from_rgb_image(*m_image, m_max_value);
+    m_uniform_stretching_scale_factors.resize(m_integrated_histogram.size(), 0);
+    for (unsigned int i = 0; i < m_integrated_histogram.size(); i++) {
+        m_uniform_stretching_scale_factors[i] = 0.25*m_max_value*m_integrated_histogram[i];
+    }
+};
+
 vector<unsigned int> AstroPhotoStacker::get_histogram_from_rgb_image(const vector<vector<double>> &image, int output_size)  {
     if (image.size() == 0)  {
         throw runtime_error("Cannot compute histogram of an empty image");
@@ -99,11 +138,7 @@ vector<unsigned int> AstroPhotoStacker::get_histogram_from_rgb_image(const vecto
 
     vector<unsigned int> result(output_size, 0);
     for (unsigned int i_pixel = 0; i_pixel < n_pixels; i_pixel++)   {
-        double rgb_sum = 0.;
-        for (const vector<double> &color : image)   {
-            rgb_sum += color[i_pixel];
-        }
-        rgb_sum /= image.size();
+        double rgb_sum = get_rgb_brightness(i_pixel, image);
         result[(unsigned int)(rgb_sum)] += 1;
     }
     return result;

@@ -107,12 +107,16 @@ int main(int argc, const char **argv) {
         //stacker->stretch_stacked_photo(StretchingType::sqrt_and_lin, 14);
         //stacker->stretch_stacked_photo(StretchingType::linear, 16);
         //stacker->stretch_stacked_photo(StretchingType::quadratic, 14);
+        stacker->stretch_stacked_photo(StretchingType::uniform, 14);
+        stacker->stretch_stacked_photo(StretchingType::quadratic, 14);
+        stacker->stretch_stacked_photo(StretchingType::quadratic, 14);
         //stacker->apply_black_point(0.02);
         stacker->save_stacked_photo(output_file, CV_16UC3);
 
         return 0;
 
     } catch (const exception &e) {
+        cout << endl << endl;
         cout << e.what() << endl;
         abort();
     }

@@ -5,7 +5,7 @@
 
 
 namespace AstroPhotoStacker {
-    enum class StretchingType{logarithmic, quadratic, linear, lin_log_sigmoid, sqrt, sqrt_and_lin};
+    enum class StretchingType{logarithmic, quadratic, linear, lin_log_sigmoid, sqrt, sqrt_and_lin, uniform};
 
     class ImageStretcher {
         public:
@@ -29,6 +29,10 @@ namespace AstroPhotoStacker {
             unsigned int    m_linear_to_logarithmic_transition_point_x = 0;
             double          m_linear_to_logarithmic_transition_point_y = 0;
 
+            // for uniform stretching
+            void initialize_uniform_stretching_variables();
+            std::vector<double> m_uniform_stretching_scale_factors;
+
 
     };
 
@@ -40,6 +44,8 @@ namespace AstroPhotoStacker {
         }
         return result;
     }
+
+    double get_rgb_brightness(unsigned int i_pixel, const std::vector<std::vector<double>> &image);
 
     std::vector<unsigned int> get_histogram_from_rgb_image(const std::vector<std::vector<double>> &image, int output_size);
 
