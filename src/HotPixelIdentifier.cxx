@@ -7,9 +7,22 @@
 #include <memory>
 #include <fstream>
 
+#include "../headers/thread_pool.h"
+
 using namespace std;
 using namespace AstroPhotoStacker;
 
+
+
+void HotPixelIdentifier::add_photos(const std::vector<std::string> &photo_addresses)    {
+    thread_pool pool(m_n_cpu);
+    for (const auto &photo_address : photo_addresses) {
+        pool.submit([this, photo_address]() {
+            add_photo(photo_address);
+        });
+    }
+    pool.wait_for_tasks();
+};
 
 void HotPixelIdentifier::add_photo(const std::string &photo_address)    {
     int width,height;
@@ -20,13 +33,16 @@ void HotPixelIdentifier::add_photo(const std::string &photo_address)    {
 void HotPixelIdentifier::add_photo(const unsigned short int *pixel_value_array, int width, int height, int image_bit_depth) {
     m_number_of_photos++;
     const auto hot_pixel_candidates = get_hot_pixel_candidates_from_photo(pixel_value_array, width, height, image_bit_depth);
-    for (const auto &hot_pixel_candidate : hot_pixel_candidates) {
-        const auto &hot_pixel_candidate_coordinates = hot_pixel_candidate.first;
-        if (m_hot_pixel_candidates.find(hot_pixel_candidate_coordinates) == m_hot_pixel_candidates.end()) {
-            m_hot_pixel_candidates[hot_pixel_candidate_coordinates] = 1;
-        }
-        else {
-            m_hot_pixel_candidates[hot_pixel_candidate_coordinates]++;
+    {
+        scoped_lock lock(m_mutex);
+        for (const auto &hot_pixel_candidate : hot_pixel_candidates) {
+            const auto &hot_pixel_candidate_coordinates = hot_pixel_candidate.first;
+            if (m_hot_pixel_candidates.find(hot_pixel_candidate_coordinates) == m_hot_pixel_candidates.end()) {
+                m_hot_pixel_candidates[hot_pixel_candidate_coordinates] = 1;
+            }
+            else {
+                m_hot_pixel_candidates[hot_pixel_candidate_coordinates]++;
+            }
         }
     }
 };
@@ -127,6 +143,10 @@ void HotPixelIdentifier::load_hot_pixels_from_file(const std::string &file_addre
         m_hot_pixels[std::make_tuple(x,y)] = true;
     }
     input_file.close();
+};
+
+void HotPixelIdentifier::set_n_cpu(unsigned int n_cpu) {
+    m_n_cpu = n_cpu;
 };
 
 bool HotPixelIdentifier::is_hot_pixel(int x, int y) const   {
