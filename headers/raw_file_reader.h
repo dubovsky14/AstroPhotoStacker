@@ -42,6 +42,9 @@ namespace AstroPhotoStacker   {
                     const unsigned int index = row * (*width) + col;
                     brightness[index] = image_data[index][raw_processor.COLOR(row,col)];
                     (*colors)[index] = raw_processor.COLOR(row,col);
+                    if ((*colors)[index] == 3)    {
+                        (*colors)[index] = 1;
+                    }
                 }
             }
         }

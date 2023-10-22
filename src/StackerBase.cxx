@@ -30,6 +30,11 @@ void StackerBase::add_flat_frame(const string &file_address) {
     m_flat_frame_handler = make_unique<FlatFrameHandler>(file_address);
 };
 
+void StackerBase::register_hot_pixels_file(const std::string &hot_pixels_file)  {
+    m_hot_pixel_identifier = make_unique<HotPixelIdentifier>();
+    m_hot_pixel_identifier->load_hot_pixels_from_file(hot_pixels_file);
+};
+
 void StackerBase::save_stacked_photo(const string &file_address, int image_options) const {
     auto data_for_plotting = m_stacked_image;
 

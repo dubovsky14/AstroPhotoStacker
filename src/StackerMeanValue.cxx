@@ -58,6 +58,9 @@ void StackerMeanValue::add_photo_to_stack(const std::string &file_address)  {
     if (m_flat_frame_handler != nullptr) {
         calibrated_photo.register_flat_frame(m_flat_frame_handler.get());
     }
+    if (m_hot_pixel_identifier != nullptr) {
+        calibrated_photo.register_hot_pixel_identifier(m_hot_pixel_identifier.get());
+    }
     calibrated_photo.calibrate();
 
     unsigned int value;

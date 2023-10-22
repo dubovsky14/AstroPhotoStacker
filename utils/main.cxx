@@ -21,6 +21,12 @@ void configure_stacker_with_optional_arguments(StackerBase *stacker, const Input
         if (print_info) cout << "Flat frame file: " << flat_frame_file << "\n";
     }
 
+    const string hot_pixels_file    = input_parser.get_optional_argument<string>("hot_pixels_file", "");
+    if (hot_pixels_file != "")  {
+        stacker->register_hot_pixels_file(hot_pixels_file);
+        if (print_info) cout << "Hot pixels file: " << hot_pixels_file << "\n";
+    }
+
     // StackerMean does not support memory and n_cpu configuration
     if (dynamic_cast<StackerMeanValue*>(stacker) == nullptr) {
         const unsigned int memory_limit = input_parser.get_optional_argument<unsigned int>("memory_limit", 16000);

@@ -2,6 +2,7 @@
 
 #include "../headers/GeometricTransformations.h"
 #include "../headers/FlatFrameHandler.h"
+#include "../headers/HotPixelIdentifier.h"
 
 #include <string>
 #include <memory>
@@ -24,6 +25,8 @@ namespace AstroPhotoStacker {
 
             void register_flat_frame(const FlatFrameHandler *flat_frame_handler);
 
+            void register_hot_pixel_identifier(const HotPixelIdentifier *hot_pixel_identifier);
+
             void apply_dark_frame()   {}; // TODO: implement
 
             // if color is negative, the pixel coordinates are out of the image boundaries
@@ -38,7 +41,8 @@ namespace AstroPhotoStacker {
             int m_y_max = -1;
             unsigned int m_max_allowed_pixel_value = 1 << 14;
 
-            const FlatFrameHandler *m_flat_frame = nullptr;
+            const FlatFrameHandler *m_flat_frame                = nullptr;
+            const HotPixelIdentifier *m_hot_pixel_identifier    = nullptr;
 
             std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
             std::unique_ptr<short unsigned int[]> m_data_original           = nullptr;
@@ -46,5 +50,7 @@ namespace AstroPhotoStacker {
             std::vector<char> m_colors_original;
             std::vector<char> m_colors_shifted;
             std::vector<char> m_color_conversion_table; // color number from the raw file usually can take values 0,1,2,3. 3 is usually green, but it is not guaranteed, so we need to convert it to 0,1,2
+
+            void fix_hot_pixel(int x, int y);
     };
 }

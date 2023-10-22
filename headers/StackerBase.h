@@ -2,6 +2,7 @@
 
 #include "../headers/FlatFrameHandler.h"
 #include "../headers/PhotoAlignmentHandler.h"
+#include "../headers/HotPixelIdentifier.h"
 
 #include <memory>
 #include <string>
@@ -23,6 +24,8 @@ namespace AstroPhotoStacker {
             virtual void add_photo(const std::string &file_address);
 
             virtual void add_flat_frame(const std::string &file_address);
+
+            virtual void register_hot_pixels_file(const std::string &hot_pixels_file);
 
             virtual void save_stacked_photo(const std::string &file_address, int image_options = 18) const;
 
@@ -51,5 +54,6 @@ namespace AstroPhotoStacker {
             std::vector<std::vector<double> > m_stacked_image;
             std::unique_ptr<FlatFrameHandler> m_flat_frame_handler              = nullptr;
             std::unique_ptr<PhotoAlignmentHandler> m_photo_alignment_handler    = nullptr;
+            std::unique_ptr<HotPixelIdentifier> m_hot_pixel_identifier          = nullptr;
     };
 }
