@@ -74,6 +74,24 @@ Few arguments are optional:
 
 ```n_cpu``` -> number of CPUs to run on
 
+**Hot pixel identification (optional)**
+
+When median stacking methods are used, hot pixels are usually not a big issue. But if you need to remove them anyway, you can do it in 2 steps.
+
+In the first step you need to run over raw files and identify the hot pixels in them. Their list will be saved to a text file:
+
+```
+./bin/identify_hot_pixels -raw_files_dir <path to the directory with raw files>
+```
+
+the following options are optional:
+
+```hot_pixels_file``` : address of the output text file. By default it will be stored in raw file folder and named ```hot_pixels.txt```
+
+```n_cpu``` : number of CPUs to use
+
+After producing the text file with hot pixels, you can use it in the stacking step (described bellow). The value of the hot pixel will be replaced by mean value of its closest same color neighbors.
+When you want to use hot pixel text file in the stacking step, you have to use optional argument ```hot_pixels_file```
 
 **Stacking step:**
 
@@ -98,3 +116,5 @@ and these arguments are optional:
 ```n_cpu``` -> number of CPUs to run on
 
 ```stacker_type``` -> stacking algorithm to be used. The list of available algorithms can be found in ```headers/StackerFactory.h``` header file. Default is ```kappa_sigma_clipping```
+
+```hot_pixels_file``` -> text file with hot pixels coordinates (described in ```Hot pixel identification``` part)
