@@ -84,6 +84,7 @@ void StackerMedian::calculate_stacked_photo()  {
             m_stacked_image[1][i_pixel] /= 2;
         }
     }
+    fix_empty_pixels();
 };
 
 void StackerMedian::set_number_of_cpu_threads(unsigned int n_cpu) {
@@ -161,7 +162,7 @@ void StackerMedian::process_line(int y_index_final_array, int y_index_values_to_
 
 double StackerMedian::get_stacked_value_from_pixel_array(short int *ordered_array_begin, unsigned int number_of_stacked_pixels) {
     if (number_of_stacked_pixels == 0) {
-        return 0;
+        return c_empty_pixel_value;
     }
     else if (number_of_stacked_pixels % 2 == 0) {
         return (ordered_array_begin[number_of_stacked_pixels/2] + ordered_array_begin[number_of_stacked_pixels/2 - 1])/2;

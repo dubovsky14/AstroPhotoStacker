@@ -25,7 +25,7 @@ void StackerMeanValue::calculate_stacked_photo()  {
                 m_stacked_image[i_color][i_pixel] /= m_number_of_stacked_pixels[i_color][i_pixel];
             }
             else {
-                m_stacked_image[i_color][i_pixel] = 0;
+                m_stacked_image[i_color][i_pixel] = c_empty_pixel_value;
             }
         }
     }
@@ -36,6 +36,7 @@ void StackerMeanValue::calculate_stacked_photo()  {
             m_stacked_image[1][i_pixel] /= 2;
         }
     }
+    fix_empty_pixels();
 };
 
 void StackerMeanValue::set_number_of_cpu_threads(unsigned int n_cpu) {

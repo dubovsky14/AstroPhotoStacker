@@ -30,10 +30,14 @@ namespace AstroPhotoStacker {
 
             virtual void calculate_stacked_photo() = 0;
 
+            virtual void fix_empty_pixels();
+
         protected:
             int m_number_of_colors;
             int m_width;
             int m_height;
+
+            constexpr static short int c_empty_pixel_value = -1;
 
             unsigned int m_n_cpu = 1;
 

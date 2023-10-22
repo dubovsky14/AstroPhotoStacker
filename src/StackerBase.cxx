@@ -51,3 +51,28 @@ void StackerBase::save_stacked_photo(const string &file_address, int image_optio
 
     crate_color_image(&data_for_plotting.at(0)[0], &data_for_plotting.at(1)[0], &data_for_plotting.at(2)[0] , m_width, m_height, file_address, image_options);
 };
+
+void StackerBase::fix_empty_pixels()    {
+    auto get_average_from_pixels_around = [](const vector<double> &color_channel, int width, int pixel_index) {
+        double sum = 0;
+        int n_pixels = 0;
+        for (int i_shift_y = -1; i_shift_y <= 1; i_shift_y++) {
+            for (int i_shift_x = -1; i_shift_x <= 1; i_shift_x++) {
+                const int index = pixel_index + i_shift_x + i_shift_y*width;
+                if (index >= 0 && index < static_cast<int>(color_channel.size()) && color_channel[index] != c_empty_pixel_value) {
+                    sum += color_channel[index];
+                    n_pixels++;
+                }
+            }
+        }
+        return n_pixels != 0 ? sum/n_pixels : 0.;
+    };
+
+    for (vector<double> &color : m_stacked_image) {
+        for (int i_pixel = 0; i_pixel < m_width*m_height; i_pixel++) {
+            if (color[i_pixel] == c_empty_pixel_value) {
+                color[i_pixel] = get_average_from_pixels_around(color, m_width, i_pixel);
+            }
+        }
+    }
+};
