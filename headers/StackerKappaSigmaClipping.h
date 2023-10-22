@@ -5,9 +5,9 @@
 namespace AstroPhotoStacker {
     class StackerKappaSigmaClipping : public StackerKappaSigmaBase {
         public:
-                StackerKappaSigmaClipping(int number_of_colors, int width, int height);
+            StackerKappaSigmaClipping(int number_of_colors, int width, int height);
 
         protected:
-                virtual void process_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color) override;
+            virtual double get_stacked_value_from_pixel_array(short int *ordered_array_begin, unsigned int number_of_stacked_pixels) override;
     };
 }

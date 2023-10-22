@@ -13,7 +13,9 @@ namespace AstroPhotoStacker {
             void set_number_of_iterations(int n_iterations)     {m_n_iterations = n_iterations;};
 
     protected:
-            virtual void process_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color)  = 0;
+            virtual double get_stacked_value_from_pixel_array(short int *ordered_array_begin, unsigned int number_of_stacked_pixels)  = 0;
+
+            void apply_kappa_sigma_clipping(short int **ordered_array_begin, unsigned int *number_of_stacked_pixels);
 
             float   m_kappa       = 3.0;
             int     m_n_iterations  = 3;

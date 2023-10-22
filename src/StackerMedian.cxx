@@ -150,19 +150,23 @@ void StackerMedian::process_line(int y_index_final_array, int y_index_values_to_
                 number_of_stacked_pixels++;
             }
         }
-        const unsigned long long int start_of_non_negative_values = pixel_index_stacking_array + n_files - number_of_stacked_pixels;
+        int first_non_negative_index = n_files - number_of_stacked_pixels;
 
         sort(slice_begin, slice_end);
 
-        if (number_of_stacked_pixels == 0) {
-            m_stacked_image[i_color][pixel_index] = 0;
-        }
-        else if (number_of_stacked_pixels % 2 == 0) {
-            m_stacked_image[i_color][pixel_index] = (m_values_to_stack[i_color][start_of_non_negative_values + number_of_stacked_pixels/2] + m_values_to_stack[i_color][start_of_non_negative_values + number_of_stacked_pixels/2 - 1])/2;
-        }
-        else {
-            m_stacked_image[i_color][pixel_index] = m_values_to_stack[i_color][start_of_non_negative_values + number_of_stacked_pixels/2];
-        }
+        m_stacked_image[i_color][pixel_index] = get_stacked_value_from_pixel_array(slice_begin + first_non_negative_index, number_of_stacked_pixels);
     }
+};
 
+
+double StackerMedian::get_stacked_value_from_pixel_array(short int *ordered_array_begin, unsigned int number_of_stacked_pixels) {
+    if (number_of_stacked_pixels == 0) {
+        return 0;
+    }
+    else if (number_of_stacked_pixels % 2 == 0) {
+        return (ordered_array_begin[number_of_stacked_pixels/2] + ordered_array_begin[number_of_stacked_pixels/2 - 1])/2;
+    }
+    else {
+        return ordered_array_begin[number_of_stacked_pixels/2];
+    }
 };

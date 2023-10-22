@@ -23,5 +23,13 @@ namespace AstroPhotoStacker {
             int get_height_range_limit()    const;
 
             virtual void process_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color);
+
+            /**
+             * @brief The method defines how to stack "number_of_stacked pixels" values from pixels in individual photos into one file. In case of this class it is a median.
+             *
+             * @param ordered_array_begin       - pointer ot the first element of the ordered array
+             * @param number_of_stacked_pixels  - number of pixels to stack
+             */
+            virtual double get_stacked_value_from_pixel_array(short int *ordered_array_begin, unsigned int number_of_stacked_pixels);
     };
 }
