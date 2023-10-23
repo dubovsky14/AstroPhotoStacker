@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -45,6 +46,7 @@ void AstroPhotoStacker::hot_pixel_identification_test(const std::string &raw_fil
     if (!compare_files(output_file, reference_output_file)) {
         throw runtime_error("Hot pixel identification test failed. Produced hot pixel file does not match reference output file.");
     }
+    cout << "Hot pixel identification test passed." << endl;
 };
 
 void AstroPhotoStacker::hot_pixel_identification_test(int argc, const char **argv)  {

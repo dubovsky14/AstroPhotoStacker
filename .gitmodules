@@ -1,0 +1,3 @@
+[submodule "AstroPhotoStacker_test_files"]
+	path = AstroPhotoStacker_test_files
+	url = git@github.com:dubovsky14/AstroPhotoStacker_test_files.git
