@@ -4,7 +4,6 @@
 #include "../headers/thread_pool.h"
 
 #include <fstream>
-#include <filesystem>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -106,14 +105,7 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
 };
 
 void PhotoAlignmentHandler::align_all_files_in_folder(const std::string &reference_file_address, const std::string &raw_files_folder) {
-    vector<string> files;
-    for (const auto & entry : filesystem::directory_iterator(raw_files_folder)) {
-        if (entry.path().extension() == ".txt") {
-            continue;
-        }
-        files.push_back(entry.path());
-    }
-    sort(files.begin(), files.end());
+    const vector<string> files = get_raw_files_in_folder(raw_files_folder);
     align_files(reference_file_address, files);
 }
 

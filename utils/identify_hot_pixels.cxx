@@ -1,10 +1,10 @@
 #include "../headers/HotPixelIdentifier.h"
 #include "../headers/InputArgumentsParser.h"
+#include "../headers/Common.h"
 
 #include <string>
 #include <iostream>
 #include <memory>
-#include <filesystem>
 #include <vector>
 #include <thread>
 
@@ -21,13 +21,7 @@ int main(int argc, const char **argv) {
         const unsigned int number_of_available_CPUs = thread::hardware_concurrency()/2 != 0 ? thread::hardware_concurrency()/2 : 1;
         const unsigned int n_cpu                = input_arguments_parser.get_optional_argument<unsigned int>("n_cpu", number_of_available_CPUs);
 
-        vector<string> raw_files;
-        for (const auto & entry : filesystem::directory_iterator(directory_with_raw_files)) {
-            if (entry.path().extension() == ".txt") {
-                continue;
-            }
-            raw_files.push_back(entry.path());
-        }
+        const vector<string> raw_files = get_raw_files_in_folder(directory_with_raw_files);
 
         HotPixelIdentifier hot_pixel_identifier;
         hot_pixel_identifier.set_n_cpu(n_cpu);

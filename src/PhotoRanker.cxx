@@ -1,6 +1,7 @@
 #include "../headers/PhotoRanker.h"
 #include "../headers/StarFinder.h"
 #include "../headers/raw_file_reader.h"
+#include "../headers/Common.h"
 
 #include <filesystem>
 #include <algorithm>
@@ -15,12 +16,7 @@ PhotoRanker::PhotoRanker(const std::vector<std::string> &path_to_input_files)   
 };
 
 PhotoRanker::PhotoRanker(const std::string& path_to_lights_folder)  {
-    for (const auto & entry : filesystem::directory_iterator(path_to_lights_folder)) {
-        if (entry.path().extension() == ".txt") {
-            continue;
-        }
-        m_input_files.push_back(entry.path());
-    }
+    m_input_files = get_raw_files_in_folder(path_to_lights_folder);
 };
 
 void PhotoRanker::rank_all_files()    {

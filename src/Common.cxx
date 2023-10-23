@@ -4,6 +4,7 @@
 #include <string>
 #include <cmath>
 #include <algorithm>
+#include <filesystem>
 
 using namespace std;
 
@@ -110,4 +111,19 @@ bool AstroPhotoStacker::compare_case_insensitive(const std::string &x, const std
     const string x_upper = AstroPhotoStacker::to_upper_copy(x);
     const string y_upper = AstroPhotoStacker::to_upper_copy(y);
     return x_upper == y_upper;
+};
+
+std::vector<std::string> AstroPhotoStacker::get_raw_files_in_folder(const std::string &folder_address)  {
+    vector<string> result;
+    for (const auto &entry : filesystem::directory_iterator(folder_address)) {
+        if (entry.path().extension() == ".txt") {
+            continue;
+        }
+        if (filesystem::is_directory(entry)) {
+            continue;
+        }
+        result.push_back(entry.path());
+    }
+    sort(result.begin(), result.end());
+    return result;
 };
