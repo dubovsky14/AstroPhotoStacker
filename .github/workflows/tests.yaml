@@ -48,3 +48,46 @@ jobs:
               chmod u+x bin/tests
               ./bin/tests hot_pixel_identifier AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/ temp_hot_pixel_file.txt AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/reference_files/hot_pixels.txt
         name: hot-pixel-identification
+
+  produce-alignment-file:
+    runs-on: ubuntu-latest
+    needs: [build-linux]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: |
+            mkdir bin
+              sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
+              sudo apt-get install libraw-dev
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact-linux-build
+          path: bin/.
+      - run:  |
+              mkdir output
+              chmod u+x bin/produce_alignment_file
+              ./bin/produce_alignment_file -reference_file AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9132.CR2 -raw_files_dir AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/ -alignment_file output/test_alignenemt.txt
+          name: produce-alignment-file
+        - uses: actions/upload-artifact@v3
+          with:
+            name: artifact-linux-build
+            path: |
+                    output/
+            retention-days: 1
+
+  produce-alignment-file:
+    runs-on: ubuntu-latest
+    needs: [produce-alignment-file]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: |
+            python3 CI_tests/python/compare_files.py output/test_alignenemt.txt AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/reference_files/alignenemt.txt
