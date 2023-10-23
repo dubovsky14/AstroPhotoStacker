@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <thread>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -14,7 +15,10 @@ int main(int argc, const char **argv) {
 
         const string reference_file_address     = input_arguments_parser.get_argument<string>("reference_file");
         const string directory_with_raw_files   = input_arguments_parser.get_argument<string>("raw_files_dir");
-        const unsigned int n_cpu                = input_arguments_parser.get_optional_argument<unsigned int>("n_cpu", 8);
+
+        const unsigned int number_of_available_CPUs = thread::hardware_concurrency()/2 != 0 ? thread::hardware_concurrency()/2 : 1;
+        const unsigned int n_cpu                = input_arguments_parser.get_optional_argument<unsigned int>("n_cpu", number_of_available_CPUs);
+
         string output_alignment_file            = input_arguments_parser.get_optional_argument<string>("alignment_file","");
         if (output_alignment_file == "")        {
             output_alignment_file = directory_with_raw_files + "/alignment.txt";

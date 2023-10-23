@@ -6,6 +6,7 @@
 #include <memory>
 #include <filesystem>
 #include <vector>
+#include <thread>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -16,7 +17,9 @@ int main(int argc, const char **argv) {
         InputArgumentsParser input_arguments_parser(argc, argv);
         const string directory_with_raw_files   = input_arguments_parser.get_argument<string>("raw_files_dir");
         const string hot_pixels_file            = input_arguments_parser.get_optional_argument<string>("hot_pixels_file", directory_with_raw_files + "/hot_pixels.txt");
-        const unsigned int n_cpu                = input_arguments_parser.get_optional_argument<unsigned int>("n_cpu", 8);
+
+        const unsigned int number_of_available_CPUs = thread::hardware_concurrency()/2 != 0 ? thread::hardware_concurrency()/2 : 1;
+        const unsigned int n_cpu                = input_arguments_parser.get_optional_argument<unsigned int>("n_cpu", number_of_available_CPUs);
 
         vector<string> raw_files;
         for (const auto & entry : filesystem::directory_iterator(directory_with_raw_files)) {

@@ -4,6 +4,7 @@
 #include "../headers/InputArgumentsParser.h"
 #include "../headers/PhotoRanker.h"
 
+#include <thread>
 #include <string>
 #include <iostream>
 #include <memory>
@@ -30,7 +31,8 @@ void configure_stacker_with_optional_arguments(StackerBase *stacker, const Input
     // StackerMean does not support memory and n_cpu configuration
     if (dynamic_cast<StackerMeanValue*>(stacker) == nullptr) {
         const unsigned int memory_limit = input_parser.get_optional_argument<unsigned int>("memory_limit", 16000);
-        const unsigned int n_cpu        = input_parser.get_optional_argument<unsigned int>("n_cpu", 8);
+        const unsigned int number_of_available_CPUs = thread::hardware_concurrency()/2 != 0 ? thread::hardware_concurrency()/2 : 1;
+        const unsigned int n_cpu         = input_parser.get_optional_argument<unsigned int>("n_cpu", number_of_available_CPUs);
 
         stacker->set_memory_usage_limit(memory_limit);
         stacker->set_number_of_cpu_threads(n_cpu);
