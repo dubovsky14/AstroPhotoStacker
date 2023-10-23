@@ -94,3 +94,35 @@ jobs:
           path: output/.
       - run: python3 CI_tests/python/compare_files.py output/test_alignenemt.txt AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/reference_files/alignenemt.txt
         name: validate-alignment-file
+
+  produce-stacked-image:
+    runs-on: ubuntu-latest
+    needs: [build-linux, produce-alignment-file]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: |
+              sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
+              sudo apt-get install libraw-dev
+        name: install-dependencies
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact-linux-build
+          path: bin/.
+      - uses: actions/download-artifact@v3
+        with:
+          name: produce-alignment-file
+          path: output/.
+      - run:  |
+              chmod u+x bin/AstroPhotoStacker
+              ./bin/AstroPhotoStacker -alignment_file output/test_alignenemt.txt -raw_files_dir AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/ -output output/test_stacked_image_default_stack.png
+      - uses: actions/upload-artifact@v3
+        with:
+          name: artifact-produce-stacked-image
+          path: |
+                  output/
+          retention-days: 1
