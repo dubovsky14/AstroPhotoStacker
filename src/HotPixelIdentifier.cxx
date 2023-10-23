@@ -75,10 +75,10 @@ vector<tuple<int,int>> HotPixelIdentifier::get_hot_pixels() const   {
 
 std::map<std::tuple<int,int>,int> HotPixelIdentifier::get_hot_pixel_candidates_from_photo(const unsigned short int *pixel_value_array, int width, int height, int image_bit_depth) {
     std::map<std::tuple<int,int>, int> hot_pixel_candidates;
-    int hot_pixel_threshold = 0.8*pow(2, image_bit_depth - 1);
+    const int max_value = pow(2, image_bit_depth)-1;
+    int hot_pixel_threshold = 0.8*max_value;
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            // does any of the neighbors have at least 50% of the value of the current pixel?
             const int current_pixel_index = y*width + x;
             const int current_pixel_value = pixel_value_array[current_pixel_index];
             if (current_pixel_value < hot_pixel_threshold) {
@@ -101,7 +101,7 @@ std::map<std::tuple<int,int>,int> HotPixelIdentifier::get_hot_pixel_candidates_f
                     }
                     const int neighbor_pixel_index = current_pixel_index + i_shift_x + i_shift_y*width;
                     const int neighbor_pixel_value = pixel_value_array[neighbor_pixel_index];
-                    if (neighbor_pixel_value > current_pixel_value*0.5) {
+                    if (neighbor_pixel_value > current_pixel_value*0.52) {
                         is_hot_pixel = false;
                         break;
                     }
