@@ -1,7 +1,7 @@
 The framework is designed for stacking of astro-photos.
-The code is under heavy development, so the API is not yet very user-friendly yet and the documentation might be obsolete a little bit.
+The code is still under development.
 
-For now, the code is able to stack photos using either arithmetic average or median.
+For now, the code is able to stack photos using arithmetic average, median or kappa-sigma clipping (again using either average or median).
 It can apply flat frames, but no other calibration frames are implemented yet.
 
 The framework depends on ```libraw``` (for raw files reading) and ```OpenCV``` (for saving stacked photo as picture file) libraries.
