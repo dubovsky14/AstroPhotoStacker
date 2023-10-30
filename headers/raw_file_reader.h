@@ -30,6 +30,11 @@ namespace AstroPhotoStacker   {
         int col, bps;
         raw_processor.get_mem_image_format(width, height, &col, &bps);
 
+        int new_width = std::max(*width, *height);
+        int new_height = std::min(*width, *height);
+        *width = new_width;
+        *height = new_height;
+
         std::unique_ptr<output_type[]> brightness = std::unique_ptr<output_type[]>(new output_type[(*width)*(*height)]);
         if (colors != nullptr)   {
             colors->resize((*width)*(*height));
