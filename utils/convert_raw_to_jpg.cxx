@@ -22,6 +22,14 @@ void scale_to_8_bits(std::vector<std::vector<unsigned short> > *image, int width
     for (int i_color = 0; i_color < n_colors; i_color++) {
         for (int i_pixel = 0; i_pixel < width*height; i_pixel++) {
             image->at(i_color)[i_pixel] *= scale_factor;
+
+            //downscale green
+            if (i_color == 1 || i_color == 3)   {
+                image->at(i_color)[i_pixel] /= 2;
+            }
+            else {
+                image->at(i_color)[i_pixel] = min<int>(image->at(i_color)[i_pixel], 128);
+            }
         }
     }
 }

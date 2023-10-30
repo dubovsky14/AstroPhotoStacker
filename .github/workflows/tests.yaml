@@ -3,6 +3,7 @@ on: [push]
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
         with:
@@ -28,6 +29,7 @@ jobs:
 
   hot-pixel-identification:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [build-linux]
     steps:
       - uses: actions/checkout@v3
@@ -51,6 +53,7 @@ jobs:
 
   produce-alignment-file:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [build-linux]
     steps:
       - uses: actions/checkout@v3
@@ -80,6 +83,7 @@ jobs:
 
   validate-alignment-file:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [produce-alignment-file]
     steps:
       - uses: actions/checkout@v3
@@ -97,6 +101,7 @@ jobs:
 
   produce-stacked-image:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [build-linux, produce-alignment-file]
     steps:
       - uses: actions/checkout@v3
