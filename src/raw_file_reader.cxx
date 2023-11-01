@@ -52,9 +52,10 @@ bool AstroPhotoStacker::get_photo_resolution(const std::string &raw_file, int *w
     int n_colors, bps;
     raw_processor.get_mem_image_format(width, height, &n_colors, &bps);
     raw_processor.recycle();
-    int new_width = std::max(*width, *height);
-    int new_height = std::min(*width, *height);
-    *width = new_width;
-    *height = new_height;
+
+    if (*width < *height)   {
+        std::swap(*width, *height);
+    }
+
     return true;
 };
