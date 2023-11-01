@@ -48,13 +48,18 @@ tuple<tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, u
 bool ReferencePhotoHandler::plate_solve(const std::string &file_address,
                                         float *shift_x, float *shift_y,
                                         float *rot_center_x, float *rot_center_y, float *rotation) const    {
-    int width, height;
-    unique_ptr<unsigned short[]> brightness = read_raw_file(file_address, &width, &height);
-    const unsigned short threshold = get_threshold_value<unsigned short>(&brightness[0], width*height, 0.0005);
-    vector<tuple<float,float,int> > stars = get_stars(&brightness[0], width, height, threshold);
-    keep_only_stars_above_size(&stars, 9);
-    sort_stars_by_size(&stars);
-    return plate_solve(stars, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+    try {
+        int width, height;
+        unique_ptr<unsigned short[]> brightness = read_raw_file(file_address, &width, &height);
+        const unsigned short threshold = get_threshold_value<unsigned short>(&brightness[0], width*height, 0.0005);
+        vector<tuple<float,float,int> > stars = get_stars(&brightness[0], width, height, threshold);
+        keep_only_stars_above_size(&stars, 9);
+        sort_stars_by_size(&stars);
+        return plate_solve(stars, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+    }
+    catch (runtime_error &e)    {
+        return false;
+    }
 };
 
 

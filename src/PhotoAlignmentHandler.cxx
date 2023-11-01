@@ -59,6 +59,9 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
     alignment_file << c_reference_file_header << " | " << m_reference_file_address << endl;
     alignment_file << "# File address | shift_x | shift_y | rotation_center_x | rotation_center_y | rotation | ranking" << endl;
     for (FileAlignmentInformation alignment_info : m_alignment_information_vector) {
+        if (alignment_info.file_address == "")  {   // plate-solving failed
+            continue;
+        }
         alignment_file  <<          alignment_info.file_address
                         << " | " << alignment_info.shift_x
                         << " | " << alignment_info.shift_y
@@ -89,7 +92,9 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
             alignment_info.rotation = rotation;
             alignment_info.ranking = PhotoRanker::calculate_file_ranking(file_name);
         }
-
+        else {
+            cout << "Plate solving failed for file: " + file_name + "\n";
+        }
     };
 
     thread_pool pool(m_n_cpu);
