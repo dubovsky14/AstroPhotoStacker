@@ -8,13 +8,13 @@
 
 namespace   AstroPhotoStacker   {
     struct FileAlignmentInformation    {
-        std::string file_address;
-        float shift_x;
-        float shift_y;
-        float rotation_center_x;
-        float rotation_center_y;
-        float rotation;
-        float ranking;
+        std::string file_address = "";
+        float shift_x            = 0;
+        float shift_y            = 0;
+        float rotation_center_x  = 0;
+        float rotation_center_y  = 0;
+        float rotation           = 0;
+        float ranking            = 0;
     };
     class PhotoAlignmentHandler    {
         public:

@@ -94,8 +94,9 @@ void StackerMedian::set_number_of_cpu_threads(unsigned int n_cpu) {
 void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y_max)  {
     const string &file_address = m_files_to_stack[file_index];
     const unsigned long long int n_files = m_files_to_stack.size();
+    const bool apply_alignment = m_apply_alignment[file_index];
 
-    const FileAlignmentInformation alignment_info = m_photo_alignment_handler->get_alignment_parameters(file_address);
+    const FileAlignmentInformation alignment_info = apply_alignment ? m_photo_alignment_handler->get_alignment_parameters(file_address) : FileAlignmentInformation();
     const float shift_x         = alignment_info.shift_x;
     const float shift_y         = alignment_info.shift_y;
     const float rot_center_x    = alignment_info.rotation_center_x;

@@ -21,7 +21,7 @@ namespace AstroPhotoStacker {
 
             void add_alignment_text_file(const std::string &alignment_file_address);
 
-            virtual void add_photo(const std::string &file_address);
+            virtual void add_photo(const std::string &file_address, bool apply_alignment = true);
 
             virtual void add_flat_frame(const std::string &file_address);
 
@@ -50,7 +50,8 @@ namespace AstroPhotoStacker {
 
             std::string m_alignment_file_address;
 
-            std::vector<std::string> m_files_to_stack;
+            std::vector<std::string>    m_files_to_stack;
+            std::vector<bool>           m_apply_alignment; // for calibration frames we just stack them
             std::vector<std::vector<double> > m_stacked_image;
             std::unique_ptr<FlatFrameHandler> m_flat_frame_handler              = nullptr;
             std::unique_ptr<PhotoAlignmentHandler> m_photo_alignment_handler    = nullptr;

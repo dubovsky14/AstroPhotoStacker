@@ -14,9 +14,9 @@ StackerMeanValue::StackerMeanValue(int number_of_colors, int width, int height) 
 };
 
 void StackerMeanValue::calculate_stacked_photo()  {
-    for (const string &file_address : m_files_to_stack) {
-        cout << "Adding " << file_address << " to stack" << endl;
-        add_photo_to_stack(file_address);
+    for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
+        cout << "Adding " << m_files_to_stack[i_file] << " to stack" << endl;
+        add_photo_to_stack(i_file);
     }
 
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
@@ -45,8 +45,10 @@ void StackerMeanValue::set_number_of_cpu_threads(unsigned int n_cpu) {
     }
 };
 
-void StackerMeanValue::add_photo_to_stack(const std::string &file_address)  {
-    const FileAlignmentInformation alignment_info = m_photo_alignment_handler->get_alignment_parameters(file_address);
+void StackerMeanValue::add_photo_to_stack(unsigned int i_file)  {
+    const string file_address = m_files_to_stack[i_file];
+    const bool apply_alignment = m_apply_alignment[i_file];
+    const FileAlignmentInformation alignment_info = apply_alignment ? m_photo_alignment_handler->get_alignment_parameters(file_address) : FileAlignmentInformation();
     const float shift_x         = alignment_info.shift_x;
     const float shift_y         = alignment_info.shift_y;
     const float rot_center_x    = alignment_info.rotation_center_x;

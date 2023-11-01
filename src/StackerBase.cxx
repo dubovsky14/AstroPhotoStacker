@@ -22,8 +22,9 @@ void StackerBase::add_alignment_text_file(const string &alignment_file_address) 
     m_photo_alignment_handler->read_from_text_file(alignment_file_address);
 };
 
-void StackerBase::add_photo(const string &file_address) {
+void StackerBase::add_photo(const string &file_address, bool apply_alignment) {
     m_files_to_stack.push_back(file_address);
+    m_apply_alignment.push_back(apply_alignment);
 };
 
 void StackerBase::add_flat_frame(const string &file_address) {
