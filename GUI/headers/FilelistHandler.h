@@ -13,6 +13,8 @@ enum class FileTypes    {
     UNKNOWN
 };
 
+std::string to_string(FileTypes type);
+
 class FilelistHandler   {
     public:
         FilelistHandler();

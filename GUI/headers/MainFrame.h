@@ -2,6 +2,7 @@
 #pragma once
 
 #include "../headers/FilelistHandler.h"
+#include "../headers/StackSettings.h"
 
 #include <wx/wx.h>
 
@@ -24,10 +25,22 @@ class MyFrame : public wxFrame  {
         void add_files_to_stack_checkbox();
         void update_files_to_stack_checkbox();
 
+        void add_stack_settings_preview();
+        void add_image_preview();
+
+        void add_image_settings();
+        void n_cpu_slider();
+
         wxPanel     *m_panel_top        = nullptr;
-        wxSizer     *m_sizer_main_frame = nullptr;
+        wxBoxSizer  *m_sizer_main_frame = nullptr;
+        wxBoxSizer  *m_sizer_top        = nullptr;
         wxMenuBar   *m_menu_bar         = nullptr;
         wxMenu      *m_file_menu        = nullptr;
+
+        // upper part: stack settings, image preview and image settings
+        wxBoxSizer  *m_sizer_top_left   = nullptr;
+        wxBoxSizer  *m_sizer_top_center = nullptr;
+        wxBoxSizer  *m_sizer_top_right  = nullptr;
 
 
         wxCheckListBox *m_files_to_stack_checkbox = nullptr;
@@ -35,6 +48,7 @@ class MyFrame : public wxFrame  {
 
 
         FilelistHandler m_filelist_handler;
+        StackSettings   m_stack_settings;
 
         void on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title);
         void on_open_lights(wxCommandEvent& event);
