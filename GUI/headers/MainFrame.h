@@ -21,15 +21,22 @@ class MyFrame : public wxFrame  {
 
         void add_menu_bar();
 
-        wxMenuBar   *m_menu_bar     = nullptr;
-        wxMenu      *m_file_menu    = nullptr;
+        void add_files_to_stack_checkbox();
+        void update_files_to_stack_checkbox();
+
+        wxPanel     *m_panel_top        = nullptr;
+        wxSizer     *m_sizer_main_frame = nullptr;
+        wxMenuBar   *m_menu_bar         = nullptr;
+        wxMenu      *m_file_menu        = nullptr;
 
 
+        wxCheckListBox *m_files_to_stack_checkbox = nullptr;
 
 
 
         FilelistHandler m_filelist_handler;
 
+        void on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title);
         void on_open_lights(wxCommandEvent& event);
         void on_open_flats (wxCommandEvent& event);
         void on_exit(wxCommandEvent& event);
