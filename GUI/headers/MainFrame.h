@@ -31,7 +31,10 @@ class MyFrame : public wxFrame  {
         void add_image_preview();
 
         void add_image_settings();
-        void n_cpu_slider();
+        void add_n_cpu_slider();
+        void add_stacking_algorithm_choice_box();
+        void add_max_memory_spin_ctrl();
+
 
         wxPanel     *m_panel_top        = nullptr;
         wxBoxSizer  *m_sizer_main_frame = nullptr;

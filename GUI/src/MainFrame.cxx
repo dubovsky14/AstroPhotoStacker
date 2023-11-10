@@ -1,5 +1,7 @@
 #include "../headers/MainFrame.h"
 
+#include <wx/spinctrl.h>
+
 #include <iostream>
 
 using namespace std;
@@ -88,13 +90,19 @@ void MyFrame::update_files_to_stack_checkbox()   {
 };
 
 void MyFrame::add_button_bar()   {
-    wxButton *button_align_files = new wxButton(this, wxID_ANY, "Align files");
-    wxButton *button_rank_files  = new wxButton(this, wxID_ANY, "Rank files");
-    wxButton *button_stack_files = new wxButton(this, wxID_ANY, "Stack files");
+    wxButton *button_align_files    = new wxButton(this, wxID_ANY, "Align files");
+    wxButton *button_hot_pixel_id   = new wxButton(this, wxID_ANY, "Identify hot pixels");
+    wxButton *button_rank_files     = new wxButton(this, wxID_ANY, "Rank files");
+    wxButton *button_stack_files    = new wxButton(this, wxID_ANY, "Stack files");
 
     button_align_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         // TODO
         cout << "Align files" << endl;
+    });
+
+    button_hot_pixel_id->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        // TODO
+        cout << "Identify hot pixels" << endl;
     });
 
     button_rank_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
@@ -109,15 +117,18 @@ void MyFrame::add_button_bar()   {
     });
 
     m_sizer_button_bar->Add(button_align_files, 1, wxALL, 5);
+    m_sizer_button_bar->Add(button_hot_pixel_id,1, wxALL, 5);
     m_sizer_button_bar->Add(button_rank_files,  1, wxALL, 5);
     m_sizer_button_bar->Add(button_stack_files, 1, wxALL, 5);
 };
 
 void MyFrame::add_stack_settings_preview()   {
-    n_cpu_slider();
+    add_n_cpu_slider();
+    add_max_memory_spin_ctrl();
+    add_stacking_algorithm_choice_box();
 };
 
-void MyFrame::n_cpu_slider()    {
+void MyFrame::add_n_cpu_slider()    {
     const int max_cpu = m_stack_settings.get_max_threads();
 
     // Create a wxStaticText to display the current value
@@ -139,7 +150,34 @@ void MyFrame::n_cpu_slider()    {
     m_sizer_top_left->Add(slider_ncpu, 0,  wxEXPAND, 5);
 };
 
+void MyFrame::add_stacking_algorithm_choice_box()  {
+    wxStaticText* stacking_algorithm_text = new wxStaticText(this, wxID_ANY, "Stacking algorithm:");
 
+    wxString stacking_algorithms[m_stack_settings.get_stacking_algorithms().size()];
+    for (unsigned int i = 0; i < m_stack_settings.get_stacking_algorithms().size(); ++i) {
+        stacking_algorithms[i] = m_stack_settings.get_stacking_algorithms()[i];
+    }
+    wxChoice* choice_box_stacking_algorithm = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_stack_settings.get_stacking_algorithms().size(), stacking_algorithms);
+    choice_box_stacking_algorithm->SetSelection(0);
+    choice_box_stacking_algorithm->Bind(wxEVT_CHOICE, [choice_box_stacking_algorithm, this](wxCommandEvent&){
+        int current_selection = choice_box_stacking_algorithm->GetSelection();
+        (this->m_stack_settings).set_stacking_algorithm(choice_box_stacking_algorithm->GetString(current_selection).ToStdString());
+    });
+    m_sizer_top_left->Add(stacking_algorithm_text, 0, wxEXPAND, 5);
+    m_sizer_top_left->Add(choice_box_stacking_algorithm, 0,  wxEXPAND, 5);
+};
+
+void MyFrame::add_max_memory_spin_ctrl() {
+    wxStaticText* memory_usage_text = new wxStaticText(this, wxID_ANY, "Maximum memory usage (MB):");
+
+    wxSpinCtrl* spin_ctrl_max_memory = new wxSpinCtrl(this, wxID_ANY, "8000", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100000, 8000);
+    spin_ctrl_max_memory->Bind(wxEVT_SPINCTRL, [spin_ctrl_max_memory, this](wxCommandEvent&){
+        int current_value = spin_ctrl_max_memory->GetValue();
+        (this->m_stack_settings).set_max_memory(current_value);
+    });
+    m_sizer_top_left->Add(memory_usage_text, 0, wxEXPAND, 5);
+    m_sizer_top_left->Add(spin_ctrl_max_memory, 0,  wxEXPAND, 5);
+};
 
 void MyFrame::add_image_settings()   {
     // TODO
