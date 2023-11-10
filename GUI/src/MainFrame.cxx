@@ -126,6 +126,7 @@ void MyFrame::add_stack_settings_preview()   {
     add_n_cpu_slider();
     add_max_memory_spin_ctrl();
     add_stacking_algorithm_choice_box();
+    add_max_memory_spin_ctrl();
 };
 
 void MyFrame::add_n_cpu_slider()    {
@@ -162,9 +163,59 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
     choice_box_stacking_algorithm->Bind(wxEVT_CHOICE, [choice_box_stacking_algorithm, this](wxCommandEvent&){
         int current_selection = choice_box_stacking_algorithm->GetSelection();
         (this->m_stack_settings).set_stacking_algorithm(choice_box_stacking_algorithm->GetString(current_selection).ToStdString());
+        update_kappa_sigma_visibility();
     });
     m_sizer_top_left->Add(stacking_algorithm_text, 0, wxEXPAND, 5);
     m_sizer_top_left->Add(choice_box_stacking_algorithm, 0,  wxEXPAND, 5);
+
+    add_kappa_sigma_options();
+};
+
+void MyFrame::add_kappa_sigma_options() {
+    wxBoxSizer* kappa_sigma_sizer  = new wxBoxSizer(wxHORIZONTAL);
+    m_sizer_top_left->Add(kappa_sigma_sizer,   1, wxEXPAND | wxALL, 5);
+
+    wxBoxSizer* kappa_sizer  = new wxBoxSizer(wxVERTICAL);
+    kappa_sigma_sizer->Add(kappa_sizer, 0, wxEXPAND, 5);
+    m_kappa_text = new wxStaticText(this, wxID_ANY, "Kappa:");
+    m_spin_ctrl_kappa = new wxSpinCtrlDouble(this, wxID_ANY, "3.0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 6, 2, 0.1);
+
+    m_spin_ctrl_kappa->Bind(wxEVT_SPINCTRL, [this](wxCommandEvent&){
+        double current_value = m_spin_ctrl_kappa->GetValue() / 10.0;
+        (this->m_stack_settings).set_kappa(current_value);
+    });
+
+    kappa_sizer->Add(m_kappa_text, 0, wxEXPAND, 5);
+    kappa_sizer->Add(m_spin_ctrl_kappa, 0,  wxEXPAND, 5);
+
+    wxBoxSizer* kappa_sigma_iter_sizer  = new wxBoxSizer(wxVERTICAL);
+    kappa_sigma_sizer->Add(kappa_sigma_iter_sizer, 0, wxEXPAND, 5);
+    m_kappa_sigma_iter_text = new wxStaticText(this, wxID_ANY, "Iterations:");
+    m_spin_ctrl_kappa_sigma_iter = new wxSpinCtrl(this, wxID_ANY, "3", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100, 3);
+
+    m_spin_ctrl_kappa_sigma_iter->Bind(wxEVT_SPINCTRL, [this](wxCommandEvent&){
+        int current_value = m_spin_ctrl_kappa_sigma_iter->GetValue();
+        (this->m_stack_settings).set_kappa_sigma_iter(current_value);
+    });
+
+    kappa_sigma_iter_sizer->Add(m_kappa_sigma_iter_text, 0, wxEXPAND, 5);
+    kappa_sigma_iter_sizer->Add(m_spin_ctrl_kappa_sigma_iter, 0,  wxEXPAND, 5);
+
+};
+
+void MyFrame::update_kappa_sigma_visibility()   {
+    if (!m_stack_settings.is_kappa_sigma()) {
+        m_kappa_text->Hide();
+        m_spin_ctrl_kappa->Hide();
+        m_kappa_sigma_iter_text->Hide();
+        m_spin_ctrl_kappa_sigma_iter->Hide();
+    }
+    else    {
+        m_kappa_text->Show();
+        m_spin_ctrl_kappa->Show();
+        m_kappa_sigma_iter_text->Show();
+        m_spin_ctrl_kappa_sigma_iter->Show();
+    }
 };
 
 void MyFrame::add_max_memory_spin_ctrl() {

@@ -25,13 +25,24 @@ class StackSettings {
         const std::vector<std::string>& get_stacking_algorithms() const;
         void set_stacking_algorithm(const std::string& stacking_algorithm);
         const std::string& get_stacking_algorithm() const;
+        bool is_kappa_sigma() const;
+
+        // kappa-sigma options
+        void  set_kappa(float kappa_sigma);
+        float get_kappa() const;
+
+        void set_kappa_sigma_iter(int kappa_sigma_iter);
+        int  get_kappa_sigma_iter() const;
 
     private:
         std::string m_alignment_file;
-        std::string m_stacking_algorithm;
+        std::string m_stacking_algorithm = "average";
         int m_n_cpus = get_max_threads();
         int m_max_memory = 8000;
 
-        const std::vector<std::string> m_stacking_algorithms = {"average", "median", "kappa-sigma mean", "kappa-sigma median"};
+        float m_kappa = 1.0;
+        int   m_kappa_sigma_iter = 3;
+
+        const std::vector<std::string> m_stacking_algorithms = {"kappa-sigma median", "kappa-sigma mean", "average", "median", };
 
 };

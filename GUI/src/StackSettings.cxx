@@ -46,3 +46,23 @@ void StackSettings::set_stacking_algorithm(const std::string& stacking_algorithm
 const std::string& StackSettings::get_stacking_algorithm() const       {
     return m_stacking_algorithm;
 };
+
+bool StackSettings::is_kappa_sigma() const     {
+    return m_stacking_algorithm == "kappa-sigma mean" || m_stacking_algorithm == "kappa-sigma median";
+};
+
+void  StackSettings::set_kappa(float kappa_sigma)       {
+    m_kappa = kappa_sigma;
+};
+
+float StackSettings::get_kappa() const  {
+    return m_kappa;
+};
+
+void StackSettings::set_kappa_sigma_iter(int kappa_sigma_iter)  {
+    m_kappa_sigma_iter = kappa_sigma_iter;
+};
+
+int  StackSettings::get_kappa_sigma_iter() const        {
+    return m_kappa_sigma_iter;
+};

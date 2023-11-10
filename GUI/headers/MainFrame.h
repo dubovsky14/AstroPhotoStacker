@@ -5,6 +5,7 @@
 #include "../headers/StackSettings.h"
 
 #include <wx/wx.h>
+#include <wx/spinctrl.h>
 
 #include <memory>
 
@@ -33,6 +34,8 @@ class MyFrame : public wxFrame  {
         void add_image_settings();
         void add_n_cpu_slider();
         void add_stacking_algorithm_choice_box();
+        void add_kappa_sigma_options();
+        void update_kappa_sigma_visibility();
         void add_max_memory_spin_ctrl();
 
 
@@ -47,6 +50,12 @@ class MyFrame : public wxFrame  {
         wxBoxSizer  *m_sizer_top_left   = nullptr;
         wxBoxSizer  *m_sizer_top_center = nullptr;
         wxBoxSizer  *m_sizer_top_right  = nullptr;
+
+
+        wxStaticText        *m_kappa_text                   = nullptr;
+        wxSpinCtrlDouble    *m_spin_ctrl_kappa              = nullptr;
+        wxStaticText        *m_kappa_sigma_iter_text        = nullptr;
+        wxSpinCtrl          *m_spin_ctrl_kappa_sigma_iter   = nullptr;
 
 
         wxCheckListBox *m_files_to_stack_checkbox = nullptr;
