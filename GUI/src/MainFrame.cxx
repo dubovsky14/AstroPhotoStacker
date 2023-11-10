@@ -1,5 +1,9 @@
 #include "../headers/MainFrame.h"
 
+#include <iostream>
+
+using namespace std;
+
 bool MyApp::OnInit()    {
     MyFrame *frame = new MyFrame();
     frame->Show(true);
@@ -12,8 +16,10 @@ MyFrame::MyFrame()
     m_sizer_main_frame = new wxBoxSizer(wxVERTICAL);
     //m_panel_top     = new wxPanel(this, wxID_ANY);
     //m_sizer_main_frame->Add(m_panel_top   , 1,wxEXPAND | wxALL, 5);
-    m_sizer_top     = new wxBoxSizer(wxHORIZONTAL);
-    m_sizer_main_frame->Add(m_sizer_top   , 1,wxEXPAND | wxALL, 5);
+    m_sizer_top         = new wxBoxSizer(wxHORIZONTAL);
+    m_sizer_button_bar  = new wxBoxSizer(wxHORIZONTAL);
+    m_sizer_main_frame->Add(m_sizer_top,        9, wxEXPAND | wxALL, 5);
+    m_sizer_main_frame->Add(m_sizer_button_bar, 1, wxEXPAND | wxALL, 5);
 
     m_sizer_top_left    = new wxBoxSizer(wxVERTICAL);
     m_sizer_top_center  = new wxBoxSizer(wxVERTICAL);
@@ -27,6 +33,8 @@ MyFrame::MyFrame()
     //SetSizer(m_sizer_top);
 
     add_files_to_stack_checkbox();
+
+    add_button_bar();
 
     add_stack_settings_preview();
     add_image_preview();
@@ -67,7 +75,7 @@ void MyFrame::add_menu_bar()    {
 void MyFrame::add_files_to_stack_checkbox()  {
     wxArrayString files;
     m_files_to_stack_checkbox = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, files, wxLB_MULTIPLE);
-    m_sizer_main_frame->Add(m_files_to_stack_checkbox, 1,wxEXPAND | wxALL, 5);
+    m_sizer_main_frame->Add(m_files_to_stack_checkbox, 9,wxEXPAND | wxALL, 5);
 };
 
 void MyFrame::update_files_to_stack_checkbox()   {
@@ -79,13 +87,34 @@ void MyFrame::update_files_to_stack_checkbox()   {
     }
 };
 
+void MyFrame::add_button_bar()   {
+    wxButton *button_align_files = new wxButton(this, wxID_ANY, "Align files");
+    wxButton *button_rank_files  = new wxButton(this, wxID_ANY, "Rank files");
+    wxButton *button_stack_files = new wxButton(this, wxID_ANY, "Stack files");
+
+    button_align_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        // TODO
+        cout << "Align files" << endl;
+    });
+
+    button_rank_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        // TODO
+        cout << "Rank files" << endl;
+    });
+
+
+    button_stack_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        // TODO
+        cout << "stack files" << endl;
+    });
+
+    m_sizer_button_bar->Add(button_align_files, 1, wxALL, 5);
+    m_sizer_button_bar->Add(button_rank_files,  1, wxALL, 5);
+    m_sizer_button_bar->Add(button_stack_files, 1, wxALL, 5);
+};
+
 void MyFrame::add_stack_settings_preview()   {
     n_cpu_slider();
-    return;
-    // nCPU slider
-    int max_cpu = m_stack_settings.get_max_threads();
-    wxSlider *slider_ncpu = new wxSlider(this, wxID_ANY, max_cpu, 1, max_cpu, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
-    m_sizer_top_left->Add(slider_ncpu, 1, wxEXPAND , 0);
 };
 
 void MyFrame::n_cpu_slider()    {

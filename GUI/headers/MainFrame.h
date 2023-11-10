@@ -25,6 +25,8 @@ class MyFrame : public wxFrame  {
         void add_files_to_stack_checkbox();
         void update_files_to_stack_checkbox();
 
+        void add_button_bar();
+
         void add_stack_settings_preview();
         void add_image_preview();
 
@@ -33,6 +35,7 @@ class MyFrame : public wxFrame  {
 
         wxPanel     *m_panel_top        = nullptr;
         wxBoxSizer  *m_sizer_main_frame = nullptr;
+        wxBoxSizer  *m_sizer_button_bar = nullptr;
         wxBoxSizer  *m_sizer_top        = nullptr;
         wxMenuBar   *m_menu_bar         = nullptr;
         wxMenu      *m_file_menu        = nullptr;
