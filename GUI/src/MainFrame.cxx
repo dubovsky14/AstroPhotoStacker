@@ -90,10 +90,27 @@ void MyFrame::update_files_to_stack_checkbox()   {
 };
 
 void MyFrame::add_button_bar()   {
+    wxButton *button_check_all      = new wxButton(this, wxID_ANY, "Check all");
     wxButton *button_align_files    = new wxButton(this, wxID_ANY, "Align files");
     wxButton *button_hot_pixel_id   = new wxButton(this, wxID_ANY, "Identify hot pixels");
     wxButton *button_rank_files     = new wxButton(this, wxID_ANY, "Rank files");
     wxButton *button_stack_files    = new wxButton(this, wxID_ANY, "Stack files");
+
+    button_check_all->Bind(wxEVT_BUTTON, [this, button_check_all](wxCommandEvent&){
+        if (button_check_all->GetLabel() == "Uncheck all") {
+            for (unsigned int i = 0; i < m_files_to_stack_checkbox->GetCount(); ++i) {
+                m_files_to_stack_checkbox->Check(i, false);
+            }
+            button_check_all->SetLabel("Check all");
+            return;
+        }
+        else {
+            for (unsigned int i = 0; i < m_files_to_stack_checkbox->GetCount(); ++i) {
+                m_files_to_stack_checkbox->Check(i);
+            }
+            button_check_all->SetLabel("Uncheck all");
+        }
+    });
 
     button_align_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         // TODO
@@ -116,6 +133,7 @@ void MyFrame::add_button_bar()   {
         cout << "stack files" << endl;
     });
 
+    m_sizer_button_bar->Add(button_check_all, 1, wxALL, 5);
     m_sizer_button_bar->Add(button_align_files, 1, wxALL, 5);
     m_sizer_button_bar->Add(button_hot_pixel_id,1, wxALL, 5);
     m_sizer_button_bar->Add(button_rank_files,  1, wxALL, 5);
@@ -126,7 +144,6 @@ void MyFrame::add_stack_settings_preview()   {
     add_n_cpu_slider();
     add_max_memory_spin_ctrl();
     add_stacking_algorithm_choice_box();
-    add_max_memory_spin_ctrl();
 };
 
 void MyFrame::add_n_cpu_slider()    {
