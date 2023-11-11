@@ -33,10 +33,10 @@ class MyFrame : public wxFrame  {
 
         void add_image_settings();
         void add_n_cpu_slider();
+        void add_max_memory_spin_ctrl();
         void add_stacking_algorithm_choice_box();
         void add_kappa_sigma_options();
         void update_kappa_sigma_visibility();
-        void add_max_memory_spin_ctrl();
 
 
         wxPanel     *m_panel_top        = nullptr;

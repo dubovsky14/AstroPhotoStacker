@@ -1,4 +1,5 @@
 #include "../headers/MainFrame.h"
+#include "../headers/AlignmentFrame.h"
 
 #include <wx/spinctrl.h>
 
@@ -78,6 +79,12 @@ void MyFrame::add_files_to_stack_checkbox()  {
     wxArrayString files;
     m_files_to_stack_checkbox = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, files, wxLB_MULTIPLE);
     m_sizer_main_frame->Add(m_files_to_stack_checkbox, 9,wxEXPAND | wxALL, 5);
+
+    m_files_to_stack_checkbox->Bind(wxEVT_LISTBOX, [this](wxCommandEvent &event){
+        int index = event.GetSelection();
+        string text = m_files_to_stack_checkbox->GetString(index).ToStdString();
+        cout << "TODO: Add preview for file: " << text << endl;
+    });
 };
 
 void MyFrame::update_files_to_stack_checkbox()   {
@@ -91,9 +98,9 @@ void MyFrame::update_files_to_stack_checkbox()   {
 
 void MyFrame::add_button_bar()   {
     wxButton *button_check_all      = new wxButton(this, wxID_ANY, "Check all");
+    wxButton *button_remove_checked = new wxButton(this, wxID_ANY, "Remove checked");
     wxButton *button_align_files    = new wxButton(this, wxID_ANY, "Align files");
     wxButton *button_hot_pixel_id   = new wxButton(this, wxID_ANY, "Identify hot pixels");
-    wxButton *button_rank_files     = new wxButton(this, wxID_ANY, "Rank files");
     wxButton *button_stack_files    = new wxButton(this, wxID_ANY, "Stack files");
 
     button_check_all->Bind(wxEVT_BUTTON, [this, button_check_all](wxCommandEvent&){
@@ -113,8 +120,29 @@ void MyFrame::add_button_bar()   {
     });
 
     button_align_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
-        // TODO
-        cout << "Align files" << endl;
+        // pop-up window with wxChoice of added light frames
+        AlignmentFrame *select_alignment_window = new AlignmentFrame(m_filelist_handler.get_files(FileTypes::LIGHT), &m_stack_settings);
+        select_alignment_window->Show(true);
+
+    });
+
+    button_remove_checked->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        // get checked files:
+        wxArrayInt checked_indices;
+        m_files_to_stack_checkbox->GetCheckedItems(checked_indices);
+
+        // remove checked files from m_filelist_handler
+        for (int i = checked_indices.GetCount() - 1; i >= 0; --i) {
+            const std::string option = m_files_to_stack_checkbox->GetString(checked_indices[i]).ToStdString();
+            const std::string type = option.substr(0, option.find_first_of("\t"));
+            const FileTypes   type_enum = string_to_filetype(type);
+            const std::string file = option.substr(option.find_last_of("\t") + 1);
+
+            m_filelist_handler.remove_file(file, type_enum);
+        }
+
+        // update m_files_to_stack_checkbox
+        update_files_to_stack_checkbox();
     });
 
     button_hot_pixel_id->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
@@ -122,21 +150,15 @@ void MyFrame::add_button_bar()   {
         cout << "Identify hot pixels" << endl;
     });
 
-    button_rank_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
-        // TODO
-        cout << "Rank files" << endl;
-    });
-
-
     button_stack_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         // TODO
         cout << "stack files" << endl;
     });
 
     m_sizer_button_bar->Add(button_check_all, 1, wxALL, 5);
+    m_sizer_button_bar->Add(button_remove_checked,  1, wxALL, 5);
     m_sizer_button_bar->Add(button_align_files, 1, wxALL, 5);
     m_sizer_button_bar->Add(button_hot_pixel_id,1, wxALL, 5);
-    m_sizer_button_bar->Add(button_rank_files,  1, wxALL, 5);
     m_sizer_button_bar->Add(button_stack_files, 1, wxALL, 5);
 };
 
