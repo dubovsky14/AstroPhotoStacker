@@ -30,15 +30,17 @@ class MyFrame : public wxFrame  {
 
         void add_stack_settings_preview();
         void add_image_preview();
-        void update_image_preview(const std::string& file_address);
+        void update_image_preview_file(const std::string& file_address);
+        void update_image_preview();
 
-        void add_image_settings();
         void add_n_cpu_slider();
         void add_max_memory_spin_ctrl();
         void add_stacking_algorithm_choice_box();
         void add_kappa_sigma_options();
         void update_kappa_sigma_visibility();
 
+        void add_image_settings();
+        void add_exposure_correction_spin_ctrl();
 
         wxPanel     *m_panel_top        = nullptr;
         wxBoxSizer  *m_sizer_main_frame = nullptr;
@@ -60,6 +62,8 @@ class MyFrame : public wxFrame  {
 
         int                             m_preview_size[2]   = {600, 400};
         std::vector<std::vector<int>>   m_current_preview;
+        int                             m_current_max_value = 0;
+        float                           m_current_exposure_correction = 0;
         wxStaticBitmap      *m_preview_bitmap               = nullptr;
 
 

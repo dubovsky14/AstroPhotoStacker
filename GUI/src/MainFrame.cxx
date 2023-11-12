@@ -85,8 +85,7 @@ void MyFrame::add_files_to_stack_checkbox()  {
         int index = event.GetSelection();
         string text = m_files_to_stack_checkbox->GetString(index).ToStdString();
         const std::string file = text.substr(text.find_last_of("\t") + 1);
-        cout << "TODO: Add preview for file: " << file << endl;
-        update_image_preview(file);
+        update_image_preview_file(file);
     });
 };
 
@@ -274,8 +273,9 @@ void MyFrame::add_max_memory_spin_ctrl() {
 
 void MyFrame::add_image_settings()   {
     // TODO
-    wxPanel *panel = new wxPanel(this, wxID_ANY);
-    m_sizer_top_right->Add(panel, 1, wxEXPAND, 0);
+    add_exposure_correction_spin_ctrl();
+    //wxPanel *panel = new wxPanel(this, wxID_ANY);
+    //m_sizer_top_right->Add(panel, 1, wxEXPAND, 0);
 };
 
 void MyFrame::add_image_preview()    {
@@ -298,22 +298,26 @@ void MyFrame::add_image_preview()    {
     m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
 };
 
-void MyFrame::update_image_preview(const std::string& file_address)  {
-    int max_brigthness;
-    m_current_preview = get_preview(file_address, m_preview_size[0],m_preview_size[1], &max_brigthness);
+void MyFrame::update_image_preview_file(const std::string& file_address)  {
+    m_current_preview = get_preview(file_address, m_preview_size[0],m_preview_size[1], &m_current_max_value);
 
+    update_image_preview();
+};
+
+void MyFrame::update_image_preview()  {
     const int width = m_preview_size[0];
     const int height = m_preview_size[1];
 
-    const float scale_factor = 2*255.0 / max_brigthness;
+    const float scale_factor = pow(2,m_current_exposure_correction)*2*255.0 / m_current_max_value;
 
     // update m_preview_bitmap
     wxImage image_wx(width, height);
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
+
             const int index = x + y*width;
             image_wx.SetRGB(x, y,   min<int>(255,scale_factor*m_current_preview[0][index]),
-                                    0.5*scale_factor*m_current_preview[1][index],
+                                    min<int>(255,0.5*scale_factor*m_current_preview[1][index]),
                                     min<int>(255,scale_factor*m_current_preview[2][index]));
         }
     }
@@ -324,6 +328,30 @@ void MyFrame::update_image_preview(const std::string& file_address)  {
     // Create a wxStaticBitmap to display the image
     m_preview_bitmap->SetBitmap(bitmap);
     m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
+};
+
+
+void MyFrame::add_exposure_correction_spin_ctrl()   {
+
+    // Create a wxStaticText to display the current value
+    wxStaticText* exposure_correction_text = new wxStaticText(this, wxID_ANY, "Exposure correction: 0.0");
+
+    // Create the wxSlider
+    wxSlider* slider_exposure = new wxSlider(this, wxID_ANY, 0, -50, 50, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+
+    // Bind the slider's wxEVT_SLIDER event to a lambda function that updates the value text
+    slider_exposure->Bind(wxEVT_SLIDER, [exposure_correction_text, slider_exposure, this](wxCommandEvent&){
+        m_current_exposure_correction = slider_exposure->GetValue()/10.;
+        update_image_preview();
+        const std::string new_label = "Exposure correction: " + to_string(m_current_exposure_correction+0.0001).substr(0,4);
+        exposure_correction_text->SetLabel(new_label);
+    });
+
+    // Add the controls to a sizer
+    //wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    m_sizer_top_right->Add(exposure_correction_text, 0,   wxEXPAND, 5);
+    m_sizer_top_right->Add(slider_exposure, 0,  wxEXPAND, 5);
+
 };
 
 void MyFrame::on_exit(wxCommandEvent& event)     {
