@@ -2,8 +2,10 @@
 #include "../headers/AlignmentFrame.h"
 #include "../headers/ImagePreview.h"
 #include "../../headers/Common.h"
+#include "../../headers/thread_pool.h"
 
 #include <wx/spinctrl.h>
+#include <wx/progdlg.h>
 
 #include <iostream>
 
@@ -120,6 +122,7 @@ void MyFrame::add_button_bar()   {
     wxButton *button_stack_files    = new wxButton(this, wxID_ANY, "Stack files");
 
     button_check_all->Bind(wxEVT_BUTTON, [this, button_check_all](wxCommandEvent&){
+        update_checked_files_in_filelist();
         if (button_check_all->GetLabel() == "Uncheck all") {
             for (unsigned int i = 0; i < m_files_to_stack_checkbox->GetCount(); ++i) {
                 m_files_to_stack_checkbox->Check(i, false);
@@ -159,17 +162,57 @@ void MyFrame::add_button_bar()   {
     });
 
     button_hot_pixel_id->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        update_checked_files_in_filelist();
+        vector<string> files;
+        for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
+            for (unsigned int i = 0; i < m_filelist_handler.get_files(type).size(); i++)   {
+                if (m_filelist_handler.get_files_checked(type)[i]) {
+                    files.push_back(m_filelist_handler.get_files(type)[i]);
+                }
+            }
+        }
+
+        m_hot_pixel_identifier = make_unique<AstroPhotoStacker::HotPixelIdentifier>();
+        m_hot_pixel_identifier->set_n_cpu(m_stack_settings.get_n_cpus());
+        const std::atomic<int> &n_processed = m_hot_pixel_identifier->get_number_of_processed_photos();
+        const int files_total = files.size();
+
+        wxProgressDialog progress_bar("Hot pixel identification", "Processed 0 / " + std::to_string(files_total) + " files", files_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
+        progress_bar.Update(n_processed);
+
+        thread_pool pool(1);
+        pool.submit([this, files](){
+            m_hot_pixel_identifier->add_photos(files);
+        });
+
+        while (n_processed < int(files.size())) {
+            progress_bar.Update(n_processed, "Processed " + std::to_string(n_processed) + " / " + std::to_string(files_total) + " files");
+            wxMilliSleep(100);
+        }
+        progress_bar.Close();
+        progress_bar.Destroy();
+
+        pool.wait_for_tasks();
+
+        m_hot_pixel_identifier->compute_hot_pixels();
+
+        std::vector<std::tuple<int,int>> hot_pixels = m_hot_pixel_identifier->get_hot_pixels();
+
+        cout << "Hot pixels identified!" << endl;
+        cout << "Processed " + std::to_string(n_processed) + " / " + std::to_string(files_total) + " files\n";
+        for (const auto &hot_pixel : hot_pixels) {
+            cout << get<0>(hot_pixel) << "\t" << get<1>(hot_pixel) << endl;
+        }
+    });
+
+    button_stack_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        update_checked_files_in_filelist();
         // TODO
         for (unsigned int i_light = 0; i_light < m_filelist_handler.get_files(FileTypes::LIGHT).size(); ++i_light)   {
             const std::string file = m_filelist_handler.get_files(FileTypes::LIGHT)[i_light];
             const AlignmentFileInfo &alignment_info = m_filelist_handler.get_alignment_info(FileTypes::LIGHT)[i_light];
             cout << file << "\t" << alignment_info << endl;
         }
-        cout << "Identify hot pixels" << endl;
-    });
-
-    button_stack_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
-        // TODO
         cout << "stack files" << endl;
     });
 

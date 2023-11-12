@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <mutex>
+#include <atomic>
 
 
 namespace AstroPhotoStacker {
@@ -29,12 +30,14 @@ namespace AstroPhotoStacker {
 
             bool is_hot_pixel(int x, int y) const;
 
+            const std::atomic<int> &get_number_of_processed_photos() const;
+
         private:
-            unsigned int m_number_of_photos = 0;
             unsigned int m_n_cpu = 1;
             std::map<std::tuple<int,int>, int> m_hot_pixel_candidates;
             std::map<std::tuple<int,int>, bool> m_hot_pixels;
             std::mutex m_mutex;
+            std::atomic<int> m_n_photos_processed = 0;
 
     };
 }

@@ -31,7 +31,7 @@ void HotPixelIdentifier::add_photo(const std::string &photo_address)    {
 };
 
 void HotPixelIdentifier::add_photo(const unsigned short int *pixel_value_array, int width, int height, int image_bit_depth) {
-    m_number_of_photos++;
+    m_n_photos_processed++;
     const auto hot_pixel_candidates = get_hot_pixel_candidates_from_photo(pixel_value_array, width, height, image_bit_depth);
     {
         scoped_lock lock(m_mutex);
@@ -53,7 +53,7 @@ void HotPixelIdentifier::compute_hot_pixels()   {
     for (const auto &hot_pixel_candidate : m_hot_pixel_candidates) {
         const auto &hot_pixel_candidate_coordinates = hot_pixel_candidate.first;
         const auto &hot_pixel_candidate_value = hot_pixel_candidate.second;
-        if (hot_pixel_candidate_value > m_number_of_photos*0.5) {
+        if (hot_pixel_candidate_value > m_n_photos_processed*0.5) {
             m_hot_pixels[hot_pixel_candidate_coordinates] = true;
         }
     }
@@ -65,7 +65,7 @@ vector<tuple<int,int>> HotPixelIdentifier::get_hot_pixels() const   {
     for (const auto &hot_pixel : m_hot_pixels) {
         const auto &hot_pixel_coordinates = hot_pixel.first;
         const auto &hot_pixel_count = hot_pixel.second;
-        if (hot_pixel_count > m_number_of_photos*0.5) {
+        if (hot_pixel_count > m_n_photos_processed*0.5) {
             hot_pixels.push_back(hot_pixel_coordinates);
         }
     }
@@ -151,4 +151,8 @@ void HotPixelIdentifier::set_n_cpu(unsigned int n_cpu) {
 
 bool HotPixelIdentifier::is_hot_pixel(int x, int y) const   {
     return m_hot_pixels.find(std::make_tuple(x,y)) != m_hot_pixels.end();
+};
+
+const std::atomic<int>& HotPixelIdentifier::get_number_of_processed_photos() const  {
+    return m_n_photos_processed;
 };
