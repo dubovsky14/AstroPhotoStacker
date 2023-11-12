@@ -58,7 +58,8 @@ class MyFrame : public wxFrame  {
         wxStaticText        *m_kappa_sigma_iter_text        = nullptr;
         wxSpinCtrl          *m_spin_ctrl_kappa_sigma_iter   = nullptr;
 
-        int                 m_preview_size[2]               = {600, 400};
+        int                             m_preview_size[2]   = {600, 400};
+        std::vector<std::vector<int>>   m_current_preview;
         wxStaticBitmap      *m_preview_bitmap               = nullptr;
 
 

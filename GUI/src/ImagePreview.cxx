@@ -50,55 +50,5 @@ std::vector<std::vector<int>> get_preview(const std::string &path, int width, in
         }
     }
 
-
-    cout << "Preview file loaded" << endl;
-    cout << "R channel size: " << preview[0].size() << endl;
-    cout << "G channel size: " << preview[1].size() << endl;
-    cout << "B channel size: " << preview[2].size() << endl;
-
-    cout << "Going to save preview file" << endl;
-    crate_color_image(preview[0].data(), preview[1].data(), preview[2].data(), width, height, "/home/dubovsky/Documents/zdrojaky/AstroPhotoStacker/GUI/bin/preview.tif", CV_16UC3);
-    //create_gray_scale_image(preview[0].data(), width, height, "/home/dubovsky/Documents/zdrojaky/AstroPhotoStacker/GUI/bin/preview_red.tif", CV_16UC1);
-
-    cout << "Preview file saved" << endl;
-
     return preview;
 };
-
-
-/*
-    for (int i_pixel_new_y = 0; i_pixel_new_y < height; i_pixel_new_y++)   {
-        for (int i_pixel_new_x = 0; i_pixel_new_x < width; i_pixel_new_x++)   {
-            int count[] = {0, 0, 0};
-            int sum[] = {0, 0, 0};
-
-            // now calculate sum over original pixels in individual RGB channels
-            const int y_original_min = i_pixel_new_y * step_y;
-            const int y_original_max = max<int>(((i_pixel_new_y + 1) * step_y),raw_height-1);
-            const int x_original_min = i_pixel_new_x * step_x;
-            const int x_original_max = max<int>(((i_pixel_new_x + 1) * step_x),raw_width-1);
-
-            for (int y_original = y_original_min; y_original < y_original_max; ++y_original)   {
-                for (int x_original = x_original_min; x_original < x_original_max; ++x_original)   {
-                    const int index = y_original * raw_width + x_original;
-                    int color = colors[index];
-                    if (color == 3) color = 1;
-                    count[color]++;
-                    sum[color] += brightness[index];
-                }
-            }
-
-            const int index_new = i_pixel_new_y * width + i_pixel_new_x;
-
-            // now calculate average
-            for (int i_color = 0; i_color < 3; ++i_color)   {
-                if (count[i_color] > 0) {
-                    preview[i_color][index_new] = sum[i_color] / count[i_color];
-                }
-                else {
-                    preview[i_color][index_new] = 0;
-                }
-            }
-        }
-    }
-*/

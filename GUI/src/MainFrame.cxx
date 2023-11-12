@@ -295,24 +295,26 @@ void MyFrame::add_image_preview()    {
     m_preview_bitmap = new wxStaticBitmap(this, wxID_ANY, bitmap);
 
     // Add the wxStaticBitmap to a sizer
-    m_sizer_top_center->Add(m_preview_bitmap, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, 0);
+    m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
 };
 
 void MyFrame::update_image_preview(const std::string& file_address)  {
     int max_brigthness;
-    vector<vector<int>> image = get_preview(file_address, m_preview_size[0],m_preview_size[1], &max_brigthness);
+    m_current_preview = get_preview(file_address, m_preview_size[0],m_preview_size[1], &max_brigthness);
 
     const int width = m_preview_size[0];
     const int height = m_preview_size[1];
 
-    const float scale_factor = 255.0 / max_brigthness;
+    const float scale_factor = 2*255.0 / max_brigthness;
 
     // update m_preview_bitmap
     wxImage image_wx(width, height);
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
             const int index = x + y*width;
-            image_wx.SetRGB(x, y, scale_factor*image[0][index], 0.5*scale_factor*image[1][index], scale_factor*image[2][index]);
+            image_wx.SetRGB(x, y,   min<int>(255,scale_factor*m_current_preview[0][index]),
+                                    0.5*scale_factor*m_current_preview[1][index],
+                                    min<int>(255,scale_factor*m_current_preview[2][index]));
         }
     }
 
@@ -321,7 +323,7 @@ void MyFrame::update_image_preview(const std::string& file_address)  {
 
     // Create a wxStaticBitmap to display the image
     m_preview_bitmap->SetBitmap(bitmap);
-    m_sizer_top_center->Add(m_preview_bitmap, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, 0);
+    m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
 };
 
 void MyFrame::on_exit(wxCommandEvent& event)     {
