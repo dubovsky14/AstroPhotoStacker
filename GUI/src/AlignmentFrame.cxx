@@ -1,6 +1,8 @@
 #include "../headers/AlignmentFrame.h"
+#include "../headers/ProgressBarWindow.h"
 
 #include "../../headers/PhotoAlignmentHandler.h"
+#include "../../headers/thread_pool.h"
 
 #include <vector>
 #include <iostream>
@@ -47,7 +49,29 @@ AlignmentFrame::AlignmentFrame(FilelistHandler *filelist_handler, StackSettings 
         // TODO
         AstroPhotoStacker::PhotoAlignmentHandler photo_alignment_handler;
         photo_alignment_handler.set_number_of_cpu_threads(m_stack_settings->get_n_cpus());
-        photo_alignment_handler.align_files(m_stack_settings->get_alignment_file(), files_to_align);
+        const std::atomic<int> &n_processed = photo_alignment_handler.get_number_of_aligned_files();
+
+        this->Close();
+        this->Destroy();
+
+        ProgressBarWindow *progress_bar = new ProgressBarWindow(n_processed, files_to_align.size(), "Aligning files", "Aligning files...", 400, 300);
+        progress_bar->Show(true);
+        progress_bar->Layout();
+        progress_bar->Raise();
+        progress_bar->Show(true);
+
+        thread_pool pool(1);
+        pool.submit([this, &photo_alignment_handler, &files_to_align](){
+            photo_alignment_handler.align_files(m_stack_settings->get_alignment_file(), files_to_align);
+        });
+
+        while (n_processed < int(files_to_align.size())) {
+            progress_bar->update_gauge();
+            wxMilliSleep(100);
+        }
+        progress_bar->Close();
+
+        pool.wait_for_tasks();
 
         const std::vector<AstroPhotoStacker::FileAlignmentInformation> &alignment_info = photo_alignment_handler.get_alignment_parameters_vector();
 
@@ -64,8 +88,6 @@ AlignmentFrame::AlignmentFrame(FilelistHandler *filelist_handler, StackSettings 
             alignment_file_info.initialized = true;
             m_filelist_handler->set_alignment_info(i_file, alignment_file_info);
         }
-
-        this->Close();
     });
 
     main_sizer->Add(select_file_text, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);

@@ -43,7 +43,7 @@ namespace   AstroPhotoStacker   {
 
             void limit_fraction_of_files(float fraction);
 
-            int get_number_of_aligned_files() const { return m_n_files_aligned; };
+            const std::atomic<int> &get_number_of_aligned_files() const { return m_n_files_aligned; };
 
         private:
             std::string m_reference_file_address = "";
