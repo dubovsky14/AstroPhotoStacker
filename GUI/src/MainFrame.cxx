@@ -2,6 +2,8 @@
 #include "../headers/AlignmentFrame.h"
 #include "../headers/ImagePreview.h"
 #include "../../headers/Common.h"
+#include "../headers/ProgressBarWindow.h"
+
 
 #include <wx/spinctrl.h>
 
@@ -138,7 +140,7 @@ void MyFrame::add_button_bar()   {
     button_align_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         // pop-up window with wxChoice of added light frames
         update_checked_files_in_filelist();
-        AlignmentFrame *select_alignment_window = new AlignmentFrame(&m_filelist_handler, &m_stack_settings);
+        AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, &m_stack_settings);
         select_alignment_window->Show(true);
 
     });
@@ -171,6 +173,11 @@ void MyFrame::add_button_bar()   {
     button_stack_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         // TODO
         cout << "stack files" << endl;
+
+        atomic<int> n_processed(0);
+
+        ProgressBarWindow *select_alignment_window = new ProgressBarWindow(this, n_processed, 10, "Stacking files", "Stacking files...", 400, 300);
+        select_alignment_window->Show(true);
     });
 
     m_sizer_button_bar->Add(button_check_all, 1, wxALL, 5);

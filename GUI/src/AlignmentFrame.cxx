@@ -6,11 +6,12 @@
 
 #include <vector>
 #include <iostream>
+#include <wx/progdlg.h>
 
 using namespace std;
 
-AlignmentFrame::AlignmentFrame(FilelistHandler *filelist_handler, StackSettings *stack_settings)
-    :  wxFrame(nullptr, wxID_ANY, "Select alignment file")      {
+AlignmentFrame::AlignmentFrame(wxFrame *parent, FilelistHandler *filelist_handler, StackSettings *stack_settings)
+    :  wxFrame(parent, wxID_ANY, "Select alignment file")      {
 
     SetSize(400, 200);
 
@@ -51,14 +52,9 @@ AlignmentFrame::AlignmentFrame(FilelistHandler *filelist_handler, StackSettings 
         photo_alignment_handler.set_number_of_cpu_threads(m_stack_settings->get_n_cpus());
         const std::atomic<int> &n_processed = photo_alignment_handler.get_number_of_aligned_files();
 
-        this->Close();
-        this->Destroy();
-
-        ProgressBarWindow *progress_bar = new ProgressBarWindow(n_processed, files_to_align.size(), "Aligning files", "Aligning files...", 400, 300);
-        progress_bar->Show(true);
-        progress_bar->Layout();
-        progress_bar->Raise();
-        progress_bar->Show(true);
+        const int files_total = files_to_align.size();
+        wxProgressDialog *progress_bar = new wxProgressDialog("Aligning files", "Aligned 0 / " + std::to_string(files_total) + " files", files_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
+        progress_bar->Update(n_processed);
 
         thread_pool pool(1);
         pool.submit([this, &photo_alignment_handler, &files_to_align](){
@@ -66,7 +62,7 @@ AlignmentFrame::AlignmentFrame(FilelistHandler *filelist_handler, StackSettings 
         });
 
         while (n_processed < int(files_to_align.size())) {
-            progress_bar->update_gauge();
+            progress_bar->Update(n_processed, "Aligned " + std::to_string(n_processed) + " / " + std::to_string(files_total) + " files");
             wxMilliSleep(100);
         }
         progress_bar->Close();
@@ -88,6 +84,8 @@ AlignmentFrame::AlignmentFrame(FilelistHandler *filelist_handler, StackSettings 
             alignment_file_info.initialized = true;
             m_filelist_handler->set_alignment_info(i_file, alignment_file_info);
         }
+
+        this->Close();
     });
 
     main_sizer->Add(select_file_text, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);

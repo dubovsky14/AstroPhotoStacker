@@ -12,7 +12,7 @@
 
 class AlignmentFrame : public wxFrame  {
     public:
-        AlignmentFrame(FilelistHandler *filelist_handler, StackSettings *stack_settings);
+        AlignmentFrame(wxFrame *parent, FilelistHandler *filelist_handler, StackSettings *stack_settings);
 
     private:
         StackSettings *m_stack_settings = nullptr;
