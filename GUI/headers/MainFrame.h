@@ -4,6 +4,8 @@
 #include "../headers/FilelistHandler.h"
 #include "../headers/StackSettings.h"
 
+#include "../../headers/PhotoAlignmentHandler.h"
+
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
 
@@ -25,6 +27,7 @@ class MyFrame : public wxFrame  {
 
         void add_files_to_stack_checkbox();
         void update_files_to_stack_checkbox();
+        void update_checked_files_in_filelist();
 
         void add_button_bar();
 
@@ -68,7 +71,6 @@ class MyFrame : public wxFrame  {
 
 
         wxCheckListBox *m_files_to_stack_checkbox = nullptr;
-
 
 
         FilelistHandler m_filelist_handler;

@@ -95,8 +95,11 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
         else {
             cout << "Plate solving failed for file: " + file_name + "\n";
         }
+
+        m_n_files_aligned += 1;
     };
 
+    m_n_files_aligned = 0;
     thread_pool pool(m_n_cpu);
     for (unsigned int i_file = 0; i_file < files.size(); i_file++)   {
         if (m_n_cpu == 1)   {

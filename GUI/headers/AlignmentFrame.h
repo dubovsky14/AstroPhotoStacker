@@ -12,8 +12,9 @@
 
 class AlignmentFrame : public wxFrame  {
     public:
-        AlignmentFrame(const std::vector<std::string> &available_light_frames, StackSettings *stack_settings);
+        AlignmentFrame(FilelistHandler *filelist_handler, StackSettings *stack_settings);
 
     private:
-        std::vector<wxString> m_available_files;
+        StackSettings *m_stack_settings = nullptr;
+        FilelistHandler *m_filelist_handler = nullptr;
 };

@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <atomic>
 
 namespace   AstroPhotoStacker   {
     struct FileAlignmentInformation    {
@@ -34,15 +35,21 @@ namespace   AstroPhotoStacker   {
 
             FileAlignmentInformation get_alignment_parameters(const std::string &file_address) const;
 
+            const std::vector<FileAlignmentInformation> &get_alignment_parameters_vector() const  { return m_alignment_information_vector; };
+
             std::vector<std::string> get_file_addresses() const;
 
             void limit_number_of_files(int n_files);
 
             void limit_fraction_of_files(float fraction);
 
+            int get_number_of_aligned_files() const { return m_n_files_aligned; };
+
         private:
             std::string m_reference_file_address = "";
             std::vector<FileAlignmentInformation>   m_alignment_information_vector;
+
+            std::atomic<int> m_n_files_aligned = 0;
 
             unsigned int m_n_cpu = 1;
 

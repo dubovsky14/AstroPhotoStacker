@@ -1,6 +1,7 @@
 #include "../headers/MainFrame.h"
 #include "../headers/AlignmentFrame.h"
 #include "../headers/ImagePreview.h"
+#include "../../headers/Common.h"
 
 #include <wx/spinctrl.h>
 
@@ -98,6 +99,19 @@ void MyFrame::update_files_to_stack_checkbox()   {
     }
 };
 
+void MyFrame::update_checked_files_in_filelist() {
+    wxArrayInt checked_indices;
+    m_files_to_stack_checkbox->GetCheckedItems(checked_indices);
+
+    m_filelist_handler.set_checked_status_for_all_files(false);
+
+    // loop over checked items:
+    for (size_t i = 0; i < checked_indices.GetCount(); ++i) {
+        int index = checked_indices[i];
+        m_filelist_handler.set_file_checked(index, true);
+    }
+};
+
 void MyFrame::add_button_bar()   {
     wxButton *button_check_all      = new wxButton(this, wxID_ANY, "Check all");
     wxButton *button_remove_checked = new wxButton(this, wxID_ANY, "Remove checked");
@@ -123,7 +137,8 @@ void MyFrame::add_button_bar()   {
 
     button_align_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         // pop-up window with wxChoice of added light frames
-        AlignmentFrame *select_alignment_window = new AlignmentFrame(m_filelist_handler.get_files(FileTypes::LIGHT), &m_stack_settings);
+        update_checked_files_in_filelist();
+        AlignmentFrame *select_alignment_window = new AlignmentFrame(&m_filelist_handler, &m_stack_settings);
         select_alignment_window->Show(true);
 
     });
@@ -136,11 +151,7 @@ void MyFrame::add_button_bar()   {
         // remove checked files from m_filelist_handler
         for (int i = checked_indices.GetCount() - 1; i >= 0; --i) {
             const std::string option = m_files_to_stack_checkbox->GetString(checked_indices[i]).ToStdString();
-            const std::string type = option.substr(0, option.find_first_of("\t"));
-            const FileTypes   type_enum = string_to_filetype(type);
-            const std::string file = option.substr(option.find_last_of("\t") + 1);
-
-            m_filelist_handler.remove_file(file, type_enum);
+            m_filelist_handler.remove_file(checked_indices[i]);
         }
 
         // update m_files_to_stack_checkbox
@@ -149,6 +160,11 @@ void MyFrame::add_button_bar()   {
 
     button_hot_pixel_id->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         // TODO
+        for (unsigned int i_light = 0; i_light < m_filelist_handler.get_files(FileTypes::LIGHT).size(); ++i_light)   {
+            const std::string file = m_filelist_handler.get_files(FileTypes::LIGHT)[i_light];
+            const AlignmentFileInfo &alignment_info = m_filelist_handler.get_alignment_info(FileTypes::LIGHT)[i_light];
+            cout << file << "\t" << alignment_info << endl;
+        }
         cout << "Identify hot pixels" << endl;
     });
 
