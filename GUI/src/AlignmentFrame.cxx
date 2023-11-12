@@ -1,5 +1,4 @@
 #include "../headers/AlignmentFrame.h"
-#include "../headers/ProgressBarWindow.h"
 
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/thread_pool.h"
