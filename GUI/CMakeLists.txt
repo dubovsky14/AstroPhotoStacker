@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 3.0)
 project(AstroPhotoStackerGUI)
 
 find_package(wxWidgets REQUIRED COMPONENTS net core base)
+find_package(OpenCV)
+
 include(${wxWidgets_USE_FILE})
+
+link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../bin/)
 
 message(${wxWidgets_INCLUDE_DIRS})
 set(CMAKE_CXX_STANDARD 17)
@@ -13,4 +17,4 @@ file(GLOB SOURCES "src/*.cxx")
 
 add_executable(AstroPhotoStackerGUI ${SOURCES} "utils/main.cxx")
 
-target_link_libraries(AstroPhotoStackerGUI ${wxWidgets_LIBRARIES})
+target_link_libraries(AstroPhotoStackerGUI ${wxWidgets_LIBRARIES}  -lraw ${OpenCV_LIBS} "${CMAKE_CURRENT_SOURCE_DIR}/../bin/libAstroPhotoStackerLib.so")

@@ -30,6 +30,7 @@ class MyFrame : public wxFrame  {
 
         void add_stack_settings_preview();
         void add_image_preview();
+        void update_image_preview(const std::string& file_address);
 
         void add_image_settings();
         void add_n_cpu_slider();
@@ -56,6 +57,9 @@ class MyFrame : public wxFrame  {
         wxSpinCtrlDouble    *m_spin_ctrl_kappa              = nullptr;
         wxStaticText        *m_kappa_sigma_iter_text        = nullptr;
         wxSpinCtrl          *m_spin_ctrl_kappa_sigma_iter   = nullptr;
+
+        int                 m_preview_size[2]               = {600, 400};
+        wxStaticBitmap      *m_preview_bitmap               = nullptr;
 
 
         wxCheckListBox *m_files_to_stack_checkbox = nullptr;

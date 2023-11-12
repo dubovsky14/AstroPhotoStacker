@@ -1,5 +1,6 @@
 #include "../headers/MainFrame.h"
 #include "../headers/AlignmentFrame.h"
+#include "../headers/ImagePreview.h"
 
 #include <wx/spinctrl.h>
 
@@ -83,7 +84,9 @@ void MyFrame::add_files_to_stack_checkbox()  {
     m_files_to_stack_checkbox->Bind(wxEVT_LISTBOX, [this](wxCommandEvent &event){
         int index = event.GetSelection();
         string text = m_files_to_stack_checkbox->GetString(index).ToStdString();
-        cout << "TODO: Add preview for file: " << text << endl;
+        const std::string file = text.substr(text.find_last_of("\t") + 1);
+        cout << "TODO: Add preview for file: " << file << endl;
+        update_image_preview(file);
     });
 };
 
@@ -277,10 +280,10 @@ void MyFrame::add_image_settings()   {
 
 void MyFrame::add_image_preview()    {
     // Create a wxImage
-    wxImage image(256, 256);
+    wxImage image(m_preview_size[0], m_preview_size[1]);
 
-    for (int x = 0; x < 256; ++x) {
-        for (int y = 0; y < 256; ++y) {
+    for (int x = 0; x < m_preview_size[0]; ++x) {
+        for (int y = 0; y < m_preview_size[1]; ++y) {
             image.SetRGB(x, y, 0,0,0);
         }
     }
@@ -289,10 +292,36 @@ void MyFrame::add_image_preview()    {
     wxBitmap bitmap(image);
 
     // Create a wxStaticBitmap to display the image
-    wxStaticBitmap* staticBitmap = new wxStaticBitmap(this, wxID_ANY, bitmap);
+    m_preview_bitmap = new wxStaticBitmap(this, wxID_ANY, bitmap);
 
     // Add the wxStaticBitmap to a sizer
-    m_sizer_top_center->Add(staticBitmap, 1, wxEXPAND | wxALL, 0);
+    m_sizer_top_center->Add(m_preview_bitmap, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, 0);
+};
+
+void MyFrame::update_image_preview(const std::string& file_address)  {
+    int max_brigthness;
+    vector<vector<int>> image = get_preview(file_address, m_preview_size[0],m_preview_size[1], &max_brigthness);
+
+    const int width = m_preview_size[0];
+    const int height = m_preview_size[1];
+
+    const float scale_factor = 255.0 / max_brigthness;
+
+    // update m_preview_bitmap
+    wxImage image_wx(width, height);
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            const int index = x + y*width;
+            image_wx.SetRGB(x, y, scale_factor*image[0][index], 0.5*scale_factor*image[1][index], scale_factor*image[2][index]);
+        }
+    }
+
+    // Convert the wxImage to a wxBitmap
+    wxBitmap bitmap(image_wx);
+
+    // Create a wxStaticBitmap to display the image
+    m_preview_bitmap->SetBitmap(bitmap);
+    m_sizer_top_center->Add(m_preview_bitmap, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, 0);
 };
 
 void MyFrame::on_exit(wxCommandEvent& event)     {
