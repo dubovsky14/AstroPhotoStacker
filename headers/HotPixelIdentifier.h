@@ -20,7 +20,7 @@ namespace AstroPhotoStacker {
 
             void compute_hot_pixels();
 
-            std::vector<std::tuple<int,int>> get_hot_pixels() const;
+            const std::vector<std::tuple<int,int>>& get_hot_pixels() const;
 
             void save_hot_pixels_to_file(const std::string &file_address) const;
 
@@ -34,8 +34,9 @@ namespace AstroPhotoStacker {
 
         private:
             unsigned int m_n_cpu = 1;
-            std::map<std::tuple<int,int>, int> m_hot_pixel_candidates;
-            std::map<std::tuple<int,int>, bool> m_hot_pixels;
+            std::map<std::tuple<int,int>, int>  m_hot_pixel_candidates;
+            std::vector<std::tuple<int,int>>    m_hot_pixels;
+            std::map<std::tuple<int,int>,char>  m_hot_pixels_map;
             std::mutex m_mutex;
             std::atomic<int> m_n_photos_processed = 0;
 

@@ -31,7 +31,6 @@ void HotPixelIdentifier::add_photo(const std::string &photo_address)    {
 };
 
 void HotPixelIdentifier::add_photo(const unsigned short int *pixel_value_array, int width, int height, int image_bit_depth) {
-    m_n_photos_processed++;
     const auto hot_pixel_candidates = get_hot_pixel_candidates_from_photo(pixel_value_array, width, height, image_bit_depth);
     {
         scoped_lock lock(m_mutex);
@@ -45,6 +44,7 @@ void HotPixelIdentifier::add_photo(const unsigned short int *pixel_value_array, 
             }
         }
     }
+    m_n_photos_processed++;
 };
 
 
@@ -54,23 +54,15 @@ void HotPixelIdentifier::compute_hot_pixels()   {
         const auto &hot_pixel_candidate_coordinates = hot_pixel_candidate.first;
         const auto &hot_pixel_candidate_value = hot_pixel_candidate.second;
         if (hot_pixel_candidate_value > m_n_photos_processed*0.5) {
-            m_hot_pixels[hot_pixel_candidate_coordinates] = true;
+            m_hot_pixels.push_back(hot_pixel_candidate_coordinates);
+            m_hot_pixels_map[hot_pixel_candidate_coordinates] = 1;
         }
     }
 };
 
 
-vector<tuple<int,int>> HotPixelIdentifier::get_hot_pixels() const   {
-    vector<tuple<int,int>> hot_pixels;
-    for (const auto &hot_pixel : m_hot_pixels) {
-        const auto &hot_pixel_coordinates = hot_pixel.first;
-        const auto &hot_pixel_count = hot_pixel.second;
-        if (hot_pixel_count > m_n_photos_processed*0.5) {
-            hot_pixels.push_back(hot_pixel_coordinates);
-        }
-    }
-    sort(hot_pixels.begin(), hot_pixels.end());
-    return hot_pixels;
+const vector<tuple<int,int>> &HotPixelIdentifier::get_hot_pixels() const   {
+    return m_hot_pixels;
 };
 
 std::map<std::tuple<int,int>,int> HotPixelIdentifier::get_hot_pixel_candidates_from_photo(const unsigned short int *pixel_value_array, int width, int height, int image_bit_depth) {
@@ -119,15 +111,15 @@ std::map<std::tuple<int,int>,int> HotPixelIdentifier::get_hot_pixel_candidates_f
 void HotPixelIdentifier::save_hot_pixels_to_file(const std::string &file_address) const {
     ofstream output_file(file_address);
     output_file << "# hot pixel x | hot pixel y" << endl;
-    for (const auto &hot_pixel : m_hot_pixels) {
-        const auto &hot_pixel_coordinates = hot_pixel.first;
+    for (const tuple<int,int> &hot_pixel_coordinates : m_hot_pixels) {
         output_file << get<0>(hot_pixel_coordinates) << " | " << get<1>(hot_pixel_coordinates) << endl;
     }
     output_file.close();
 };
 
-void HotPixelIdentifier::load_hot_pixels_from_file(const std::string &file_address) {\
+void HotPixelIdentifier::load_hot_pixels_from_file(const std::string &file_address) {
     m_hot_pixels.clear();
+    m_hot_pixels_map.clear();
     ifstream input_file(file_address);
     if (!input_file.is_open()) {
         throw runtime_error("Could not open file " + file_address);
@@ -137,10 +129,11 @@ void HotPixelIdentifier::load_hot_pixels_from_file(const std::string &file_addre
         if (line[0] == '#') {
             continue;
         }
-        const auto elements = split_and_strip_string(line, "|");
+        const vector<string> elements = split_and_strip_string(line, "|");
         const int x = stoi(elements[0]);
         const int y = stoi(elements[1]);
-        m_hot_pixels[std::make_tuple(x,y)] = true;
+        m_hot_pixels.push_back(std::make_tuple(x,y));
+        m_hot_pixels_map[std::make_tuple(x,y)] = 1;
     }
     input_file.close();
 };
@@ -150,7 +143,7 @@ void HotPixelIdentifier::set_n_cpu(unsigned int n_cpu) {
 };
 
 bool HotPixelIdentifier::is_hot_pixel(int x, int y) const   {
-    return m_hot_pixels.find(std::make_tuple(x,y)) != m_hot_pixels.end();
+    return m_hot_pixels_map.find(std::make_tuple(x,y)) != m_hot_pixels_map.end();
 };
 
 const std::atomic<int>& HotPixelIdentifier::get_number_of_processed_photos() const  {

@@ -20,6 +20,10 @@ bool MyApp::OnInit()    {
 MyFrame::MyFrame()
     : wxFrame(nullptr, wxID_ANY, "AstroPhotoStacker GUI") {
 
+    // full screen
+    SetSize(wxGetDisplaySize());
+
+
     m_sizer_main_frame = new wxBoxSizer(wxVERTICAL);
     //m_panel_top     = new wxPanel(this, wxID_ANY);
     //m_sizer_main_frame->Add(m_panel_top   , 1,wxEXPAND | wxALL, 5);
@@ -231,12 +235,14 @@ void MyFrame::add_stack_settings_preview()   {
 
 void MyFrame::add_n_cpu_slider()    {
     const int max_cpu = m_stack_settings.get_max_threads();
+    const int default_value = std::max<int>(max_cpu/2,1);
 
     // Create a wxStaticText to display the current value
-    wxStaticText* n_cpu_text = new wxStaticText(this, wxID_ANY, wxString::Format(wxT("Number of CPUs: %d"), max_cpu));
+    wxStaticText* n_cpu_text = new wxStaticText(this, wxID_ANY, wxString::Format(wxT("Number of CPUs: %d"), default_value ));
+    m_stack_settings.set_n_cpus(default_value);
 
     // Create the wxSlider
-    wxSlider* slider_ncpu = new wxSlider(this, wxID_ANY, max_cpu, 1, max_cpu, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+    wxSlider* slider_ncpu = new wxSlider(this, wxID_ANY, default_value, 1, max_cpu, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
 
     // Bind the slider's wxEVT_SLIDER event to a lambda function that updates the value text
     slider_ncpu->Bind(wxEVT_SLIDER, [n_cpu_text, slider_ncpu, this](wxCommandEvent&){
