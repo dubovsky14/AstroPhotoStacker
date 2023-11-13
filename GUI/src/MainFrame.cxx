@@ -48,7 +48,7 @@ MyFrame::MyFrame()
     add_button_bar();
 
     add_stack_settings_preview();
-    add_image_preview();
+    add_upper_middle_panel();
     add_image_settings();
 
     add_menu_bar();
@@ -140,6 +140,7 @@ void MyFrame::add_button_bar()   {
             }
             button_check_all->SetLabel("Uncheck all");
         }
+        update_checked_files_in_filelist();
     });
 
     button_align_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
@@ -147,7 +148,6 @@ void MyFrame::add_button_bar()   {
         update_checked_files_in_filelist();
         AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, &m_stack_settings);
         select_alignment_window->Show(true);
-
     });
 
     button_remove_checked->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
@@ -202,6 +202,7 @@ void MyFrame::add_button_bar()   {
 
         std::vector<std::tuple<int,int>> hot_pixels = m_hot_pixel_identifier->get_hot_pixels();
 
+        update_status_icon(m_hot_pixel_status_icon, true);
         cout << "Hot pixels identified!" << endl;
         cout << "Processed " + std::to_string(n_processed) + " / " + std::to_string(files_total) + " files\n";
         for (const auto &hot_pixel : hot_pixels) {
@@ -343,6 +344,11 @@ void MyFrame::add_image_settings()   {
     //m_sizer_top_right->Add(panel, 1, wxEXPAND, 0);
 };
 
+void MyFrame::add_upper_middle_panel()   {
+    add_image_preview();
+    add_step_control_part();
+};
+
 void MyFrame::add_image_preview()    {
     // Create a wxImage
     wxImage image(m_preview_size[0], m_preview_size[1]);
@@ -367,6 +373,7 @@ void MyFrame::update_image_preview_file(const std::string& file_address)  {
     m_current_preview = get_preview(file_address, m_preview_size[0],m_preview_size[1], &m_current_max_value);
 
     update_image_preview();
+    update_alignment_status();
 };
 
 void MyFrame::update_image_preview()  {
@@ -395,6 +402,39 @@ void MyFrame::update_image_preview()  {
     m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
 };
 
+void MyFrame::add_step_control_part()    {
+
+
+    // alignment of the files
+    shared_ptr<wxSizer> sizer_aligned = make_shared<wxGridSizer>(2);
+    m_sizers.push_back(sizer_aligned);
+    wxStaticText* text_aligned = new wxStaticText(this, wxID_ANY, "Files aligned: ");
+    wxFont font = text_aligned->GetFont();
+    font.SetPointSize(14);
+    text_aligned->SetFont(font);
+
+    m_alignment_status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap("../data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
+
+    sizer_aligned->Add(text_aligned, 0,             wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    sizer_aligned->Add(m_alignment_status_icon, 0,  wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    m_sizer_top_center->Add(sizer_aligned.get(), 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+
+    // hot pixel identification
+    shared_ptr<wxSizer> sizer_hot_pixels = make_shared<wxGridSizer>(2);
+    m_sizers.push_back(sizer_hot_pixels);
+    wxStaticText* text_hot_pixels = new wxStaticText(this, wxID_ANY, "Hot pixels identified: ");
+    text_hot_pixels->SetFont(font);
+    m_hot_pixel_status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap("../data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
+
+    sizer_hot_pixels->Add(text_hot_pixels, 0,           wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    sizer_hot_pixels->Add(m_hot_pixel_status_icon, 0,   wxALIGN_CENTER_VERTICAL | wxALL, 5);
+
+    m_sizer_top_center->Add(sizer_hot_pixels.get(), 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+};
+
+void MyFrame::update_alignment_status()  {
+    update_status_icon(m_alignment_status_icon, m_filelist_handler.all_checked_files_are_aligned());
+};
 
 void MyFrame::add_exposure_correction_spin_ctrl()   {
 
@@ -424,7 +464,7 @@ void MyFrame::on_exit(wxCommandEvent& event)     {
 }
 
 void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title)    {
-    wxFileDialog dialog(this, title, "", "", "*[!'.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE | wxFD_CHANGE_DIR);
+    wxFileDialog dialog(this, title, "", "", "*[!'.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
     if (dialog.ShowModal() == wxID_OK) {
         wxArrayString paths;
         dialog.GetPaths(paths);
@@ -433,6 +473,7 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
         }
     }
     dialog.Destroy();
+    update_checked_files_in_filelist();
     update_files_to_stack_checkbox();
 };
 
@@ -443,3 +484,14 @@ void MyFrame::on_open_lights(wxCommandEvent& event)    {
 void MyFrame::on_open_flats(wxCommandEvent& event)    {
     on_open_frames(event, FileTypes::FLAT, "Open flat frames");
 }
+
+void MyFrame::update_status_icon(wxStaticBitmap *status_icon, bool is_ok)   {
+    const std::string file_checkmark    = "../data/png/checkmarks/20px/checkmark.png";
+    const std::string file_cross        = "../data/png/checkmarks/20px/red_cross.png";
+    if (is_ok)  {
+        status_icon->SetBitmap(wxBitmap(file_checkmark, wxBITMAP_TYPE_PNG));
+    }
+    else    {
+        status_icon->SetBitmap(wxBitmap(file_cross, wxBITMAP_TYPE_PNG));
+    }
+};

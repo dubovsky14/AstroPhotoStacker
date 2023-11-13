@@ -9,7 +9,7 @@
 
 using namespace std;
 
-AlignmentFrame::AlignmentFrame(wxFrame *parent, FilelistHandler *filelist_handler, StackSettings *stack_settings)
+AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handler, StackSettings *stack_settings)
     :  wxFrame(parent, wxID_ANY, "Select alignment file")      {
 
     SetSize(400, 200);
@@ -45,7 +45,7 @@ AlignmentFrame::AlignmentFrame(wxFrame *parent, FilelistHandler *filelist_handle
 
 
     wxButton* button_ok = new wxButton(this, wxID_ANY, "Align files");
-    button_ok->Bind(wxEVT_BUTTON, [this, files_to_align, indices_files_to_align](wxCommandEvent&){
+    button_ok->Bind(wxEVT_BUTTON, [this, files_to_align, indices_files_to_align, parent](wxCommandEvent&){
         // TODO
         AstroPhotoStacker::PhotoAlignmentHandler photo_alignment_handler;
         photo_alignment_handler.set_number_of_cpu_threads(m_stack_settings->get_n_cpus());
@@ -83,7 +83,7 @@ AlignmentFrame::AlignmentFrame(wxFrame *parent, FilelistHandler *filelist_handle
             alignment_file_info.initialized = true;
             m_filelist_handler->set_alignment_info(i_file, alignment_file_info);
         }
-
+        parent->update_alignment_status();
         this->Close();
     });
 

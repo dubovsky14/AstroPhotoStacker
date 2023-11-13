@@ -151,3 +151,14 @@ const std::vector<AlignmentFileInfo>& FilelistHandler::get_alignment_info(FileTy
 void FilelistHandler::set_alignment_info(int file_index, const AlignmentFileInfo& alignment_info)    {
     m_filelist_alignment_info[file_index] = alignment_info;
 };
+
+bool FilelistHandler::all_checked_files_are_aligned() const {
+    const std::vector<bool> &light_files_checked = m_filelist_checked.at(FileTypes::LIGHT);
+    const std::vector<AlignmentFileInfo> &alignment_info = m_filelist_alignment_info;
+    for (unsigned int i = 0; i < light_files_checked.size(); ++i)   {
+        if (light_files_checked[i] && !alignment_info[i].initialized)   {
+            return false;
+        }
+    }
+    return true;
+};

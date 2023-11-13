@@ -21,6 +21,8 @@ class MyFrame : public wxFrame  {
     public:
         MyFrame();
 
+        void update_alignment_status();
+
     private:
         void add_file_menu();
 
@@ -33,9 +35,16 @@ class MyFrame : public wxFrame  {
         void add_button_bar();
 
         void add_stack_settings_preview();
+
+        void add_upper_middle_panel();
         void add_image_preview();
         void update_image_preview_file(const std::string& file_address);
         void update_image_preview();
+
+        void add_step_control_part();
+
+        wxStaticBitmap* m_alignment_status_icon = nullptr;
+        wxStaticBitmap* m_hot_pixel_status_icon = nullptr;
 
         void add_n_cpu_slider();
         void add_max_memory_spin_ctrl();
@@ -83,7 +92,9 @@ class MyFrame : public wxFrame  {
         void on_open_flats (wxCommandEvent& event);
         void on_exit(wxCommandEvent& event);
 
+        std::vector<std::shared_ptr<wxSizer>> m_sizers;  // this is such a mess ...
 
+        static void update_status_icon(wxStaticBitmap *status_icon, bool is_ok);
 };
 
 inline int unique_counter()    {

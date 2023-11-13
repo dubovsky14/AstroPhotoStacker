@@ -131,3 +131,11 @@ int StackerBase::get_output_bit_depth(int open_cv_image_type)    {
         throw runtime_error("Unsupported image type");
     }
 };
+
+int StackerBase::get_tasks_total() const    {
+    return m_n_tasks_total;
+};
+
+const std::atomic<int>& StackerBase::get_tasks_processed() const    {
+    return m_n_tasks_processed;
+};

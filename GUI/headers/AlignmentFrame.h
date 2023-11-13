@@ -4,6 +4,8 @@
 #include "../headers/FilelistHandler.h"
 #include "../headers/StackSettings.h"
 
+#include "../headers/MainFrame.h"
+
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
 
@@ -12,7 +14,7 @@
 
 class AlignmentFrame : public wxFrame  {
     public:
-        AlignmentFrame(wxFrame *parent, FilelistHandler *filelist_handler, StackSettings *stack_settings);
+        AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handler, StackSettings *stack_settings);
 
     private:
         StackSettings *m_stack_settings = nullptr;

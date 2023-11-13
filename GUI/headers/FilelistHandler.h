@@ -61,6 +61,8 @@ class FilelistHandler   {
 
         static const std::vector<FileTypes>  s_file_types_ordering;
 
+        bool all_checked_files_are_aligned() const;
+
     private:
         std::map<FileTypes, std::vector<std::string>>       m_filelist;
         std::map<FileTypes, std::vector<bool>>              m_filelist_checked;

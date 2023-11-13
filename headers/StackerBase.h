@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <atomic>
 
 
 namespace AstroPhotoStacker {
@@ -37,6 +38,10 @@ namespace AstroPhotoStacker {
 
             static int get_output_bit_depth(int open_cv_image_type);
 
+            int get_tasks_total() const;
+
+            const std::atomic<int>& get_tasks_processed() const;
+
         protected:
             int m_number_of_colors;
             int m_width;
@@ -56,5 +61,8 @@ namespace AstroPhotoStacker {
             std::unique_ptr<FlatFrameHandler> m_flat_frame_handler              = nullptr;
             std::unique_ptr<PhotoAlignmentHandler> m_photo_alignment_handler    = nullptr;
             std::unique_ptr<HotPixelIdentifier> m_hot_pixel_identifier          = nullptr;
+
+            int m_n_tasks_total = 0;
+            std::atomic<int> m_n_tasks_processed = 0;
     };
 }
