@@ -142,3 +142,7 @@ int StackerBase::get_output_bit_depth(int open_cv_image_type)    {
 const std::atomic<int>& StackerBase::get_tasks_processed() const    {
     return m_n_tasks_processed;
 };
+
+const std::vector<std::vector<double> >& StackerBase::get_stacked_image() const {
+    return m_stacked_image;
+};

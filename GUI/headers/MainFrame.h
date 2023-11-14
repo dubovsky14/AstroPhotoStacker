@@ -40,6 +40,7 @@ class MyFrame : public wxFrame  {
         void add_upper_middle_panel();
         void add_image_preview();
         void update_image_preview_file(const std::string& file_address);
+        void update_image_preview_with_stacked_image();
         void update_image_preview();
 
         void add_step_control_part();

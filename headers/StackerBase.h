@@ -44,6 +44,11 @@ namespace AstroPhotoStacker {
 
             const std::atomic<int>& get_tasks_processed() const;
 
+            const std::vector<std::vector<double> > &get_stacked_image() const;
+
+            const int get_width() const  { return m_width; };
+            const int get_height() const { return m_height; };
+
         protected:
             int m_number_of_colors;
             int m_width;

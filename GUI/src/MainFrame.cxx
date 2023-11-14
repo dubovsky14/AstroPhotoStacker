@@ -246,6 +246,8 @@ void MyFrame::add_button_bar()   {
 
         pool.wait_for_tasks();
 
+        update_image_preview_with_stacked_image();
+
         progress_bar.Close();
         progress_bar.Destroy();
 
@@ -406,6 +408,14 @@ void MyFrame::update_image_preview_file(const std::string& file_address)  {
 
     update_image_preview();
     update_alignment_status();
+};
+
+void MyFrame::update_image_preview_with_stacked_image()  {
+    const vector<vector<double>> stacked_image = m_stacker->get_stacked_image();
+    const int width = m_stacker->get_width();
+    const int height = m_stacker->get_height();
+    m_current_preview = get_preview_from_stacked_picture(stacked_image, width, height, m_preview_size[0],m_preview_size[1], &m_current_max_value);
+    update_image_preview();
 };
 
 void MyFrame::update_image_preview()  {
