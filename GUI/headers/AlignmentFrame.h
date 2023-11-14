@@ -1,4 +1,3 @@
-// Start of wxWidgets "Hello World" Program
 #pragma once
 
 #include "../headers/FilelistHandler.h"

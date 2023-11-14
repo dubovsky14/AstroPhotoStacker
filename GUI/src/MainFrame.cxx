@@ -1,6 +1,8 @@
 #include "../headers/MainFrame.h"
 #include "../headers/AlignmentFrame.h"
 #include "../headers/ImagePreview.h"
+#include "../headers/ListFrame.h"
+
 #include "../../headers/Common.h"
 #include "../../headers/thread_pool.h"
 
@@ -406,8 +408,8 @@ void MyFrame::add_step_control_part()    {
 
 
     // alignment of the files
-    shared_ptr<wxSizer> sizer_aligned = make_shared<wxGridSizer>(2);
-    m_sizers.push_back(sizer_aligned);
+    shared_ptr<wxSizer> grid_sizer = make_shared<wxGridSizer>(2,3, 0, 0);
+    m_sizers.push_back(grid_sizer);
     wxStaticText* text_aligned = new wxStaticText(this, wxID_ANY, "Files aligned: ");
     wxFont font = text_aligned->GetFont();
     font.SetPointSize(14);
@@ -415,21 +417,49 @@ void MyFrame::add_step_control_part()    {
 
     m_alignment_status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap("../data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
 
-    sizer_aligned->Add(text_aligned, 0,             wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    sizer_aligned->Add(m_alignment_status_icon, 0,  wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    m_sizer_top_center->Add(sizer_aligned.get(), 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+    wxButton *button_show_alignment = new wxButton(this, wxID_ANY, "Show alignment");
+    button_show_alignment->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        vector<vector<string>> tabular_data;
+        vector<string> description;
+        m_filelist_handler.get_alignment_info_tabular_data(&tabular_data, &description);
+        if (tabular_data.empty())   {
+            return;
+        }
+        ListFrame *alignment_list_frame = new ListFrame(this, "Alignment info", "Alignment info", description, tabular_data);
+        alignment_list_frame->Show(true);
+    });
 
-    // hot pixel identification
-    shared_ptr<wxSizer> sizer_hot_pixels = make_shared<wxGridSizer>(2);
-    m_sizers.push_back(sizer_hot_pixels);
+    grid_sizer->Add(text_aligned, 0,             wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(m_alignment_status_icon, 0,  wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(button_show_alignment, 0,    wxALIGN_CENTER_VERTICAL | wxALL, 5);
+
     wxStaticText* text_hot_pixels = new wxStaticText(this, wxID_ANY, "Hot pixels identified: ");
     text_hot_pixels->SetFont(font);
     m_hot_pixel_status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap("../data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
 
-    sizer_hot_pixels->Add(text_hot_pixels, 0,           wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    sizer_hot_pixels->Add(m_hot_pixel_status_icon, 0,   wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    wxButton *button_show_hot_pixels = new wxButton(this, wxID_ANY, "Show hot pixels");
+    button_show_hot_pixels->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        if (m_hot_pixel_identifier == nullptr)    {
+            return;
+        }
+        const std::vector<std::tuple<int,int>> &hot_pixels = m_hot_pixel_identifier->get_hot_pixels();
+        if (hot_pixels.empty())   {
+            return;
+        }
+        vector<vector<string>> tabular_data;
+        vector<string> description = {"x", "y"};
+        for (const auto &hot_pixel : hot_pixels) {
+            tabular_data.push_back({to_string(get<0>(hot_pixel)), to_string(get<1>(hot_pixel))});
+        }
+        ListFrame *alignment_list_frame = new ListFrame(this, "Hot pixel info", "Hot pixel info", description, tabular_data);
+        alignment_list_frame->Show(true);
+    });
 
-    m_sizer_top_center->Add(sizer_hot_pixels.get(), 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+    grid_sizer->Add(text_hot_pixels, 0,           wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(m_hot_pixel_status_icon, 0,   wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(button_show_hot_pixels, 0,    wxALIGN_CENTER_VERTICAL | wxALL, 5);
+
+    m_sizer_top_center->Add(grid_sizer.get(), 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 };
 
 void MyFrame::update_alignment_status()  {

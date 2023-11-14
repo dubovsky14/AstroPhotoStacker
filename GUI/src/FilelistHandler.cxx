@@ -162,3 +162,23 @@ bool FilelistHandler::all_checked_files_are_aligned() const {
     }
     return true;
 };
+
+void FilelistHandler::get_alignment_info_tabular_data(std::vector<std::vector<std::string>> *tabular_data, std::vector<std::string> *description) const  {
+    description->clear();
+    description->push_back("File");
+    description->push_back("x-shift");
+    description->push_back("y-shift");
+    description->push_back("Rotation center [x]");
+    description->push_back("Rotation center [y]");
+    description->push_back("Rotation");
+    description->push_back("Ranking");
+
+    tabular_data->clear();
+    const std::vector<std::string> &light_files = m_filelist.at(FileTypes::LIGHT);
+    const std::vector<AlignmentFileInfo> &alignment_info = m_filelist_alignment_info;
+
+    for (unsigned int i = 0; i < light_files.size(); ++i)   {
+        const AlignmentFileInfo &info = alignment_info[i];
+        tabular_data->push_back({light_files[i], std::to_string(info.shift_x), std::to_string(info.shift_y), std::to_string(info.rotation_center_x), std::to_string(info.rotation_center_y), std::to_string(info.rotation), std::to_string(info.ranking)});
+    }
+};

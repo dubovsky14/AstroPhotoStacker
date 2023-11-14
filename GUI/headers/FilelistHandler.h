@@ -63,6 +63,8 @@ class FilelistHandler   {
 
         bool all_checked_files_are_aligned() const;
 
+        void get_alignment_info_tabular_data(std::vector<std::vector<std::string>> *tabular_data, std::vector<std::string> *description) const;
+
     private:
         std::map<FileTypes, std::vector<std::string>>       m_filelist;
         std::map<FileTypes, std::vector<bool>>              m_filelist_checked;

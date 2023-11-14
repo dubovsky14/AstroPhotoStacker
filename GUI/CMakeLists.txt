@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(AstroPhotoStackerGUI)
 
-find_package(wxWidgets REQUIRED COMPONENTS net core base)
+find_package(wxWidgets REQUIRED COMPONENTS net core base adv)
 find_package(OpenCV)
 
 include(${wxWidgets_USE_FILE})
