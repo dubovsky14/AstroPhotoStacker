@@ -35,6 +35,8 @@ class FilelistHandler   {
         FilelistHandler();
         ~FilelistHandler() = default;
 
+        FilelistHandler get_filelist_with_checked_files() const;
+
         void add_file(const std::string& path, FileTypes type, bool checked = false, const AlignmentFileInfo& alignment_info = AlignmentFileInfo());
 
         void remove_file(const std::string& path, FileTypes type);

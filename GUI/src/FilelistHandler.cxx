@@ -58,6 +58,20 @@ FilelistHandler::FilelistHandler()   {
     m_filelist[FileTypes::UNKNOWN]  = std::vector<std::string>();
 };
 
+FilelistHandler FilelistHandler::get_filelist_with_checked_files() const {
+    FilelistHandler filelist_with_checked_files;
+    for (FileTypes type : s_file_types_ordering)   {
+        const std::vector<std::string>          &files_names   = m_filelist.at(type);
+        const std::vector<bool>                 &files_checked = m_filelist_checked.at(type);
+        for (unsigned int i = 0; i < files_names.size(); ++i)   {
+            if (files_checked[i])   {
+                filelist_with_checked_files.add_file(files_names[i], type, true, m_filelist_alignment_info[i]);
+            }
+        }
+    }
+    return filelist_with_checked_files;
+};
+
 void FilelistHandler::add_file(const std::string& path, FileTypes type, bool checked, const AlignmentFileInfo& alignment_info)  {
     m_filelist[type].push_back(path);
     m_filelist_checked[type].push_back(checked);
@@ -154,6 +168,9 @@ void FilelistHandler::set_alignment_info(int file_index, const AlignmentFileInfo
 
 bool FilelistHandler::all_checked_files_are_aligned() const {
     const std::vector<bool> &light_files_checked = m_filelist_checked.at(FileTypes::LIGHT);
+    if (light_files_checked.size() == 0)    {
+        return false;
+    }
     const std::vector<AlignmentFileInfo> &alignment_info = m_filelist_alignment_info;
     for (unsigned int i = 0; i < light_files_checked.size(); ++i)   {
         if (light_files_checked[i] && !alignment_info[i].initialized)   {

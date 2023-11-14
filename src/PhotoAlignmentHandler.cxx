@@ -51,6 +51,18 @@ void PhotoAlignmentHandler::read_from_text_file(const std::string &alignment_fil
     alignment_file.close();
 }
 
+void PhotoAlignmentHandler::add_alignment_info(const std::string &file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking) {
+    FileAlignmentInformation alignment_info;
+    alignment_info.file_address = file_address;
+    alignment_info.shift_x = x_shift;
+    alignment_info.shift_y = y_shift;
+    alignment_info.rotation_center_x = rotation_center_x;
+    alignment_info.rotation_center_y = rotation_center_y;
+    alignment_info.rotation = rotation;
+    alignment_info.ranking = ranking;
+    m_alignment_information_vector.push_back(alignment_info);
+};
+
 void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_address)   {
     sort(m_alignment_information_vector.begin(), m_alignment_information_vector.end(), [](const FileAlignmentInformation &a, const FileAlignmentInformation &b) {
         return a.ranking < b.ranking;

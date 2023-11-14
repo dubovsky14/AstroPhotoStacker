@@ -22,6 +22,8 @@ namespace AstroPhotoStacker {
 
             void add_alignment_text_file(const std::string &alignment_file_address);
 
+            void add_alignment_info(const std::string &file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking);
+
             virtual void add_photo(const std::string &file_address, bool apply_alignment = true);
 
             virtual void add_flat_frame(const std::string &file_address);
@@ -38,7 +40,7 @@ namespace AstroPhotoStacker {
 
             static int get_output_bit_depth(int open_cv_image_type);
 
-            int get_tasks_total() const;
+            virtual int get_tasks_total() const = 0;
 
             const std::atomic<int>& get_tasks_processed() const;
 
@@ -62,7 +64,6 @@ namespace AstroPhotoStacker {
             std::unique_ptr<PhotoAlignmentHandler> m_photo_alignment_handler    = nullptr;
             std::unique_ptr<HotPixelIdentifier> m_hot_pixel_identifier          = nullptr;
 
-            int m_n_tasks_total = 0;
             std::atomic<int> m_n_tasks_processed = 0;
     };
 }

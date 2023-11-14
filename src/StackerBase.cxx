@@ -22,6 +22,13 @@ void StackerBase::add_alignment_text_file(const string &alignment_file_address) 
     m_photo_alignment_handler->read_from_text_file(alignment_file_address);
 };
 
+void StackerBase::add_alignment_info(const std::string &file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking) {
+    if (m_photo_alignment_handler == nullptr) {
+        m_photo_alignment_handler = make_unique<PhotoAlignmentHandler>();
+    }
+    m_photo_alignment_handler->add_alignment_info(file_address, x_shift, y_shift, rotation_center_x, rotation_center_y, rotation, ranking);
+};
+
 void StackerBase::add_photo(const string &file_address, bool apply_alignment) {
     m_files_to_stack.push_back(file_address);
     m_apply_alignment.push_back(apply_alignment);
@@ -130,10 +137,6 @@ int StackerBase::get_output_bit_depth(int open_cv_image_type)    {
     else    {
         throw runtime_error("Unsupported image type");
     }
-};
-
-int StackerBase::get_tasks_total() const    {
-    return m_n_tasks_total;
 };
 
 const std::atomic<int>& StackerBase::get_tasks_processed() const    {

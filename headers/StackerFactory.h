@@ -10,7 +10,7 @@
 #include <memory>
 
 namespace AstroPhotoStacker {
-    std::unique_ptr<StackerBase> create_stacker(const std::string &stacker_type, int number_of_colors, int width, int height) {
+    inline std::unique_ptr<StackerBase> create_stacker(const std::string &stacker_type, int number_of_colors, int width, int height) {
         if (stacker_type == "mean") {
             return std::make_unique<StackerMeanValue>(number_of_colors, width, height);
         } else if (stacker_type == "median") {

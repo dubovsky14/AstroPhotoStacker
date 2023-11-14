@@ -17,6 +17,7 @@ void StackerMeanValue::calculate_stacked_photo()  {
     for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
         cout << "Adding " << m_files_to_stack[i_file] << " to stack" << endl;
         add_photo_to_stack(i_file);
+        m_n_tasks_processed++;
     }
 
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
@@ -77,4 +78,8 @@ void StackerMeanValue::add_photo_to_stack(unsigned int i_file)  {
             }
         }
     }
+};
+
+int StackerMeanValue::get_tasks_total() const  {
+    return m_files_to_stack.size();
 };

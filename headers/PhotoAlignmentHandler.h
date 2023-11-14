@@ -21,6 +21,8 @@ namespace   AstroPhotoStacker   {
         public:
             PhotoAlignmentHandler() = default;
 
+            void add_alignment_info(const std::string &file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking);
+
             void read_from_text_file(const std::string &alignment_file_address);
 
             void save_to_text_file(const std::string &alignment_file_address);

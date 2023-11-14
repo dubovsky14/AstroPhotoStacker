@@ -2,6 +2,7 @@
 #include "../headers/AlignmentFrame.h"
 #include "../headers/ImagePreview.h"
 #include "../headers/ListFrame.h"
+#include "../headers/StackerConfigureTool.h"
 
 #include "../../headers/Common.h"
 #include "../../headers/thread_pool.h"
@@ -214,13 +215,41 @@ void MyFrame::add_button_bar()   {
 
     button_stack_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         update_checked_files_in_filelist();
-        // TODO
-        for (unsigned int i_light = 0; i_light < m_filelist_handler.get_files(FileTypes::LIGHT).size(); ++i_light)   {
-            const std::string file = m_filelist_handler.get_files(FileTypes::LIGHT)[i_light];
-            const AlignmentFileInfo &alignment_info = m_filelist_handler.get_alignment_info(FileTypes::LIGHT)[i_light];
-            cout << file << "\t" << alignment_info << endl;
+        const bool files_aligned = m_filelist_handler.all_checked_files_are_aligned();
+        if (!files_aligned) {
+            wxMessageDialog dialog(this, "Not all files are aligned. Do you want to align them now?", "Files not aligned", wxYES_NO | wxICON_QUESTION);
+            if (dialog.ShowModal() == wxID_YES) {
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, &m_stack_settings);
+                select_alignment_window->Show(true);
+            }
+            else {
+                return;
+            }
         }
-        cout << "stack files" << endl;
+
+        m_stacker = get_configured_stacker(m_stack_settings, m_filelist_handler);
+        const int tasks_total = m_stacker->get_tasks_total();
+        const std::atomic<int> &tasks_processed = m_stacker->get_tasks_processed();
+
+        wxProgressDialog progress_bar("File stacking", "Finished 0 / " + std::to_string(tasks_total), tasks_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
+        progress_bar.Update(tasks_processed);
+
+        thread_pool pool(1);
+        pool.submit([this](){
+            m_stacker->calculate_stacked_photo();
+        });
+
+        while (tasks_processed < tasks_total) {
+            progress_bar.Update(tasks_processed, "Finished " + std::to_string(tasks_processed) + " / " + std::to_string(tasks_total));
+            wxMilliSleep(100);
+        }
+
+        pool.wait_for_tasks();
+
+        progress_bar.Close();
+        progress_bar.Destroy();
+
+
     });
 
     m_sizer_button_bar->Add(button_check_all, 1, wxALL, 5);
@@ -274,6 +303,7 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
         (this->m_stack_settings).set_stacking_algorithm(choice_box_stacking_algorithm->GetString(current_selection).ToStdString());
         update_kappa_sigma_visibility();
     });
+
     m_sizer_top_left->Add(stacking_algorithm_text, 0, wxEXPAND, 5);
     m_sizer_top_left->Add(choice_box_stacking_algorithm, 0,  wxEXPAND, 5);
 
@@ -451,7 +481,7 @@ void MyFrame::add_step_control_part()    {
         for (const auto &hot_pixel : hot_pixels) {
             tabular_data.push_back({to_string(get<0>(hot_pixel)), to_string(get<1>(hot_pixel))});
         }
-        ListFrame *alignment_list_frame = new ListFrame(this, "Hot pixel info", "Hot pixel info", description, tabular_data);
+        ListFrame *alignment_list_frame = new ListFrame(this, "Hot pixel info", "Found " + std::to_string(hot_pixels.size()) + " hot pixels", description, tabular_data);
         alignment_list_frame->Show(true);
     });
 

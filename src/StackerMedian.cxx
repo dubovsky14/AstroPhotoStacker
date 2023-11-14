@@ -44,6 +44,7 @@ void StackerMedian::calculate_stacked_photo()  {
         auto submit_photo_stack = [this, y_min, y_max](unsigned int file_index) {
             cout << string("Adding ") + m_files_to_stack[file_index] + string(" to stack\n");
             add_photo_to_stack(file_index, y_min, y_max);
+            m_n_tasks_processed++;
         };
 
         thread_pool pool(m_n_cpu);
@@ -174,4 +175,12 @@ double StackerMedian::get_stacked_value_from_pixel_array(short int *ordered_arra
     else {
         return ordered_array_begin[number_of_stacked_pixels/2];
     }
+};
+
+int StackerMedian::get_tasks_total() const  {
+    const long long int n_files = m_files_to_stack.size();
+    const int height_range = get_height_range_limit();
+    int n_slices = m_height/height_range + (m_height % height_range > 0);
+
+    return n_slices*n_files;
 };

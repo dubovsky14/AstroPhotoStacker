@@ -1,4 +1,7 @@
 #include "../headers/StackSettings.h"
+
+#include "../../headers/StackerFactory.h"
+
 #include <stdexcept>
 #include <algorithm>
 

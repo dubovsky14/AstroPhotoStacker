@@ -5,6 +5,8 @@
 
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/HotPixelIdentifier.h"
+#include "../../headers/StackerBase.h"
+
 
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
@@ -85,6 +87,7 @@ class MyFrame : public wxFrame  {
         FilelistHandler m_filelist_handler;
         StackSettings   m_stack_settings;
         std::unique_ptr<AstroPhotoStacker::HotPixelIdentifier>  m_hot_pixel_identifier = nullptr;
+        std::unique_ptr<AstroPhotoStacker::StackerBase>         m_stacker = nullptr;
 
         void on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title);
         void on_open_lights(wxCommandEvent& event);
