@@ -255,7 +255,7 @@ void MyFrame::add_button_bar()   {
 
         progress_bar.Close();
         progress_bar.Destroy();
-
+        update_status_icon(m_stacked_status_icon, true);
     });
 
     m_sizer_button_bar->Add(button_check_all, 1, wxALL, 5);
@@ -497,6 +497,7 @@ void MyFrame::add_step_control_part()    {
     grid_sizer->Add(m_alignment_status_icon, 0,  wxALIGN_CENTER_VERTICAL | wxALL, 5);
     grid_sizer->Add(button_show_alignment, 0,    wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
+    // hot pixel identification
     wxStaticText* text_hot_pixels = new wxStaticText(this, wxID_ANY, "Hot pixels identified: ");
     text_hot_pixels->SetFont(font);
     m_hot_pixel_status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap("../data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
@@ -522,6 +523,23 @@ void MyFrame::add_step_control_part()    {
     grid_sizer->Add(text_hot_pixels, 0,           wxALIGN_CENTER_VERTICAL | wxALL, 5);
     grid_sizer->Add(m_hot_pixel_status_icon, 0,   wxALIGN_CENTER_VERTICAL | wxALL, 5);
     grid_sizer->Add(button_show_hot_pixels, 0,    wxALIGN_CENTER_VERTICAL | wxALL, 5);
+
+    // is the stacked image available?
+    wxStaticText* text_stacked = new wxStaticText(this, wxID_ANY, "Stacking finished: ");
+    text_stacked->SetFont(font);
+    m_stacked_status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap("../data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
+
+    wxButton *button_stacking_finished = new wxButton(this, wxID_ANY, "Show stacked file");
+    button_stacking_finished->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        if (m_stacker == nullptr)    {
+            return;
+        }
+        update_image_preview_with_stacked_image();
+
+    });
+    grid_sizer->Add(text_stacked, 0,                wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(m_stacked_status_icon, 0,       wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(button_stacking_finished, 0,    wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
     m_sizer_top_center->Add(grid_sizer.get(), 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 };

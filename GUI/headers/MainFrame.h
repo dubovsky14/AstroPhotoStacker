@@ -45,8 +45,9 @@ class MyFrame : public wxFrame  {
 
         void add_step_control_part();
 
-        wxStaticBitmap* m_alignment_status_icon = nullptr;
-        wxStaticBitmap* m_hot_pixel_status_icon = nullptr;
+        wxStaticBitmap *m_alignment_status_icon = nullptr;
+        wxStaticBitmap *m_hot_pixel_status_icon = nullptr;
+        wxStaticBitmap *m_stacked_status_icon   = nullptr;
 
         void add_n_cpu_slider();
         void add_max_memory_spin_ctrl();
