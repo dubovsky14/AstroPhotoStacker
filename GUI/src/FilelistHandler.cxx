@@ -51,11 +51,10 @@ std::ostream& operator<<(std::ostream& os, const AlignmentFileInfo& alignment_in
 const std::vector<FileTypes>  FilelistHandler::s_file_types_ordering = {FileTypes::LIGHT, FileTypes::FLAT, FileTypes::DARK, FileTypes::BIAS, FileTypes::UNKNOWN};
 
 FilelistHandler::FilelistHandler()   {
-    m_filelist[FileTypes::FLAT]     = std::vector<std::string>();
-    m_filelist[FileTypes::LIGHT]    = std::vector<std::string>();
-    m_filelist[FileTypes::DARK]     = std::vector<std::string>();
-    m_filelist[FileTypes::BIAS]     = std::vector<std::string>();
-    m_filelist[FileTypes::UNKNOWN]  = std::vector<std::string>();
+    for (FileTypes type : s_file_types_ordering)   {
+        m_filelist_checked[type] = std::vector<bool>();
+        m_filelist[type]         = std::vector<std::string>();
+    }
 };
 
 FilelistHandler FilelistHandler::get_filelist_with_checked_files() const {

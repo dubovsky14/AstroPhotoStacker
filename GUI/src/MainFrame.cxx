@@ -149,11 +149,18 @@ void MyFrame::add_button_bar()   {
             button_check_all->SetLabel("Uncheck all");
         }
         update_checked_files_in_filelist();
+        update_alignment_status();
     });
 
     button_align_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         // pop-up window with wxChoice of added light frames
         update_checked_files_in_filelist();
+        FilelistHandler checked_filelist = this->m_filelist_handler.get_filelist_with_checked_files();
+        if (checked_filelist.get_files(FileTypes::LIGHT).empty()) {
+            wxMessageDialog *dialog = new wxMessageDialog(this, "No light frames have been checked. Please check them first!", "Frames alignment warning.");
+            dialog->ShowModal();
+            return;
+        }
         AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, &m_stack_settings);
         select_alignment_window->Show(true);
     });
@@ -182,6 +189,12 @@ void MyFrame::add_button_bar()   {
                     files.push_back(m_filelist_handler.get_files(type)[i]);
                 }
             }
+        }
+
+        if (files.empty()) {
+            wxMessageDialog *dialog = new wxMessageDialog(this, "No files have been selected. Please select them first!", "Hot pixel identification warning.");
+            dialog->ShowModal();
+            return;
         }
 
         m_hot_pixel_identifier = make_unique<AstroPhotoStacker::HotPixelIdentifier>();
@@ -222,7 +235,7 @@ void MyFrame::add_button_bar()   {
         update_checked_files_in_filelist();
         const bool files_aligned = m_filelist_handler.all_checked_files_are_aligned();
         if (!files_aligned) {
-            wxMessageDialog dialog(this, "Not all files are aligned. Do you want to align them now?", "Files not aligned", wxYES_NO | wxICON_QUESTION);
+            wxMessageDialog dialog(this, "Please align the files first!", "Files not aligned");
             if (dialog.ShowModal() == wxID_YES) {
                 AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, &m_stack_settings);
                 select_alignment_window->Show(true);
@@ -269,6 +282,7 @@ void MyFrame::add_stack_settings_preview()   {
     add_n_cpu_slider();
     add_max_memory_spin_ctrl();
     add_stacking_algorithm_choice_box();
+    add_hot_pixel_correction_checkbox();
 };
 
 void MyFrame::add_n_cpu_slider()    {
@@ -370,6 +384,24 @@ void MyFrame::update_kappa_sigma_visibility()   {
     }
 };
 
+void MyFrame::add_hot_pixel_correction_checkbox()    {
+    wxCheckBox* checkbox_hot_pixel_correction = new wxCheckBox(this, wxID_ANY, "Hot pixel correction");
+    checkbox_hot_pixel_correction->Bind(wxEVT_CHECKBOX, [checkbox_hot_pixel_correction, this](wxCommandEvent&){
+        if (m_hot_pixel_identifier == nullptr && checkbox_hot_pixel_correction->GetValue())    {
+            wxMessageDialog *dialog = new wxMessageDialog(this, "Hot pixel identification not performed. Please run it first!", "Hot pixel identification");
+            dialog->ShowModal();
+            checkbox_hot_pixel_correction->SetValue(false);
+            return;
+        }
+        bool is_checked = checkbox_hot_pixel_correction->GetValue();
+        (this->m_stack_settings).set_hot_pixel_correction(is_checked);
+    });
+    bool is_checked = checkbox_hot_pixel_correction->GetValue();
+    m_stack_settings.set_hot_pixel_correction(is_checked);
+
+    m_sizer_top_left->Add(checkbox_hot_pixel_correction, 0, wxEXPAND, 5);
+};
+
 void MyFrame::add_max_memory_spin_ctrl() {
     wxStaticText* memory_usage_text = new wxStaticText(this, wxID_ANY, "Maximum memory usage (MB):");
 
@@ -386,10 +418,7 @@ void MyFrame::add_max_memory_spin_ctrl() {
 };
 
 void MyFrame::add_image_settings()   {
-    // TODO
     add_exposure_correction_spin_ctrl();
-    //wxPanel *panel = new wxPanel(this, wxID_ANY);
-    //m_sizer_top_right->Add(panel, 1, wxEXPAND, 0);
 };
 
 void MyFrame::add_upper_middle_panel()   {

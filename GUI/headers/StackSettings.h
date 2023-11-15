@@ -34,6 +34,10 @@ class StackSettings {
         void set_kappa_sigma_iter(int kappa_sigma_iter);
         int  get_kappa_sigma_iter() const;
 
+        // hot pixel correction
+        void set_hot_pixel_correction(bool hot_pixel_correction);
+        bool get_hot_pixel_correction() const;
+
     private:
         std::string m_alignment_file;
         std::string m_stacking_algorithm = "average";
@@ -42,6 +46,7 @@ class StackSettings {
 
         float m_kappa = 1.0;
         int   m_kappa_sigma_iter = 3;
+        bool  m_hot_pixel_correction = false;
 
         const std::vector<std::string> m_stacking_algorithms = {"kappa-sigma median", "kappa-sigma mean", "average", "median", };
 

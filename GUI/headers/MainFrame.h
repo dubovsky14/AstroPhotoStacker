@@ -67,6 +67,7 @@ class MyFrame : public wxFrame  {
         void add_stacking_algorithm_choice_box();
         void add_kappa_sigma_options();
         void update_kappa_sigma_visibility();
+        void add_hot_pixel_correction_checkbox();
 
         void add_image_settings();
         void add_exposure_correction_spin_ctrl();
@@ -90,7 +91,7 @@ class MyFrame : public wxFrame  {
         wxSpinCtrl          *m_spin_ctrl_kappa_sigma_iter   = nullptr;
 
         int                             m_preview_size[2]   = {600, 400};
-        std::vector<std::vector<int>>   m_current_preview;
+        std::vector<std::vector<int>>   m_current_preview = std::vector<std::vector<int>>(3, std::vector<int>(m_preview_size[0]*m_preview_size[1], 0));
         int                             m_current_max_value = 0;
         float                           m_current_exposure_correction = 0;
         wxStaticBitmap                  *m_preview_bitmap       = nullptr;

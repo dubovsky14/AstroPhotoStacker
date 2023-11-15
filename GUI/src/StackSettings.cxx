@@ -69,3 +69,11 @@ void StackSettings::set_kappa_sigma_iter(int kappa_sigma_iter)  {
 int  StackSettings::get_kappa_sigma_iter() const        {
     return m_kappa_sigma_iter;
 };
+
+void StackSettings::set_hot_pixel_correction(bool hot_pixel_correction)    {
+    m_hot_pixel_correction = hot_pixel_correction;
+};
+
+bool StackSettings::get_hot_pixel_correction() const   {
+    return m_hot_pixel_correction;
+};
