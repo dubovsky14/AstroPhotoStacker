@@ -378,6 +378,9 @@ void MyFrame::add_max_memory_spin_ctrl() {
         int current_value = spin_ctrl_max_memory->GetValue();
         (this->m_stack_settings).set_max_memory(current_value);
     });
+    int current_value = spin_ctrl_max_memory->GetValue();
+    m_stack_settings.set_max_memory(current_value);
+
     m_sizer_top_left->Add(memory_usage_text, 0, wxEXPAND, 5);
     m_sizer_top_left->Add(spin_ctrl_max_memory, 0,  wxEXPAND, 5);
 };
@@ -472,8 +475,7 @@ void MyFrame::add_step_control_part()    {
 
 
     // alignment of the files
-    shared_ptr<wxSizer> grid_sizer = make_shared<wxGridSizer>(2,3, 0, 0);
-    m_sizers.push_back(grid_sizer);
+    wxGridSizer *grid_sizer = new wxGridSizer(2,3, 0, 0);
     wxStaticText* text_aligned = new wxStaticText(this, wxID_ANY, "Files aligned: ");
     wxFont font = text_aligned->GetFont();
     font.SetPointSize(14);
@@ -541,7 +543,7 @@ void MyFrame::add_step_control_part()    {
     grid_sizer->Add(m_stacked_status_icon, 0,       wxALIGN_CENTER_VERTICAL | wxALL, 5);
     grid_sizer->Add(button_stacking_finished, 0,    wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-    m_sizer_top_center->Add(grid_sizer.get(), 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+    m_sizer_top_center->Add(grid_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 };
 
 void MyFrame::update_alignment_status()  {
@@ -554,7 +556,7 @@ void MyFrame::add_exposure_correction_spin_ctrl()   {
     wxStaticText* exposure_correction_text = new wxStaticText(this, wxID_ANY, "Exposure correction: 0.0");
 
     // Create the wxSlider
-    wxSlider* slider_exposure = new wxSlider(this, wxID_ANY, 0, -50, 50, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+    wxSlider* slider_exposure = new wxSlider(this, wxID_ANY, 0, -70, 70, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
 
     // Bind the slider's wxEVT_SLIDER event to a lambda function that updates the value text
     slider_exposure->Bind(wxEVT_SLIDER, [exposure_correction_text, slider_exposure, this](wxCommandEvent&){

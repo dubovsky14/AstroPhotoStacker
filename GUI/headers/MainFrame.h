@@ -16,6 +16,19 @@
 class MyApp : public wxApp  {
     public:
         bool OnInit() override;
+
+
+    void OnUnhandledException() override       {
+        try {
+            throw; // Rethrow the current exception to handle it
+        }
+        catch (const std::exception& e)     {
+            wxMessageBox(e.what(), "Error", wxOK | wxICON_ERROR);
+        }
+        catch (...)     {
+            wxMessageBox("An unknown error occurred.", "Error", wxOK | wxICON_ERROR);
+        }
+    }
 };
 
 class MyFrame : public wxFrame  {
