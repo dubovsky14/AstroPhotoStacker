@@ -79,7 +79,8 @@ class MyFrame : public wxFrame  {
         std::vector<std::vector<int>>   m_current_preview;
         int                             m_current_max_value = 0;
         float                           m_current_exposure_correction = 0;
-        wxStaticBitmap      *m_preview_bitmap               = nullptr;
+        wxStaticBitmap                  *m_preview_bitmap       = nullptr;
+        bool                            m_current_preview_is_raw_file = true;
 
 
         wxCheckListBox *m_files_to_stack_checkbox = nullptr;
@@ -93,6 +94,8 @@ class MyFrame : public wxFrame  {
         void on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title);
         void on_open_lights(wxCommandEvent& event);
         void on_open_flats (wxCommandEvent& event);
+
+        void on_save_stacked(wxCommandEvent& event);
         void on_exit(wxCommandEvent& event);
 
         std::vector<std::shared_ptr<wxSizer>> m_sizers;  // this is such a mess ...

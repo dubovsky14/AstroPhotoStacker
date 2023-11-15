@@ -11,6 +11,7 @@
 #include <wx/progdlg.h>
 
 #include <iostream>
+#include <opencv2/opencv.hpp>
 
 using namespace std;
 
@@ -70,6 +71,10 @@ void MyFrame::add_file_menu()  {
     id = unique_counter();
     m_file_menu->Append(id, "Open flat frames", "Open flat frames");
     Bind(wxEVT_MENU, &MyFrame::on_open_flats, this, id);
+
+    id = unique_counter();
+    m_file_menu->Append(id, "Save stacked file", "Save stacked file");
+    Bind(wxEVT_MENU, &MyFrame::on_save_stacked, this, id);
 
     m_file_menu->Append(wxID_EXIT);
     Bind(wxEVT_MENU, &MyFrame::on_exit,  this, wxID_EXIT);
@@ -251,7 +256,6 @@ void MyFrame::add_button_bar()   {
         progress_bar.Close();
         progress_bar.Destroy();
 
-
     });
 
     m_sizer_button_bar->Add(button_check_all, 1, wxALL, 5);
@@ -306,6 +310,9 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
         update_kappa_sigma_visibility();
     });
 
+    int current_selection = choice_box_stacking_algorithm->GetSelection();
+    m_stack_settings.set_stacking_algorithm(choice_box_stacking_algorithm->GetString(current_selection).ToStdString());
+
     m_sizer_top_left->Add(stacking_algorithm_text, 0, wxEXPAND, 5);
     m_sizer_top_left->Add(choice_box_stacking_algorithm, 0,  wxEXPAND, 5);
 
@@ -322,9 +329,11 @@ void MyFrame::add_kappa_sigma_options() {
     m_spin_ctrl_kappa = new wxSpinCtrlDouble(this, wxID_ANY, "3.0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 6, 2, 0.1);
 
     m_spin_ctrl_kappa->Bind(wxEVT_SPINCTRL, [this](wxCommandEvent&){
-        double current_value = m_spin_ctrl_kappa->GetValue() / 10.0;
+        double current_value = m_spin_ctrl_kappa->GetValue();
         (this->m_stack_settings).set_kappa(current_value);
     });
+    double current_kappa = m_spin_ctrl_kappa->GetValue();
+    m_stack_settings.set_kappa(current_kappa);
 
     kappa_sizer->Add(m_kappa_text, 0, wxEXPAND, 5);
     kappa_sizer->Add(m_spin_ctrl_kappa, 0,  wxEXPAND, 5);
@@ -338,6 +347,8 @@ void MyFrame::add_kappa_sigma_options() {
         int current_value = m_spin_ctrl_kappa_sigma_iter->GetValue();
         (this->m_stack_settings).set_kappa_sigma_iter(current_value);
     });
+    int current_n_iter = m_spin_ctrl_kappa_sigma_iter->GetValue();
+    m_stack_settings.set_kappa_sigma_iter(current_n_iter);
 
     kappa_sigma_iter_sizer->Add(m_kappa_sigma_iter_text, 0, wxEXPAND, 5);
     kappa_sigma_iter_sizer->Add(m_spin_ctrl_kappa_sigma_iter, 0,  wxEXPAND, 5);
@@ -405,6 +416,7 @@ void MyFrame::add_image_preview()    {
 
 void MyFrame::update_image_preview_file(const std::string& file_address)  {
     m_current_preview = get_preview(file_address, m_preview_size[0],m_preview_size[1], &m_current_max_value);
+    m_current_preview_is_raw_file = true;
 
     update_image_preview();
     update_alignment_status();
@@ -415,24 +427,36 @@ void MyFrame::update_image_preview_with_stacked_image()  {
     const int width = m_stacker->get_width();
     const int height = m_stacker->get_height();
     m_current_preview = get_preview_from_stacked_picture(stacked_image, width, height, m_preview_size[0],m_preview_size[1], &m_current_max_value);
+    m_current_preview_is_raw_file = false;
     update_image_preview();
 };
 
 void MyFrame::update_image_preview()  {
     const int width = m_preview_size[0];
     const int height = m_preview_size[1];
-
-    const float scale_factor = pow(2,m_current_exposure_correction)*2*255.0 / m_current_max_value;
-
-    // update m_preview_bitmap
     wxImage image_wx(width, height);
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
 
-            const int index = x + y*width;
-            image_wx.SetRGB(x, y,   min<int>(255,scale_factor*m_current_preview[0][index]),
-                                    min<int>(255,0.5*scale_factor*m_current_preview[1][index]),
-                                    min<int>(255,scale_factor*m_current_preview[2][index]));
+    if (m_current_preview_is_raw_file) {
+        const float scale_factor = pow(2,m_current_exposure_correction)*2*255.0 / m_current_max_value;
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+
+                const int index = x + y*width;
+                image_wx.SetRGB(x, y,   min<int>(255,scale_factor*m_current_preview[0][index]),
+                                        min<int>(255,0.5*scale_factor*m_current_preview[1][index]),
+                                        min<int>(255,scale_factor*m_current_preview[2][index]));
+            }
+        }
+    }
+    else {
+        const float scale_factor = pow(2,m_current_exposure_correction)*255.0 / m_current_max_value;
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                const int index = x + y*width;
+                image_wx.SetRGB(x, y,   min<int>(255,scale_factor*m_current_preview[0][index]),
+                                        min<int>(255,scale_factor*m_current_preview[1][index]),
+                                        min<int>(255,scale_factor*m_current_preview[2][index]));
+            }
         }
     }
 
@@ -554,6 +578,15 @@ void MyFrame::on_open_lights(wxCommandEvent& event)    {
 void MyFrame::on_open_flats(wxCommandEvent& event)    {
     on_open_frames(event, FileTypes::FLAT, "Open flat frames");
 }
+
+void MyFrame::on_save_stacked(wxCommandEvent& event) {
+    wxFileDialog dialog(this, "Save stacked file", "", "", "*['.tif']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (dialog.ShowModal() == wxID_OK) {
+        const std::string file_address = dialog.GetPath().ToStdString();
+        m_stacker->save_stacked_photo(file_address, CV_16UC3);
+    }
+
+};
 
 void MyFrame::update_status_icon(wxStaticBitmap *status_icon, bool is_ok)   {
     const std::string file_checkmark    = "../data/png/checkmarks/20px/checkmark.png";

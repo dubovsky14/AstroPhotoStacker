@@ -12,7 +12,6 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
     int width, height;
     get_photo_resolution(filelist_handler_only_checked.get_files(FileTypes::LIGHT)[0], &width, &height);
     std::unique_ptr<AstroPhotoStacker::StackerBase> stacker = AstroPhotoStacker::create_stacker(get_stacker_type_for_factory(stack_settings.get_stacking_algorithm()), 3, width, height);
-    cout << "Stacker type: " << get_stacker_type_for_factory(stack_settings.get_stacking_algorithm()) << endl;
     configure_stacker(stacker.get(), stack_settings);
     const vector<string>            &light_frames       = filelist_handler_only_checked.get_files(FileTypes::LIGHT);
     const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler_only_checked.get_alignment_info(FileTypes::LIGHT);
@@ -27,6 +26,12 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
                                         alignment_info.rotation_center_y,
                                         alignment_info.rotation,
                                         alignment_info.ranking);
+    }
+
+
+    const vector<string> &flat_frames = filelist_handler_only_checked.get_files(FileTypes::FLAT);
+    if (flat_frames.size() > 0) {
+        stacker->add_flat_frame(flat_frames[0]);
     }
     return stacker;
 };
@@ -56,6 +61,8 @@ void configure_stacker(StackerBase* stacker, const StackSettings &settings)   {
     if (stacker_kappa_sigma != nullptr) {
         stacker_kappa_sigma->set_kappa(settings.get_kappa());
         stacker_kappa_sigma->set_number_of_iterations(settings.get_kappa_sigma_iter());
+        cout << "Kappa: " << settings.get_kappa() << endl;
+        cout << "Number of iterations: " << settings.get_kappa_sigma_iter() << endl;
     }
 
     // Number of CPUs and memory limit
@@ -63,11 +70,5 @@ void configure_stacker(StackerBase* stacker, const StackSettings &settings)   {
         stacker->set_memory_usage_limit(settings.get_max_memory());
         stacker->set_number_of_cpu_threads(settings.get_n_cpus());
         cout << "Number of CPUs: " << settings.get_n_cpus() << endl;
-
-    }
-
-    // alignment file
-    if (settings.get_alignment_file() != "")    {
-        stacker->add_flat_frame(settings.get_alignment_file());
     }
 };
