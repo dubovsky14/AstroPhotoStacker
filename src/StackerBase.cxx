@@ -139,6 +139,13 @@ int StackerBase::get_output_bit_depth(int open_cv_image_type)    {
     }
 };
 
+void StackerBase::set_hot_pixels(const std::vector<std::tuple<int, int> > &hot_pixels)  {
+    if (m_hot_pixel_identifier == nullptr) {
+        m_hot_pixel_identifier = make_unique<HotPixelIdentifier>();
+    }
+    m_hot_pixel_identifier->set_hot_pixels(hot_pixels);
+};
+
 const std::atomic<int>& StackerBase::get_tasks_processed() const    {
     return m_n_tasks_processed;
 };

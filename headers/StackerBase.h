@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <atomic>
+#include <tuple>
 
 
 namespace AstroPhotoStacker {
@@ -39,6 +40,8 @@ namespace AstroPhotoStacker {
             virtual void fix_empty_pixels();
 
             static int get_output_bit_depth(int open_cv_image_type);
+
+            void set_hot_pixels(const std::vector<std::tuple<int, int> > &hot_pixels);
 
             virtual int get_tasks_total() const = 0;
 

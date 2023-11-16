@@ -36,7 +36,7 @@ class StackSettings {
 
         // hot pixel correction
         void set_hot_pixel_correction(bool hot_pixel_correction);
-        bool get_hot_pixel_correction() const;
+        bool use_hot_pixel_correction() const;
 
     private:
         std::string m_alignment_file;

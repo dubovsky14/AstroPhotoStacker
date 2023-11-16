@@ -246,6 +246,9 @@ void MyFrame::add_button_bar()   {
         }
 
         m_stacker = get_configured_stacker(m_stack_settings, m_filelist_handler);
+        if (this->m_stack_settings.use_hot_pixel_correction()) {
+            m_stacker->set_hot_pixels(m_hot_pixel_identifier->get_hot_pixels());
+        }
         const int tasks_total = m_stacker->get_tasks_total();
         const std::atomic<int> &tasks_processed = m_stacker->get_tasks_processed();
 

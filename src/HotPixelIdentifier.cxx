@@ -142,6 +142,13 @@ void HotPixelIdentifier::set_n_cpu(unsigned int n_cpu) {
     m_n_cpu = n_cpu;
 };
 
+void HotPixelIdentifier::set_hot_pixels(const std::vector<std::tuple<int,int>> &hot_pixels) {
+    m_hot_pixels = hot_pixels;
+    for (const tuple<int,int> &hot_pixel : hot_pixels)  {
+        m_hot_pixels_map[hot_pixel] = 1;
+    }
+};
+
 bool HotPixelIdentifier::is_hot_pixel(int x, int y) const   {
     return m_hot_pixels_map.find(std::make_tuple(x,y)) != m_hot_pixels_map.end();
 };

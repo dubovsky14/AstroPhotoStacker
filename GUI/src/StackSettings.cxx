@@ -74,6 +74,6 @@ void StackSettings::set_hot_pixel_correction(bool hot_pixel_correction)    {
     m_hot_pixel_correction = hot_pixel_correction;
 };
 
-bool StackSettings::get_hot_pixel_correction() const   {
+bool StackSettings::use_hot_pixel_correction() const   {
     return m_hot_pixel_correction;
 };

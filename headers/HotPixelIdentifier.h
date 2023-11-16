@@ -5,7 +5,7 @@
 #include <string>
 #include <mutex>
 #include <atomic>
-
+#include <tuple>
 
 namespace AstroPhotoStacker {
     class HotPixelIdentifier    {
@@ -27,6 +27,8 @@ namespace AstroPhotoStacker {
             void load_hot_pixels_from_file(const std::string &file_address);
 
             void set_n_cpu(unsigned int n_cpu);
+
+            void set_hot_pixels(const std::vector<std::tuple<int,int>> &hot_pixels);
 
             bool is_hot_pixel(int x, int y) const;
 
