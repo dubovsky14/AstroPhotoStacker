@@ -12,7 +12,7 @@ using namespace std;
 AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handler, StackSettings *stack_settings)
     :  wxFrame(parent, wxID_ANY, "Select alignment file")      {
 
-    SetSize(400, 200);
+    //SetSize(400, 200);
 
     m_stack_settings = stack_settings;
     m_filelist_handler = filelist_handler;
@@ -87,9 +87,9 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
         this->Close();
     });
 
-    main_sizer->Add(select_file_text, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
-    main_sizer->Add(choice_box_alignment_file, 1,  wxEXPAND, 5);
-    main_sizer->Add(button_ok, 2, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+    main_sizer->Add(select_file_text, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
+    main_sizer->Add(choice_box_alignment_file, 0,  wxEXPAND, 5);
+    main_sizer->Add(button_ok, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
     this->SetSizer(main_sizer);
 

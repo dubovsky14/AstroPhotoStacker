@@ -65,10 +65,10 @@ void configure_stacker(StackerBase* stacker, const StackSettings &settings)   {
         cout << "Number of iterations: " << settings.get_kappa_sigma_iter() << endl;
     }
 
-    // Number of CPUs and memory limit
+    stacker->set_number_of_cpu_threads(settings.get_n_cpus());
+
+    // Memory limit
     if (dynamic_cast<StackerMeanValue*>(stacker) == nullptr) {
         stacker->set_memory_usage_limit(settings.get_max_memory());
-        stacker->set_number_of_cpu_threads(settings.get_n_cpus());
-        cout << "Number of CPUs: " << settings.get_n_cpus() << endl;
     }
 };

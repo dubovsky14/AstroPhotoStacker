@@ -89,17 +89,17 @@ void configure_stacker_with_optional_arguments(StackerBase *stacker, const Input
         if (print_info) cout << "Hot pixels file: " << hot_pixels_file << "\n";
     }
 
-    // Number of CPUs and memory limit
+
+    const unsigned int number_of_available_CPUs = max<int>(thread::hardware_concurrency()/2,1);
+    const unsigned int n_cpu                    = input_parser.get_optional_argument<unsigned int>("n_cpu", number_of_available_CPUs);
+    stacker->set_number_of_cpu_threads(n_cpu);
+    if (print_info) cout << "Number of CPU threads: " << n_cpu << "\n";
+
+    // Memory limit
     if (dynamic_cast<StackerMeanValue*>(stacker) == nullptr) {
         const unsigned int memory_limit             = input_parser.get_optional_argument<unsigned int>("memory_limit", 16000);
-        const unsigned int number_of_available_CPUs = max<int>(thread::hardware_concurrency()/2,1);
-        const unsigned int n_cpu                    = input_parser.get_optional_argument<unsigned int>("n_cpu", number_of_available_CPUs);
-
         stacker->set_memory_usage_limit(memory_limit);
-        stacker->set_number_of_cpu_threads(n_cpu);
-
         if (print_info) cout << "Memory limit: " << memory_limit << "\n";
-        if (print_info) cout << "Number of CPU threads: " << n_cpu << "\n";
     }
 
     // Setting kappa and number of iterations for kappa-sigma algorithms

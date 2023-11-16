@@ -1,5 +1,8 @@
 #include "../headers/StackerMeanValue.h"
 #include "../headers/CalibratedPhotoHandler.h"
+#include "../headers/CustomScopeMutex.h"
+
+#include "../headers/thread_pool.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -14,10 +17,36 @@ StackerMeanValue::StackerMeanValue(int number_of_colors, int width, int height) 
 };
 
 void StackerMeanValue::calculate_stacked_photo()  {
-    for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
-        cout << "Adding " << m_files_to_stack[i_file] << " to stack" << endl;
-        add_photo_to_stack(i_file);
-        m_n_tasks_processed++;
+    m_mutexes = vector<mutex>(m_n_cpu);
+    m_values_to_stack_individual_threads = vector<vector<vector<int>>>(m_n_cpu, vector<vector<int>>(m_number_of_colors, vector<int>(m_width*m_height, 0)));
+    m_counts_to_stack_individual_threads = vector<vector<vector<short unsigned int>>>(m_n_cpu, vector<vector<short unsigned int>>(m_number_of_colors, vector<short unsigned int>(m_width*m_height, 0)));
+
+    if (m_n_cpu == 1)   {
+        for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
+            add_photo_to_stack(i_file);
+        }
+    }
+    else    {
+        thread_pool pool(m_n_cpu);
+        for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
+            pool.submit([this, i_file]() {
+                add_photo_to_stack(i_file);
+            });
+        }
+        pool.wait_for_tasks();
+    }
+
+    // sum partial results
+    for (unsigned int i_thread = 0; i_thread < m_n_cpu; i_thread++) {
+        vector<vector<int>>                 &stacked_image = m_values_to_stack_individual_threads[i_thread];
+        vector<vector<short unsigned int>>  &number_of_stacked_pixels = m_counts_to_stack_individual_threads[i_thread];
+
+        for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
+            for (int i_pixel = 0; i_pixel < m_width*m_height; i_pixel++) {
+                m_stacked_image[i_color][i_pixel] += stacked_image[i_color][i_pixel];
+                m_number_of_stacked_pixels[i_color][i_pixel] += number_of_stacked_pixels[i_color][i_pixel];
+            }
+        }
     }
 
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
@@ -38,15 +67,18 @@ void StackerMeanValue::calculate_stacked_photo()  {
         }
     }
     fix_empty_pixels();
+
+    m_values_to_stack_individual_threads.clear();
+    m_counts_to_stack_individual_threads.clear();
 };
 
 void StackerMeanValue::set_number_of_cpu_threads(unsigned int n_cpu) {
-    if (n_cpu > 1) {
-        throw runtime_error("StackerMeanValue does not support multithreading");
-    }
+    m_n_cpu = n_cpu;
 };
 
 void StackerMeanValue::add_photo_to_stack(unsigned int i_file)  {
+    cout << "Adding " + m_files_to_stack[i_file] + " to stack\n";
+
     const string file_address = m_files_to_stack[i_file];
     const bool apply_alignment = m_apply_alignment[i_file];
     const FileAlignmentInformation alignment_info = apply_alignment ? m_photo_alignment_handler->get_alignment_parameters(file_address) : FileAlignmentInformation();
@@ -66,18 +98,31 @@ void StackerMeanValue::add_photo_to_stack(unsigned int i_file)  {
     }
     calibrated_photo.calibrate();
 
-    unsigned int value;
-    char color;
-    for (int y = 0; y < m_height; y++)  {
-        for (int x = 0; x < m_width; x++)   {
-            calibrated_photo.get_value_by_reference_frame_coordinates(x, y, &value, &color);
-            if (color >= 0) {
-                const unsigned int index = y*m_width + x;
-                m_stacked_image[color][index]   += value;
-                m_number_of_stacked_pixels[color][index] += 1;
+
+    for (unsigned int i_thread = 0; i_thread < m_mutexes.size(); i_thread++) {
+        CustomScopeMutex scope_mutex(&m_mutexes[i_thread]);
+        if (!scope_mutex.is_locked()) {
+            continue;
+        }
+
+        vector<vector<int>>                 &stacked_image = m_values_to_stack_individual_threads[i_thread];
+        vector<vector<short unsigned int>>  &number_of_stacked_pixels = m_counts_to_stack_individual_threads[i_thread];
+
+        unsigned int value;
+        char color;
+        for (int y = 0; y < m_height; y++)  {
+            for (int x = 0; x < m_width; x++)   {
+                calibrated_photo.get_value_by_reference_frame_coordinates(x, y, &value, &color);
+                if (color >= 0) {
+                    const unsigned int index = y*m_width + x;
+                    stacked_image[color][index]   += value;
+                    number_of_stacked_pixels[color][index] += 1;
+                }
             }
         }
     }
+
+    m_n_tasks_processed++;
 };
 
 int StackerMeanValue::get_tasks_total() const  {

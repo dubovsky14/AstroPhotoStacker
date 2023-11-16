@@ -27,7 +27,7 @@ void HotPixelIdentifier::add_photos(const std::vector<std::string> &photo_addres
 void HotPixelIdentifier::add_photo(const std::string &photo_address)    {
     int width,height;
     unique_ptr<unsigned short int[]> pixel_value_array = read_raw_file(photo_address, &width, &height);
-    add_photo(pixel_value_array.get(), width, height, 14);
+    add_photo(pixel_value_array.get(), width, height);
 };
 
 void HotPixelIdentifier::add_photo(const unsigned short int *pixel_value_array, int width, int height, int image_bit_depth) {
@@ -51,8 +51,8 @@ void HotPixelIdentifier::add_photo(const unsigned short int *pixel_value_array, 
 void HotPixelIdentifier::compute_hot_pixels()   {
     m_hot_pixels.clear();
     for (const auto &hot_pixel_candidate : m_hot_pixel_candidates) {
-        const auto &hot_pixel_candidate_coordinates = hot_pixel_candidate.first;
-        const auto &hot_pixel_candidate_value = hot_pixel_candidate.second;
+        const std::tuple<int,int> &hot_pixel_candidate_coordinates = hot_pixel_candidate.first;
+        const int hot_pixel_candidate_value = hot_pixel_candidate.second;
         if (hot_pixel_candidate_value > m_n_photos_processed*0.5) {
             m_hot_pixels.push_back(hot_pixel_candidate_coordinates);
             m_hot_pixels_map[hot_pixel_candidate_coordinates] = 1;
