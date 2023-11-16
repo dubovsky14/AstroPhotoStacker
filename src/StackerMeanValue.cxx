@@ -47,6 +47,8 @@ void StackerMeanValue::calculate_stacked_photo()  {
                 m_number_of_stacked_pixels[i_color][i_pixel] += number_of_stacked_pixels[i_color][i_pixel];
             }
         }
+        stacked_image.clear();
+        number_of_stacked_pixels.clear();
     }
 
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {

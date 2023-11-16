@@ -2,6 +2,7 @@
 
 #include "../headers/FilelistHandler.h"
 #include "../headers/StackSettings.h"
+#include "../headers/RecentPathsHandler.h"
 
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/HotPixelIdentifier.h"
@@ -109,6 +110,7 @@ class MyFrame : public wxFrame  {
         void on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title);
         void on_open_lights(wxCommandEvent& event);
         void on_open_flats (wxCommandEvent& event);
+        RecentPathsHandler m_recent_paths_handler;
 
         void on_save_stacked(wxCommandEvent& event);
         void on_exit(wxCommandEvent& event);

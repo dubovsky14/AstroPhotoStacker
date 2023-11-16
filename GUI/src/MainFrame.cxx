@@ -610,12 +610,14 @@ void MyFrame::on_exit(wxCommandEvent& event)     {
 }
 
 void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title)    {
-    wxFileDialog dialog(this, title, "", "", "*[!'.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
+    const std::string default_path = m_recent_paths_handler.get_recent_file_path(type, "");
+    wxFileDialog dialog(this, title, "", default_path, "*[!'.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
     if (dialog.ShowModal() == wxID_OK) {
         wxArrayString paths;
         dialog.GetPaths(paths);
         for (auto path : paths) {
             m_filelist_handler.add_file(path.ToStdString(), type);
+            m_recent_paths_handler.set_recent_file_path_from_file(type, path.ToStdString());
         }
     }
     dialog.Destroy();
