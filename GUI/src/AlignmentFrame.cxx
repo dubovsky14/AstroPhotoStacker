@@ -60,7 +60,7 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
             photo_alignment_handler.align_files(m_stack_settings->get_alignment_file(), files_to_align);
         });
 
-        while (n_processed < int(files_to_align.size())) {
+        while (pool.get_tasks_total()) {
             progress_bar->Update(n_processed, "Aligned " + std::to_string(n_processed) + " / " + std::to_string(files_total) + " files");
             wxMilliSleep(100);
         }

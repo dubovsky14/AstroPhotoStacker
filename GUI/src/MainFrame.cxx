@@ -210,7 +210,7 @@ void MyFrame::add_button_bar()   {
             m_hot_pixel_identifier->add_photos(files);
         });
 
-        while (n_processed < int(files.size())) {
+        while (pool.get_tasks_total()) {
             progress_bar.Update(n_processed, "Processed " + std::to_string(n_processed) + " / " + std::to_string(files_total) + " files");
             wxMilliSleep(100);
         }
@@ -260,7 +260,7 @@ void MyFrame::add_button_bar()   {
             m_stacker->calculate_stacked_photo();
         });
 
-        while (tasks_processed < tasks_total) {
+        while (pool.get_tasks_total()) {
             progress_bar.Update(tasks_processed, "Finished " + std::to_string(tasks_processed) + " / " + std::to_string(tasks_total));
             wxMilliSleep(100);
         }
