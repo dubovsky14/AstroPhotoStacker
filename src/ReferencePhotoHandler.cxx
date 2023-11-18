@@ -55,6 +55,7 @@ bool ReferencePhotoHandler::plate_solve(const std::string &file_address,
         vector<tuple<float,float,int> > stars = get_stars(&brightness[0], width, height, threshold);
         keep_only_stars_above_size(&stars, 9);
         sort_stars_by_size(&stars);
+        stars.resize(min<int>(stars.size(), 20));
         return plate_solve(stars, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
     }
     catch (runtime_error &e)    {
