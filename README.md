@@ -118,3 +118,7 @@ and these arguments are optional:
 ```stacker_type``` -> stacking algorithm to be used. The list of available algorithms can be found in ```headers/StackerFactory.h``` header file. Default is ```kappa_sigma_clipping```
 
 ```hot_pixels_file``` -> text file with hot pixels coordinates (described in ```Hot pixel identification``` part)
+
+*GUI*
+
+There is a graphical user interface, which is still in development, you can find it in ```GUI``` folder, together with instructions how to use it.
