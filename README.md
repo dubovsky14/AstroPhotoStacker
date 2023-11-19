@@ -119,6 +119,7 @@ and these arguments are optional:
 
 ```hot_pixels_file``` -> text file with hot pixels coordinates (described in ```Hot pixel identification``` part)
 
-*GUI*
+GUI
+---
 
 There is a graphical user interface, which is still in development, you can find it in ```GUI``` folder, together with instructions how to use it.
