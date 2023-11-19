@@ -261,16 +261,22 @@ void MyFrame::add_button_bar()   {
         });
 
         while (pool.get_tasks_total()) {
-            progress_bar.Update(tasks_processed, "Finished " + std::to_string(tasks_processed) + " / " + std::to_string(tasks_total));
+            if (tasks_processed < tasks_total) {
+                progress_bar.Update(tasks_processed, "Finished " + std::to_string(tasks_processed) + " / " + std::to_string(tasks_total));
+            }
+            else {
+                progress_bar.Update(tasks_total-1, "Calculating final image ...");
+            }
             wxMilliSleep(100);
         }
-
         pool.wait_for_tasks();
-
-        update_image_preview_with_stacked_image();
 
         progress_bar.Close();
         progress_bar.Destroy();
+
+
+        update_image_preview_with_stacked_image();
+
         update_status_icon(m_stacked_status_icon, true);
     });
 
