@@ -408,7 +408,7 @@ void MyFrame::add_hot_pixel_correction_checkbox()    {
 void MyFrame::add_max_memory_spin_ctrl() {
     wxStaticText* memory_usage_text = new wxStaticText(this, wxID_ANY, "Maximum memory usage (MB):");
 
-    wxSpinCtrl* spin_ctrl_max_memory = new wxSpinCtrl(this, wxID_ANY, "8000", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100000, 8000);
+    wxSpinCtrl* spin_ctrl_max_memory = new wxSpinCtrl(this, wxID_ANY, "16000", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100000, 16000);
     spin_ctrl_max_memory->Bind(wxEVT_SPINCTRL, [spin_ctrl_max_memory, this](wxCommandEvent&){
         int current_value = spin_ctrl_max_memory->GetValue();
         (this->m_stack_settings).set_max_memory(current_value);
