@@ -110,12 +110,45 @@ void MyFrame::add_alignment_menu()  {
     m_menu_bar->Append(alignment_menu, "&Alignment");
 };
 
+void MyFrame::add_hot_pixel_menu()  {
+    wxMenu *hot_pixel_menu = new wxMenu;
+
+    int id = unique_counter();
+    hot_pixel_menu->Append(id, "Save hot pixel info", "Save hot pixel info");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        if (m_hot_pixel_identifier == nullptr)  {
+            return;
+        }
+        wxFileDialog dialog(this, "Save hot pixel info", "", "", "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        if (dialog.ShowModal() == wxID_OK) {
+            const std::string file_address = dialog.GetPath().ToStdString();
+            m_hot_pixel_identifier->save_hot_pixels_to_file(file_address);
+        }
+    }, id);
+
+    id = unique_counter();
+    hot_pixel_menu->Append(id, "Load hot pixel info", "Load hot pixel info");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        wxFileDialog dialog(this, "Load hot pixel info", "", "", "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        if (dialog.ShowModal() == wxID_OK) {
+            const std::string file_address = dialog.GetPath().ToStdString();
+            if (m_hot_pixel_identifier == nullptr)  {
+                m_hot_pixel_identifier = make_unique<AstroPhotoStacker::HotPixelIdentifier>();
+            }
+            m_hot_pixel_identifier->load_hot_pixels_from_file(file_address);
+            update_status_icon(m_hot_pixel_status_icon, true);
+        }
+    }, id);
+
+    m_menu_bar->Append(hot_pixel_menu, "&Hot pixels");
+};
 
 void MyFrame::add_menu_bar()    {
     m_menu_bar = new wxMenuBar;
 
     add_file_menu();
     add_alignment_menu();
+    add_hot_pixel_menu();
 
     SetMenuBar(m_menu_bar);
 };
