@@ -67,6 +67,10 @@ class FilelistHandler   {
 
         void get_alignment_info_tabular_data(std::vector<std::vector<std::string>> *tabular_data, std::vector<std::string> *description) const;
 
+        void save_alignment_to_file(const std::string &output_address);
+
+        void load_alignment_from_file(const std::string &input_address);
+
     private:
         std::map<FileTypes, std::vector<std::string>>       m_filelist;
         std::map<FileTypes, std::vector<bool>>              m_filelist_checked;

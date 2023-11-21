@@ -83,10 +83,39 @@ void MyFrame::add_file_menu()  {
 
 };
 
+void MyFrame::add_alignment_menu()  {
+    wxMenu *alignment_menu = new wxMenu;
+
+    int id = unique_counter();
+    alignment_menu->Append(id, "Save alignment info", "Save alignment info");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        wxFileDialog dialog(this, "Save alignment info", "", "", "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        if (dialog.ShowModal() == wxID_OK) {
+            const std::string file_address = dialog.GetPath().ToStdString();
+            m_filelist_handler.save_alignment_to_file(file_address);
+        }
+    }, id);
+
+    id = unique_counter();
+    alignment_menu->Append(id, "Load alignment info", "Load alignment info");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        wxFileDialog dialog(this, "Load alignment info", "", "", "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        if (dialog.ShowModal() == wxID_OK) {
+            const std::string file_address = dialog.GetPath().ToStdString();
+            m_filelist_handler.load_alignment_from_file(file_address);
+            update_alignment_status();
+        }
+    }, id);
+
+    m_menu_bar->Append(alignment_menu, "&Alignment");
+};
+
+
 void MyFrame::add_menu_bar()    {
     m_menu_bar = new wxMenuBar;
 
     add_file_menu();
+    add_alignment_menu();
 
     SetMenuBar(m_menu_bar);
 };

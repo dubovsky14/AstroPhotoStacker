@@ -1,6 +1,13 @@
 #include "../headers/FilelistHandler.h"
+#include "../../headers/Common.h"
 
 #include <algorithm>
+#include <fstream>
+#include <sstream>
+
+using namespace AstroPhotoStacker;
+using namespace std;
+
 
 std::string to_string(FileTypes type)   {
     switch (type)   {
@@ -196,5 +203,55 @@ void FilelistHandler::get_alignment_info_tabular_data(std::vector<std::vector<st
     for (unsigned int i = 0; i < light_files.size(); ++i)   {
         const AlignmentFileInfo &info = alignment_info[i];
         tabular_data->push_back({light_files[i], std::to_string(info.shift_x), std::to_string(info.shift_y), std::to_string(info.rotation_center_x), std::to_string(info.rotation_center_y), std::to_string(info.rotation), std::to_string(info.ranking)});
+    }
+};
+
+void FilelistHandler::save_alignment_to_file(const std::string &output_address)  {
+    const std::vector<AlignmentFileInfo> &alignment_info = get_alignment_info(FileTypes::LIGHT);
+    const std::vector<std::string> &light_files = get_files(FileTypes::LIGHT);
+    std::ofstream output_file(output_address);
+    for (unsigned int i_file = 0; i_file < alignment_info.size(); ++i_file)   {
+        const AlignmentFileInfo &info = alignment_info[i_file];
+        if (!info.initialized)  {
+            continue;
+        }
+        output_file << light_files[i_file] << " | "
+                    << info.shift_x << " | "
+                    << info.shift_y << " | "
+                    << info.rotation_center_x << " | "
+                    << info.rotation_center_y << " | "
+                    << info.rotation << " | "
+                    << info.ranking << std::endl;
+    }
+};
+
+void FilelistHandler::load_alignment_from_file(const std::string &input_address)    {
+    std::ifstream input_file(input_address);
+    std::string line;
+    while (std::getline(input_file, line))   {
+        vector<string> elements = split_string(line, " | ");
+        if (elements.size() != 7)   {
+            continue;
+        }
+        const std::string file_address = elements[0];
+
+        AlignmentFileInfo alignment_info;
+        alignment_info.shift_x           = std::stof(elements[1]);
+        alignment_info.shift_y           = std::stof(elements[2]);
+        alignment_info.rotation_center_x = std::stof(elements[3]);
+        alignment_info.rotation_center_y = std::stof(elements[4]);
+        alignment_info.rotation          = std::stof(elements[5]);
+        alignment_info.ranking           = std::stof(elements[6]);
+        alignment_info.initialized       = true;
+
+
+        const std::vector<std::string> &light_files = get_files(FileTypes::LIGHT);
+        for (unsigned int i_file = 0; i_file < light_files.size(); ++i_file)   {
+            if (light_files[i_file] == file_address)   {
+                set_alignment_info(i_file, alignment_info);
+                break;
+            }
+        }
+
     }
 };
