@@ -48,6 +48,9 @@ std::string get_stacker_type_for_factory(const std::string &stacking_algorithm_a
     else if (stacking_algorithm_app_name == "median") {
         return "median";
     }
+    else if (stacking_algorithm_app_name == "cut-off average") {
+        return "cut_off_average";
+    }
     else {
         throw std::runtime_error("Unknown stacker type: " + stacking_algorithm_app_name);
     }
@@ -70,5 +73,11 @@ void configure_stacker(StackerBase* stacker, const StackSettings &settings)   {
     // Memory limit
     if (dynamic_cast<StackerMeanValue*>(stacker) == nullptr) {
         stacker->set_memory_usage_limit(settings.get_max_memory());
+    }
+
+    // cut-off average
+    if (dynamic_cast<StackerCutOffAverage*>(stacker) != nullptr) {
+        StackerCutOffAverage *stacker_cut_off_average = dynamic_cast<StackerCutOffAverage*>(stacker);
+        stacker_cut_off_average->set_tail_fraction_to_cut_off(settings.get_cut_off_tail_fraction());
     }
 };

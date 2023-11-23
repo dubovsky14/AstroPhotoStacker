@@ -70,6 +70,10 @@ class MyFrame : public wxFrame  {
         void add_stacking_algorithm_choice_box();
         void add_kappa_sigma_options();
         void update_kappa_sigma_visibility();
+
+        void add_cut_off_average_options();
+        void update_cut_off_average_visibility();
+
         void add_hot_pixel_correction_checkbox();
 
         void add_image_settings();
@@ -92,6 +96,9 @@ class MyFrame : public wxFrame  {
         wxSpinCtrlDouble    *m_spin_ctrl_kappa              = nullptr;
         wxStaticText        *m_kappa_sigma_iter_text        = nullptr;
         wxSpinCtrl          *m_spin_ctrl_kappa_sigma_iter   = nullptr;
+
+        wxStaticText        *m_cut_off_average_text         = nullptr;
+        wxSpinCtrlDouble    *m_spin_ctrl_cut_off_average    = nullptr;
 
         int                             m_preview_size[2]   = {600, 400};
         std::vector<std::vector<int>>   m_current_preview = std::vector<std::vector<int>>(3, std::vector<int>(m_preview_size[0]*m_preview_size[1], 0));

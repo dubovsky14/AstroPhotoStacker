@@ -70,6 +70,14 @@ int  StackSettings::get_kappa_sigma_iter() const        {
     return m_kappa_sigma_iter;
 };
 
+void StackSettings::set_cut_off_tail_fraction(float cut_off_tail_fraction)    {
+    m_cut_off_tail_fraction = cut_off_tail_fraction;
+};
+
+float StackSettings::get_cut_off_tail_fraction() const   {
+    return m_cut_off_tail_fraction;
+};
+
 void StackSettings::set_hot_pixel_correction(bool hot_pixel_correction)    {
     m_hot_pixel_correction = hot_pixel_correction;
 };

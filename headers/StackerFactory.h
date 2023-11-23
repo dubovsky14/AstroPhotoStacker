@@ -5,6 +5,7 @@
 #include "../headers/StackerMedian.h"
 #include "../headers/StackerKappaSigmaClipping.h"
 #include "../headers/StackerKappaSigmaMedian.h"
+#include "../headers/StackerCutOffAverage.h"
 
 #include <string>
 #include <memory>
@@ -19,7 +20,10 @@ namespace AstroPhotoStacker {
             return std::make_unique<StackerKappaSigmaClipping>(number_of_colors, width, height);
         } else if (stacker_type == "kappa_sigma_median") {
             return std::make_unique<StackerKappaSigmaMedian>(number_of_colors, width, height);
-        } else {
+        } else if (stacker_type == "cut_off_average") {
+            return std::make_unique<StackerCutOffAverage>(number_of_colors, width, height);
+        }
+        else {
             throw std::runtime_error("Unknown stacker type: " + stacker_type);
         }
     }

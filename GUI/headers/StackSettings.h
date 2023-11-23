@@ -34,6 +34,10 @@ class StackSettings {
         void set_kappa_sigma_iter(int kappa_sigma_iter);
         int  get_kappa_sigma_iter() const;
 
+        // cut-off average options
+        void set_cut_off_tail_fraction(float cut_off_tail_fraction);
+        float get_cut_off_tail_fraction() const;
+
         // hot pixel correction
         void set_hot_pixel_correction(bool hot_pixel_correction);
         bool use_hot_pixel_correction() const;
@@ -46,8 +50,9 @@ class StackSettings {
 
         float m_kappa = 1.0;
         int   m_kappa_sigma_iter = 3;
+        float m_cut_off_tail_fraction = 0.2;
         bool  m_hot_pixel_correction = false;
 
-        const std::vector<std::string> m_stacking_algorithms = {"kappa-sigma median", "kappa-sigma mean", "average", "median", };
+        const std::vector<std::string> m_stacking_algorithms = {"kappa-sigma median", "kappa-sigma mean", "average", "median", "cut-off average"};
 
 };

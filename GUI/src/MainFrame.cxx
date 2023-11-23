@@ -59,6 +59,7 @@ MyFrame::MyFrame()
 
     CreateStatusBar();
     SetStatusText("Author: Michal Dubovsky");
+
 }
 
 void MyFrame::add_file_menu()  {
@@ -89,7 +90,8 @@ void MyFrame::add_alignment_menu()  {
     int id = unique_counter();
     alignment_menu->Append(id, "Save alignment info", "Save alignment info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        wxFileDialog dialog(this, "Save alignment info", "", "", "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        const std::string default_path = m_recent_paths_handler.get_recent_file_path(FileTypes::LIGHT, "");
+        wxFileDialog dialog(this, "Save alignment info", "", default_path, "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_filelist_handler.save_alignment_to_file(file_address);
@@ -99,7 +101,8 @@ void MyFrame::add_alignment_menu()  {
     id = unique_counter();
     alignment_menu->Append(id, "Load alignment info", "Load alignment info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        wxFileDialog dialog(this, "Load alignment info", "", "", "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        const std::string default_path = m_recent_paths_handler.get_recent_file_path(FileTypes::LIGHT, "");
+        wxFileDialog dialog(this, "Load alignment info", "", default_path, "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_filelist_handler.load_alignment_from_file(file_address);
@@ -119,7 +122,8 @@ void MyFrame::add_hot_pixel_menu()  {
         if (m_hot_pixel_identifier == nullptr)  {
             return;
         }
-        wxFileDialog dialog(this, "Save hot pixel info", "", "", "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        const std::string default_path = m_recent_paths_handler.get_recent_file_path(FileTypes::LIGHT, "");
+        wxFileDialog dialog(this, "Save hot pixel info", "", default_path, "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_hot_pixel_identifier->save_hot_pixels_to_file(file_address);
@@ -129,7 +133,8 @@ void MyFrame::add_hot_pixel_menu()  {
     id = unique_counter();
     hot_pixel_menu->Append(id, "Load hot pixel info", "Load hot pixel info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        wxFileDialog dialog(this, "Load hot pixel info", "", "", "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        const std::string default_path = m_recent_paths_handler.get_recent_file_path(FileTypes::LIGHT, "");
+        wxFileDialog dialog(this, "Load hot pixel info", "", default_path, "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             if (m_hot_pixel_identifier == nullptr)  {
@@ -317,6 +322,11 @@ void MyFrame::add_button_bar()   {
         wxProgressDialog progress_bar("File stacking", "Finished 0 / " + std::to_string(tasks_total), tasks_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
         progress_bar.Update(tasks_processed);
 
+        if (dynamic_cast<StackerCutOffAverage*>(m_stacker.get()) != nullptr) {
+            StackerCutOffAverage *stacker_cut_off_average = dynamic_cast<StackerCutOffAverage*>(m_stacker.get());
+            cout << "DEBUG, cut-off scale: " << stacker_cut_off_average->get_tail_fraction_to_cut_off() << endl;
+        }
+
         thread_pool pool(1);
         pool.submit([this](){
             m_stacker->calculate_stacked_photo();
@@ -393,6 +403,7 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
         int current_selection = choice_box_stacking_algorithm->GetSelection();
         (this->m_stack_settings).set_stacking_algorithm(choice_box_stacking_algorithm->GetString(current_selection).ToStdString());
         update_kappa_sigma_visibility();
+        update_cut_off_average_visibility();
     });
 
     int current_selection = choice_box_stacking_algorithm->GetSelection();
@@ -402,6 +413,7 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
     m_sizer_top_left->Add(choice_box_stacking_algorithm, 0,  wxEXPAND, 5);
 
     add_kappa_sigma_options();
+    add_cut_off_average_options();
 };
 
 void MyFrame::add_kappa_sigma_options() {
@@ -413,7 +425,7 @@ void MyFrame::add_kappa_sigma_options() {
     m_kappa_text = new wxStaticText(this, wxID_ANY, "Kappa:");
     m_spin_ctrl_kappa = new wxSpinCtrlDouble(this, wxID_ANY, "3.0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 6, 2, 0.1);
 
-    m_spin_ctrl_kappa->Bind(wxEVT_SPINCTRL, [this](wxCommandEvent&){
+    m_spin_ctrl_kappa->Bind(wxEVT_SPINCTRLDOUBLE, [this](wxCommandEvent&){
         double current_value = m_spin_ctrl_kappa->GetValue();
         (this->m_stack_settings).set_kappa(current_value);
     });
@@ -452,6 +464,38 @@ void MyFrame::update_kappa_sigma_visibility()   {
         m_spin_ctrl_kappa->Show();
         m_kappa_sigma_iter_text->Show();
         m_spin_ctrl_kappa_sigma_iter->Show();
+    }
+};
+
+void MyFrame::add_cut_off_average_options()  {
+    wxBoxSizer* main_sizer  = new wxBoxSizer(wxHORIZONTAL);
+    m_sizer_top_left->Add(main_sizer,   1, wxEXPAND | wxALL, 5);
+
+    wxBoxSizer* cut_off_sizer  = new wxBoxSizer(wxVERTICAL);
+    main_sizer->Add(cut_off_sizer, 0, wxEXPAND, 5);
+    m_cut_off_average_text = new wxStaticText(this, wxID_ANY, "Cut-off fraction:");
+    m_spin_ctrl_cut_off_average = new wxSpinCtrlDouble(this, wxID_ANY, "0.2", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 0.49, 0.2, 0.01);
+
+    m_spin_ctrl_cut_off_average->Bind(wxEVT_SPINCTRLDOUBLE, [this](wxCommandEvent&){
+        double current_value = m_spin_ctrl_cut_off_average->GetValue();
+        (this->m_stack_settings).set_cut_off_tail_fraction(current_value);
+    });
+    double current_cut_off = m_spin_ctrl_cut_off_average->GetValue();
+    m_stack_settings.set_cut_off_tail_fraction(current_cut_off);
+
+    cut_off_sizer->Add(m_cut_off_average_text, 0, wxEXPAND, 5);
+    cut_off_sizer->Add(m_spin_ctrl_cut_off_average, 0,  wxEXPAND, 5);
+
+};
+
+void MyFrame::update_cut_off_average_visibility()   {
+    if (m_stack_settings.get_stacking_algorithm() != "cut-off average") {
+        m_cut_off_average_text->Hide();
+        m_spin_ctrl_cut_off_average->Hide();
+    }
+    else    {
+        m_cut_off_average_text->Show();
+        m_spin_ctrl_cut_off_average->Show();
     }
 };
 
