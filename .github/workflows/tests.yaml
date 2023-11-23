@@ -42,7 +42,7 @@ jobs:
             mkdir bin
               sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
               sudo apt-get install libraw-dev
-              sudo apt-get install pip3
+              sudo apt-get install python3-pip
               pip3 install wxwidgets
       - uses: actions/download-artifact@v3
         with:
