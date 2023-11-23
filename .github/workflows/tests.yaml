@@ -1,7 +1,7 @@
-name: build-linux
+name: test_on_linux
 on: [push]
 jobs:
-  build-linux:
+  build-backend:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -22,15 +22,42 @@ jobs:
         name: upload_artifact
       - uses: actions/upload-artifact@v3
         with:
-          name: artifact-linux-build
+          name: artifact-linux-backend-build
           path: |
                   bin
           retention-days: 1
 
+  build-gui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [build-backend]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: |
+            mkdir bin
+              sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
+              sudo apt-get install libraw-dev
+              sudo apt-get install pip3
+              pip3 install wxwidgets
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact-linux-backend-build
+          path: bin/.
+      - run:  |
+              cd GUI
+              mkdir bin
+              cmake ../.
+              make
+
   hot-pixel-identification:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [build-linux]
+    needs: [build-backend]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -44,7 +71,7 @@ jobs:
               sudo apt-get install libraw-dev
       - uses: actions/download-artifact@v3
         with:
-          name: artifact-linux-build
+          name: artifact-linux-backend-build
           path: bin/.
       - run:  |
               chmod u+x bin/tests
@@ -54,7 +81,7 @@ jobs:
   produce-alignment-file:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [build-linux]
+    needs: [build-backend]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -68,7 +95,7 @@ jobs:
               sudo apt-get install libraw-dev
       - uses: actions/download-artifact@v3
         with:
-          name: artifact-linux-build
+          name: artifact-linux-backend-build
           path: bin/.
       - run:  |
               mkdir output
@@ -102,7 +129,7 @@ jobs:
   produce-stacked-image:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [build-linux, produce-alignment-file]
+    needs: [build-backend, produce-alignment-file]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -116,7 +143,7 @@ jobs:
         name: install-dependencies
       - uses: actions/download-artifact@v3
         with:
-          name: artifact-linux-build
+          name: artifact-linux-backend-build
           path: bin/.
       - uses: actions/download-artifact@v3
         with:
