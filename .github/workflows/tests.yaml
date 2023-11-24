@@ -38,17 +38,18 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '14'
-      - run: |
+      - name: install-dependencies
+        run: |
             mkdir bin
               sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
               sudo apt-get install libraw-dev
-              sudo apt-get install python3-pip
-              pip3 install wxwidgets
+              sudo apt-get install -y libwxgtk3.0-dev cmake g++
       - uses: actions/download-artifact@v3
         with:
           name: artifact-linux-backend-build
           path: bin/.
-      - run:  |
+      - name: build-gui
+        run:  |
               cd GUI
               mkdir bin
               cmake ../.
