@@ -168,6 +168,7 @@ void MyFrame::add_files_to_stack_checkbox()  {
         string text = m_files_to_stack_checkbox->GetString(index).ToStdString();
         const std::string file = text.substr(text.find_last_of("\t") + 1);
         update_image_preview_file(file);
+        update_checked_files_in_filelist();
     });
 };
 
@@ -191,6 +192,7 @@ void MyFrame::update_checked_files_in_filelist() {
         int index = checked_indices[i];
         m_filelist_handler.set_file_checked(index, true);
     }
+    update_input_numbers_overview();
 };
 
 void MyFrame::add_button_bar()   {
@@ -207,7 +209,6 @@ void MyFrame::add_button_bar()   {
                 m_files_to_stack_checkbox->Check(i, false);
             }
             button_check_all->SetLabel("Check all");
-            return;
         }
         else {
             for (unsigned int i = 0; i < m_files_to_stack_checkbox->GetCount(); ++i) {
@@ -534,6 +535,7 @@ void MyFrame::add_max_memory_spin_ctrl() {
 
 void MyFrame::add_image_settings()   {
     add_exposure_correction_spin_ctrl();
+    add_input_numbers_overview();
 };
 
 void MyFrame::add_upper_middle_panel()   {
@@ -715,6 +717,62 @@ void MyFrame::add_exposure_correction_spin_ctrl()   {
     m_sizer_top_right->Add(exposure_correction_text, 0,   wxEXPAND, 5);
     m_sizer_top_right->Add(slider_exposure, 0,  wxEXPAND, 5);
 
+};
+
+void MyFrame::add_input_numbers_overview()  {
+    wxGridSizer *grid_sizer = new wxGridSizer(5,3, 0, 0);
+    wxStaticText* text_frame_type = new wxStaticText(this, wxID_ANY, "Frame type");
+    wxStaticText* text_total = new wxStaticText(this, wxID_ANY, "Total");
+    wxStaticText* text_checked = new wxStaticText(this, wxID_ANY, "Checked");
+
+    grid_sizer->Add(text_frame_type, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(text_total, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(text_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+
+    wxStaticText* text_light = new wxStaticText(this, wxID_ANY, "Light frames: ");
+    wxStaticText* text_light_number = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_files(FileTypes::LIGHT).size()));
+    wxStaticText* text_light_checked = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_number_of_checked_files(FileTypes::LIGHT)));
+    m_frames_numbers_overview_texts[FileTypes::LIGHT] = {text_light_number, text_light_checked};
+
+    grid_sizer->Add(text_light, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(text_light_number, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(text_light_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+
+    wxStaticText* text_flat = new wxStaticText(this, wxID_ANY, "Flat frames: ");
+    wxStaticText* text_flat_number = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_files(FileTypes::FLAT).size()));
+    wxStaticText* text_flat_checked = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_number_of_checked_files(FileTypes::FLAT)));
+    m_frames_numbers_overview_texts[FileTypes::FLAT] = {text_flat_number, text_flat_checked};
+
+    grid_sizer->Add(text_flat, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(text_flat_number, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(text_flat_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+
+    wxStaticText* text_bias = new wxStaticText(this, wxID_ANY, "Bias frames: ");
+    wxStaticText* text_bias_number = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_files(FileTypes::BIAS).size()));
+    wxStaticText* text_bias_checked = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_number_of_checked_files(FileTypes::BIAS)));
+
+    grid_sizer->Add(text_bias, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(text_bias_number, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(text_bias_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    m_frames_numbers_overview_texts[FileTypes::BIAS] = {text_bias_number, text_bias_checked};
+
+    wxStaticText* text_dark = new wxStaticText(this, wxID_ANY, "Dark frames: ");
+    wxStaticText* text_dark_number = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_files(FileTypes::DARK).size()));
+    wxStaticText* text_dark_checked = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_number_of_checked_files(FileTypes::DARK)));
+    m_frames_numbers_overview_texts[FileTypes::DARK] = {text_dark_number, text_dark_checked};
+
+    grid_sizer->Add(text_dark, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(text_dark_number, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    grid_sizer->Add(text_dark_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+
+    m_sizer_top_right->Add(grid_sizer, 0, wxEXPAND, 5);
+};
+
+void MyFrame::update_input_numbers_overview()   {
+    for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
+        m_frames_numbers_overview_texts[type].first->SetLabel(std::to_string(m_filelist_handler.get_files(type).size()));
+        m_frames_numbers_overview_texts[type].second->SetLabel(std::to_string(m_filelist_handler.get_number_of_checked_files(type)));
+    }
 };
 
 void MyFrame::on_exit(wxCommandEvent& event)     {

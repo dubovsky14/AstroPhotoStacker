@@ -78,6 +78,9 @@ class MyFrame : public wxFrame  {
 
         void add_image_settings();
         void add_exposure_correction_spin_ctrl();
+        void add_input_numbers_overview();
+        void update_input_numbers_overview();
+        std::map<FileTypes, std::pair<wxStaticText*, wxStaticText*>>  m_frames_numbers_overview_texts;
 
         wxPanel     *m_panel_top        = nullptr;
         wxBoxSizer  *m_sizer_main_frame = nullptr;

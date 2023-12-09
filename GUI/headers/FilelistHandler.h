@@ -49,6 +49,8 @@ class FilelistHandler   {
 
         const std::vector<bool>&        get_files_checked(FileTypes type)   const;
 
+        int get_number_of_checked_files(FileTypes type) const;
+
         bool file_is_checked(int file_index) const;
 
         void set_file_checked(int file_index, bool checked, FileTypes type);

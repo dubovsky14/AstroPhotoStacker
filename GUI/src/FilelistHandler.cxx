@@ -127,6 +127,17 @@ const std::vector<bool>& FilelistHandler::get_files_checked(FileTypes type)   co
     return m_filelist_checked.at(type);
 };
 
+int FilelistHandler::get_number_of_checked_files(FileTypes type) const  {
+    const std::vector<bool> &files_checked = m_filelist_checked.at(type);
+    int n_checked_files = 0;
+    for (bool checked : files_checked)   {
+        if (checked)    {
+            n_checked_files++;
+        }
+    }
+    return n_checked_files;
+};
+
 bool FilelistHandler::file_is_checked(int file_index) const {
     int files_previous = 0;
     for (FileTypes type : s_file_types_ordering)   {
