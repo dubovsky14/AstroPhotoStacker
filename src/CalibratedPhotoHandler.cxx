@@ -218,11 +218,11 @@ void CalibratedPhotoHandler::run_color_interpolation()  {
                 // now let's calculate weighted mean of the neighbors, with 1/distance as the weight
                 float sum = 0;
                 float weight_sum = 0;
-                for (int i_neighbor = 0; i_neighbor < 4; i_neighbor++) {
+                for (int i_neighbor = 0; i_neighbor < 8; i_neighbor++) {
                     if (neighbors_distances[i_neighbor] == -1) {
                         continue;
                     }
-                    sum += neighbors_values[i_neighbor]/neighbors_distances[i_neighbor];
+                    sum += float(neighbors_values[i_neighbor])/neighbors_distances[i_neighbor];
                     weight_sum += 1.0/neighbors_distances[i_neighbor];
                 }
                 m_data_original_color_interpolation[i_color][index] = sum/weight_sum;
