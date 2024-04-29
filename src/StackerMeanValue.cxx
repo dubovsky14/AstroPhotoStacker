@@ -11,8 +11,8 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-StackerMeanValue::StackerMeanValue(int number_of_colors, int width, int height) :
-    StackerBase(number_of_colors, width, height),
+StackerMeanValue::StackerMeanValue(int number_of_colors, int width, int height, bool interpolate_colors) :
+    StackerBase(number_of_colors, width, height, interpolate_colors),
     m_number_of_stacked_pixels(number_of_colors, vector<unsigned short>(width*height, 0))   {
 };
 

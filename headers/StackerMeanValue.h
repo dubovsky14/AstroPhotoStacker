@@ -7,7 +7,7 @@
 namespace AstroPhotoStacker {
     class StackerMeanValue : public StackerBase {
         public:
-            StackerMeanValue(int number_of_colors, int width, int height);
+            StackerMeanValue(int number_of_colors, int width, int height, bool interpolate_colors);
 
             virtual void calculate_stacked_photo() override;
 

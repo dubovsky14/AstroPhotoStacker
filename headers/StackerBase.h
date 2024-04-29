@@ -17,7 +17,7 @@ namespace AstroPhotoStacker {
             StackerBase()                   = delete;
             StackerBase(const StackerBase&) = delete;
 
-            StackerBase(int number_of_colors, int width, int height);
+            StackerBase(int number_of_colors, int width, int height, bool interpolate_colors);
 
             void set_memory_usage_limit(int memory_usage_limit_in_mb);
 
@@ -56,6 +56,7 @@ namespace AstroPhotoStacker {
             int m_number_of_colors;
             int m_width;
             int m_height;
+            bool m_interpolate_colors;
 
             constexpr static short int c_empty_pixel_value = -1;
 

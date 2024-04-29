@@ -4,7 +4,7 @@
 
 class StackerCutOffAverage : public AstroPhotoStacker::StackerMedian {
     public:
-        StackerCutOffAverage(int number_of_colors, int width, int height);
+        StackerCutOffAverage(int number_of_colors, int width, int height, bool interpolate_colors);
 
         void set_tail_fraction_to_cut_off(float tail_fraction_to_cut_off) {m_tail_fraction_to_cut_off = tail_fraction_to_cut_off;};
 

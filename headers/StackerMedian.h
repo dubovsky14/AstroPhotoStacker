@@ -8,7 +8,7 @@
 namespace AstroPhotoStacker {
     class StackerMedian : public StackerBase {
         public:
-            StackerMedian(int number_of_colors, int width, int height);
+            StackerMedian(int number_of_colors, int width, int height, bool interpolate_colors);
 
             virtual void calculate_stacked_photo() override;
 

@@ -13,7 +13,7 @@ namespace AstroPhotoStacker {
         public:
             CalibratedPhotoHandler() = delete;
 
-            CalibratedPhotoHandler(const std::string &raw_file_address);
+            CalibratedPhotoHandler(const std::string &raw_file_address, bool use_color_interpolation = false);
 
             void define_alignment(float shift_x, float shift_y, float rotation_center_x, float rotation_center_y, float rotation);
 
@@ -32,6 +32,8 @@ namespace AstroPhotoStacker {
             // if color is negative, the pixel coordinates are out of the image boundaries
             void get_value_by_reference_frame_coordinates(float x, float y, unsigned int *value, char *color) const;
 
+            // use this for color interpolation
+            void get_value_by_reference_frame_coordinates(float x, float y, int color, unsigned int *value) const;
 
         private:
             int m_width;
@@ -46,11 +48,20 @@ namespace AstroPhotoStacker {
 
             std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
             std::unique_ptr<short unsigned int[]> m_data_original           = nullptr;
+
+            bool m_use_color_interpolation = false;
+            std::vector<std::vector<short unsigned int>> m_data_original_color_interpolation;
+            std::vector<std::vector<short unsigned int>> m_data_shifted_color_interpolation;
+
             std::vector<short unsigned int> m_data_shifted;
             std::vector<char> m_colors_original;
             std::vector<char> m_colors_shifted;
             std::vector<char> m_color_conversion_table; // color number from the raw file usually can take values 0,1,2,3. 3 is usually green, but it is not guaranteed, so we need to convert it to 0,1,2
 
             void fix_hot_pixel(int x, int y);
+
+            void run_color_interpolation();
+
+            void get_closest_pixel_of_the_same_color(int pos_x, int pos_y, int step_x, int step_y, short unsigned int *value, int *closest_distance);
     };
 }

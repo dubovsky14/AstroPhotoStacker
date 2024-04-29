@@ -5,8 +5,8 @@
 namespace AstroPhotoStacker {
     class StackerKappaSigmaBase : public StackerMedian {
     public:
-            StackerKappaSigmaBase(int number_of_colors, int width, int height) :
-                StackerMedian(number_of_colors, width, height)    {};
+            StackerKappaSigmaBase(int number_of_colors, int width, int height, bool interpolate_colors) :
+                StackerMedian(number_of_colors, width, height, interpolate_colors)    {};
 
             void set_kappa(float kappa)                         {m_kappa = kappa;};
 

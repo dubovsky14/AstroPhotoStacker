@@ -11,8 +11,8 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-StackerMedian::StackerMedian(int number_of_colors, int width, int height) :
-    StackerBase(number_of_colors, width, height)   {
+StackerMedian::StackerMedian(int number_of_colors, int width, int height, bool interpolate_colors) :
+    StackerBase(number_of_colors, width, height, interpolate_colors)   {
 };
 
 void StackerMedian::calculate_stacked_photo()  {
@@ -80,7 +80,7 @@ void StackerMedian::calculate_stacked_photo()  {
     m_values_to_stack.clear();
 
     // fix green pixels
-    if (m_number_of_colors == 3) {
+    if (m_number_of_colors == 3 && !m_interpolate_colors) {
         for (int i_pixel = 0; i_pixel < m_width*m_height; i_pixel++) {
             m_stacked_image[1][i_pixel] /= 2;
         }
@@ -104,7 +104,7 @@ void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y
     const float rot_center_y    = alignment_info.rotation_center_y;
     const float rotation        = alignment_info.rotation;
 
-    CalibratedPhotoHandler calibrated_photo(file_address);
+    CalibratedPhotoHandler calibrated_photo(file_address, m_interpolate_colors);
     calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
     calibrated_photo.limit_y_range(y_min, y_max);
     if (m_flat_frame_handler != nullptr) {
@@ -115,14 +115,30 @@ void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y
     }
     calibrated_photo.calibrate();
 
-    unsigned int value;
-    char color;
-    for (int y = y_min; y < y_max; y++)  {
-        for (int x = 0; x < m_width; x++)   {
-            calibrated_photo.get_value_by_reference_frame_coordinates(x, y, &value, &color);
-            const unsigned int index_stacking_array = (y-y_min)*m_width + x;
-            if (color >= 0) {
-                m_values_to_stack[color][n_files*index_stacking_array + file_index] = value;
+    if (m_interpolate_colors)   {
+        for (int color = 0; color < 3; color++)   {
+            unsigned int value;
+            for (int y = y_min; y < y_max; y++)  {
+                for (int x = 0; x < m_width; x++)   {
+                    calibrated_photo.get_value_by_reference_frame_coordinates(x, y, color, &value);
+                    const unsigned int index_stacking_array = (y-y_min)*m_width + x;
+                    if (color >= 0) {
+                        m_values_to_stack[color][n_files*index_stacking_array + file_index] = value;
+                    }
+                }
+            }
+        }
+    }
+    else    {
+        unsigned int value;
+        char color;
+        for (int y = y_min; y < y_max; y++)  {
+            for (int x = 0; x < m_width; x++)   {
+                calibrated_photo.get_value_by_reference_frame_coordinates(x, y, &value, &color);
+                const unsigned int index_stacking_array = (y-y_min)*m_width + x;
+                if (color >= 0) {
+                    m_values_to_stack[color][n_files*index_stacking_array + file_index] = value;
+                }
             }
         }
     }

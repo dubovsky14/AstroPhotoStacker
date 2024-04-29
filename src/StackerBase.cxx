@@ -4,11 +4,12 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-StackerBase::StackerBase(int number_of_colors, int width, int height)   {
+StackerBase::StackerBase(int number_of_colors, int width, int height, bool interpolate_colors)   {
     m_number_of_colors = number_of_colors;
     m_width = width;
     m_height = height;
     m_stacked_image = vector<vector<double> >(m_number_of_colors, vector<double>(m_width*m_height, 0));
+    m_interpolate_colors = interpolate_colors;
 };
 
 
