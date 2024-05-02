@@ -62,6 +62,6 @@ namespace AstroPhotoStacker {
 
             void run_color_interpolation();
 
-            void get_closest_pixel_of_given_color(int pos_x, int pos_y, int color, int step_x, int step_y, short unsigned int *value, int *closest_distance);
+            void get_closest_pixel_of_given_color(int pos_x, int pos_y, int color, int step_x, int step_y, short unsigned int *value, int *closest_distance, int n_steps_max = 2) const;
     };
 }
