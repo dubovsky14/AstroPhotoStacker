@@ -192,7 +192,7 @@ void CalibratedPhotoHandler::run_color_interpolation()  {
         for (int y = 0; y < m_height; y++) {
             for (int x = 0; x < m_width; x++) {
                 const int index = y*m_width + x;
-                const int color_original = m_colors_original[index];
+                const int color_original = m_color_conversion_table[m_colors_original[index]]; // there are sometimes 2 color codes for green color ...
 
                 // we do not need any interpolation, since the pixel at this coordinate has this color
                 if (i_color == color_original)  {
@@ -205,15 +205,15 @@ void CalibratedPhotoHandler::run_color_interpolation()  {
                 short unsigned int neighbors_values[8];
                 int neighbors_distances[8];
 
-                get_closest_pixel_of_the_same_color(x, y, 1, 0, &neighbors_values[0], &neighbors_distances[0]);     // right
-                get_closest_pixel_of_the_same_color(x, y, -1, 0, &neighbors_values[1], &neighbors_distances[1]);    // left
-                get_closest_pixel_of_the_same_color(x, y, 0, 1, &neighbors_values[2], &neighbors_distances[2]);     // down
-                get_closest_pixel_of_the_same_color(x, y, 0, -1, &neighbors_values[3], &neighbors_distances[3]);    // up
+                get_closest_pixel_of_given_color(x, y, i_color, 1, 0, &neighbors_values[0], &neighbors_distances[0]);     // right
+                get_closest_pixel_of_given_color(x, y, i_color, -1, 0, &neighbors_values[1], &neighbors_distances[1]);    // left
+                get_closest_pixel_of_given_color(x, y, i_color, 0, 1, &neighbors_values[2], &neighbors_distances[2]);     // down
+                get_closest_pixel_of_given_color(x, y, i_color, 0, -1, &neighbors_values[3], &neighbors_distances[3]);    // up
 
-                get_closest_pixel_of_the_same_color(x, y, 1, 1, &neighbors_values[4], &neighbors_distances[4]);     // down-right
-                get_closest_pixel_of_the_same_color(x, y, -1, 1, &neighbors_values[5], &neighbors_distances[5]);    // down-left
-                get_closest_pixel_of_the_same_color(x, y, 1, -1, &neighbors_values[6], &neighbors_distances[6]);    // up-right
-                get_closest_pixel_of_the_same_color(x, y, -1, -1, &neighbors_values[7], &neighbors_distances[7]);   // up-left
+                get_closest_pixel_of_given_color(x, y, i_color, 1, 1, &neighbors_values[4], &neighbors_distances[4]);     // down-right
+                get_closest_pixel_of_given_color(x, y, i_color, -1, 1, &neighbors_values[5], &neighbors_distances[5]);    // down-left
+                get_closest_pixel_of_given_color(x, y, i_color, 1, -1, &neighbors_values[6], &neighbors_distances[6]);    // up-right
+                get_closest_pixel_of_given_color(x, y, i_color, -1, -1, &neighbors_values[7], &neighbors_distances[7]);   // up-left
 
                 // now let's calculate weighted mean of the neighbors, with 1/distance as the weight
                 float sum = 0;
@@ -231,17 +231,17 @@ void CalibratedPhotoHandler::run_color_interpolation()  {
     }
 };
 
-void CalibratedPhotoHandler::get_closest_pixel_of_the_same_color(   int pos_x,
-                                                                    int pos_y,
-                                                                    int step_x,
-                                                                    int step_y,
-                                                                    short unsigned int *value,
-                                                                    int *closest_distance)  {
+void CalibratedPhotoHandler::get_closest_pixel_of_given_color(  int pos_x,
+                                                                int pos_y,
+                                                                int color,
+                                                                int step_x,
+                                                                int step_y,
+                                                                short unsigned int *value,
+                                                                int *closest_distance)  {
 
     *closest_distance = -1;
     *value = 0;
 
-    const int color = m_colors_original[pos_y*m_width + pos_x];
     for (int i_step = 1; i_step < 3; i_step++)  {
         const int new_pos_x = pos_x + i_step*step_x;
         const int new_pos_y = pos_y + i_step*step_y;
@@ -249,7 +249,7 @@ void CalibratedPhotoHandler::get_closest_pixel_of_the_same_color(   int pos_x,
             return;
         }
         const int index = new_pos_y*m_width + new_pos_x;
-        if (m_colors_original[index] == color) {
+        if (m_color_conversion_table[m_colors_original[index]] == color) {
             *closest_distance = i_step;
             *value = m_data_original[index];
             return;

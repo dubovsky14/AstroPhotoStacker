@@ -45,7 +45,7 @@ void StackerBase::register_hot_pixels_file(const std::string &hot_pixels_file)  
 };
 
 void StackerBase::save_stacked_photo(const string &file_address, int image_options) const {
-    auto data_for_plotting = m_stacked_image;
+    std::vector<std::vector<double> > data_for_plotting = m_stacked_image;
 
     const unsigned int max_value_output = pow(2, get_output_bit_depth(image_options)) -1;
     for (int color = 0; color < m_number_of_colors; color++) {
@@ -59,8 +59,10 @@ void StackerBase::save_stacked_photo(const string &file_address, int image_optio
     const bool color_image_target = ((image_options >> 3) == (3-1));
 
     if (color_image_source) {
+
         // scale down green (we have 2 green channels)
         std::transform(data_for_plotting[1].begin(), data_for_plotting[1].end(), data_for_plotting[1].begin(), [](double value) { return value / 2; });
+
 
         // for some reason, the max of blue and red has to be 32767, not 65534
         std::transform(data_for_plotting[0].begin(), data_for_plotting[0].end(), data_for_plotting[0].begin(), [max_value_output](double value) { return std::min<double>(value, max_value_output/2 + 1); });
