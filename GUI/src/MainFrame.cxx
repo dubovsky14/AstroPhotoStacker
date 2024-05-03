@@ -820,10 +820,14 @@ void MyFrame::on_open_flats(wxCommandEvent& event)    {
 void MyFrame::on_save_stacked(wxCommandEvent& event) {
     wxFileDialog dialog(this, "Save stacked file", "", "", "*['.tif']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (dialog.ShowModal() == wxID_OK) {
-        const std::string file_address = dialog.GetPath().ToStdString();
+        std::string file_address = dialog.GetPath().ToStdString();
+
+        // if the extension is not .tif, add it
+        if (file_address.substr(file_address.size()-4) != ".tif") {
+            file_address += ".tif";
+        }
         m_stacker->save_stacked_photo(file_address, CV_16UC3);
     }
-
 };
 
 void MyFrame::update_status_icon(wxStaticBitmap *status_icon, bool is_ok)   {
