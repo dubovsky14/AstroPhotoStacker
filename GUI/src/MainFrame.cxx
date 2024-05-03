@@ -523,6 +523,7 @@ void MyFrame::add_color_interpolation_checkbox()    {
     wxCheckBox* checkbox_color_interpolation = new wxCheckBox(this, wxID_ANY, "Color interpolation");
     const bool is_checked = m_stack_settings.use_color_interpolation();
     checkbox_color_interpolation->SetValue(is_checked);
+    checkbox_color_interpolation->SetToolTip("This will calculate all 3 color channels for each pixels, using information from its neighbors. It helps to further suppress the noise and avoid weird color artifacts, but it also leads to approx. 3 times slower stacking and might result in slightly less detailed stacked image.");
     checkbox_color_interpolation->Bind(wxEVT_CHECKBOX, [checkbox_color_interpolation, this](wxCommandEvent&){
         const bool is_checked = checkbox_color_interpolation->GetValue();
         (this->m_stack_settings).set_use_color_interpolation(is_checked);
