@@ -75,6 +75,7 @@ class MyFrame : public wxFrame  {
         void update_cut_off_average_visibility();
 
         void add_hot_pixel_correction_checkbox();
+        void add_color_interpolation_checkbox();
 
         void add_image_settings();
         void add_exposure_correction_spin_ctrl();

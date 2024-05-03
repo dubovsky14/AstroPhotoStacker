@@ -85,3 +85,11 @@ void StackSettings::set_hot_pixel_correction(bool hot_pixel_correction)    {
 bool StackSettings::use_hot_pixel_correction() const   {
     return m_hot_pixel_correction;
 };
+
+void StackSettings::set_use_color_interpolation(bool use_color_interpolation)    {
+    m_use_color_interpolation = use_color_interpolation;
+};
+
+bool StackSettings::use_color_interpolation() const   {
+    return m_use_color_interpolation;
+};

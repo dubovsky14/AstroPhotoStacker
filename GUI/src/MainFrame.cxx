@@ -365,6 +365,7 @@ void MyFrame::add_stack_settings_preview()   {
     add_max_memory_spin_ctrl();
     add_stacking_algorithm_choice_box();
     add_hot_pixel_correction_checkbox();
+    add_color_interpolation_checkbox();
 };
 
 void MyFrame::add_n_cpu_slider()    {
@@ -517,6 +518,18 @@ void MyFrame::add_hot_pixel_correction_checkbox()    {
 
     m_sizer_top_left->Add(checkbox_hot_pixel_correction, 0, wxEXPAND, 5);
 };
+
+void MyFrame::add_color_interpolation_checkbox()    {
+    wxCheckBox* checkbox_color_interpolation = new wxCheckBox(this, wxID_ANY, "Color interpolation");
+    const bool is_checked = m_stack_settings.use_color_interpolation();
+    checkbox_color_interpolation->SetValue(is_checked);
+    checkbox_color_interpolation->Bind(wxEVT_CHECKBOX, [checkbox_color_interpolation, this](wxCommandEvent&){
+        const bool is_checked = checkbox_color_interpolation->GetValue();
+        (this->m_stack_settings).set_use_color_interpolation(is_checked);
+    });
+    m_sizer_top_left->Add(checkbox_color_interpolation, 0, wxEXPAND, 5);
+};
+
 
 void MyFrame::add_max_memory_spin_ctrl() {
     wxStaticText* memory_usage_text = new wxStaticText(this, wxID_ANY, "Maximum memory usage (MB):");

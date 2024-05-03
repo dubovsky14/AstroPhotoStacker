@@ -11,7 +11,13 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
     FilelistHandler filelist_handler_only_checked = filelist_handler.get_filelist_with_checked_files();
     int width, height;
     get_photo_resolution(filelist_handler_only_checked.get_files(FileTypes::LIGHT)[0], &width, &height);
-    std::unique_ptr<AstroPhotoStacker::StackerBase> stacker = AstroPhotoStacker::create_stacker(get_stacker_type_for_factory(stack_settings.get_stacking_algorithm()), 3, width, height);
+    std::unique_ptr<AstroPhotoStacker::StackerBase> stacker = AstroPhotoStacker::create_stacker(
+        get_stacker_type_for_factory(stack_settings.get_stacking_algorithm()),
+        3,
+        width,
+        height,
+        stack_settings.use_color_interpolation()
+    );
     configure_stacker(stacker.get(), stack_settings);
     const vector<string>            &light_frames       = filelist_handler_only_checked.get_files(FileTypes::LIGHT);
     const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler_only_checked.get_alignment_info(FileTypes::LIGHT);
