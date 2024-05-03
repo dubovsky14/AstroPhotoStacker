@@ -599,7 +599,7 @@ void MyFrame::update_image_preview()  {
     const int height = m_preview_size[1];
     wxImage image_wx(width, height);
 
-    if (m_current_preview_is_raw_file) {
+    if (m_current_preview_is_raw_file || m_stack_settings.use_color_interpolation()) {
         const float scale_factor = pow(2,m_current_exposure_correction)*2*255.0 / m_current_max_value;
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
