@@ -5,6 +5,7 @@
 #include "../headers/StackerConfigureTool.h"
 
 #include "../../headers/Common.h"
+#include "../../headers/raw_file_reader.h"
 #include "../../headers/thread_pool.h"
 
 #include <wx/spinctrl.h>
@@ -166,7 +167,9 @@ void MyFrame::add_files_to_stack_checkbox()  {
     m_files_to_stack_checkbox->Bind(wxEVT_LISTBOX, [this](wxCommandEvent &event){
         int index = event.GetSelection();
         string text = m_files_to_stack_checkbox->GetString(index).ToStdString();
-        const std::string file = text.substr(text.find_last_of("\t") + 1);
+        const std::vector<std::string> elements = AstroPhotoStacker::split_and_strip_string(text, "\t\t");
+        const std::string file = elements[1];
+        cout << "File: \"" << file << "\"\n";
         update_image_preview_file(file);
         update_checked_files_in_filelist();
     });
@@ -176,7 +179,13 @@ void MyFrame::update_files_to_stack_checkbox()   {
     m_files_to_stack_checkbox->Clear();
     for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
         for (auto file : m_filelist_handler.get_files(type))   {
-            m_files_to_stack_checkbox->Append(to_string(type) + "\t\t" + file);
+            // aperture, exposure time, ISO, and focal length
+            const std::tuple<float, float, int, float> metadata = AstroPhotoStacker::read_metadata(file);
+            const std::string file_string = to_string(type) + "\t\t" + file +
+                                            "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(get<0>(metadata)) +
+                                            "\t\t" + AstroPhotoStacker::round_and_convert_to_string(get<1>(metadata)) + " s"
+                                            "\t\t" + to_string(get<2>(metadata)) + " ISO";
+            m_files_to_stack_checkbox->Append(file_string);
         }
     }
 };

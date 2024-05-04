@@ -5,6 +5,26 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
+std::tuple<float, float, int, float> AstroPhotoStacker::read_metadata(const std::string &raw_file_address) {
+    // create a LibRaw object
+    LibRaw raw_processor;
+
+    // open the file
+    if (raw_processor.open_file(raw_file_address.c_str()) != LIBRAW_SUCCESS) {
+        throw std::runtime_error("Cannot open raw file " + raw_file_address);
+    }
+
+    // get the exif data
+    float aperture      = raw_processor.imgdata.other.aperture;
+    float exposure_time = raw_processor.imgdata.other.shutter;
+    int iso             = raw_processor.imgdata.other.iso_speed;
+    float focal_length  = raw_processor.imgdata.other.focal_len;
+
+    // close the file
+    raw_processor.recycle();
+
+    return std::make_tuple(aperture, exposure_time, iso, focal_length);
+};
 
 std::vector<char> AstroPhotoStacker::get_color_info_as_char_vector(const std::string &raw_file)   {
     vector<char> result;
