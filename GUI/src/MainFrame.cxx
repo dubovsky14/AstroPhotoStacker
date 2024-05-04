@@ -180,11 +180,14 @@ void MyFrame::update_files_to_stack_checkbox()   {
     for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
         for (auto file : m_filelist_handler.get_files(type))   {
             // aperture, exposure time, ISO, and focal length
-            const std::tuple<float, float, int, float> metadata = AstroPhotoStacker::read_metadata(file);
-            const std::string file_string = to_string(type) + "\t\t" + file +
-                                            "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(get<0>(metadata)) +
-                                            "\t\t" + AstroPhotoStacker::round_and_convert_to_string(get<1>(metadata)) + " s"
-                                            "\t\t" + to_string(get<2>(metadata)) + " ISO";
+            std::string metadata_string = "";
+            if (type == FileTypes::LIGHT)   {
+                const std::tuple<float, float, int, float> metadata = AstroPhotoStacker::read_metadata(file);
+                metadata_string =   "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(get<0>(metadata)) +
+                                    "\t\t" + AstroPhotoStacker::round_and_convert_to_string(get<1>(metadata)) + " s"
+                                    "\t\t" + to_string(get<2>(metadata)) + " ISO";
+            }
+            const std::string file_string = to_string(type) + "\t\t" + file + metadata_string;
             m_files_to_stack_checkbox->Append(file_string);
         }
     }
