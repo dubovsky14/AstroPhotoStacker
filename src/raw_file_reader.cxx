@@ -26,6 +26,11 @@ std::tuple<float, float, int, float> AstroPhotoStacker::read_metadata(const std:
     return std::make_tuple(aperture, exposure_time, iso, focal_length);
 };
 
+bool AstroPhotoStacker::is_raw_file(const std::string &file_address)   {
+    LibRaw raw_processor;
+    return raw_processor.open_file(file_address.c_str()) == LIBRAW_SUCCESS;
+};
+
 std::vector<char> AstroPhotoStacker::get_color_info_as_char_vector(const std::string &raw_file)   {
     vector<char> result;
     LibRaw raw_processor;

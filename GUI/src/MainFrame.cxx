@@ -812,6 +812,14 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
         wxArrayString paths;
         dialog.GetPaths(paths);
         for (auto path : paths) {
+            if (type == FileTypes::LIGHT) {
+                const bool this_file_is_raw_file = AstroPhotoStacker::is_raw_file(path.ToStdString());
+                if (!this_file_is_raw_file) {
+                    wxMessageDialog *dialog = new wxMessageDialog(this, "The file " + path + " is not a raw file. Please select raw files only.", "File type error");
+                    dialog->ShowModal();
+                    continue;
+                }
+            }
             m_filelist_handler.add_file(path.ToStdString(), type);
             m_recent_paths_handler.set_recent_file_path_from_file(type, path.ToStdString());
         }

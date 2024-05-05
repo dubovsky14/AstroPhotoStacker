@@ -12,6 +12,7 @@ namespace AstroPhotoStacker   {
     // Read aperture, exposure time, ISO, and focal length from the raw file
     std::tuple<float, float, int, float> read_metadata(const std::string &raw_file_address);
 
+    bool is_raw_file(const std::string &file_address);
 
     template<typename output_type = unsigned short>
     std::unique_ptr<output_type[]> read_raw_file(const std::string &raw_file_address, int *width, int *height, std::vector<char> *colors = nullptr)   {
