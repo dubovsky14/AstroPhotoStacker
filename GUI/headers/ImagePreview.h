@@ -37,7 +37,7 @@ class ImagePreview {
     private:
         int m_width_original;
         int m_height_original;
-        std::vector<std::vector<short>> m_original_image; // 3 color channels, each with width*height pixels
+        std::vector<std::vector<int>> m_original_image; // 3 color channels, each with width*height pixels
 
         int m_width;
         int m_height;
@@ -48,7 +48,8 @@ class ImagePreview {
         bool m_use_color_interpolation = true;
 
         double m_zoom_factor = 1.0;
-        double m_max_zoom_factor = 4.0;
-        double m_min_zoom_factor = 0.25;
+        double m_max_zoom_factor = 8.0;
+        double m_min_zoom_factor = 1;
 
+        void update_preview_data();
 };
