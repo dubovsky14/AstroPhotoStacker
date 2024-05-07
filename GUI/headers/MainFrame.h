@@ -40,6 +40,7 @@ class MyFrame : public wxFrame  {
         void update_alignment_status();
 
     private:
+
         void add_file_menu();
         void add_alignment_menu();
         void add_hot_pixel_menu();
@@ -55,6 +56,7 @@ class MyFrame : public wxFrame  {
         void add_stack_settings_preview();
 
         void add_upper_middle_panel();
+        void on_mouse_wheel(wxMouseEvent& event);
         void add_image_preview();
         void update_image_preview_file(const std::string& file_address);
         void update_image_preview_with_stacked_image();

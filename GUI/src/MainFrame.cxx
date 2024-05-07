@@ -637,6 +637,29 @@ void MyFrame::add_upper_middle_panel()   {
     add_step_control_part();
 };
 
+void MyFrame::on_mouse_wheel(wxMouseEvent& event) {
+    // Get the mouse position in screen coordinates
+    wxPoint screenPos = event.GetPosition();
+
+    // Convert the mouse position to client coordinates relative to the wxStaticBitmap
+    wxPoint clientPos = m_preview_bitmap->ScreenToClient(screenPos);
+
+    // Check if the mouse is over the wxStaticBitmap
+    if (wxRect(m_preview_bitmap->GetSize()).Contains(clientPos)) {
+        // Get the amount of rotation
+        int rotation = event.GetWheelRotation();
+
+        // Check the direction of the rotation
+        if (rotation > 0) {
+            m_current_preview->zoom_in();
+            update_image_preview();
+        } else if (rotation < 0) {
+            m_current_preview->zoom_out();
+            update_image_preview();
+        }
+    }
+};
+
 void MyFrame::add_image_preview()    {
     // Create a wxImage
     wxImage image(m_preview_size[0], m_preview_size[1]);
@@ -652,6 +675,7 @@ void MyFrame::add_image_preview()    {
 
     // Create a wxStaticBitmap to display the image
     m_preview_bitmap = new wxStaticBitmap(this, wxID_ANY, bitmap);
+    this->Bind(wxEVT_MOUSEWHEEL, &MyFrame::on_mouse_wheel, this);
 
     // Add the wxStaticBitmap to a sizer
     m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
