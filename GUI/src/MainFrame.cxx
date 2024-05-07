@@ -1,6 +1,5 @@
 #include "../headers/MainFrame.h"
 #include "../headers/AlignmentFrame.h"
-#include "../headers/ImagePreview.h"
 #include "../headers/ListFrame.h"
 #include "../headers/StackerConfigureTool.h"
 
@@ -659,56 +658,22 @@ void MyFrame::add_image_preview()    {
 };
 
 void MyFrame::update_image_preview_file(const std::string& file_address)  {
-    m_current_preview = get_preview(file_address, m_preview_size[0],m_preview_size[1], &m_current_max_value);
-    m_current_preview_is_raw_file = true;
+    m_current_preview->read_preview_from_file(file_address);
 
     update_image_preview();
     update_alignment_status();
 };
 
 void MyFrame::update_image_preview_with_stacked_image()  {
-    const vector<vector<double>> stacked_image = m_stacker->get_stacked_image();
+    const vector<vector<double>> &stacked_image = m_stacker->get_stacked_image();
     const int width = m_stacker->get_width();
     const int height = m_stacker->get_height();
-    m_current_preview = get_preview_from_stacked_picture(stacked_image, width, height, m_preview_size[0],m_preview_size[1], &m_current_max_value);
-    m_current_preview_is_raw_file = false;
+    m_current_preview->read_preview_from_stacked_image(stacked_image, width, height);
     update_image_preview();
 };
 
 void MyFrame::update_image_preview()  {
-    const int width = m_preview_size[0];
-    const int height = m_preview_size[1];
-    wxImage image_wx(width, height);
-
-    if (m_current_preview_is_raw_file || m_stack_settings.use_color_interpolation()) {
-        const float scale_factor = pow(2,m_current_exposure_correction)*2*255.0 / m_current_max_value;
-        for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-
-                const int index = x + y*width;
-                image_wx.SetRGB(x, y,   min<int>(255,scale_factor*m_current_preview[0][index]),
-                                        min<int>(255,0.5*scale_factor*m_current_preview[1][index]),
-                                        min<int>(255,scale_factor*m_current_preview[2][index]));
-            }
-        }
-    }
-    else {
-        const float scale_factor = pow(2,m_current_exposure_correction)*255.0 / m_current_max_value;
-        for (int y = 0; y < height; ++y) {
-            for (int x = 0; x < width; ++x) {
-                const int index = x + y*width;
-                image_wx.SetRGB(x, y,   min<int>(255,scale_factor*m_current_preview[0][index]),
-                                        min<int>(255,scale_factor*m_current_preview[1][index]),
-                                        min<int>(255,scale_factor*m_current_preview[2][index]));
-            }
-        }
-    }
-
-    // Convert the wxImage to a wxBitmap
-    wxBitmap bitmap(image_wx);
-
-    // Create a wxStaticBitmap to display the image
-    m_preview_bitmap->SetBitmap(bitmap);
+    m_current_preview->update_preview_bitmap(m_preview_bitmap);
     m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
 };
 
@@ -801,9 +766,10 @@ void MyFrame::add_exposure_correction_spin_ctrl()   {
 
     // Bind the slider's wxEVT_SLIDER event to a lambda function that updates the value text
     slider_exposure->Bind(wxEVT_SLIDER, [exposure_correction_text, slider_exposure, this](wxCommandEvent&){
-        m_current_exposure_correction = slider_exposure->GetValue()/10.;
+        const float exposure_correction = slider_exposure->GetValue()/10.;
+        m_current_preview->set_exposure_correction( exposure_correction );
         update_image_preview();
-        const std::string new_label = "Exposure correction: " + to_string(m_current_exposure_correction+0.0001).substr(0,4);
+        const std::string new_label = "Exposure correction: " + to_string(exposure_correction+0.0001).substr(0,4);
         exposure_correction_text->SetLabel(new_label);
     });
 

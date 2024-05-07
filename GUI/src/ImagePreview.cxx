@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -91,3 +92,57 @@ std::vector<std::vector<int>> get_preview_from_stacked_picture(const std::vector
     return preview;
 
 };
+
+
+ImagePreview::ImagePreview(int width, int height, int max_value, bool use_color_interpolation)    {
+    m_width = width;
+    m_height = height;
+    m_max_value = max_value;
+    m_preview_data = std::vector<std::vector<int>>(3, std::vector<int>(m_width*m_height, 0));
+    m_exposure_correction = 0;
+    m_use_color_interpolation = use_color_interpolation;
+};
+
+void ImagePreview::read_preview_from_file(const std::string &path)  {
+    m_preview_data = get_preview(path, m_width, m_height, &m_max_value);
+    m_current_preview_is_raw_file = true;
+};
+
+void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {
+    m_preview_data = get_preview_from_stacked_picture(stacked_image, width_original, height_original, m_width, m_height, &m_max_value);
+    m_current_preview_is_raw_file = false;
+};
+
+void ImagePreview::update_preview_bitmap(wxStaticBitmap *static_bitmap) const  {
+    wxImage image_wx(m_width, m_height);
+
+    if (m_current_preview_is_raw_file || m_use_color_interpolation) {
+        const float scale_factor = pow(2,m_exposure_correction)*2*255.0 / m_max_value;
+        for (int y = 0; y < m_height; ++y) {
+            for (int x = 0; x < m_width; ++x) {
+
+                const int index = x + y*m_width;
+                image_wx.SetRGB(x, y,   min<int>(255,scale_factor*m_preview_data[0][index]),
+                                        min<int>(255,0.5*scale_factor*m_preview_data[1][index]),
+                                        min<int>(255,scale_factor*m_preview_data[2][index]));
+            }
+        }
+    }
+    else {
+        const float scale_factor = pow(2,m_exposure_correction)*255.0 / m_max_value;
+        for (int y = 0; y < m_height; ++y) {
+            for (int x = 0; x < m_width; ++x) {
+                const int index = x + y*m_width;
+                image_wx.SetRGB(x, y,   min<int>(255,scale_factor*m_preview_data[0][index]),
+                                        min<int>(255,scale_factor*m_preview_data[1][index]),
+                                        min<int>(255,scale_factor*m_preview_data[2][index]));
+            }
+        }
+    }
+
+    // Convert the wxImage to a wxBitmap
+    wxBitmap bitmap(image_wx);
+
+    static_bitmap->SetBitmap(bitmap);
+};
+

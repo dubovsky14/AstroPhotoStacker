@@ -2,6 +2,7 @@
 
 #include "../headers/FilelistHandler.h"
 #include "../headers/StackSettings.h"
+#include "../headers/ImagePreview.h"
 #include "../headers/RecentPathsHandler.h"
 
 #include "../../headers/PhotoAlignmentHandler.h"
@@ -105,11 +106,8 @@ class MyFrame : public wxFrame  {
         wxSpinCtrlDouble    *m_spin_ctrl_cut_off_average    = nullptr;
 
         int                             m_preview_size[2]   = {600, 400};
-        std::vector<std::vector<int>>   m_current_preview = std::vector<std::vector<int>>(3, std::vector<int>(m_preview_size[0]*m_preview_size[1], 0));
-        int                             m_current_max_value = 0;
-        float                           m_current_exposure_correction = 0;
+        std::unique_ptr<ImagePreview>   m_current_preview = std::make_unique<ImagePreview>(m_preview_size[0], m_preview_size[1], 255, true);
         wxStaticBitmap                  *m_preview_bitmap       = nullptr;
-        bool                            m_current_preview_is_raw_file = true;
 
 
         wxCheckListBox *m_files_to_stack_checkbox = nullptr;
