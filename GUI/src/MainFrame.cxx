@@ -256,6 +256,10 @@ void MyFrame::update_files_to_stack_checkbox()   {
             }
             const std::string file_string = to_string(type) + "\t\t" + file + metadata_string;
             m_files_to_stack_checkbox->Append(file_string);
+
+            if (m_filelist_handler.get_files_checked(type).at(i_file)) {
+                m_files_to_stack_checkbox->Check(i_file);
+            }
         }
     }
 };
