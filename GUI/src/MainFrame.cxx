@@ -31,8 +31,6 @@ MyFrame::MyFrame()
 
 
     m_sizer_main_frame = new wxBoxSizer(wxVERTICAL);
-    //m_panel_top     = new wxPanel(this, wxID_ANY);
-    //m_sizer_main_frame->Add(m_panel_top   , 1,wxEXPAND | wxALL, 5);
     m_sizer_top         = new wxBoxSizer(wxHORIZONTAL);
     m_sizer_button_bar  = new wxBoxSizer(wxHORIZONTAL);
     m_sizer_main_frame->Add(m_sizer_top,        9, wxEXPAND | wxALL, 5);
@@ -276,6 +274,7 @@ void MyFrame::update_checked_files_in_filelist() {
         m_filelist_handler.set_file_checked(index, true);
     }
     update_input_numbers_overview();
+    update_alignment_status();
 };
 
 void MyFrame::add_button_bar()   {
@@ -300,7 +299,6 @@ void MyFrame::add_button_bar()   {
             button_check_all->SetLabel("Uncheck all");
         }
         update_checked_files_in_filelist();
-        update_alignment_status();
     });
 
     button_align_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
