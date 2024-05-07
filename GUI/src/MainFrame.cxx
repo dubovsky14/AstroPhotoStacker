@@ -240,14 +240,19 @@ void MyFrame::add_files_to_stack_checkbox()  {
 void MyFrame::update_files_to_stack_checkbox()   {
     m_files_to_stack_checkbox->Clear();
     for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
-        for (auto file : m_filelist_handler.get_files(type))   {
+        const vector<string> &file_names = m_filelist_handler.get_files(type);
+        for (unsigned int i_file = 0; i_file < file_names.size(); i_file++) {
+            const std::string file = file_names[i_file];
             // aperture, exposure time, ISO, and focal length
             std::string metadata_string = "";
             if (type == FileTypes::LIGHT)   {
                 const std::tuple<float, float, int, float> metadata = AstroPhotoStacker::read_metadata(file);
+                const AlignmentFileInfo alignment_info = m_filelist_handler.get_alignment_info(FileTypes::LIGHT)[i_file];
+                const float alignment_score = alignment_info.ranking;
                 metadata_string =   "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(get<0>(metadata)) +
                                     "\t\t" + AstroPhotoStacker::round_and_convert_to_string(get<1>(metadata)) + " s"
-                                    "\t\t" + to_string(get<2>(metadata)) + " ISO";
+                                    "\t\t" + to_string(get<2>(metadata)) + " ISO" +
+                                    "\t\t\tscore: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3);
             }
             const std::string file_string = to_string(type) + "\t\t" + file + metadata_string;
             m_files_to_stack_checkbox->Append(file_string);
