@@ -266,3 +266,49 @@ void FilelistHandler::load_alignment_from_file(const std::string &input_address)
 
     }
 };
+
+void FilelistHandler::sort_by_alignment_ranking(bool ascending)   {
+    vector<pair<float, unsigned int>> ranking_index;
+    for (unsigned int i = 0; i < m_filelist_alignment_info.size(); ++i)   {
+        ranking_index.push_back({m_filelist_alignment_info[i].ranking, i});
+    }
+
+    if (ascending)  {
+        sort(ranking_index.begin(), ranking_index.end());
+    }
+    else    {
+        sort(ranking_index.begin(), ranking_index.end(), greater<pair<float, int>>());
+    }
+
+    vector<unsigned int> indices(ranking_index.size());
+    for (unsigned int i = 0; i < ranking_index.size(); ++i)   {
+        indices[i] = ranking_index[i].second;
+    }
+
+    rearange_vector(&m_filelist.at(FileTypes::LIGHT), indices.data());
+    rearange_vector(&m_filelist_checked.at(FileTypes::LIGHT), indices.data());
+    rearange_vector(&m_filelist_alignment_info, indices.data());
+};
+
+void FilelistHandler::sort_by_filename(bool ascending)    {
+    vector<pair<string, unsigned int>> filename_index;
+    for (unsigned int i = 0; i < m_filelist_alignment_info.size(); ++i)   {
+        filename_index.push_back({m_filelist.at(FileTypes::LIGHT)[i], i});
+    }
+
+    if (ascending)  {
+        sort(filename_index.begin(), filename_index.end());
+    }
+    else    {
+        sort(filename_index.begin(), filename_index.end(), greater<pair<string, int>>());
+    }
+
+    vector<unsigned int> indices(filename_index.size());
+    for (unsigned int i = 0; i < filename_index.size(); ++i)   {
+        indices[i] = filename_index[i].second;
+    }
+
+    rearange_vector(&m_filelist.at(FileTypes::LIGHT), indices.data());
+    rearange_vector(&m_filelist_checked.at(FileTypes::LIGHT), indices.data());
+    rearange_vector(&m_filelist_alignment_info, indices.data());
+};

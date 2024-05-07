@@ -168,12 +168,8 @@ void MyFrame::add_files_to_stack_checkbox()  {
     headerPanel->SetSizer(headerSizer);
 
     // Create the static texts
-    wxStaticText* sortByNameText = new wxStaticText(headerPanel, wxID_ANY, "Sort by Name");
-    wxStaticText* sortByScoreText = new wxStaticText(headerPanel, wxID_ANY, "Sort by Score");
-
-    // Create the bitmap buttons
-    wxBitmap upArrow = wxArtProvider::GetBitmap(wxART_GO_UP, wxART_BUTTON);
-    wxBitmap downArrow = wxArtProvider::GetBitmap(wxART_GO_DOWN, wxART_BUTTON);
+    wxStaticText* sortByNameText = new wxStaticText(headerPanel, wxID_ANY, "Sort by Name",wxDefaultPosition);
+    wxStaticText* sortByScoreText = new wxStaticText(headerPanel, wxID_ANY, "Sort by Score",wxDefaultPosition);
 
     wxBitmap arrow_down_bitmap("../data/png/arrows/arrow_down_20x10.png", wxBITMAP_TYPE_PNG);
     wxBitmap arrow_up_bitmap("../data/png/arrows/arrow_up_20x10.png", wxBITMAP_TYPE_PNG);
@@ -183,13 +179,41 @@ void MyFrame::add_files_to_stack_checkbox()  {
     wxBitmapButton* sortByScoreArrowUpButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, arrow_size);
     wxBitmapButton* sortByScoreArrowDownButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, arrow_size);
 
-    // Add the static texts and buttons to the sizer
-    headerSizer->Add(sortByNameText, 0, wxALL, 5);
-    headerSizer->Add(sortByNameArrowUpButton, 0, wxALL, 5);
-    headerSizer->Add(sortByNameArrowDownButton, 0, wxALL, 5);
-    headerSizer->Add(sortByScoreText, 0, wxALL, 5);
-    headerSizer->Add(sortByScoreArrowUpButton, 0, wxALL, 5);
-    headerSizer->Add(sortByScoreArrowDownButton, 0, wxALL, 5);
+    // Create a vertical sizer for the name arrows
+    wxBoxSizer* nameArrowSizer = new wxBoxSizer(wxVERTICAL);
+    nameArrowSizer->Add(sortByNameArrowUpButton, 0, wxTOP | wxLEFT | wxRIGHT, 5);
+    nameArrowSizer->Add(sortByNameArrowDownButton, 0, wxBOTTOM | wxLEFT | wxRIGHT, 5);
+
+    // Create a vertical sizer for the score arrows
+    wxBoxSizer* scoreArrowSizer = new wxBoxSizer(wxVERTICAL);
+    scoreArrowSizer->Add(sortByScoreArrowUpButton, 0, wxTOP | wxLEFT | wxRIGHT, 5);
+    scoreArrowSizer->Add(sortByScoreArrowDownButton, 0, wxBOTTOM | wxLEFT | wxRIGHT, 5);
+
+    // Add the static texts and arrow sizers to the header sizer
+    headerSizer->Add(sortByNameText, 0, wxTOP, 5);
+    headerSizer->Add(nameArrowSizer, 0, wxTOP, 5);
+    headerSizer->Add(sortByScoreText, 0, wxTOP, 5);
+    headerSizer->Add(scoreArrowSizer, 0, wxTOP, 5);
+
+
+    sortByScoreArrowUpButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+        this->m_filelist_handler.sort_by_alignment_ranking(true);
+        update_files_to_stack_checkbox();
+    });
+    sortByScoreArrowDownButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+        this->m_filelist_handler.sort_by_alignment_ranking(false);
+        update_files_to_stack_checkbox();
+    });
+
+    sortByNameArrowUpButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+        this->m_filelist_handler.sort_by_filename(true);
+        update_files_to_stack_checkbox();
+    });
+    sortByNameArrowDownButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+        this->m_filelist_handler.sort_by_filename(false);
+        update_files_to_stack_checkbox();
+    });
+
 
     wxArrayString files;
     m_files_to_stack_checkbox = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, files, wxLB_MULTIPLE);

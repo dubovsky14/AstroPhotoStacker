@@ -30,6 +30,16 @@ struct AlignmentFileInfo {
 
 std::ostream& operator<<(std::ostream& os, const AlignmentFileInfo& alignment_info);
 
+template<typename T>
+void rearange_vector(std::vector<T> *vec, const unsigned int *indices) {
+    std::vector<T> temp_vec;
+    temp_vec.reserve(vec->size());
+    for (unsigned int i = 0; i < vec->size(); i++) {
+        temp_vec.push_back(vec->at(indices[i]));
+    }
+    *vec = temp_vec;
+}
+
 class FilelistHandler   {
     public:
         FilelistHandler();
@@ -44,8 +54,6 @@ class FilelistHandler   {
         void remove_file(int file_index);
 
         const std::vector<std::string>& get_files(FileTypes type)   const;
-
-
 
         const std::vector<bool>&        get_files_checked(FileTypes type)   const;
 
@@ -72,6 +80,10 @@ class FilelistHandler   {
         void save_alignment_to_file(const std::string &output_address);
 
         void load_alignment_from_file(const std::string &input_address);
+
+        void sort_by_alignment_ranking(bool ascending = true);
+
+        void sort_by_filename(bool ascending = true);
 
     private:
         std::map<FileTypes, std::vector<std::string>>       m_filelist;
