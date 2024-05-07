@@ -21,13 +21,6 @@ void configure_stacker_with_optional_arguments(StackerBase *stacker, const Input
 
 int main(int argc, const char **argv) {
     try {
-        const std::tuple<float, float, int, float> metadata = read_metadata(argv[1]);
-        cout << "Aperture: " << get<0>(metadata) << "\n";
-        cout << "Exposure time: " << get<1>(metadata) << "\n";
-        cout << "ISO: " << get<2>(metadata) << "\n";
-        cout << "Focal length: " << get<3>(metadata) << "\n";
-        return 0;
-
         InputArgumentsParser input_arguments_parser(argc, argv);
 
         const string alignment_file     = input_arguments_parser.get_argument<string>("alignment_file");
