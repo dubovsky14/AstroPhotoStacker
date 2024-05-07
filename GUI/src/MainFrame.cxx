@@ -10,6 +10,7 @@
 
 #include <wx/spinctrl.h>
 #include <wx/progdlg.h>
+#include <wx/artprov.h>
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
@@ -160,9 +161,46 @@ void MyFrame::add_menu_bar()    {
 };
 
 void MyFrame::add_files_to_stack_checkbox()  {
+    wxPanel* headerPanel = new wxPanel(this, wxID_ANY);
+
+    // Create a sizer for the panel
+    wxBoxSizer* headerSizer = new wxBoxSizer(wxHORIZONTAL);
+    headerPanel->SetSizer(headerSizer);
+
+    // Create the static texts
+    wxStaticText* sortByNameText = new wxStaticText(headerPanel, wxID_ANY, "Sort by Name");
+    wxStaticText* sortByScoreText = new wxStaticText(headerPanel, wxID_ANY, "Sort by Score");
+
+    // Create the bitmap buttons
+    wxBitmap upArrow = wxArtProvider::GetBitmap(wxART_GO_UP, wxART_BUTTON);
+    wxBitmap downArrow = wxArtProvider::GetBitmap(wxART_GO_DOWN, wxART_BUTTON);
+
+    wxBitmap arrow_down_bitmap("../data/png/arrows/arrow_down_20x10.png", wxBITMAP_TYPE_PNG);
+    wxBitmap arrow_up_bitmap("../data/png/arrows/arrow_up_20x10.png", wxBITMAP_TYPE_PNG);
+    wxSize arrow_size(40, 20);
+    wxBitmapButton* sortByNameArrowUpButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, arrow_size);
+    wxBitmapButton* sortByNameArrowDownButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, arrow_size);
+    wxBitmapButton* sortByScoreArrowUpButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, arrow_size);
+    wxBitmapButton* sortByScoreArrowDownButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, arrow_size);
+
+    // Add the static texts and buttons to the sizer
+    headerSizer->Add(sortByNameText, 0, wxALL, 5);
+    headerSizer->Add(sortByNameArrowUpButton, 0, wxALL, 5);
+    headerSizer->Add(sortByNameArrowDownButton, 0, wxALL, 5);
+    headerSizer->Add(sortByScoreText, 0, wxALL, 5);
+    headerSizer->Add(sortByScoreArrowUpButton, 0, wxALL, 5);
+    headerSizer->Add(sortByScoreArrowDownButton, 0, wxALL, 5);
+
     wxArrayString files;
     m_files_to_stack_checkbox = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, files, wxLB_MULTIPLE);
-    m_sizer_main_frame->Add(m_files_to_stack_checkbox, 9,wxEXPAND | wxALL, 5);
+
+    // Create a new sizer for the header and the checkbox list
+    wxBoxSizer* checkboxSizer = new wxBoxSizer(wxVERTICAL);
+    checkboxSizer->Add(headerPanel, 0, wxEXPAND | wxALL, 5);
+    checkboxSizer->Add(m_files_to_stack_checkbox, 1, wxEXPAND | wxALL, 5);
+
+    // Add the new sizer to the main frame's sizer
+    m_sizer_main_frame->Add(checkboxSizer, 9, wxEXPAND | wxALL, 5);
 
     m_files_to_stack_checkbox->Bind(wxEVT_LISTBOX, [this](wxCommandEvent &event){
         int index = event.GetSelection();
