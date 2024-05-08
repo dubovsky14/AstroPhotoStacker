@@ -5,9 +5,6 @@
 
 #include <wx/wx.h>
 
-std::vector<std::vector<int>> get_preview(const std::string &path, int width, int height, int *max_value);
-
-
 
 class ImagePreview {
     public:
@@ -23,7 +20,7 @@ class ImagePreview {
         int get_height() const      { return m_height;};
         int get_max_value() const   { return m_max_value;};
 
-        void read_preview_from_file(const std::string &path);
+        void read_preview_from_raw_file(const std::string &path);
         void read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original);
 
         void set_exposure_correction(float exposure_correction) { m_exposure_correction = exposure_correction;};

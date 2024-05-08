@@ -2,6 +2,7 @@
 
 #include "../../headers/raw_file_reader.h"
 #include "../../headers/ImageFilesInputOutput.h"
+#include "../../headers/ColorInterpolationTool.h"
 
 #include <vector>
 #include <string>
@@ -10,51 +11,6 @@
 
 using namespace std;
 using namespace AstroPhotoStacker;
-
-std::vector<std::vector<int>> get_preview(const std::string &path, int width, int height, int *max_value)   {
-    std::vector<std::vector<int>> preview(3, std::vector<int>(width*height,0)); // 2D vector of brightness values - first index = color, second index = pixel
-
-    int raw_width, raw_height;
-    std::vector<char> colors;
-    std::unique_ptr<unsigned short[]> brightness = nullptr;
-    try {
-        brightness = read_raw_file<unsigned short>(path, &raw_width, &raw_height, &colors);
-    }
-    catch (std::exception &e)   {
-        return preview;
-    }
-
-    const float step_x = raw_width / float(width);
-    const float step_y =  raw_height / float(height);
-
-    std::vector<std::vector<int>> count(3, std::vector<int>(width*height,0));
-    for (int i_original_y = 0; i_original_y < raw_height; i_original_y++)  {
-        for (int i_original_x = 0; i_original_x < raw_width; i_original_x++)  {
-            const int index = i_original_y * raw_width + i_original_x;
-            int color = colors[index];
-            if (color == 3) color = 1;
-            const int i_pixel_new_y = i_original_y / step_y;
-            const int i_pixel_new_x = i_original_x / step_x;
-            const int index_new = i_pixel_new_y * width + i_pixel_new_x;
-            count  [color][index_new]++;
-            preview[color][index_new] += brightness[index];
-        }
-    }
-
-    *max_value = 0;
-    for (int i_color = 0; i_color < 3; i_color++)   {
-        for (int i_pixel = 0; i_pixel < width*height; i_pixel++)   {
-            if (count[i_color][i_pixel] > 0) {
-                preview[i_color][i_pixel] /= count[i_color][i_pixel];
-            }
-            *max_value = max<int>(*max_value, preview[i_color][i_pixel]);
-        }
-    }
-
-    return preview;
-};
-
-
 
 ImagePreview::ImagePreview(int width, int height, int max_value, bool use_color_interpolation)    {
     m_width = width;
@@ -110,9 +66,10 @@ void ImagePreview::get_preview_from_stacked_picture(const std::vector<std::vecto
     }
 };
 
-void ImagePreview::read_preview_from_file(const std::string &path)  {
-    m_preview_data = get_preview(path, m_width, m_height, &m_max_value);
+void ImagePreview::read_preview_from_raw_file(const std::string &path)  {
+    m_original_image = ColorInterpolationTool::get_interpolated_rgb_image<int>(path, &m_width_original, &m_height_original);
     m_current_preview_is_raw_file = true;
+    update_preview_data();
 };
 
 void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {
@@ -164,47 +121,44 @@ void ImagePreview::zoom_out()   {
 };
 
 void ImagePreview::update_preview_data()    {
-    if (m_current_preview_is_raw_file) {
-        return;
-    }
-    else {
-        m_preview_data = std::vector<std::vector<int>>(3, std::vector<int>(m_width*m_height,0)); // 2D vector of brightness values - first index = color, second index = pixel
-        std::vector<int>                count(m_width*m_height,0);
 
-        const float step_x =  m_width_original  / (m_zoom_factor*float(m_width) );
-        const float step_y =  m_height_original / (m_zoom_factor*float(m_height));
+    m_preview_data = std::vector<std::vector<int>>(3, std::vector<int>(m_width*m_height,0)); // 2D vector of brightness values - first index = color, second index = pixel
+    std::vector<int>                count(m_width*m_height,0);
 
-        const int x_center = m_width_original/2;
-        const int y_center = m_height_original/2;
+    const float step_x =  m_width_original  / (m_zoom_factor*float(m_width) );
+    const float step_y =  m_height_original / (m_zoom_factor*float(m_height));
 
-        int i_x_resized_min = max<int>(0, x_center - m_width_original/(m_zoom_factor*2));
-        int i_x_resized_max = min<int>(m_width_original, x_center + m_width_original/(m_zoom_factor*2));
+    const int x_center = m_width_original/2;
+    const int y_center = m_height_original/2;
 
-        int i_y_resized_min = max<int>(0, y_center - m_height_original/(m_zoom_factor*2));
-        int i_y_resized_max = min<int>(m_height_original, y_center + m_height_original/(m_zoom_factor*2));
+    int i_x_resized_min = max<int>(0, x_center - m_width_original/(m_zoom_factor*2));
+    int i_x_resized_max = min<int>(m_width_original, x_center + m_width_original/(m_zoom_factor*2));
+
+    int i_y_resized_min = max<int>(0, y_center - m_height_original/(m_zoom_factor*2));
+    int i_y_resized_max = min<int>(m_height_original, y_center + m_height_original/(m_zoom_factor*2));
 
 
-        for (int i_color = 0; i_color < 3; i_color++)   {
-            for (int i_original_y = i_y_resized_min; i_original_y < i_y_resized_max; i_original_y++)  {
-                for (int i_original_x = i_x_resized_min; i_original_x < i_x_resized_max ; i_original_x++)  {
-                    const int index = i_original_y * m_width_original  + i_original_x;
-                    const int i_pixel_new_y = (i_original_y-i_y_resized_min) / step_y;
-                    const int i_pixel_new_x = (i_original_x-i_x_resized_min) / step_x;
-                    const int index_new = i_pixel_new_y * m_width + i_pixel_new_x;
-                    m_preview_data[i_color][index_new] += m_original_image[i_color][index];
-                    count.at(index_new)++;
-                }
-            }
-        }
-
-        m_max_value = 0;
-        for (int i_color = 0; i_color < 3; i_color++)   {
-            for (int i_pixel = 0; i_pixel < m_width*m_height; i_pixel++)   {
-                if (count[i_pixel] > 0) {
-                    m_preview_data[i_color][i_pixel] /= count[i_pixel];
-                }
-                m_max_value = max<int>(m_max_value, m_preview_data[i_color][i_pixel]);
+    for (int i_color = 0; i_color < 3; i_color++)   {
+        for (int i_original_y = i_y_resized_min; i_original_y < i_y_resized_max; i_original_y++)  {
+            for (int i_original_x = i_x_resized_min; i_original_x < i_x_resized_max ; i_original_x++)  {
+                const int index = i_original_y * m_width_original  + i_original_x;
+                const int i_pixel_new_y = (i_original_y-i_y_resized_min) / step_y;
+                const int i_pixel_new_x = (i_original_x-i_x_resized_min) / step_x;
+                const int index_new = i_pixel_new_y * m_width + i_pixel_new_x;
+                m_preview_data[i_color][index_new] += m_original_image[i_color][index];
+                count.at(index_new)++;
             }
         }
     }
+
+    m_max_value = 0;
+    for (int i_color = 0; i_color < 3; i_color++)   {
+        for (int i_pixel = 0; i_pixel < m_width*m_height; i_pixel++)   {
+            if (count[i_pixel] > 0) {
+                m_preview_data[i_color][i_pixel] /= count[i_pixel];
+            }
+            m_max_value = max<int>(m_max_value, m_preview_data[i_color][i_pixel]);
+        }
+    }
+
 };

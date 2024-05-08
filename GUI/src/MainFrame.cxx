@@ -657,6 +657,14 @@ void MyFrame::on_mouse_wheel(wxMouseEvent& event) {
             m_current_preview->zoom_out();
             update_image_preview();
         }
+
+        // Calculate the relative position of the mouse within the wxStaticBitmap
+        wxSize bitmapSize = m_preview_bitmap->GetSize();
+        double relativeX = static_cast<double>(clientPos.x) / bitmapSize.GetWidth();
+        double relativeY = static_cast<double>(clientPos.y) / bitmapSize.GetHeight();
+
+        // Print the relative position
+        std::cout << "Relative position: (" << relativeX << ", " << relativeY << ")\n";
     }
 };
 
@@ -682,7 +690,7 @@ void MyFrame::add_image_preview()    {
 };
 
 void MyFrame::update_image_preview_file(const std::string& file_address)  {
-    m_current_preview->read_preview_from_file(file_address);
+    m_current_preview->read_preview_from_raw_file(file_address);
 
     update_image_preview();
     update_alignment_status();
