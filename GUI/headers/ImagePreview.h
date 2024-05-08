@@ -28,13 +28,13 @@ class ImagePreview {
 
         void update_preview_bitmap(wxStaticBitmap *static_bitmap) const;
 
-        void zoom_in();
-        void zoom_out();
+        void zoom_in(float mouse_position_relative_x, float mouse_position_relative_y);
+        void zoom_out(float mouse_position_relative_x, float mouse_position_relative_y);
 
     private:
         int m_width_original;
         int m_height_original;
-        std::vector<std::vector<int>> m_original_image; // 3 color channels, each with width*height pixels
+        std::vector<std::vector<short unsigned int>> m_original_image; // 3 color channels, each with width*height pixels
 
         int m_width;
         int m_height;
@@ -48,5 +48,10 @@ class ImagePreview {
         double m_max_zoom_factor = 8.0;
         double m_min_zoom_factor = 1;
 
-        void update_preview_data();
+        int m_i_x_resized_min;
+        int m_i_x_resized_max;
+        int m_i_y_resized_min;
+        int m_i_y_resized_max;
+
+        void update_preview_data(float mouse_position_relative_x = 0.5, float mouse_position_relative_y = 0.5);
 };

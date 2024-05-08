@@ -640,6 +640,7 @@ void MyFrame::add_upper_middle_panel()   {
 void MyFrame::on_mouse_wheel(wxMouseEvent& event) {
     // Get the mouse position in screen coordinates
     wxPoint screenPos = event.GetPosition();
+    screenPos += wxPoint(0, 0.155*m_preview_size[1]);   // shift the position to the center of the image - wxStaticBitmap is buggy ...
 
     // Convert the mouse position to client coordinates relative to the wxStaticBitmap
     wxPoint clientPos = m_preview_bitmap->ScreenToClient(screenPos);
@@ -649,22 +650,22 @@ void MyFrame::on_mouse_wheel(wxMouseEvent& event) {
         // Get the amount of rotation
         int rotation = event.GetWheelRotation();
 
+        // Calculate the relative position of the mouse within the wxStaticBitmap
+        wxSize bitmapSize = m_preview_bitmap->GetSize();
+        float relative_x = static_cast<float>(clientPos.x) / bitmapSize.GetWidth();
+        float relative_y = static_cast<float>(clientPos.y) / bitmapSize.GetHeight();
+
         // Check the direction of the rotation
         if (rotation > 0) {
-            m_current_preview->zoom_in();
+            m_current_preview->zoom_in(relative_x, relative_y);
             update_image_preview();
         } else if (rotation < 0) {
-            m_current_preview->zoom_out();
+            m_current_preview->zoom_out(relative_x, relative_y);
             update_image_preview();
         }
 
-        // Calculate the relative position of the mouse within the wxStaticBitmap
-        wxSize bitmapSize = m_preview_bitmap->GetSize();
-        double relativeX = static_cast<double>(clientPos.x) / bitmapSize.GetWidth();
-        double relativeY = static_cast<double>(clientPos.y) / bitmapSize.GetHeight();
-
         // Print the relative position
-        std::cout << "Relative position: (" << relativeX << ", " << relativeY << ")\n";
+        std::cout << "Relative position: (" << relative_x << ", " << relative_y << ")\n";
     }
 };
 
