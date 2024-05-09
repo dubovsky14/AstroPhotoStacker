@@ -639,21 +639,21 @@ void MyFrame::add_upper_middle_panel()   {
 
 void MyFrame::on_mouse_wheel(wxMouseEvent& event) {
     // Get the mouse position in screen coordinates
-    wxPoint screenPos = event.GetPosition();
-    screenPos += wxPoint(0, 0.155*m_preview_size[1]);   // shift the position to the center of the image - wxStaticBitmap is buggy ...
+    wxPoint screen_pos = event.GetPosition();
+    screen_pos += wxPoint(0, 0.155*m_preview_size[1]);   // shift the position to the center of the image - wxStaticBitmap is buggy ...
 
     // Convert the mouse position to client coordinates relative to the wxStaticBitmap
-    wxPoint clientPos = m_preview_bitmap->ScreenToClient(screenPos);
+    wxPoint client_position = m_preview_bitmap->ScreenToClient(screen_pos);
 
     // Check if the mouse is over the wxStaticBitmap
-    if (wxRect(m_preview_bitmap->GetSize()).Contains(clientPos)) {
+    if (wxRect(m_preview_bitmap->GetSize()).Contains(client_position)) {
         // Get the amount of rotation
         int rotation = event.GetWheelRotation();
 
         // Calculate the relative position of the mouse within the wxStaticBitmap
         wxSize bitmapSize = m_preview_bitmap->GetSize();
-        float relative_x = static_cast<float>(clientPos.x) / bitmapSize.GetWidth();
-        float relative_y = static_cast<float>(clientPos.y) / bitmapSize.GetHeight();
+        float relative_x = static_cast<float>(client_position.x) / bitmapSize.GetWidth();
+        float relative_y = static_cast<float>(client_position.y) / bitmapSize.GetHeight();
 
         // Check the direction of the rotation
         if (rotation > 0) {
@@ -673,6 +673,7 @@ void MyFrame::add_image_preview()    {
     // Create a wxImage
     wxImage image(m_preview_size[0], m_preview_size[1]);
 
+    // Set the image to black
     for (int x = 0; x < m_preview_size[0]; ++x) {
         for (int y = 0; y < m_preview_size[1]; ++y) {
             image.SetRGB(x, y, 0,0,0);
@@ -711,15 +712,13 @@ void MyFrame::update_image_preview()  {
 };
 
 void MyFrame::add_step_control_part()    {
-
+    wxGridSizer *grid_sizer = new wxGridSizer(2,3, 0, 0);
 
     // alignment of the files
-    wxGridSizer *grid_sizer = new wxGridSizer(2,3, 0, 0);
     wxStaticText* text_aligned = new wxStaticText(this, wxID_ANY, "Files aligned: ");
     wxFont font = text_aligned->GetFont();
     font.SetPointSize(14);
     text_aligned->SetFont(font);
-
     m_alignment_status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap("../data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
 
     wxButton *button_show_alignment = new wxButton(this, wxID_ANY, "Show alignment");
@@ -790,7 +789,6 @@ void MyFrame::update_alignment_status()  {
 };
 
 void MyFrame::add_exposure_correction_spin_ctrl()   {
-
     // Create a wxStaticText to display the current value
     wxStaticText* exposure_correction_text = new wxStaticText(this, wxID_ANY, "Exposure correction: 0.0");
 
@@ -823,41 +821,21 @@ void MyFrame::add_input_numbers_overview()  {
     grid_sizer->Add(text_total, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
     grid_sizer->Add(text_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-    wxStaticText* text_light = new wxStaticText(this, wxID_ANY, "Light frames: ");
-    wxStaticText* text_light_number = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_files(FileTypes::LIGHT).size()));
-    wxStaticText* text_light_checked = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_number_of_checked_files(FileTypes::LIGHT)));
-    m_frames_numbers_overview_texts[FileTypes::LIGHT] = {text_light_number, text_light_checked};
+    auto add_summary_text = [this, grid_sizer](FileTypes type, const std::string& label) {
+        wxStaticText* text = new wxStaticText(this, wxID_ANY, label);
+        wxStaticText* text_number = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_files(type).size()));
+        wxStaticText* text_checked = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_number_of_checked_files(type)));
+        m_frames_numbers_overview_texts[type] = {text_number, text_checked};
 
-    grid_sizer->Add(text_light, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(text_light_number, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(text_light_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+        grid_sizer->Add(text, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+        grid_sizer->Add(text_number, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+        grid_sizer->Add(text_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    };
 
-    wxStaticText* text_flat = new wxStaticText(this, wxID_ANY, "Flat frames: ");
-    wxStaticText* text_flat_number = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_files(FileTypes::FLAT).size()));
-    wxStaticText* text_flat_checked = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_number_of_checked_files(FileTypes::FLAT)));
-    m_frames_numbers_overview_texts[FileTypes::FLAT] = {text_flat_number, text_flat_checked};
-
-    grid_sizer->Add(text_flat, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(text_flat_number, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(text_flat_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
-
-    wxStaticText* text_bias = new wxStaticText(this, wxID_ANY, "Bias frames: ");
-    wxStaticText* text_bias_number = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_files(FileTypes::BIAS).size()));
-    wxStaticText* text_bias_checked = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_number_of_checked_files(FileTypes::BIAS)));
-
-    grid_sizer->Add(text_bias, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(text_bias_number, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(text_bias_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    m_frames_numbers_overview_texts[FileTypes::BIAS] = {text_bias_number, text_bias_checked};
-
-    wxStaticText* text_dark = new wxStaticText(this, wxID_ANY, "Dark frames: ");
-    wxStaticText* text_dark_number = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_files(FileTypes::DARK).size()));
-    wxStaticText* text_dark_checked = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_number_of_checked_files(FileTypes::DARK)));
-    m_frames_numbers_overview_texts[FileTypes::DARK] = {text_dark_number, text_dark_checked};
-
-    grid_sizer->Add(text_dark, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(text_dark_number, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(text_dark_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    add_summary_text(FileTypes::LIGHT, "Light frames: ");
+    add_summary_text(FileTypes::FLAT, "Flat frames: ");
+    add_summary_text(FileTypes::BIAS, "Bias frames: ");
+    add_summary_text(FileTypes::DARK, "Dark frames: ");
 
     m_sizer_top_right->Add(grid_sizer, 0, wxEXPAND, 5);
 };

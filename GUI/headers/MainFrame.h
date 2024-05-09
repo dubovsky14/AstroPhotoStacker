@@ -62,6 +62,10 @@ class MyFrame : public wxFrame  {
         void update_image_preview_with_stacked_image();
         void update_image_preview();
 
+
+        /**
+         * @brief Add pannel with the checkmarks and buttons for alignment, hot pixel correction and stacking status
+        */
         void add_step_control_part();
 
         wxStaticBitmap *m_alignment_status_icon = nullptr;
@@ -136,8 +140,4 @@ class MyFrame : public wxFrame  {
 inline int unique_counter()    {
     static int counter = 1000;
     return ++counter;
-};
-
-enum    {
-    ID_Hello = 1
 };
