@@ -11,10 +11,7 @@ class ImagePreview {
         ImagePreview() = delete;
         ImagePreview(int width, int height, int max_value, bool use_color_interpolation);
 
-        void get_preview_from_stacked_picture(  const std::vector<std::vector<double>> &stacked_image,
-                                                int width_original, int height_original,
-                                                int width_resized, int height_resized,
-                                                int *max_value);
+        void get_preview_from_stacked_picture(  const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original);
 
         int get_width() const       { return m_width;};
         int get_height() const      { return m_height;};
@@ -48,10 +45,12 @@ class ImagePreview {
         double m_max_zoom_factor = 8.0;
         double m_min_zoom_factor = 1;
 
-        int m_i_x_resized_min;
-        int m_i_x_resized_max;
-        int m_i_y_resized_min;
-        int m_i_y_resized_max;
+        int m_i_x_resized_min = -1;
+        int m_i_x_resized_max = -1;
+        int m_i_y_resized_min = -1;
+        int m_i_y_resized_max = -1;
+
+        void set_default_resized_area();
 
         void update_preview_data(float mouse_position_relative_x = 0.5, float mouse_position_relative_y = 0.5);
 };

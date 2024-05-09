@@ -23,19 +23,18 @@ ImagePreview::ImagePreview(int width, int height, int max_value, bool use_color_
     m_use_color_interpolation = use_color_interpolation;
 };
 
-void ImagePreview::get_preview_from_stacked_picture(const std::vector<std::vector<double>> &stacked_image,
-                                                    int width_original, int height_original,
-                                                    int width_resized, int height_resized,
-                                                    int *max_value) {
-
+void ImagePreview::get_preview_from_stacked_picture(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original) {
     m_current_preview_is_raw_file = false;
+    m_width_original = width_original;
+    m_height_original = height_original;
     m_original_image = std::vector<std::vector<unsigned short int>>(3, std::vector<unsigned short int>(width_original*height_original,0));
     for (int i_color = 0; i_color < 3; i_color++)   {
         for (int i_pixel = 0; i_pixel < width_original*height_original; i_pixel++)   {
             m_original_image[i_color][i_pixel] = stacked_image[i_color][i_pixel];
         }
     }
-
+    set_default_resized_area();
+    m_current_preview_is_raw_file = false;
     update_preview_data();
 };
 
@@ -59,39 +58,34 @@ void ImagePreview::read_preview_from_file(const std::string &path)  {
             }
         }
     }
+    set_default_resized_area();
     update_preview_data();
 };
 
 void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {
-    get_preview_from_stacked_picture(stacked_image, width_original, height_original, m_width, m_height, &m_max_value);
-    m_current_preview_is_raw_file = false;
+    get_preview_from_stacked_picture(stacked_image, width_original, height_original);
 };
 
 void ImagePreview::update_preview_bitmap(wxStaticBitmap *static_bitmap) const  {
     wxImage image_wx(m_width, m_height);
 
-    if (m_current_preview_is_raw_file || m_use_color_interpolation) {
+    auto set_pixels = [&image_wx, this](float green_channel_correction) {
         const float scale_factor = pow(2,m_exposure_correction)*2*255.0 / m_max_value;
         for (int y = 0; y < m_height; ++y) {
             for (int x = 0; x < m_width; ++x) {
-
                 const int index = x + y*m_width;
                 image_wx.SetRGB(x, y,   min<int>(255,scale_factor*m_preview_data[0][index]),
-                                        min<int>(255,0.5*scale_factor*m_preview_data[1][index]),
+                                        min<int>(255,scale_factor*m_preview_data[1][index]*green_channel_correction),
                                         min<int>(255,scale_factor*m_preview_data[2][index]));
             }
         }
+    };
+
+    if (m_current_preview_is_raw_file || m_use_color_interpolation) {
+        set_pixels(0.5);
     }
     else {
-        const float scale_factor = pow(2,m_exposure_correction)*255.0 / m_max_value;
-        for (int y = 0; y < m_height; ++y) {
-            for (int x = 0; x < m_width; ++x) {
-                const int index = x + y*m_width;
-                image_wx.SetRGB(x, y,   min<int>(255,scale_factor*m_preview_data[0][index]),
-                                        min<int>(255,scale_factor*m_preview_data[1][index]),
-                                        min<int>(255,scale_factor*m_preview_data[2][index]));
-            }
-        }
+        set_pixels(1);
     }
 
     // Convert the wxImage to a wxBitmap
@@ -108,6 +102,15 @@ void ImagePreview::zoom_in(float mouse_position_relative_x, float mouse_position
 void ImagePreview::zoom_out(float mouse_position_relative_x, float mouse_position_relative_y)   {
     m_zoom_factor = max<double>(m_zoom_factor*pow(2,-1./3), m_min_zoom_factor);
     update_preview_data(mouse_position_relative_x, mouse_position_relative_y);
+};
+
+void ImagePreview::set_default_resized_area()   {
+    if (m_i_x_resized_max < 0)  {
+        m_i_x_resized_min = 0;
+        m_i_x_resized_max = m_width_original;
+        m_i_y_resized_min = 0;
+        m_i_y_resized_max = m_height_original;
+    }
 };
 
 void ImagePreview::update_preview_data(float mouse_position_relative_x, float mouse_position_relative_y)    {
