@@ -698,15 +698,22 @@ void MyFrame::update_image_preview()  {
 void MyFrame::add_step_control_part()    {
     wxGridSizer *grid_sizer = new wxGridSizer(2,3, 0, 0);
 
-    // alignment of the files
-    wxStaticText* text_aligned = new wxStaticText(this, wxID_ANY, "Files aligned: ");
-    wxFont font = text_aligned->GetFont();
-    font.SetPointSize(14);
-    text_aligned->SetFont(font);
-    m_alignment_status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap("../data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
+    auto add_button_and_checkmark = [this](auto on_button_function, const std::string &description_text, const std::string &button_text, wxStaticBitmap **status_icon, wxGridSizer *grid_sizer){
+        wxStaticText* text_aligned = new wxStaticText(this, wxID_ANY, description_text);
+        wxFont font = text_aligned->GetFont();
+        font.SetPointSize(14);
+        text_aligned->SetFont(font);
+        *status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap("../data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
 
-    wxButton *button_show_alignment = new wxButton(this, wxID_ANY, "Show alignment");
-    button_show_alignment->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        wxButton *button = new wxButton(this, wxID_ANY, button_text);
+        button->Bind(wxEVT_BUTTON, on_button_function);
+
+        grid_sizer->Add(text_aligned, 0,    wxALIGN_CENTER_VERTICAL | wxALL, 5);
+        grid_sizer->Add(*status_icon, 0,    wxALIGN_CENTER_VERTICAL | wxALL, 5);
+        grid_sizer->Add(button, 0,          wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    };
+
+    auto on_button_show_alignment = [this](wxCommandEvent&){
         vector<vector<string>> tabular_data;
         vector<string> description;
         m_filelist_handler.get_alignment_info_tabular_data(&tabular_data, &description);
@@ -715,19 +722,9 @@ void MyFrame::add_step_control_part()    {
         }
         ListFrame *alignment_list_frame = new ListFrame(this, "Alignment info", "Alignment info", description, tabular_data);
         alignment_list_frame->Show(true);
-    });
+    };
 
-    grid_sizer->Add(text_aligned, 0,             wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(m_alignment_status_icon, 0,  wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(button_show_alignment, 0,    wxALIGN_CENTER_VERTICAL | wxALL, 5);
-
-    // hot pixel identification
-    wxStaticText* text_hot_pixels = new wxStaticText(this, wxID_ANY, "Hot pixels identified: ");
-    text_hot_pixels->SetFont(font);
-    m_hot_pixel_status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap("../data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
-
-    wxButton *button_show_hot_pixels = new wxButton(this, wxID_ANY, "Show hot pixels");
-    button_show_hot_pixels->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+    auto on_button_hot_pixels = [this](wxCommandEvent&){
         if (m_hot_pixel_identifier == nullptr)    {
             return;
         }
@@ -742,28 +739,18 @@ void MyFrame::add_step_control_part()    {
         }
         ListFrame *alignment_list_frame = new ListFrame(this, "Hot pixel info", "Found " + std::to_string(hot_pixels.size()) + " hot pixels", description, tabular_data);
         alignment_list_frame->Show(true);
-    });
+    };
 
-    grid_sizer->Add(text_hot_pixels, 0,           wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(m_hot_pixel_status_icon, 0,   wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(button_show_hot_pixels, 0,    wxALIGN_CENTER_VERTICAL | wxALL, 5);
-
-    // is the stacked image available?
-    wxStaticText* text_stacked = new wxStaticText(this, wxID_ANY, "Stacking finished: ");
-    text_stacked->SetFont(font);
-    m_stacked_status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap("../data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
-
-    wxButton *button_stacking_finished = new wxButton(this, wxID_ANY, "Show stacked file");
-    button_stacking_finished->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+    auto on_button_show_stacked_image = [this](wxCommandEvent&){
         if (m_stacker == nullptr)    {
             return;
         }
         update_image_preview_with_stacked_image();
+    };
 
-    });
-    grid_sizer->Add(text_stacked, 0,                wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(m_stacked_status_icon, 0,       wxALIGN_CENTER_VERTICAL | wxALL, 5);
-    grid_sizer->Add(button_stacking_finished, 0,    wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    add_button_and_checkmark(on_button_show_alignment,      "Files aligned: ",          "Show alignment",       &m_alignment_status_icon,   grid_sizer);
+    add_button_and_checkmark(on_button_hot_pixels,          "Hot pixels identified: ",  "Show hot pixels",      &m_hot_pixel_status_icon,   grid_sizer);
+    add_button_and_checkmark(on_button_show_stacked_image,  "Stacking finished: ",      "Show stacked file",    &m_stacked_status_icon,     grid_sizer);
 
     m_sizer_top_center->Add(grid_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 };
