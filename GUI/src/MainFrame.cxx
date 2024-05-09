@@ -692,7 +692,7 @@ void MyFrame::add_image_preview()    {
 };
 
 void MyFrame::update_image_preview_file(const std::string& file_address)  {
-    m_current_preview->read_preview_from_raw_file(file_address);
+    m_current_preview->read_preview_from_file(file_address);
 
     update_image_preview();
     update_alignment_status();

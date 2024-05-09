@@ -4,6 +4,8 @@
 #include "../../headers/ImageFilesInputOutput.h"
 #include "../../headers/ColorInterpolationTool.h"
 
+#include <opencv2/opencv.hpp>
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -37,9 +39,26 @@ void ImagePreview::get_preview_from_stacked_picture(const std::vector<std::vecto
     update_preview_data();
 };
 
-void ImagePreview::read_preview_from_raw_file(const std::string &path)  {
-    m_original_image = ColorInterpolationTool::get_interpolated_rgb_image(path, &m_width_original, &m_height_original);
-    m_current_preview_is_raw_file = true;
+void ImagePreview::read_preview_from_file(const std::string &path)  {
+    m_current_preview_is_raw_file = is_raw_file(path);
+    if (m_current_preview_is_raw_file)  {
+        m_original_image = ColorInterpolationTool::get_interpolated_rgb_image(path, &m_width_original, &m_height_original);
+    }
+    else {
+        // picture file
+        cv::Mat image = cv::imread(path, 1);
+        m_width_original = image.cols;
+        m_height_original = image.rows;
+        m_original_image = std::vector<std::vector<unsigned short int>>(3, std::vector<unsigned short int>(m_width_original*m_height_original,0));
+        for (int y = 0; y < m_height_original; y++) {
+            for (int x = 0; x < m_width_original; x++) {
+                cv::Vec3b pixel = image.at<cv::Vec3b>(y,x);
+                m_original_image[0][y*m_width_original + x] = pixel[2];
+                m_original_image[1][y*m_width_original + x] = 2*pixel[1];
+                m_original_image[2][y*m_width_original + x] = pixel[0];
+            }
+        }
+    }
     update_preview_data();
 };
 
