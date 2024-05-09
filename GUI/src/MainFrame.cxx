@@ -228,7 +228,6 @@ void MyFrame::add_files_to_stack_checkbox()  {
         string text = m_files_to_stack_checkbox->GetString(index).ToStdString();
         const std::vector<std::string> elements = AstroPhotoStacker::split_and_strip_string(text, "\t\t");
         const std::string file = elements[1];
-        cout << "File: \"" << file << "\"\n";
         update_image_preview_file(file);
         update_checked_files_in_filelist();
     });
@@ -372,11 +371,6 @@ void MyFrame::add_button_bar()   {
         std::vector<std::tuple<int,int>> hot_pixels = m_hot_pixel_identifier->get_hot_pixels();
 
         update_status_icon(m_hot_pixel_status_icon, true);
-        cout << "Hot pixels identified!" << endl;
-        cout << "Processed " + std::to_string(n_processed) + " / " + std::to_string(files_total) + " files\n";
-        for (const auto &hot_pixel : hot_pixels) {
-            cout << get<0>(hot_pixel) << "\t" << get<1>(hot_pixel) << endl;
-        }
     });
 
     button_stack_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
@@ -402,11 +396,6 @@ void MyFrame::add_button_bar()   {
 
         wxProgressDialog progress_bar("File stacking", "Finished 0 / " + std::to_string(tasks_total), tasks_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
         progress_bar.Update(tasks_processed);
-
-        if (dynamic_cast<StackerCutOffAverage*>(m_stacker.get()) != nullptr) {
-            StackerCutOffAverage *stacker_cut_off_average = dynamic_cast<StackerCutOffAverage*>(m_stacker.get());
-            cout << "DEBUG, cut-off scale: " << stacker_cut_off_average->get_tail_fraction_to_cut_off() << endl;
-        }
 
         thread_pool pool(1);
         pool.submit([this](){
@@ -467,7 +456,6 @@ void MyFrame::add_n_cpu_slider()    {
     });
 
     // Add the controls to a sizer
-    //wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
     m_sizer_top_left->Add(n_cpu_text, 0,   wxEXPAND, 5);
     m_sizer_top_left->Add(slider_ncpu, 0,  wxEXPAND, 5);
 };
@@ -531,7 +519,6 @@ void MyFrame::add_kappa_sigma_options() {
 
     kappa_sigma_iter_sizer->Add(m_kappa_sigma_iter_text, 0, wxEXPAND, 5);
     kappa_sigma_iter_sizer->Add(m_spin_ctrl_kappa_sigma_iter, 0,  wxEXPAND, 5);
-
 };
 
 void MyFrame::update_kappa_sigma_visibility()   {
@@ -663,9 +650,6 @@ void MyFrame::on_mouse_wheel(wxMouseEvent& event) {
             m_current_preview->zoom_out(relative_x, relative_y);
             update_image_preview();
         }
-
-        // Print the relative position
-        std::cout << "Relative position: (" << relative_x << ", " << relative_y << ")\n";
     }
 };
 

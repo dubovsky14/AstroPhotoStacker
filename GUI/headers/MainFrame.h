@@ -38,6 +38,7 @@ class MyFrame : public wxFrame  {
         MyFrame();
 
         void update_alignment_status();
+        void update_files_to_stack_checkbox();
 
     private:
 
@@ -48,7 +49,6 @@ class MyFrame : public wxFrame  {
         void add_menu_bar();
 
         void add_files_to_stack_checkbox();
-        void update_files_to_stack_checkbox();
         void update_checked_files_in_filelist();
 
         void add_button_bar();

@@ -83,6 +83,7 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
             alignment_file_info.initialized = true;
             m_filelist_handler->set_alignment_info(i_file, alignment_file_info);
         }
+        parent->update_files_to_stack_checkbox();
         parent->update_alignment_status();
         this->Close();
     });
