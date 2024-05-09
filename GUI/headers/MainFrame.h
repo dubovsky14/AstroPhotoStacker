@@ -49,7 +49,13 @@ class MyFrame : public wxFrame  {
         void add_menu_bar();
 
         void add_files_to_stack_checkbox();
-        void update_checked_files_in_filelist();
+
+        /**
+         * @brief Update the list of files to stack in the GUI
+         *
+         * @return true if the list was updated, false otherwise
+        */
+        bool update_checked_files_in_filelist();
 
         void add_button_bar();
 

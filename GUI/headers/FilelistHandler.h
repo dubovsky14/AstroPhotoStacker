@@ -59,6 +59,8 @@ class FilelistHandler   {
 
         int get_number_of_checked_files(FileTypes type) const;
 
+        int get_number_of_all_files() const;
+
         bool file_is_checked(int file_index) const;
 
         void set_file_checked(int file_index, bool checked, FileTypes type);

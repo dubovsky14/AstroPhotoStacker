@@ -138,6 +138,14 @@ int FilelistHandler::get_number_of_checked_files(FileTypes type) const  {
     return n_checked_files;
 };
 
+int FilelistHandler::get_number_of_all_files() const    {
+    int n_files = 0;
+    for (FileTypes type : s_file_types_ordering)   {
+        n_files += m_filelist.at(type).size();
+    }
+    return n_files;
+};
+
 bool FilelistHandler::file_is_checked(int file_index) const {
     int files_previous = 0;
     for (FileTypes type : s_file_types_ordering)   {

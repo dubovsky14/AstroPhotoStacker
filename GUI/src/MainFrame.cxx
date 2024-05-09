@@ -228,8 +228,12 @@ void MyFrame::add_files_to_stack_checkbox()  {
         string text = m_files_to_stack_checkbox->GetString(index).ToStdString();
         const std::vector<std::string> elements = AstroPhotoStacker::split_and_strip_string(text, "\t\t");
         const std::string file = elements[1];
-        update_image_preview_file(file);
-        update_checked_files_in_filelist();
+        const bool update_needed = update_checked_files_in_filelist();
+
+        // Do not update the preview if the files was just checked/unchecked - it is slow
+        if (!update_needed) {
+            update_image_preview_file(file);
+        }
     });
 };
 
@@ -260,19 +264,21 @@ void MyFrame::update_files_to_stack_checkbox()   {
     }
 };
 
-void MyFrame::update_checked_files_in_filelist() {
+bool MyFrame::update_checked_files_in_filelist() {
     wxArrayInt checked_indices;
     m_files_to_stack_checkbox->GetCheckedItems(checked_indices);
-
-    m_filelist_handler.set_checked_status_for_all_files(false);
-
-    // loop over checked items:
-    for (size_t i = 0; i < checked_indices.GetCount(); ++i) {
-        int index = checked_indices[i];
-        m_filelist_handler.set_file_checked(index, true);
+    bool updated = false;
+    for (int i = 0; i < m_filelist_handler.get_number_of_all_files(); i++) {
+        const bool file_checked_in_checkbox = m_files_to_stack_checkbox->IsChecked(i);
+        const bool file_checked_in_filelist = m_filelist_handler.file_is_checked(i);
+        if (file_checked_in_checkbox != file_checked_in_filelist) {
+            m_filelist_handler.set_file_checked(i, file_checked_in_checkbox);
+            updated = true;
+        }
     }
     update_input_numbers_overview();
     update_alignment_status();
+    return updated;
 };
 
 void MyFrame::add_button_bar()   {
