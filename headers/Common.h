@@ -110,4 +110,9 @@ namespace AstroPhotoStacker {
     std::vector<std::string> get_raw_files_in_folder(const std::string &folder_address);
 
     std::string round_and_convert_to_string(double x, int digits_after_decimal_point = 1);
+
+    template <class T>
+    T force_range(T x, T min_value, T max_value) {
+        return std::max(min_value, std::min(max_value, x));
+    }
 }

@@ -2,6 +2,7 @@
 #include "../headers/AlignmentFrame.h"
 #include "../headers/ListFrame.h"
 #include "../headers/StackerConfigureTool.h"
+#include "../headers/ThreePointSlider.h"
 
 #include "../../headers/Common.h"
 #include "../../headers/raw_file_reader.h"
@@ -490,6 +491,13 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
 
     add_kappa_sigma_options();
     add_cut_off_average_options();
+
+
+
+    ThreePointSlider *three_point_slider = new ThreePointSlider(this, wxID_ANY, wxDefaultPosition, wxSize(300, 50));
+    m_sizer_top_left->Add(three_point_slider, 0, wxEXPAND, 5);
+    three_point_slider->set_initial_thumbs_positions(vector<float>({0., 0.5, 1.}));
+
 };
 
 void MyFrame::add_kappa_sigma_options() {
