@@ -4,6 +4,8 @@
 #include "../headers/StackSettings.h"
 #include "../headers/ImagePreview.h"
 #include "../headers/RecentPathsHandler.h"
+#include "../headers/ColorStretching.h"
+#include "../headers/ThreePointSlider.h"
 
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/HotPixelIdentifier.h"
@@ -141,6 +143,11 @@ class MyFrame : public wxFrame  {
         std::vector<std::shared_ptr<wxSizer>> m_sizers;  // this is such a mess ...
 
         static void update_status_icon(wxStaticBitmap *status_icon, bool is_ok);
+
+        // luminance streching slider:
+        ThreePointSlider *m_luminance_stretching_slider = nullptr;
+        CombinedColorStrecherTool m_color_stretcher;
+
 };
 
 inline int unique_counter()    {

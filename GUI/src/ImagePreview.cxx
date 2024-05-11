@@ -36,6 +36,7 @@ void ImagePreview::get_preview_from_stacked_picture(const std::vector<std::vecto
     set_default_resized_area();
     m_current_preview_is_raw_file = false;
     update_preview_data();
+    update_max_values_original();
 };
 
 void ImagePreview::read_preview_from_file(const std::string &path)  {
@@ -60,6 +61,7 @@ void ImagePreview::read_preview_from_file(const std::string &path)  {
     }
     set_default_resized_area();
     update_preview_data();
+    update_max_values_original();
 };
 
 void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {
@@ -68,15 +70,25 @@ void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector
 
 void ImagePreview::update_preview_bitmap(wxStaticBitmap *static_bitmap) const  {
     wxImage image_wx(m_width, m_height);
-
     auto set_pixels = [&image_wx, this](float green_channel_correction) {
         const float scale_factor = pow(2,m_exposure_correction)*2*255.0 / m_max_value;
         for (int y = 0; y < m_height; ++y) {
             for (int x = 0; x < m_width; ++x) {
                 const int index = x + y*m_width;
-                image_wx.SetRGB(x, y,   min<int>(255,scale_factor*m_preview_data[0][index]),
-                                        min<int>(255,scale_factor*m_preview_data[1][index]*green_channel_correction),
-                                        min<int>(255,scale_factor*m_preview_data[2][index]));
+                int red   = min<int>(255,scale_factor*m_preview_data[0][index]);
+                int green = min<int>(255,scale_factor*m_preview_data[1][index]*green_channel_correction);
+                int blue  = min<int>(255,scale_factor*m_preview_data[2][index]);
+
+                if (m_color_stretcher != nullptr) {
+                    if (m_color_stretcher->has_stretchers()) {
+                        for (int i_color = 0; i_color < 3; i_color++) {
+                            red   = min<int>(255, m_color_stretcher->stretch(red,   255, 0));
+                            green = min<int>(255, m_color_stretcher->stretch(green, 255, 1));
+                            blue  = min<int>(255, m_color_stretcher->stretch(blue,  255, 2));
+                        }
+                    }
+                }
+                image_wx.SetRGB(x, y, red, green, blue);
             }
         }
     };
@@ -110,6 +122,26 @@ void ImagePreview::set_default_resized_area()   {
         m_i_x_resized_max = m_width_original;
         m_i_y_resized_min = 0;
         m_i_y_resized_max = m_height_original;
+    }
+};
+
+void ImagePreview::set_stretcher(const CombinedColorStrecherTool *color_stretcher)    {
+    m_color_stretcher = color_stretcher;
+};
+
+void ImagePreview::update_max_values_original()    {
+    if (m_color_stretcher == nullptr)   {
+        return;
+    }
+    if (m_color_stretcher->has_stretchers() == false)   {
+        return;
+    }
+
+    m_max_values_original = std::vector<int>(3,0);
+    for (int i_color = 0; i_color < 3; i_color++)   {
+        for (int i_pixel = 0; i_pixel < m_width_original*m_height_original; i_pixel++)   {
+            m_max_values_original[i_color] = max<int>(m_max_values_original[i_color], m_original_image[i_color][i_pixel]);
+        }
     }
 };
 

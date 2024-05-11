@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../headers/ColorStretching.h"
+
 #include <vector>
 #include <string>
 
@@ -28,6 +30,8 @@ class ImagePreview {
         void zoom_in(float mouse_position_relative_x, float mouse_position_relative_y);
         void zoom_out(float mouse_position_relative_x, float mouse_position_relative_y);
 
+        void set_stretcher(const CombinedColorStrecherTool *color_stretcher);
+
     private:
         int m_width_original;
         int m_height_original;
@@ -38,6 +42,8 @@ class ImagePreview {
         std::vector<std::vector<int>> m_preview_data; // 3 color channels, each with width*height pixels
         float m_exposure_correction;
         int m_max_value;
+        std::vector<int> m_max_values_original;
+        const CombinedColorStrecherTool *m_color_stretcher = nullptr;
         bool m_current_preview_is_raw_file = true;
         bool m_use_color_interpolation = true;
 
@@ -51,6 +57,7 @@ class ImagePreview {
         int m_i_y_resized_max = -1;
 
         void set_default_resized_area();
+        void update_max_values_original();
 
         void update_preview_data(float mouse_position_relative_x = 0.5, float mouse_position_relative_y = 0.5);
 };

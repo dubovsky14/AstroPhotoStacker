@@ -494,9 +494,19 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
 
 
 
-    ThreePointSlider *three_point_slider = new ThreePointSlider(this, wxID_ANY, wxDefaultPosition, wxSize(300, 50));
-    m_sizer_top_left->Add(three_point_slider, 0, wxEXPAND, 5);
-    three_point_slider->set_thumbs_positions(vector<float>({0., 0.5, 1.}));
+    m_luminance_stretching_slider = new ThreePointSlider(this, wxID_ANY, wxDefaultPosition, wxSize(300, 50));
+    m_sizer_top_left->Add(m_luminance_stretching_slider, 0, wxEXPAND, 5);
+    m_luminance_stretching_slider->set_thumbs_positions(vector<float>({0., 0.5, 1.}));
+    m_current_preview->set_stretcher(&m_color_stretcher);
+    m_color_stretcher.add_luminance_stretcher(IndividualColorStretchingTool());
+    m_luminance_stretching_slider->register_on_change_callback([this](){
+        const float thumb1 = m_luminance_stretching_slider->get_value(0);
+        const float thumb2 = m_luminance_stretching_slider->get_value(1);
+        const float thumb3 = m_luminance_stretching_slider->get_value(2);
+        IndividualColorStretchingTool &luminance_stretcher = m_color_stretcher.get_luminance_stretcher(0);
+        luminance_stretcher.set_stretching_parameters(thumb1, thumb2, thumb3);
+        update_image_preview();
+    });
 
 };
 
@@ -691,7 +701,6 @@ void MyFrame::add_image_preview()    {
 
 void MyFrame::update_image_preview_file(const std::string& file_address)  {
     m_current_preview->read_preview_from_file(file_address);
-
     update_image_preview();
     update_alignment_status();
 };
