@@ -32,6 +32,12 @@ class IndividualColorStretchingTool {
             m_black_point   = black_point;
             m_midtone       = midtone;
             m_white_point   = white_point;
+
+            m_one_over_range  = 1 / (m_white_point - m_black_point);
+
+            // quadratic stretching
+            m_a = 2 - 4 * m_midtone;
+            m_b = 4 * m_midtone - 1;
         };
 
         /**
@@ -43,13 +49,11 @@ class IndividualColorStretchingTool {
         float stretch(float value, float full_scale_max) const    {
             // firstly, normalize the value
             value = value / full_scale_max;
-            float normalized_value =  (value - m_black_point) / (m_white_point - m_black_point);
+            float normalized_value =  (value - m_black_point) * m_one_over_range;
             normalized_value = AstroPhotoStacker::force_range<float>(normalized_value, 0, 1);
 
-            // quadratic stretching
-            const float a = 2 - 4 * m_midtone;
-            const float b = 4 * m_midtone - 1;
-            normalized_value = a*normalized_value*normalized_value + b*normalized_value;
+
+            normalized_value = m_a*normalized_value*normalized_value + m_b*normalized_value;
 
             // apply the full scale
             const float result = normalized_value * full_scale_max;
@@ -60,6 +64,11 @@ class IndividualColorStretchingTool {
         float m_black_point     = 0;
         float m_midtone         = 0.5;
         float m_white_point     = 1;
+        float m_one_over_range  = 1;
+
+        // quadratic stretching
+        float m_a = 2 - 4 * m_midtone;
+        float m_b = 4 * m_midtone - 1;
 };
 
 /**
