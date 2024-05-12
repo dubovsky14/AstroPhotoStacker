@@ -105,7 +105,9 @@ class ThreePointSlider : public wxPanel {
         void on_mouse_up(wxMouseEvent &event)     {
             // Deactivate the active thumb
             m_active_thumb = -1;
-            m_on_change_callback();
+            if (m_on_change_callback != nullptr) {
+                m_on_change_callback();
+            }
         }
 
         void on_paint(wxPaintEvent &event) {
