@@ -41,7 +41,7 @@ class HistogramDataTool {
         void extract_data_from_image(const std::vector<std::vector<datatype>> &image_data) {
             for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
                 for (datatype value : image_data[i_color]) {
-                    m_histogram_data_colors[i_color][value]++;
+                    m_histogram_data_colors[i_color][std::min<datatype>(value, m_max_value)]++;
                 }
             }
         };

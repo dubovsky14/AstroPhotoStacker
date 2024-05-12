@@ -86,7 +86,8 @@ void HistogramDataToolGUI::update_plot()    {
         // Scale the histogram data to fit the height of the image
         for (int i_color = 0; i_color < m_histogram_data_tool->get_number_of_colors(); i_color++) {
             const std::vector<int> &histogram_data = rebinned_data[i_color];
-            const int max_value = *std::max_element(histogram_data.begin(), histogram_data.end());
+            const int edge_to_cut_off = histogram_data.size() > 2 ? 1 : 0;
+            const int max_value = *std::max_element(histogram_data.begin()+edge_to_cut_off, histogram_data.end()-edge_to_cut_off);
             for (int pixel_coordinate_x = 0; pixel_coordinate_x < m_width_pixels; pixel_coordinate_x++) {
                 const float value = histogram_data.at(pixel_coordinate_x);
                 const int height = m_height_pixels*value / max_value;

@@ -15,6 +15,8 @@ class ImagePreview {
 
         void get_preview_from_stacked_picture(  const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original);
 
+        bool image_loaded() const   { return m_width_original > 0 && m_height_original > 0;};
+
         int get_width() const       { return m_width;};
         int get_height() const      { return m_height;};
         int get_max_value() const   { return m_max_value;};
@@ -36,8 +38,8 @@ class ImagePreview {
         const std::vector<std::vector<short unsigned int>>& get_original_image() const { return m_original_image;};
 
     private:
-        int m_width_original;
-        int m_height_original;
+        int m_width_original    = 0;
+        int m_height_original   = 0;
         std::vector<std::vector<short unsigned int>> m_original_image; // 3 color channels, each with width*height pixels
 
         int m_width;

@@ -851,8 +851,11 @@ void MyFrame::on_exit(wxCommandEvent& event)     {
 }
 
 void MyFrame::update_histogram()    {
+    if (!m_current_preview->image_loaded()) {
+        return;
+    }
     // TODO bit depth and number of channels are hardcoded - this should be changed
-    m_histogram_data_tool = std::make_unique<HistogramDataTool>(pow(2,14), 3);
+    m_histogram_data_tool = std::make_unique<HistogramDataTool>(pow(2,13), 3);
     m_histogram_data_tool->extract_data_from_image(m_current_preview->get_original_image());
     m_histogram_data_tool_gui->set_color_stretcher(m_color_stretcher);
 
