@@ -1,6 +1,7 @@
 #include "../headers/HistogramDataToolGUI.h"
 
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 
@@ -87,13 +88,13 @@ void HistogramDataToolGUI::update_plot()    {
             const std::vector<int> &histogram_data = rebinned_data[i_color];
             const int max_value = *std::max_element(histogram_data.begin(), histogram_data.end());
             for (int pixel_coordinate_x = 0; pixel_coordinate_x < m_width_pixels; pixel_coordinate_x++) {
-                const float value = histogram_data[pixel_coordinate_x];
+                const float value = histogram_data.at(pixel_coordinate_x);
                 const int height = m_height_pixels*value / max_value;
 
-                image.SetRGB(pixel_coordinate_x, height, m_line_colors[i_color].Red(), m_line_colors[i_color].Green(), m_line_colors[i_color].Blue());
-                //for (int pixel_coordinate_y = 0; pixel_coordinate_y < height; pixel_coordinate_y++) {
-                //    image.SetRGB(pixel_coordinate_x, m_height_pixels - pixel_coordinate_y, m_line_colors[i_color].Red(), m_line_colors[i_color].Green(), m_line_colors[i_color].Blue());
-                //}
+                //image.SetRGB(pixel_coordinate_x, height, m_line_colors[i_color].Red(), m_line_colors[i_color].Green(), m_line_colors[i_color].Blue());
+                for (int pixel_coordinate_y = 0; pixel_coordinate_y < height; pixel_coordinate_y++) {
+                    image.SetRGB(pixel_coordinate_x, m_height_pixels - pixel_coordinate_y, m_line_colors[i_color].Red(), m_line_colors[i_color].Green(), m_line_colors[i_color].Blue());
+                }
 
             }
         }

@@ -716,6 +716,7 @@ void MyFrame::update_image_preview_with_stacked_image()  {
 void MyFrame::update_image_preview()  {
     m_current_preview->update_preview_bitmap(m_preview_bitmap);
     m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
+    update_histogram();
 };
 
 void MyFrame::add_step_control_part()    {
@@ -832,6 +833,10 @@ void MyFrame::add_input_numbers_overview()  {
     add_summary_text(FileTypes::DARK, "Dark frames: ");
 
     m_sizer_top_right->Add(grid_sizer, 0, wxEXPAND, 5);
+
+    m_histogram_data_tool_gui = std::make_unique<HistogramDataToolGUI>(this, m_sizer_top_right, wxDefaultPosition, wxSize(600,250));
+    m_histogram_data_tool_gui->set_background_color(wxColour(200,200,200));
+    m_histogram_data_tool_gui->set_line_colors({wxColour(255,0,0), wxColour(0,255,0), wxColour(0,0,255)});
 };
 
 void MyFrame::update_input_numbers_overview()   {
@@ -844,6 +849,14 @@ void MyFrame::update_input_numbers_overview()   {
 void MyFrame::on_exit(wxCommandEvent& event)     {
     Close(true);
 }
+
+void MyFrame::update_histogram()    {
+    // TODO bit depth and number of channels are hardcoded - this should be changed
+    m_histogram_data_tool = std::make_unique<HistogramDataTool>(pow(2,14), 3);
+    m_histogram_data_tool->extract_data_from_image(m_current_preview->get_original_image());
+
+    m_histogram_data_tool_gui->set_histogram_data_colors(*m_histogram_data_tool);
+};
 
 void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title)    {
     const std::string default_path = m_recent_paths_handler.get_recent_file_path(type, "");

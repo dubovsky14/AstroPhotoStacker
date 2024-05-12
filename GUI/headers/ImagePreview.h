@@ -32,6 +32,9 @@ class ImagePreview {
 
         void set_stretcher(const CombinedColorStrecherTool *color_stretcher);
 
+        const std::vector<std::vector<int>>& get_preview_data() const { return m_preview_data;};
+        const std::vector<std::vector<short unsigned int>>& get_original_image() const { return m_original_image;};
+
     private:
         int m_width_original;
         int m_height_original;

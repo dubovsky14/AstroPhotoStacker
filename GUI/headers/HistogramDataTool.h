@@ -39,7 +39,11 @@ class HistogramDataTool {
          */
         template<class datatype>
         void extract_data_from_image(const std::vector<std::vector<datatype>> &image_data) {
-            // Implementation details...
+            for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
+                for (datatype value : image_data[i_color]) {
+                    m_histogram_data_colors[i_color][value]++;
+                }
+            }
         };
 
         /**
