@@ -36,3 +36,7 @@ std::vector<std::vector<int>> HistogramDataTool::get_stretched_color_data(const 
     }
     return result;
 };
+
+const std::vector<std::vector<int>>& HistogramDataTool::get_histogram_data_colors() const {
+    return m_histogram_data_colors;
+};

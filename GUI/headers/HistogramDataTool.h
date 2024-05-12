@@ -28,6 +28,11 @@ class HistogramDataTool {
         HistogramDataTool(int max_value, int number_of_colors);
 
         /**
+         * Default copy constructor.
+         */
+        HistogramDataTool(const HistogramDataTool&) = default;
+
+        /**
          * @brief Extracts histogram data from the given image data.
          * @tparam datatype The data type of the image dat
          * @param image_data The image data from which to extract the histogram data - first dimension is color, second dimension is pixel index.
@@ -55,9 +60,21 @@ class HistogramDataTool {
         /**
          * @brief Gets the stretched color data using the given color stretcher.
          * @param color_stretcher The color stretcher tool.
-         * @return The stretched color data.
+         * @return The stretched color data - one value per bin, i.e. size of all vectors is max_value + 1.
          */
         std::vector<std::vector<int>> get_stretched_color_data(const CombinedColorStrecherTool &color_stretcher) const;
+
+        /**
+         * @brief Gets histogram data for color channels
+         * @return The histogram data for color channels - one value per bin, i.e. size of all vectors is max_value + 1.
+         */
+        const std::vector<std::vector<int>>& get_histogram_data_colors() const;
+
+        /**
+         * @brief get number of colors
+         * @return The number of colors in the image.
+         */
+        int get_number_of_colors() const { return m_number_of_colors; };
 
     private:
         int m_max_value;                                            ///< The maximum value of the histogram data.
