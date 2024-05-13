@@ -4,7 +4,7 @@
 #include "../headers/StackSettings.h"
 #include "../headers/ImagePreview.h"
 #include "../headers/RecentPathsHandler.h"
-#include "../headers/ColorStretching.h"
+#include "../headers/CombinedColorStrecherTool.h"
 #include "../headers/ThreePointSlider.h"
 
 #include "../headers/HistogramDataTool.h"

@@ -4,9 +4,12 @@
 #include "../headers/StackerConfigureTool.h"
 #include "../headers/ThreePointSlider.h"
 
+#include "../headers/IndividualColorStretchingBlackMidtoneWhite.h"
+
 #include "../../headers/Common.h"
 #include "../../headers/raw_file_reader.h"
 #include "../../headers/thread_pool.h"
+
 
 #include <wx/spinctrl.h>
 #include <wx/progdlg.h>
@@ -498,14 +501,14 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
     m_sizer_top_left->Add(m_luminance_stretching_slider, 0, wxEXPAND, 5);
     m_luminance_stretching_slider->set_thumbs_positions(vector<float>({0., 0.5, 1.}));
     m_current_preview->set_stretcher(&m_color_stretcher);
-    m_color_stretcher.add_luminance_stretcher(IndividualColorStretchingTool());
+    m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackMidtoneWhite>());
     m_luminance_stretching_slider->register_on_change_callback([this](){
         const float thumb1 = m_luminance_stretching_slider->get_value(0);
         const float thumb2 = m_luminance_stretching_slider->get_value(1);
         const float thumb3 = m_luminance_stretching_slider->get_value(2);
         const float midtone = thumb1 == thumb3 ? 0.5 : thumb2/(thumb3-thumb1);
-        IndividualColorStretchingTool &luminance_stretcher = m_color_stretcher.get_luminance_stretcher(0);
-        luminance_stretcher.set_stretching_parameters(thumb1, midtone, thumb3);
+        IndividualColorStretchingToolBase &luminance_stretcher = m_color_stretcher.get_luminance_stretcher(0);
+        (dynamic_cast<IndividualColorStretchingBlackMidtoneWhite&>(luminance_stretcher)).set_stretching_parameters(thumb1, midtone, thumb3);
         update_image_preview();
     });
 
@@ -845,9 +848,9 @@ void MyFrame::add_histogram_and_rgb_sliders()    {
 
 
     vector<vector<wxColour>> thumbs_colors = {
-        vector<wxColour>({wxColour(50,0,0), wxColour(128,0,0), wxColour(255,0,0)}),
-        vector<wxColour>({wxColour(0,50,0), wxColour(0,128,0), wxColour(0,255,0)}),
-        vector<wxColour>({wxColour(0,0,50), wxColour(0,0,128), wxColour(0,0,255)})
+        vector<wxColour>({wxColour(50,0,0), wxColour(180,0,0), wxColour(255,0,0)}),
+        vector<wxColour>({wxColour(0,50,0), wxColour(0,180,0), wxColour(0,255,0)}),
+        vector<wxColour>({wxColour(0,0,50), wxColour(0,0,180), wxColour(0,0,255)})
     };
 
     auto add_color_slider = [this](int color_index, ThreePointSlider* stretching_slider, const vector<wxColour> &thumb_colors_vector)    {
@@ -856,14 +859,14 @@ void MyFrame::add_histogram_and_rgb_sliders()    {
         m_sizer_top_right->Add(stretching_slider, 0, wxEXPAND, 5);
         stretching_slider->set_thumbs_positions(vector<float>({0., 0.5, 1.}));
         m_current_preview->set_stretcher(&m_color_stretcher);
-        m_color_stretcher.add_color_stretcher(IndividualColorStretchingTool(),color_index);
+        m_color_stretcher.add_color_stretcher(std::make_shared<IndividualColorStretchingBlackMidtoneWhite>(),color_index);
         stretching_slider->register_on_change_callback([this, stretching_slider, color_index](){
             const float thumb1 = stretching_slider->get_value(0);
             const float thumb2 = stretching_slider->get_value(1);
             const float thumb3 = stretching_slider->get_value(2);
             const float midtone = thumb1 == thumb3 ? 0.5 : thumb2/(thumb3-thumb1);
-            IndividualColorStretchingTool &luminance_stretcher = m_color_stretcher.get_color_stretcher(color_index,0);
-            luminance_stretcher.set_stretching_parameters(thumb1, midtone, thumb3);
+            IndividualColorStretchingToolBase &stretcher = m_color_stretcher.get_color_stretcher(color_index,0);
+            (dynamic_cast<IndividualColorStretchingBlackMidtoneWhite&>(stretcher)).set_stretching_parameters(thumb1, midtone, thumb3);
             update_image_preview();
         });
     };

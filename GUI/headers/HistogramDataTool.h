@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/ColorStretching.h"
+#include "../headers/CombinedColorStrecherTool.h"
 
 #include <vector>
 

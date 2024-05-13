@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../headers/HistogramDataTool.h"
-#include "../headers/ColorStretching.h"
+#include "../headers/CombinedColorStrecherTool.h"
 
 #include <wx/wx.h>
 

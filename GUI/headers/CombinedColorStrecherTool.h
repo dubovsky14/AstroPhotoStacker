@@ -1,75 +1,12 @@
 #pragma once
-#include "../../headers/Common.h"
+
+#include "../headers/IndividualColorStretchingToolBase.h"
 
 #include <vector>
-
-/**
- * @brief The class for individual stretching - applying one color curve to the image
-*/
-class IndividualColorStretchingTool {
-    public:
-        IndividualColorStretchingTool() = default;
-
-        /**
-         * @brief Construct a new Individual Color Stretching Tool object
-         *
-         * @param black_point the black point - as a fraction - from interval [0, 1]
-         * @param midtone the midtone - as a fraction - from interval [0, 1]
-         * @param white_point the white point - as a fraction - from interval [0, 1]
-        */
-        IndividualColorStretchingTool(float black_point, float midtone, float white_point)  {
-            set_stretching_parameters(black_point, midtone, white_point);
-        };
-
-        /**
-         * @brief Set straching parameters
-         *
-         * @param black_point the black point - as a fraction - from interval [0, 1]
-         * @param midtone the midtone - as a fraction - from interval [0, 1]
-         * @param white_point the white point - as a fraction - from interval [0, 1]
-        */
-        void set_stretching_parameters(float black_point, float midtone, float white_point) {
-            m_black_point   = black_point;
-            m_midtone       = midtone;
-            m_white_point   = white_point;
-
-            m_one_over_range  = 1 / (m_white_point - m_black_point);
-
-            // quadratic stretching
-            m_a = 2 - 4 * m_midtone;
-            m_b = 4 * m_midtone - 1;
-        };
-
-        /**
-         * @brief Stretch the value
-         *
-         * @param value the value to stretch
-         * @return float the stretched value
-        */
-        float stretch(float value, float full_scale_max) const    {
-            // firstly, normalize the value
-            value = value / full_scale_max;
-            float normalized_value =  (value - m_black_point) * m_one_over_range;
-            normalized_value = AstroPhotoStacker::force_range<float>(normalized_value, 0, 1);
+#include <memory>
+#include <stdexcept>
 
 
-            normalized_value = m_a*normalized_value*normalized_value + m_b*normalized_value;
-
-            // apply the full scale
-            const float result = normalized_value * full_scale_max;
-            return AstroPhotoStacker::force_range<float>(result, 0,   full_scale_max);
-        };
-
-    private:
-        float m_black_point     = 0;
-        float m_midtone         = 0.5;
-        float m_white_point     = 1;
-        float m_one_over_range  = 1;
-
-        // quadratic stretching
-        float m_a = 2 - 4 * m_midtone;
-        float m_b = 4 * m_midtone - 1;
-};
 
 /**
  * @brief The class for combined stretching - applying multiple color curves to the image, either to luminance or to each color channel
@@ -86,7 +23,7 @@ class CombinedColorStrecherTool {
          *
          * @param stretcher the stretcher to add
         */
-        void add_luminance_stretcher(const IndividualColorStretchingTool& stretcher) {
+        void add_luminance_stretcher(std::shared_ptr<IndividualColorStretchingToolBase> stretcher) {
             m_luminance_stretchers.push_back(stretcher);
         };
 
@@ -96,7 +33,7 @@ class CombinedColorStrecherTool {
          * @param stretcher the stretcher to add
          * @param color the color index
         */
-        void add_color_stretcher(const IndividualColorStretchingTool& stretcher, unsigned int color) {
+        void add_color_stretcher(std::shared_ptr<IndividualColorStretchingToolBase> stretcher, unsigned int color) {
             if (color >= m_n_colors) {
                 throw std::invalid_argument("CombinedColorStrecherTool::add_color_stretcher: Color index out of range");
             }
@@ -115,11 +52,11 @@ class CombinedColorStrecherTool {
                 throw std::invalid_argument("CombinedColorStrecherTool::stretch: Color index out of range");
             }
             float result = value;
-            for (const IndividualColorStretchingTool &stretcher : m_luminance_stretchers) {
-                result = stretcher.stretch(result, max_value);
+            for (const std::shared_ptr<IndividualColorStretchingToolBase> &stretcher : m_luminance_stretchers) {
+                result = stretcher->stretch(result, max_value);
             }
-            for (const IndividualColorStretchingTool &stretcher : m_color_stretchers[color]) {
-                result = stretcher.stretch(result, max_value);
+            for (const std::shared_ptr<IndividualColorStretchingToolBase> &stretcher : m_color_stretchers[color]) {
+                result = stretcher->stretch(result, max_value);
             }
             return result;
         };
@@ -132,8 +69,8 @@ class CombinedColorStrecherTool {
         */
         float stretch_luminance(float value, float max_value) const {
             float result = value;
-            for (const IndividualColorStretchingTool &stretcher : m_luminance_stretchers) {
-                result = stretcher.stretch(result, max_value);
+            for (const std::shared_ptr<IndividualColorStretchingToolBase> &stretcher : m_luminance_stretchers) {
+                result = stretcher->stretch(result, max_value);
             }
             return result;
         };
@@ -181,21 +118,21 @@ class CombinedColorStrecherTool {
             return m_color_stretchers[color].size();
         };
 
-        IndividualColorStretchingTool& get_luminance_stretcher(unsigned int index) {
+        IndividualColorStretchingToolBase& get_luminance_stretcher(unsigned int index) {
             if (index >= m_luminance_stretchers.size()) {
                 throw std::invalid_argument("CombinedColorStrecherTool::get_luminance_stretcher: Index out of range");
             }
-            return m_luminance_stretchers[index];
+            return *m_luminance_stretchers[index];
         };
 
-        IndividualColorStretchingTool& get_color_stretcher(unsigned int color, unsigned int index) {
+        IndividualColorStretchingToolBase& get_color_stretcher(unsigned int color, unsigned int index) {
             if (color >= m_n_colors) {
                 throw std::invalid_argument("CombinedColorStrecherTool::get_color_stretcher: Color index out of range");
             }
             if (index >= m_color_stretchers[color].size()) {
                 throw std::invalid_argument("CombinedColorStrecherTool::get_color_stretcher: Index out of range");
             }
-            return m_color_stretchers[color][index];
+            return *m_color_stretchers[color][index];
         };
 
         /**
@@ -208,6 +145,6 @@ class CombinedColorStrecherTool {
 
     private:
         unsigned m_n_colors = 3;
-        std::vector<IndividualColorStretchingTool>                  m_luminance_stretchers;
-        std::vector<std::vector<IndividualColorStretchingTool>>     m_color_stretchers;
+        std::vector<std::shared_ptr<IndividualColorStretchingToolBase>>                 m_luminance_stretchers;
+        std::vector<std::vector<std::shared_ptr<IndividualColorStretchingToolBase>>>    m_color_stretchers;
 };
