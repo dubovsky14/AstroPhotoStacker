@@ -98,6 +98,7 @@ class MyFrame : public wxFrame  {
         void add_image_settings();
         void add_exposure_correction_spin_ctrl();
         void add_input_numbers_overview();
+        void add_histogram_and_rgb_sliders();
         void update_input_numbers_overview();
         std::map<FileTypes, std::pair<wxStaticText*, wxStaticText*>>  m_frames_numbers_overview_texts;
 
@@ -155,6 +156,11 @@ class MyFrame : public wxFrame  {
         // luminance streching slider:
         ThreePointSlider *m_luminance_stretching_slider = nullptr;
         CombinedColorStrecherTool m_color_stretcher;
+
+        ThreePointSlider *m_stretching_slider_red = nullptr;
+        ThreePointSlider *m_stretching_slider_green = nullptr;
+        ThreePointSlider *m_stretching_slider_blue = nullptr;
+
 
 };
 

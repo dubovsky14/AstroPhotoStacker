@@ -503,8 +503,9 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
         const float thumb1 = m_luminance_stretching_slider->get_value(0);
         const float thumb2 = m_luminance_stretching_slider->get_value(1);
         const float thumb3 = m_luminance_stretching_slider->get_value(2);
+        const float midtone = thumb1 == thumb3 ? 0.5 : thumb2/(thumb3-thumb1);
         IndividualColorStretchingTool &luminance_stretcher = m_color_stretcher.get_luminance_stretcher(0);
-        luminance_stretcher.set_stretching_parameters(thumb1, thumb2, thumb3);
+        luminance_stretcher.set_stretching_parameters(thumb1, midtone, thumb3);
         update_image_preview();
     });
 
@@ -641,6 +642,7 @@ void MyFrame::add_max_memory_spin_ctrl() {
 void MyFrame::add_image_settings()   {
     add_exposure_correction_spin_ctrl();
     add_input_numbers_overview();
+    add_histogram_and_rgb_sliders();
 };
 
 void MyFrame::add_upper_middle_panel()   {
@@ -834,9 +836,42 @@ void MyFrame::add_input_numbers_overview()  {
 
     m_sizer_top_right->Add(grid_sizer, 0, wxEXPAND, 5);
 
+};
+
+void MyFrame::add_histogram_and_rgb_sliders()    {
     m_histogram_data_tool_gui = std::make_unique<HistogramDataToolGUI>(this, m_sizer_top_right, wxDefaultPosition, wxSize(600,250));
     m_histogram_data_tool_gui->set_background_color(wxColour(200,200,200));
     m_histogram_data_tool_gui->set_line_colors({wxColour(255,0,0), wxColour(0,255,0), wxColour(0,0,255)});
+
+
+    vector<vector<wxColour>> thumbs_colors = {
+        vector<wxColour>({wxColour(50,0,0), wxColour(128,0,0), wxColour(255,0,0)}),
+        vector<wxColour>({wxColour(0,50,0), wxColour(0,128,0), wxColour(0,255,0)}),
+        vector<wxColour>({wxColour(0,0,50), wxColour(0,0,128), wxColour(0,0,255)})
+    };
+
+    auto add_color_slider = [this](int color_index, ThreePointSlider* stretching_slider, const vector<wxColour> &thumb_colors_vector)    {
+        stretching_slider = new ThreePointSlider(this, wxID_ANY, wxDefaultPosition, wxSize(300, 50));
+        stretching_slider->set_colors(thumb_colors_vector[0], thumb_colors_vector[1], thumb_colors_vector[2]);
+        m_sizer_top_right->Add(stretching_slider, 0, wxEXPAND, 5);
+        stretching_slider->set_thumbs_positions(vector<float>({0., 0.5, 1.}));
+        m_current_preview->set_stretcher(&m_color_stretcher);
+        m_color_stretcher.add_color_stretcher(IndividualColorStretchingTool(),color_index);
+        stretching_slider->register_on_change_callback([this, stretching_slider, color_index](){
+            const float thumb1 = stretching_slider->get_value(0);
+            const float thumb2 = stretching_slider->get_value(1);
+            const float thumb3 = stretching_slider->get_value(2);
+            const float midtone = thumb1 == thumb3 ? 0.5 : thumb2/(thumb3-thumb1);
+            IndividualColorStretchingTool &luminance_stretcher = m_color_stretcher.get_color_stretcher(color_index,0);
+            luminance_stretcher.set_stretching_parameters(thumb1, midtone, thumb3);
+            update_image_preview();
+        });
+    };
+
+    add_color_slider(0, m_stretching_slider_red, thumbs_colors[0]);
+    add_color_slider(1, m_stretching_slider_green, thumbs_colors[1]);
+    add_color_slider(2, m_stretching_slider_blue, thumbs_colors[2]);
+
 };
 
 void MyFrame::update_input_numbers_overview()   {
