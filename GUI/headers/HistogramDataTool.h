@@ -38,10 +38,28 @@ class HistogramDataTool {
          * @param image_data The image data from which to extract the histogram data - first dimension is color, second dimension is pixel index.
          */
         template<class datatype>
-        void extract_data_from_image(const std::vector<std::vector<datatype>> &image_data) {
-            for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
-                for (datatype value : image_data[i_color]) {
-                    m_histogram_data_colors[i_color][std::min<datatype>(value, m_max_value)]++;
+        void extract_data_from_image(const std::vector<std::vector<datatype>> &image_data, bool apply_green_correction = true) {
+            if (!apply_green_correction) {
+                for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
+                    for (datatype value : image_data[i_color]) {
+                        m_histogram_data_colors[i_color][std::min<datatype>(value, m_max_value)]++;
+                    }
+                }
+            }
+            else {
+                for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
+                    if (i_color == 1) {
+                        for (datatype value : image_data[i_color]) {
+                            const datatype updated_value = value/2;
+                            m_histogram_data_colors[i_color][updated_value]++;
+                        }
+                    }
+                    else {
+                        for (datatype value : image_data[i_color]) {
+                            const datatype updated_value = std::min<datatype>(value, m_max_value/2 + 1);
+                            m_histogram_data_colors[i_color][updated_value]++;
+                        }
+                    }
                 }
             }
         };

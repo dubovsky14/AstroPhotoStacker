@@ -5,6 +5,7 @@
 #include "../headers/ThreePointSlider.h"
 
 #include "../headers/IndividualColorStretchingBlackMidtoneWhite.h"
+#include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 
 #include "../../headers/Common.h"
 #include "../../headers/raw_file_reader.h"
@@ -858,15 +859,16 @@ void MyFrame::add_histogram_and_rgb_sliders()    {
         stretching_slider->set_colors(thumb_colors_vector[0], thumb_colors_vector[1], thumb_colors_vector[2]);
         m_sizer_top_right->Add(stretching_slider, 0, wxEXPAND, 5);
         stretching_slider->set_thumbs_positions(vector<float>({0., 0.5, 1.}));
+        stretching_slider->set_maintain_slide_ordering(false);
         m_current_preview->set_stretcher(&m_color_stretcher);
-        m_color_stretcher.add_color_stretcher(std::make_shared<IndividualColorStretchingBlackMidtoneWhite>(),color_index);
+        m_color_stretcher.add_color_stretcher(std::make_shared<IndividualColorStretchingBlackCorrectionWhite>(),color_index);
         stretching_slider->register_on_change_callback([this, stretching_slider, color_index](){
             const float thumb1 = stretching_slider->get_value(0);
             const float thumb2 = stretching_slider->get_value(1);
             const float thumb3 = stretching_slider->get_value(2);
-            const float midtone = thumb1 == thumb3 ? 0.5 : thumb2/(thumb3-thumb1);
+            const float exposure_correction = 2*(thumb2 - 0.5);
             IndividualColorStretchingToolBase &stretcher = m_color_stretcher.get_color_stretcher(color_index,0);
-            (dynamic_cast<IndividualColorStretchingBlackMidtoneWhite&>(stretcher)).set_stretching_parameters(thumb1, midtone, thumb3);
+            (dynamic_cast<IndividualColorStretchingBlackCorrectionWhite&>(stretcher)).set_stretching_parameters(thumb1, exposure_correction, thumb3);
             update_image_preview();
         });
     };
