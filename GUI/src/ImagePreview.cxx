@@ -10,6 +10,7 @@
 #include <string>
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -35,8 +36,8 @@ void ImagePreview::get_preview_from_stacked_picture(const std::vector<std::vecto
     }
     set_default_resized_area();
     m_current_preview_is_raw_file = false;
-    update_preview_data();
     update_max_values_original();
+    update_preview_data();
 };
 
 void ImagePreview::read_preview_from_file(const std::string &path)  {
@@ -60,8 +61,8 @@ void ImagePreview::read_preview_from_file(const std::string &path)  {
         }
     }
     set_default_resized_area();
-    update_preview_data();
     update_max_values_original();
+    update_preview_data();
 };
 
 void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {
@@ -75,19 +76,22 @@ void ImagePreview::update_preview_bitmap(wxStaticBitmap *static_bitmap) const  {
         for (int y = 0; y < m_height; ++y) {
             for (int x = 0; x < m_width; ++x) {
                 const int index = x + y*m_width;
-                int red   = min<int>(255,scale_factor*m_preview_data[0][index]);
-                int green = min<int>(255,scale_factor*m_preview_data[1][index]*green_channel_correction);
-                int blue  = min<int>(255,scale_factor*m_preview_data[2][index]);
+                int red   = m_preview_data[0][index];
+                int green = m_preview_data[1][index];
+                int blue  = m_preview_data[2][index];
 
                 if (m_color_stretcher != nullptr) {
                     if (m_color_stretcher->has_stretchers()) {
                         for (int i_color = 0; i_color < 3; i_color++) {
-                            red   = min<int>(255, m_color_stretcher->stretch(red,   255, 0));
-                            green = min<int>(255, m_color_stretcher->stretch(green, 255, 1));
-                            blue  = min<int>(255, m_color_stretcher->stretch(blue,  255, 2));
+                            red   = m_color_stretcher->stretch(red,   m_max_value, 0);
+                            green = m_color_stretcher->stretch(green, m_max_value, 1);
+                            blue  = m_color_stretcher->stretch(blue,  m_max_value, 2);
                         }
                     }
                 }
+                red   = min<int>(255,scale_factor*red  );
+                green = min<int>(255,scale_factor*green*green_channel_correction);
+                blue  = min<int>(255,scale_factor*blue );
                 image_wx.SetRGB(x, y, red, green, blue);
             }
         }
@@ -130,19 +134,13 @@ void ImagePreview::set_stretcher(const CombinedColorStrecherTool *color_stretche
 };
 
 void ImagePreview::update_max_values_original()    {
-    if (m_color_stretcher == nullptr)   {
-        return;
-    }
-    if (m_color_stretcher->has_stretchers() == false)   {
-        return;
-    }
-
     m_max_values_original = std::vector<int>(3,0);
     for (int i_color = 0; i_color < 3; i_color++)   {
         for (int i_pixel = 0; i_pixel < m_width_original*m_height_original; i_pixel++)   {
             m_max_values_original[i_color] = max<int>(m_max_values_original[i_color], m_original_image[i_color][i_pixel]);
         }
     }
+    m_max_value = *max_element(m_max_values_original.begin(), m_max_values_original.end());
 };
 
 void ImagePreview::update_preview_data(float mouse_position_relative_x, float mouse_position_relative_y)    {
@@ -189,14 +187,11 @@ void ImagePreview::update_preview_data(float mouse_position_relative_x, float mo
         }
     }
 
-    m_max_value = 0;
     for (int i_color = 0; i_color < 3; i_color++)   {
         for (int i_pixel = 0; i_pixel < m_width*m_height; i_pixel++)   {
             if (count[i_pixel] > 0) {
                 m_preview_data[i_color][i_pixel] /= count[i_pixel];
             }
-            m_max_value = max<int>(m_max_value, m_preview_data[i_color][i_pixel]);
         }
     }
-
 };

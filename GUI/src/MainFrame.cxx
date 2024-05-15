@@ -51,6 +51,9 @@ MyFrame::MyFrame()
     SetSizer(m_sizer_main_frame);
     //SetSizer(m_sizer_top);
 
+    m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackMidtoneWhite>());
+    m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackCorrectionWhite>());
+
     add_files_to_stack_checkbox();
 
     add_button_bar();
@@ -502,7 +505,6 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
     m_sizer_top_left->Add(m_luminance_stretching_slider, 0, wxEXPAND, 5);
     m_luminance_stretching_slider->set_thumbs_positions(vector<float>({0., 0.5, 1.}));
     m_current_preview->set_stretcher(&m_color_stretcher);
-    m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackMidtoneWhite>());
     m_luminance_stretching_slider->register_on_change_callback([this](){
         const float thumb1 = m_luminance_stretching_slider->get_value(0);
         const float thumb2 = m_luminance_stretching_slider->get_value(1);
@@ -799,7 +801,11 @@ void MyFrame::add_exposure_correction_spin_ctrl()   {
     // Bind the slider's wxEVT_SLIDER event to a lambda function that updates the value text
     slider_exposure->Bind(wxEVT_SLIDER, [exposure_correction_text, slider_exposure, this](wxCommandEvent&){
         const float exposure_correction = slider_exposure->GetValue()/10.;
-        m_current_preview->set_exposure_correction( exposure_correction );
+        //m_current_preview->set_exposure_correction( exposure_correction );
+
+        IndividualColorStretchingToolBase &luminance_stretcher = m_color_stretcher.get_luminance_stretcher(1);
+        (dynamic_cast<IndividualColorStretchingBlackCorrectionWhite&>(luminance_stretcher)).set_stretching_parameters(0,exposure_correction,1);
+
         update_image_preview();
         const std::string new_label = "Exposure correction: " + to_string(exposure_correction+0.0001).substr(0,4);
         exposure_correction_text->SetLabel(new_label);
