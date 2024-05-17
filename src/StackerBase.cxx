@@ -45,17 +45,21 @@ void StackerBase::register_hot_pixels_file(const std::string &hot_pixels_file)  
 };
 
 void StackerBase::save_stacked_photo(const string &file_address, int image_options) const {
-    std::vector<std::vector<double> > data_for_plotting = m_stacked_image;
+    save_stacked_photo(file_address, m_stacked_image, m_width, m_height, m_number_of_colors, image_options);
+};
+
+void StackerBase::save_stacked_photo(const std::string &file_address, const std::vector<std::vector<double> > &stacked_image, int width, int height, int number_of_colors, int image_options)   {
+    std::vector<std::vector<double> > data_for_plotting = stacked_image;
 
     const unsigned int max_value_output = pow(2, get_output_bit_depth(image_options)) -1;
-    for (int color = 0; color < m_number_of_colors; color++) {
+    for (int color = 0; color < number_of_colors; color++) {
         const double max_value_input = *max_element(data_for_plotting[color].begin(), data_for_plotting[color].end());
         const double scale_factor = max_value_output / max_value_input;
-        for (int index = 0; index < m_width*m_height; index++) {
+        for (int index = 0; index < width*height; index++) {
             data_for_plotting[color][index] *= scale_factor;
         }
     }
-    const bool color_image_source = m_number_of_colors == 3;
+    const bool color_image_source = number_of_colors == 3;
     const bool color_image_target = ((image_options >> 3) == (3-1));
 
     if (color_image_source) {
@@ -69,20 +73,19 @@ void StackerBase::save_stacked_photo(const string &file_address, int image_optio
         std::transform(data_for_plotting[2].begin(), data_for_plotting[2].end(), data_for_plotting[2].begin(), [max_value_output](double value) { return std::min<double>(value, max_value_output/2 + 1); });
 
         if (color_image_target) {
-            crate_color_image(&data_for_plotting.at(0)[0], &data_for_plotting.at(1)[0], &data_for_plotting.at(2)[0] , m_width, m_height, file_address, image_options);
+            crate_color_image(&data_for_plotting.at(0)[0], &data_for_plotting.at(1)[0], &data_for_plotting.at(2)[0] , width, height, file_address, image_options);
         }
         else {
-            std::vector<double> data_for_plotting_merged(m_width*m_height, 0.);
-            for (int index = 0; index < m_width*m_height; index++) {
+            std::vector<double> data_for_plotting_merged(width*height, 0.);
+            for (int index = 0; index < width*height; index++) {
                 data_for_plotting_merged[index] = (data_for_plotting[0][index] + data_for_plotting[1][index] + data_for_plotting[2][index]) / 3;
             }
-            create_gray_scale_image(&data_for_plotting_merged.at(0), m_width, m_height, file_address, image_options);
+            create_gray_scale_image(&data_for_plotting_merged.at(0), width, height, file_address, image_options);
         }
     }
     else {
-        create_gray_scale_image(&data_for_plotting.at(0)[0], m_width, m_height, file_address, image_options);
+        create_gray_scale_image(&data_for_plotting.at(0)[0], width, height, file_address, image_options);
     }
-
 };
 
 void StackerBase::fix_empty_pixels()    {
