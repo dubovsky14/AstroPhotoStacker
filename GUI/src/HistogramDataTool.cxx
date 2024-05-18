@@ -22,17 +22,42 @@ std::vector<int> HistogramDataTool::rebin_data(const std::vector<int> &original_
     return result;
 };
 
+void HistogramDataTool::apply_green_correction(std::vector<std::vector<int>> *rgb_histograms)   {
+    if (rgb_histograms->size() != 3) {
+        return;
+    }
+    for (unsigned int i_color = 0; i_color < rgb_histograms->size(); i_color++) {
+        if (i_color == 1) {
+            for (unsigned int i_bin = 1; i_bin < rgb_histograms->at(i_color).size(); i_bin++) {
+                (*rgb_histograms)[i_color][i_bin/2] += (*rgb_histograms)[i_color][i_bin];
+                (*rgb_histograms)[i_color][i_bin] = 0;
+            }
+        }
+        else {
+            const int middle_bin = rgb_histograms->at(i_color).size()/2;
+            for (unsigned int i_bin = middle_bin+1; i_bin < rgb_histograms->at(i_color).size(); i_bin++) {
+                (*rgb_histograms)[i_color][middle_bin] += (*rgb_histograms)[i_color][i_bin];
+                (*rgb_histograms)[i_color][i_bin] = 0;
+            }
+        }
+    }
+};
+
 const std::vector<int>& HistogramDataTool::get_histogram_data_colors(int i_color)   const {
     return m_histogram_data_colors[i_color];
 };
 
-std::vector<std::vector<int>> HistogramDataTool::get_stretched_color_data(const CombinedColorStrecherTool &color_stretcher) const {
+std::vector<std::vector<int>> HistogramDataTool::get_stretched_color_data(const CombinedColorStrecherTool &color_stretcher, bool apply_green_channel_correction) const {
     std::vector<std::vector<int>> result(m_number_of_colors, std::vector<int>(m_max_value + 1, 0));
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
         for (int i_value = 0; i_value < m_max_value + 1; i_value++) {
             const int stretched_value = color_stretcher.stretch(i_value, m_max_value,i_color);
             result[i_color][stretched_value] += m_histogram_data_colors[i_color][i_value];
         }
+    }
+
+    if (apply_green_channel_correction) {
+        apply_green_correction(&result);
     }
     return result;
 };

@@ -38,28 +38,11 @@ class HistogramDataTool {
          * @param image_data The image data from which to extract the histogram data - first dimension is color, second dimension is pixel index.
          */
         template<class datatype>
-        void extract_data_from_image(const std::vector<std::vector<datatype>> &image_data, bool apply_green_correction = true) {
-            if (!apply_green_correction) {
-                for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
-                    for (datatype value : image_data[i_color]) {
-                        m_histogram_data_colors[i_color][std::min<datatype>(value, m_max_value)]++;
-                    }
-                }
-            }
-            else {
-                for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
-                    if (i_color == 1) {
-                        for (datatype value : image_data[i_color]) {
-                            const datatype updated_value = value/2;
-                            m_histogram_data_colors[i_color][updated_value]++;
-                        }
-                    }
-                    else {
-                        for (datatype value : image_data[i_color]) {
-                            const datatype updated_value = std::min<datatype>(value, m_max_value/2 + 1);
-                            m_histogram_data_colors[i_color][updated_value]++;
-                        }
-                    }
+        void extract_data_from_image(const std::vector<std::vector<datatype>> &image_data) {
+            for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
+                for (datatype value : image_data[i_color]) {
+                    const datatype updated_value = std::min<datatype>(value, m_max_value);
+                    m_histogram_data_colors[i_color][updated_value]++;
                 }
             }
         };
@@ -71,6 +54,8 @@ class HistogramDataTool {
          * @return The rebinned histogram data.
          */
         static std::vector<int> rebin_data(const std::vector<int> &original_histogram, unsigned int new_n_bins);
+
+        static void apply_green_correction(std::vector<std::vector<int>> *rgb_histograms);
 
         /**
          * @brief Gets the histogram data for a specific color.
@@ -84,7 +69,7 @@ class HistogramDataTool {
          * @param color_stretcher The color stretcher tool.
          * @return The stretched color data - one value per bin, i.e. size of all vectors is max_value + 1.
          */
-        std::vector<std::vector<int>> get_stretched_color_data(const CombinedColorStrecherTool &color_stretcher) const;
+        std::vector<std::vector<int>> get_stretched_color_data(const CombinedColorStrecherTool &color_stretcher, bool apply_green_channel_correction = true) const;
 
         /**
          * @brief Gets histogram data for color channels

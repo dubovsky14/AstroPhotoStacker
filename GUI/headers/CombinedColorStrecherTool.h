@@ -47,13 +47,15 @@ class CombinedColorStrecherTool {
          * @param color the color index
          * @return float the stretched value
         */
-        float stretch(float value, float max_value, unsigned int color) const {
+        float stretch(float value, float max_value, unsigned int color, bool apply_luminance = true) const {
             if (color >= m_n_colors) {
                 throw std::invalid_argument("CombinedColorStrecherTool::stretch: Color index out of range");
             }
             float result = value;
-            for (const std::shared_ptr<IndividualColorStretchingToolBase> &stretcher : m_luminance_stretchers) {
-                result = stretcher->stretch(result, max_value);
+            if (apply_luminance) {
+                for (const std::shared_ptr<IndividualColorStretchingToolBase> &stretcher : m_luminance_stretchers) {
+                    result = stretcher->stretch(result, max_value);
+                }
             }
             for (const std::shared_ptr<IndividualColorStretchingToolBase> &stretcher : m_color_stretchers[color]) {
                 result = stretcher->stretch(result, max_value);
