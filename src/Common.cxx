@@ -133,7 +133,7 @@ std::string AstroPhotoStacker::round_and_convert_to_string(double x, int digits_
     const int y = round(factor*x);
 
     const int rounded_int = y / factor;
-    const int rounded_fraction = y % int(factor);
+    const int rounded_fraction = abs(y % int(factor));
     int zeros_to_add = digits_after_decimal_point - to_string(rounded_fraction).length();
     string string_rounded = to_string(rounded_int) + ".";
     for (int i = 0; i < zeros_to_add; i++) {
