@@ -7,12 +7,33 @@
 
 
 namespace AstroPhotoStacker {
+
+    /**
+     * @class ColorInterpolationTool
+     *
+     * @brief A class for interpolating colors in a raw image - calculating each color channel for each pixel by averaging the color channels of the neighboring pixels.
+    */
     class ColorInterpolationTool {
         public:
             ColorInterpolationTool() = delete;
 
+            /**
+             * @brief Constructor that initializes the ColorInterpolationTool object.
+             *
+             * @param data_original The original image data.
+             * @param width The width of the image.
+             * @param height The height of the image.
+             * @param colors_original The original colors of the image.
+             * @param color_conversion_table The color conversion table -> there are usually 2 color codes for green color
+            */
             ColorInterpolationTool(const short unsigned int *data_original, int width, int height, const std::vector<char> &colors_original, const std::vector<char> &color_conversion_table);
 
+            /**
+             * @brief Get the interpolated RGB image.
+             *
+             * @tparam output_type The data type of the output image.
+             * @return The interpolated RGB image as a vector of vectors of the given data type.
+            */
             template<typename output_type = unsigned short>
             std::vector<std::vector<output_type>> get_interpolated_rgb_image() const {
                 std::vector<std::vector<output_type>> result;
@@ -76,6 +97,15 @@ namespace AstroPhotoStacker {
                 return result;
             };
 
+            /**
+             * @brief Get the interpolated RGB image from a raw file.
+             *
+             * @tparam output_type The data type of the output image.
+             * @param raw_file The path to the raw file.
+             * @param width The width of the image.
+             * @param height The height of the image.
+             * @return The interpolated RGB image as a vector of vectors of the given data type.
+            */
             template<typename output_type = unsigned short>
             static std::vector<std::vector<output_type>> get_interpolated_rgb_image(const std::string &raw_file, int *width, int *height) {
                 int temp_width;

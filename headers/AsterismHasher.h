@@ -33,8 +33,22 @@ namespace AstroPhotoStacker   {
      */
     void get_indices_of_most_distant_stars(const std::vector<std::tuple<float, float, int> > &stars, int *star1, int *star2);
 
+    /**
+     * @brief Get the squared distance between two stars
+     *
+     * @param star1 - pixel coordinates of the 1st star, std::tuple<float, float, int> (xposition, yposition, number of pixels in cluster)
+     * @param star2 - pixel coordinates of the 2nd star, std::tuple<float, float, int> (xposition, yposition, number of pixels in cluster)
+     * @return float - squared distance between the stars
+     */
     float get_star_distance_squared(const std::tuple<float, float, int> &star1, const std::tuple<float, float, int> &star2);
 
+    /**
+     * @brief Get scalar product of two vectors with 2 elements
+     *
+     * @param star1 - 2 element array
+     * @param star2 - 2 element array
+     * @return float - scalar product of the two vectors
+     */
     inline float calculate_coordinate_along_axis(const float *original_vector, const float *axis)   {
         return (original_vector[0]*axis[0] + original_vector[1]*axis[1]);
     };
