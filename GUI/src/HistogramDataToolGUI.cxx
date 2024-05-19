@@ -56,9 +56,9 @@ void HistogramDataToolGUI::set_color_stretcher(const CombinedColorStrecherTool &
     update_plot();
 };
 
-std::vector<float> HistogramDataToolGUI::get_mean_values() const  {
+std::vector<float> HistogramDataToolGUI::get_mean_values(bool apply_green_correction) const  {
     if (m_histogram_data_tool != nullptr) {
-        return m_histogram_data_tool->get_mean_values(m_color_stretcher == nullptr ? nullptr : m_color_stretcher.get(), false);
+        return m_histogram_data_tool->get_mean_values(m_color_stretcher == nullptr ? nullptr : m_color_stretcher.get(), apply_green_correction);
     }
     return {};
 };

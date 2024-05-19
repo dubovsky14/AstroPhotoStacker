@@ -1,5 +1,7 @@
 #include "../headers/HistogramDataTool.h"
 
+#include <iostream>
+
 using namespace std;
 
 
@@ -46,9 +48,6 @@ void HistogramDataTool::apply_green_correction(std::vector<std::vector<int>> *rg
 vector<float> HistogramDataTool::get_mean_values(const CombinedColorStrecherTool *color_stretcher, bool apply_green_channel_correction) const  {
     vector<float> result;
     vector<vector<int>> histogram_data_after_green_correction = color_stretcher == nullptr ? m_histogram_data_colors : get_stretched_color_data(*color_stretcher, apply_green_channel_correction);
-    if (apply_green_channel_correction && color_stretcher != nullptr){
-        apply_green_correction(&histogram_data_after_green_correction);
-    }
 
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
         float sum = 0;

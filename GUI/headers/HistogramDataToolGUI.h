@@ -60,7 +60,7 @@ class HistogramDataToolGUI  {
          *
          * @return Vector of mean values of the colors, return empty vector if histogram data tool is not set
         */
-        std::vector<float> get_mean_values() const;
+        std::vector<float> get_mean_values(bool apply_green_correction = true) const;
 
     private:
 
