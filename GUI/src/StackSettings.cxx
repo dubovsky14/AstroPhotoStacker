@@ -93,3 +93,11 @@ void StackSettings::set_use_color_interpolation(bool use_color_interpolation)   
 bool StackSettings::use_color_interpolation() const   {
     return m_use_color_interpolation;
 };
+
+void StackSettings::set_apply_color_stretching(bool apply_color_stretching)    {
+    m_apply_color_stretching = apply_color_stretching;
+};
+
+bool StackSettings::apply_color_stretching() const   {
+    return m_apply_color_stretching;
+};

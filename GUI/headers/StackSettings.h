@@ -46,6 +46,10 @@ class StackSettings {
         void set_use_color_interpolation(bool use_color_interpolation);
         bool use_color_interpolation() const;
 
+        // color stretching
+        void set_apply_color_stretching(bool apply_color_stretching);
+        bool apply_color_stretching() const;
+
     private:
         std::string m_alignment_file;
         std::string m_stacking_algorithm = "average";
@@ -57,6 +61,7 @@ class StackSettings {
         float m_cut_off_tail_fraction = 0.2;
         bool  m_hot_pixel_correction = false;
         bool  m_use_color_interpolation = true;
+        bool  m_apply_color_stretching = false;
 
         const std::vector<std::string> m_stacking_algorithms = {"kappa-sigma median", "kappa-sigma mean", "average", "median", "cut-off average"};
 

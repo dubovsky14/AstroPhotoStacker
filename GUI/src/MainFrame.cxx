@@ -10,7 +10,7 @@
 #include "../../headers/Common.h"
 #include "../../headers/raw_file_reader.h"
 #include "../../headers/thread_pool.h"
-
+#include "../../headers/StackerBase.h"
 
 #include <wx/spinctrl.h>
 #include <wx/progdlg.h>
@@ -449,6 +449,7 @@ void MyFrame::add_stack_settings_preview()   {
     add_stacking_algorithm_choice_box();
     add_hot_pixel_correction_checkbox();
     add_color_interpolation_checkbox();
+    add_color_stretching_checkbox();
 };
 
 void MyFrame::add_n_cpu_slider()    {
@@ -629,6 +630,17 @@ void MyFrame::add_color_interpolation_checkbox()    {
     m_sizer_top_left->Add(checkbox_color_interpolation, 0, wxEXPAND, 5);
 };
 
+void MyFrame::add_color_stretching_checkbox()   {
+    wxCheckBox* checkbox_color_stretching = new wxCheckBox(this, wxID_ANY, "Apply color stretching to output file");
+    const bool is_checked = m_stack_settings.apply_color_stretching();
+    checkbox_color_stretching->SetValue(is_checked);
+    checkbox_color_stretching->SetToolTip("If checked, the color stretching from RGB sliders will be used in the output image.");
+    checkbox_color_stretching->Bind(wxEVT_CHECKBOX, [checkbox_color_stretching, this](wxCommandEvent&){
+        const bool is_checked = checkbox_color_stretching->GetValue();
+        (this->m_stack_settings).set_apply_color_stretching(is_checked);
+    });
+    m_sizer_top_left->Add(checkbox_color_stretching, 0, wxEXPAND, 5);
+};
 
 void MyFrame::add_max_memory_spin_ctrl() {
     wxStaticText* memory_usage_text = new wxStaticText(this, wxID_ANY, "Maximum memory usage (MB):");
@@ -725,6 +737,7 @@ void MyFrame::update_image_preview()  {
     m_current_preview->update_preview_bitmap(m_preview_bitmap);
     m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
     update_histogram();
+    update_color_channels_mean_values_text();
 };
 
 void MyFrame::add_step_control_part()    {
@@ -854,6 +867,9 @@ void MyFrame::add_histogram_and_rgb_sliders()    {
     m_histogram_data_tool_gui->set_line_colors({wxColour(255,0,0), wxColour(0,255,0), wxColour(0,0,255)});
 
 
+    m_text_color_channels_mean_values = new wxStaticText(this, wxID_ANY, "Mean values: R: 0.0, G: 0.0, B: 0.0");
+    m_sizer_top_right->Add( m_text_color_channels_mean_values, 0, wxCENTER, 5);
+
     vector<vector<wxColour>> thumbs_colors = {
         vector<wxColour>({wxColour(50,0,0), wxColour(180,0,0), wxColour(255,0,0)}),
         vector<wxColour>({wxColour(0,50,0), wxColour(0,180,0), wxColour(0,255,0)}),
@@ -949,7 +965,19 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
         if (file_address.substr(file_address.size()-4) != ".tif") {
             file_address += ".tif";
         }
-        m_stacker->save_stacked_photo(file_address, CV_16UC3);
+
+        if (m_stack_settings.apply_color_stretching()) {
+            std::vector<std::vector<double> > stacked_image = m_stacker->get_stacked_image();
+            m_color_stretcher.stretch_image(&stacked_image, pow(2,13), false);
+            AstroPhotoStacker::StackerBase::save_stacked_photo(file_address,
+                                            stacked_image,
+                                            m_stacker->get_width(),
+                                            m_stacker->get_height(),
+                                            CV_16UC3);
+        }
+        else    {
+            m_stacker->save_stacked_photo(file_address, CV_16UC3);
+        }
     }
 };
 
@@ -962,4 +990,18 @@ void MyFrame::update_status_icon(wxStaticBitmap *status_icon, bool is_ok)   {
     else    {
         status_icon->SetBitmap(wxBitmap(file_cross, wxBITMAP_TYPE_PNG));
     }
+};
+
+void MyFrame::update_color_channels_mean_values_text()   {
+    if (!m_current_preview->image_loaded() || m_histogram_data_tool_gui == nullptr) {
+        return;
+    }
+    vector<float> mean_values = m_histogram_data_tool_gui->get_mean_values();
+    if (mean_values.size() != 3) {
+        return;
+    }
+
+    m_text_color_channels_mean_values->SetLabel("Mean values:  R: " + AstroPhotoStacker::round_and_convert_to_string(mean_values[0], 1) +
+                                                            ", G: " + AstroPhotoStacker::round_and_convert_to_string(mean_values[1], 1) +
+                                                            ", B: " + AstroPhotoStacker::round_and_convert_to_string(mean_values[2], 1) );
 };

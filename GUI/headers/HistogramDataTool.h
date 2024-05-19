@@ -55,7 +55,24 @@ class HistogramDataTool {
          */
         static std::vector<int> rebin_data(const std::vector<int> &original_histogram, unsigned int new_n_bins);
 
+        /**
+         * @brief Applies a green channel correction to the RGB histograms.
+         * @param rgb_histograms The RGB histograms to which to apply the correction.
+         */
         static void apply_green_correction(std::vector<std::vector<int>> *rgb_histograms);
+
+        /**
+         * @brief Gets the maximum value of the histogram data.
+         * @return The maximum value of the histogram data.
+         */
+        int get_max_value() const { return m_max_value; };
+
+        /**
+         * @brief Mean value of the histogram data in all color channels.
+         *
+         * @return The mean value of the histogram data in all color channels as vector<float>.
+         */
+        std::vector<float> get_mean_values(const CombinedColorStrecherTool *color_stretcher, bool apply_green_channel_correction = true) const;
 
         /**
          * @brief Gets the histogram data for a specific color.

@@ -55,6 +55,13 @@ class HistogramDataToolGUI  {
         */
         void set_color_stretcher(const CombinedColorStrecherTool &color_stretching);
 
+        /**
+         * @Get mean values of the colors
+         *
+         * @return Vector of mean values of the colors, return empty vector if histogram data tool is not set
+        */
+        std::vector<float> get_mean_values() const;
+
     private:
 
         wxImage get_background();

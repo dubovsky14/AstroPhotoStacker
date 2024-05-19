@@ -56,6 +56,12 @@ void HistogramDataToolGUI::set_color_stretcher(const CombinedColorStrecherTool &
     update_plot();
 };
 
+std::vector<float> HistogramDataToolGUI::get_mean_values() const  {
+    if (m_histogram_data_tool != nullptr) {
+        return m_histogram_data_tool->get_mean_values(m_color_stretcher == nullptr ? nullptr : m_color_stretcher.get(), false);
+    }
+    return {};
+};
 
 wxImage HistogramDataToolGUI::get_background()  {
     wxImage image(m_width_pixels, m_height_pixels);

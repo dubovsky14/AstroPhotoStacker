@@ -17,7 +17,7 @@ std::vector<int> HistogramDataTool::rebin_data(const std::vector<int> &original_
     std::vector<int> result(new_n_bins, 0);
     const float step = float(original_histogram.size()) / float(new_n_bins);
     for (unsigned int i = 0; i < original_histogram.size(); i++) {
-        result[int(i / step)] += original_histogram[i];
+        result[min(unsigned(i / step), new_n_bins-1)] += original_histogram[i];
     }
     return result;
 };
@@ -43,6 +43,25 @@ void HistogramDataTool::apply_green_correction(std::vector<std::vector<int>> *rg
     }
 };
 
+vector<float> HistogramDataTool::get_mean_values(const CombinedColorStrecherTool *color_stretcher, bool apply_green_channel_correction) const  {
+    vector<float> result;
+    vector<vector<int>> histogram_data_after_green_correction = color_stretcher == nullptr ? m_histogram_data_colors : get_stretched_color_data(*color_stretcher, apply_green_channel_correction);
+    if (apply_green_channel_correction && color_stretcher != nullptr){
+        apply_green_correction(&histogram_data_after_green_correction);
+    }
+
+    for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
+        float sum = 0;
+        int number_of_pixels = 0;
+        for (unsigned int i_value = 0; i_value < histogram_data_after_green_correction[i_color].size(); i_value++) {
+            sum += i_value * histogram_data_after_green_correction[i_color][i_value];
+            number_of_pixels += histogram_data_after_green_correction[i_color][i_value];
+        }
+        result.push_back(sum/number_of_pixels);
+    }
+    return result;
+};
+
 const std::vector<int>& HistogramDataTool::get_histogram_data_colors(int i_color)   const {
     return m_histogram_data_colors[i_color];
 };
@@ -50,7 +69,7 @@ const std::vector<int>& HistogramDataTool::get_histogram_data_colors(int i_color
 std::vector<std::vector<int>> HistogramDataTool::get_stretched_color_data(const CombinedColorStrecherTool &color_stretcher, bool apply_green_channel_correction) const {
     std::vector<std::vector<int>> result(m_number_of_colors, std::vector<int>(m_max_value + 1, 0));
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
-        for (int i_value = 0; i_value < m_max_value + 1; i_value++) {
+        for (unsigned int i_value = 0; i_value < m_histogram_data_colors[i_color].size(); i_value++) {
             const int stretched_value = color_stretcher.stretch(i_value, m_max_value,i_color);
             result[i_color][stretched_value] += m_histogram_data_colors[i_color][i_value];
         }

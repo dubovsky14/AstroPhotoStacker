@@ -94,6 +94,7 @@ class MyFrame : public wxFrame  {
 
         void add_hot_pixel_correction_checkbox();
         void add_color_interpolation_checkbox();
+        void add_color_stretching_checkbox();
 
         void add_image_settings();
         void add_exposure_correction_spin_ctrl();
@@ -161,6 +162,8 @@ class MyFrame : public wxFrame  {
         ThreePointSlider *m_stretching_slider_green = nullptr;
         ThreePointSlider *m_stretching_slider_blue = nullptr;
 
+        void update_color_channels_mean_values_text();
+        wxStaticText* m_text_color_channels_mean_values = nullptr;
 
 };
 

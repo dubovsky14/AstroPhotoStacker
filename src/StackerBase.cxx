@@ -45,21 +45,21 @@ void StackerBase::register_hot_pixels_file(const std::string &hot_pixels_file)  
 };
 
 void StackerBase::save_stacked_photo(const string &file_address, int image_options) const {
-    save_stacked_photo(file_address, m_stacked_image, m_width, m_height, m_number_of_colors, image_options);
+    save_stacked_photo(file_address, m_stacked_image, m_width, m_height, image_options);
 };
 
-void StackerBase::save_stacked_photo(const std::string &file_address, const std::vector<std::vector<double> > &stacked_image, int width, int height, int number_of_colors, int image_options)   {
+void StackerBase::save_stacked_photo(const std::string &file_address, const std::vector<std::vector<double> > &stacked_image, int width, int height, int image_options)   {
     std::vector<std::vector<double> > data_for_plotting = stacked_image;
 
     const unsigned int max_value_output = pow(2, get_output_bit_depth(image_options)) -1;
-    for (int color = 0; color < number_of_colors; color++) {
+    for (unsigned int color = 0; color < stacked_image.size(); color++) {
         const double max_value_input = *max_element(data_for_plotting[color].begin(), data_for_plotting[color].end());
         const double scale_factor = max_value_output / max_value_input;
         for (int index = 0; index < width*height; index++) {
             data_for_plotting[color][index] *= scale_factor;
         }
     }
-    const bool color_image_source = number_of_colors == 3;
+    const bool color_image_source = stacked_image.size() == 3;
     const bool color_image_target = ((image_options >> 3) == (3-1));
 
     if (color_image_source) {

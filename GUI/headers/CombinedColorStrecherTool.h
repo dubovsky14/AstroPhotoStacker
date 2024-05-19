@@ -63,6 +63,18 @@ class CombinedColorStrecherTool {
             return result;
         };
 
+        template <typename DataType>
+        void stretch_image(std::vector<std::vector<DataType>> *image, float max_value, bool apply_luminance) const {
+            if (image->size() != m_n_colors) {
+                throw std::invalid_argument("CombinedColorStrecherTool::stretch_image: Image has wrong number of colors");
+            }
+            for (unsigned int i_color = 0; i_color < m_n_colors; i_color++) {
+                for (unsigned int i_pixel = 0; i_pixel < image->at(i_color).size(); i_pixel++) {
+                    image->at(i_color).at(i_pixel) = stretch(image->at(i_color).at(i_pixel), max_value, i_color, apply_luminance);
+                }
+            }
+        };
+
         /**
          * @brief Stretch luminance
          *
