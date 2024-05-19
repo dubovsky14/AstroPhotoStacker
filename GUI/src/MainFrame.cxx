@@ -737,7 +737,7 @@ void MyFrame::update_image_preview()  {
     m_current_preview->update_preview_bitmap(m_preview_bitmap);
     m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
     update_histogram();
-    update_color_channels_mean_values_text();
+    update_color_channels_mean_and_median_values_text();
 };
 
 void MyFrame::add_step_control_part()    {
@@ -870,6 +870,9 @@ void MyFrame::add_histogram_and_rgb_sliders()    {
     m_text_color_channels_mean_values = new wxStaticText(this, wxID_ANY, "Mean values: R: 0.0, G: 0.0, B: 0.0");
     m_sizer_top_right->Add( m_text_color_channels_mean_values, 0, wxCENTER, 5);
 
+    m_text_color_channels_median_values = new wxStaticText(this, wxID_ANY, "Median values: R: 0.0, G: 0.0, B: 0.0");
+    m_sizer_top_right->Add( m_text_color_channels_median_values, 0, wxCENTER, 5);
+
     vector<vector<wxColour>> thumbs_colors = {
         vector<wxColour>({wxColour(50,0,0), wxColour(180,0,0), wxColour(255,0,0)}),
         vector<wxColour>({wxColour(0,50,0), wxColour(0,180,0), wxColour(0,255,0)}),
@@ -992,16 +995,21 @@ void MyFrame::update_status_icon(wxStaticBitmap *status_icon, bool is_ok)   {
     }
 };
 
-void MyFrame::update_color_channels_mean_values_text()   {
+void MyFrame::update_color_channels_mean_and_median_values_text()   {
     if (!m_current_preview->image_loaded() || m_histogram_data_tool_gui == nullptr) {
         return;
     }
-    vector<float> mean_values = m_histogram_data_tool_gui->get_mean_values();
-    if (mean_values.size() != 3) {
-        return;
-    }
 
-    m_text_color_channels_mean_values->SetLabel("Mean values:  R: " + AstroPhotoStacker::round_and_convert_to_string(mean_values[0], 1) +
-                                                            ", G: " + AstroPhotoStacker::round_and_convert_to_string(mean_values[1], 1) +
-                                                            ", B: " + AstroPhotoStacker::round_and_convert_to_string(mean_values[2], 1) );
+    auto update_one_text = [this](wxStaticText* static_text, const std::string &prefix, vector<float>(HistogramDataToolGUI::*get_values_method)(bool) const) {
+        const vector<float> values = (m_histogram_data_tool_gui.get()->*get_values_method)(true);
+        if (values.size() != 3) {
+            return;
+        }
+        static_text->SetLabel(prefix + " R: " + AstroPhotoStacker::round_and_convert_to_string(values[0], 1) +
+                                        ", G: " + AstroPhotoStacker::round_and_convert_to_string(values[1], 1) +
+                                        ", B: " + AstroPhotoStacker::round_and_convert_to_string(values[2], 1) );
+    };
+
+    update_one_text(m_text_color_channels_mean_values, "Mean values: ", &HistogramDataToolGUI::get_mean_values);
+    update_one_text(m_text_color_channels_median_values, "Median values: ", &HistogramDataToolGUI::get_median_values);
 };

@@ -75,6 +75,13 @@ class HistogramDataTool {
         std::vector<float> get_mean_values(const CombinedColorStrecherTool *color_stretcher, bool apply_green_channel_correction = true) const;
 
         /**
+         * @brief Get median value of the histogram data in all color channels.
+         *
+         * @return The median value of the histogram data in all color channels as vector<float>.
+         */
+        std::vector<float> get_median_values(const CombinedColorStrecherTool *color_stretcher, bool apply_green_channel_correction = true) const;
+
+        /**
          * @brief Gets the histogram data for a specific color.
          * @param i_color The index of the color.
          * @return The histogram data for the specified color.

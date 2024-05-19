@@ -63,6 +63,13 @@ std::vector<float> HistogramDataToolGUI::get_mean_values(bool apply_green_correc
     return {};
 };
 
+std::vector<float> HistogramDataToolGUI::get_median_values(bool apply_green_correction) const  {
+    if (m_histogram_data_tool != nullptr) {
+        return m_histogram_data_tool->get_median_values(m_color_stretcher == nullptr ? nullptr : m_color_stretcher.get(), apply_green_correction);
+    }
+    return {};
+};
+
 wxImage HistogramDataToolGUI::get_background()  {
     wxImage image(m_width_pixels, m_height_pixels);
     for (int x = 0; x < m_width_pixels; ++x) {

@@ -61,6 +61,28 @@ vector<float> HistogramDataTool::get_mean_values(const CombinedColorStrecherTool
     return result;
 };
 
+std::vector<float> HistogramDataTool::get_median_values(const CombinedColorStrecherTool *color_stretcher, bool apply_green_channel_correction) const    {
+    vector<float> result;
+    vector<vector<int>> histogram_data_after_green_correction = color_stretcher == nullptr ? m_histogram_data_colors : get_stretched_color_data(*color_stretcher, apply_green_channel_correction);
+
+    for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
+        int number_of_pixels = 0;
+        for (unsigned int i_value = 0; i_value < histogram_data_after_green_correction[i_color].size(); i_value++) {
+            number_of_pixels += histogram_data_after_green_correction[i_color][i_value];
+        }
+        int median_index = number_of_pixels/2;
+        int sum = 0;
+        for (unsigned int i_value = 0; i_value < histogram_data_after_green_correction[i_color].size(); i_value++) {
+            sum += histogram_data_after_green_correction[i_color][i_value];
+            if (sum >= median_index) {
+                result.push_back(i_value);
+                break;
+            }
+        }
+    }
+    return result;
+};
+
 const std::vector<int>& HistogramDataTool::get_histogram_data_colors(int i_color)   const {
     return m_histogram_data_colors[i_color];
 };

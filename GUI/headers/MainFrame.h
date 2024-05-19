@@ -162,8 +162,9 @@ class MyFrame : public wxFrame  {
         ThreePointSlider *m_stretching_slider_green = nullptr;
         ThreePointSlider *m_stretching_slider_blue = nullptr;
 
-        void update_color_channels_mean_values_text();
+        void update_color_channels_mean_and_median_values_text();
         wxStaticText* m_text_color_channels_mean_values = nullptr;
+        wxStaticText* m_text_color_channels_median_values = nullptr;
 
 };
 
