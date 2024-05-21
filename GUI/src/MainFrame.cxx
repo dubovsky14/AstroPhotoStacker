@@ -98,7 +98,7 @@ void MyFrame::add_alignment_menu()  {
     alignment_menu->Append(id, "Save alignment info", "Save alignment info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         const std::string default_path = m_recent_paths_handler.get_recent_file_path(FileTypes::LIGHT, "");
-        wxFileDialog dialog(this, "Save alignment info", "", default_path, "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        wxFileDialog dialog(this, "Save alignment info", "", default_path + "/alignment.txt", "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_filelist_handler.save_alignment_to_file(file_address);
@@ -1000,8 +1000,7 @@ void MyFrame::update_color_channels_mean_and_median_values_text()   {
         return;
     }
 
-    auto update_one_text = [this](wxStaticText* static_text, const std::string &prefix, vector<float>(HistogramDataToolGUI::*get_values_method)(bool) const) {
-        const vector<float> values = (m_histogram_data_tool_gui.get()->*get_values_method)(true);
+    auto update_one_text = [this](wxStaticText* static_text, const std::string &prefix, const vector<float> &values) {
         if (values.size() != 3) {
             return;
         }
@@ -1010,6 +1009,6 @@ void MyFrame::update_color_channels_mean_and_median_values_text()   {
                                         ", B: " + AstroPhotoStacker::round_and_convert_to_string(values[2], 1) );
     };
 
-    update_one_text(m_text_color_channels_mean_values, "Mean values: ", &HistogramDataToolGUI::get_mean_values);
-    update_one_text(m_text_color_channels_median_values, "Median values: ", &HistogramDataToolGUI::get_median_values);
+    update_one_text(m_text_color_channels_mean_values, "Mean values: ", m_histogram_data_tool_gui->get_mean_values());
+    update_one_text(m_text_color_channels_median_values, "Median values: ", m_histogram_data_tool_gui->get_median_values());
 };
