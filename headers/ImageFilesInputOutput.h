@@ -9,6 +9,17 @@
 
 namespace AstroPhotoStacker {
 
+
+    /**
+     * @brief Create a gray scale image from an array of pixel values
+     *
+     * @tparam pixel_values_type The type of the pixel values
+     * @param arr The array of pixel values
+     * @param width The width of the image
+     * @param height The height of the image
+     * @param filename The filename of the image
+     * @param image_settings The settings of the image
+    */
     template <typename pixel_values_type>
     void create_gray_scale_image(const pixel_values_type* arr, int width, int height, const std::string& filename, int image_settings = CV_8UC1) {
         cv::Mat image(height, width, image_settings);
@@ -48,7 +59,19 @@ namespace AstroPhotoStacker {
         cv::imwrite(filename, image);
     }
 
-
+    /**
+     * @brief Create a color image from an array of pixel values
+     *
+     * @tparam pixel_values_type The type of the pixel values
+     * @tparam pixel_3d_type The type of the pixel values in 3D
+     * @param arr_red The array of red pixel values
+     * @param arr_green The array of green pixel values
+     * @param arr_blue The array of blue pixel values
+     * @param width The width of the image
+     * @param height The height of the image
+     * @param filename The filename of the image
+     * @param image_settings The settings of the image
+    */
     template <typename pixel_values_type, typename pixel_3d_type = cv::Vec3b>
     void crate_color_image_3d_template( const pixel_values_type* arr_red, const pixel_values_type* arr_green, const pixel_values_type* arr_blue,
                             int width, int height, const std::string& filename, int image_settings = CV_8UC3) {
@@ -66,6 +89,18 @@ namespace AstroPhotoStacker {
         cv::imwrite(filename, image);
     }
 
+    /**
+     * @brief Create a color image from an array of pixel values
+     *
+     * @tparam pixel_values_type The type of the pixel values
+     * @param arr_red The array of red pixel values
+     * @param arr_green The array of green pixel values
+     * @param arr_blue The array of blue pixel values
+     * @param width The width of the image
+     * @param height The height of the image
+     * @param filename The filename of the image
+     * @param image_settings The settings of the image
+    */
     template <typename pixel_values_type>
     void crate_color_image( const pixel_values_type* arr_red, const pixel_values_type* arr_green, const pixel_values_type* arr_blue,
                             int width, int height, const std::string& filename, int image_settings = CV_8UC3) {
@@ -100,10 +135,19 @@ namespace AstroPhotoStacker {
         }
     }
 
+    /**
+     * @brief Convert raw data to RGB image
+     *
+     * @tparam pixel_values_type The type of the pixel values
+     * @param arr The array of pixel values
+     * @param colors The colors of the pixels
+     * @param width The width of the image
+     * @param height The height of the image
+     * @return std::vector<std::vector<pixel_values_type>> The RGB image, first index is the color, second index is the pixel
+    */
     template <typename pixel_values_type>
     std::vector<std::vector<pixel_values_type> > convert_raw_data_to_rgb_image(const pixel_values_type* arr, const char *colors, int width, int height) {
         std::vector<std::vector<pixel_values_type> > result = std::vector<std::vector<pixel_values_type> >(3, std::vector<pixel_values_type>(width*height, 0));
-
 
         for (int y = 0; y < height-1; y++)  {
             for (int x = 0; x < width-1; x++)   {
@@ -130,5 +174,4 @@ namespace AstroPhotoStacker {
 
         return result;
     }
-
 }
