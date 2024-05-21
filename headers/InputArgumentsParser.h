@@ -7,12 +7,28 @@
 #include <stdexcept>
 
 namespace AstroPhotoStacker {
+
+    /**
+     * @brief A class to parse command line input arguments in a form of -argument_name argument_value
+     */
     class InputArgumentsParser {
         public:
             InputArgumentsParser() = delete;
 
+            /**
+             *  @brief Constructor
+             *
+             * @param argc The number of arguments
+             * @param argv The arguments
+            */
             InputArgumentsParser(int argc, const char **argv);
 
+            /**
+             * @brief Get the value of an argument
+             *
+             * @tparam return_type The type of the return value
+             * @param argument_name The name of the argument
+            */
             template<typename return_type>
             return_type get_argument(const std::string &argument_name) const    {
                 if (m_arguments.find(argument_name) == m_arguments.end()) {
@@ -22,6 +38,13 @@ namespace AstroPhotoStacker {
                 return convert_string_to<return_type>(m_arguments.at(argument_name));
             };
 
+            /**
+             * @brief Get the value of an argument or a default value if the argument is not found
+             *
+             * @tparam return_type The type of the return value
+             * @param argument_name The name of the argument
+             * @param default_value The default value
+            */
             template<typename return_type>
             return_type get_optional_argument(const std::string &argument_name, return_type default_value) const    {
                 if (m_arguments.find(argument_name) == m_arguments.end()) {
