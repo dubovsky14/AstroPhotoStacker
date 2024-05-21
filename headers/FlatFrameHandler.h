@@ -6,16 +6,36 @@
 
 
 namespace AstroPhotoStacker {
+
+    /**
+     * @brief A class that handles a flat frame data - it can read both raw files and tif/jpg images
+     *
+    */
     class FlatFrameHandler  {
         public:
             FlatFrameHandler() = delete;
 
+            /**
+             * @brief Construct a new FlatFrameHandler object
+             *
+             * @param input_file The file to read the flat frame data from
+            */
             FlatFrameHandler(const std::string &input_file);
 
+
+            /**
+             * @brief Copy constructor
+            */
             FlatFrameHandler(const FlatFrameHandler &other);
 
+            /**
+             * @brief Get value of a pixel in the flat frame
+             *
+             * @param x The x coordinate of the pixel
+             * @param y The y coordinate of the pixel
+             * @return float The value of the pixel
+            */
             float get_pixel_value_inverted(int x, int y) const;
-
 
         private:
             void calibrate();
