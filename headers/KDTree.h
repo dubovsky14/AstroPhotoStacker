@@ -78,8 +78,20 @@ namespace AstroPhotoStacker   {
              */
             std::vector<unsigned int> get_k_nearest_neighbors_indices(const PointCoordinatesTuple &query_point, unsigned int n_points)  const;
 
+            /**
+             * @brief Get indeces of the stars forming the closes hash
+             *
+             * @param node_index index of the node
+             * @param coordinates array to store the coordinates
+             * @param star_indices indices of the stars describing this point (additional data that have to be stored)
+             */
             void get_point(unsigned int node_index, PointCoordinatesArray coordinates, StarIndices *star_indices) const;
 
+            /**
+             * @brief Get the number of points in the tree
+             *
+             * @return unsigned int number of points in the tree
+             */
             unsigned int get_number_of_points_in_tree() const   {return m_number_of_points_in_tree;}
 
         private:
