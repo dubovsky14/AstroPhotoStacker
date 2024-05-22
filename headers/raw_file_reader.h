@@ -9,11 +9,33 @@
 #include <tuple>
 
 namespace AstroPhotoStacker   {
-    // Read aperture, exposure time, ISO, and focal length from the raw file
+    /**
+     * @brief Read metadata from the raw file
+     *
+     * @param raw_file_address - path to the raw file
+     * @return std::tuple<float, float, int, float> - tuple containing the aperture, exposure time, ISO, and focal length
+    */
     std::tuple<float, float, int, float> read_metadata(const std::string &raw_file_address);
 
+    /**
+     * @brief Check if the file is a raw file
+     *
+     * @param file_address - path to the file
+     * @return true - if the file is a raw file
+     * @return false - if the file is not a raw file
+    */
     bool is_raw_file(const std::string &file_address);
 
+    /**
+     * @brief Read raw file and return the brightness values
+     *
+     * @tparam output_type - type of the output values
+     * @param raw_file_address - path to the raw file
+     * @param width - pointer to the variable where the width of the photo will be stored
+     * @param height - pointer to the variable where the height of the photo will be stored
+     * @param colors - pointer to the vector where the color information will be stored
+     * @return std::unique_ptr<output_type[]> - pointer to the array containing the brightness values
+    */
     template<typename output_type = unsigned short>
     std::unique_ptr<output_type[]> read_raw_file(const std::string &raw_file_address, int *width, int *height, std::vector<char> *colors = nullptr)   {
         // create a LibRaw object
@@ -71,10 +93,29 @@ namespace AstroPhotoStacker   {
 
         return brightness;
     };
+
+    /**
+     * @brief Get the color information as a vector of characters (R - red, G - green, B - blue)
+     *
+     * @param raw_file - path to the raw file
+     * @return std::vector<char> - vector of characters containing the color information for given index of the color (R = red, G = green, B = blue)
+    */
     std::vector<char> get_color_info_as_char_vector(const std::string &raw_file);
 
-    // Standard indexing of colors (from RGB): 0 = red, 1 = green, 2 = blue
+    /**
+     * @brief Get the color information as a vector of numbers (0 - red, 1 - green, 2 - blue)
+     *
+     * @param raw_file - path to the raw file
+     * @return std::vector<char> - vector of numbers containing the color information for given index of the color (0 = red, 1 = green, 2 = blue)
+    */
     std::vector<char> get_color_info_as_number(const std::string &raw_file);
 
+    /**
+     * @brief Get the resolution of the photo
+     *
+     * @param raw_file - path to the raw file
+     * @param width - pointer to the variable where the width of the photo will be stored
+     * @param height - pointer to the variable where the height of the photo will be stored
+    */
     bool get_photo_resolution(const std::string &raw_file, int *width, int *height);
 }
