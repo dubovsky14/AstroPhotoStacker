@@ -5,14 +5,40 @@
 #include <mutex>
 
 namespace AstroPhotoStacker {
+
+    /**
+     * @brief Class for stacking photos using mean value stacking algorithm. It is the most basic algorithm, which usually does not work very well
+     */
     class StackerMeanValue : public StackerBase {
         public:
+
+            /**
+             * @brief Construct a new Stacker Mean Value object
+             *
+             * @param number_of_colors - number of colors in the stacked photo
+             * @param width - width of the photo
+             * @param height - height of the photo
+             * @param interpolate_colors - not implemented yet, it's there just for compatibility with other stacking algorithms
+            */
             StackerMeanValue(int number_of_colors, int width, int height, bool interpolate_colors);
 
+            /**
+             * @brief Calculate the stacked photo
+            */
             virtual void calculate_stacked_photo() override;
 
+            /**
+             * @brief Set the number of CPU threads to be used for stacking
+             *
+             * @param n_cpu - number of CPU threads
+            */
             virtual void set_number_of_cpu_threads(unsigned int n_cpu) override;
 
+            /**
+             * @brief Get the number of CPU threads used for stacking
+             *
+             * @return unsigned int - number of CPU threads
+            */
             virtual int get_tasks_total() const override;
 
         protected:

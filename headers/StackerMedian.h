@@ -6,14 +6,31 @@
 #include <memory>
 
 namespace AstroPhotoStacker {
+
+    /**
+     * @brief Class for stacking photos using median stacking algorithm. It serves also as a base class for all algorithms that stack require values from all photos to be stored in memory.
+     */
     class StackerMedian : public StackerBase {
         public:
             StackerMedian(int number_of_colors, int width, int height, bool interpolate_colors);
 
+            /**
+             * Calculate the stacked photo from the photos added to the stack
+            */
             virtual void calculate_stacked_photo() override;
 
+            /**
+             * @brief Set the number of CPU threads to be used for stacking
+             *
+             * @param n_cpu - number of CPU threads
+            */
             virtual void set_number_of_cpu_threads(unsigned int n_cpu) override;
 
+            /**
+             * @brief Get the number of tasks to be done by the stacker
+             *
+             * @return int - number of tasks
+            */
             virtual int get_tasks_total() const override;
 
         protected:
@@ -27,7 +44,7 @@ namespace AstroPhotoStacker {
             virtual void process_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color);
 
             /**
-             * @brief The method defines how to stack "number_of_stacked pixels" values from pixels in individual photos into one file. In case of this class it is a median.
+             * @brief The method defines how to stack "number_of_stacked pixels" values from pixels in individual photos into one file. In case of this class it is a median. Can be overriden in derived classes to implement different stacking algorithms.
              *
              * @param ordered_array_begin       - pointer ot the first element of the ordered array
              * @param number_of_stacked_pixels  - number of pixels to stack
