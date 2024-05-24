@@ -14,8 +14,27 @@ namespace AstroPhotoStacker {
     // for each cluster calculate the difference between maximum and minimum radius
     std::vector<std::tuple<float,float>> get_cluster_smearing_vector(const std::vector< std::vector<std::tuple<int, int> > > &clusters);
 
+    /**
+     * @brief Get the center of mass of the cluster
+     *
+     * @param cluster - vector of pixels in the cluster as tuples of x and y coordinates
+     * @return std::tuple<float,float> - center of mass of the cluster
+    */
     std::tuple<float,float> get_center_of_cluster(const std::vector<std::tuple<int,int>> &cluster);
 
+    /**
+     * @brief Fill the current cluster with pixels. If the pixels is below the threshold, stop. If the pixel is already visited, stop. If the pixel is above the threshold, add it to the cluster and recursively call the function for all neighboring pixels
+     *
+     * @tparam pixel_type - type of pixel values
+     * @param brightness - array of pixel brightness values
+     * @param width - width of the image
+     * @param height - height of the image
+     * @param x_pos - x position of the pixel
+     * @param y_pos - y position of the pixel
+     * @param current_cluster - vector of pixels in the current cluster
+     * @param threshold - pixels with brightness below this value will not be added to the cluster
+     * @param visited_pixels - map of visited pixels
+    */
     template<typename pixel_type>
     void fill_cluster(  const pixel_type *brightness, int width, int height,
                         int x_pos, int y_pos,
@@ -41,6 +60,16 @@ namespace AstroPhotoStacker {
         }
     };
 
+    /**
+     * @brief Get the clusters of pixels in the image
+     *
+     * @tparam pixel_type - type of pixel values
+     * @param brightness - array of pixel brightness values
+     * @param width - width of the image
+     * @param height - height of the image
+     * @param threshold - pixels with brightness below this value will not be added to the cluster
+     * @return std::vector<std::vector<std::tuple<int, int> > > - vector of clusters, each cluster is a vector of tuples representing x and y coordinates of the pixels
+    */
     template<typename pixel_type>
     std::vector< std::vector<std::tuple<int, int> > > get_clusters(const pixel_type *brightness, int width, int height, float threshold)  {
         std::vector< std::vector<std::tuple<int, int> > >  result;
@@ -59,6 +88,16 @@ namespace AstroPhotoStacker {
         return result;
     };
 
+    /**
+     * @brief Get the stars in the image as a vector of tuples of x and y coordinates and number of pixels in the star
+     *
+     * @tparam pixel_type - type of pixel values
+     * @param brightness - array of pixel brightness values
+     * @param width - width of the image
+     * @param height - height of the image
+     * @param threshold - pixels with brightness below this value will not be added to the cluster
+     * @return std::vector<std::tuple<float, float,int>> - vector of stars, each star is a tuple of x and y coordinates and number of pixels in the star
+    */
     template<typename pixel_type>
     std::vector<std::tuple<float, float,int>> get_stars(const pixel_type *brightness, int width, int height, pixel_type threshold) {
         std::vector<std::tuple<float, float, int>> stars;
@@ -73,6 +112,15 @@ namespace AstroPhotoStacker {
         return stars;
     };
 
+    /**
+     * @brief Get the threshold value for the given fraction of the brightest pixels
+     *
+     * @tparam pixel_type - type of pixel values
+     * @param brightness - array of pixel brightness values
+     * @param array_size - size of the array
+     * @param fraction - fraction of the brightest pixels
+     * @return pixel_type - threshold value above which there is "fraction" of all pixels
+    */
     template<typename pixel_type>
     pixel_type get_threshold_value(const pixel_type *brightness, unsigned int array_size, float fraction)    {
         std::unique_ptr<unsigned int[]> histogram = std::unique_ptr<unsigned int[]>(new unsigned int[USHRT_MAX]);
@@ -96,12 +144,36 @@ namespace AstroPhotoStacker {
         return threshold_index;
     };
 
+    /**
+     * @brief Sort the stars by size (number of pixels belonging to that star)
+     *
+     * @param stars - vector of stars, each star is a tuple of x and y coordinates and number of pixels in the star
+    */
     void sort_stars_by_size(std::vector<std::tuple<float, float,int> > *stars);
 
+    /**
+     * @brief Keep only stars above the given size
+     *
+     * @param stars - vector of stars, each star is a tuple of x and y coordinates and number of pixels in the star
+     * @param min_size - minimum size (number of pixels) of the star
+    */
     void keep_only_stars_above_size(std::vector<std::tuple<float, float,int> > *stars, int min_size);
 
+    /**
+     * @brief Does the pixel belong to the border of the cluster?
+     *
+     * @param pixel - tuple of x and y coordinates of the pixel
+     * @param cluster - vector of pixels in the cluster as tuples of x and y coordinates
+     * @return true - if the pixel belongs to the border of the cluster
+    */
     bool is_border_pixel(const std::tuple<int,int> &pixel, const std::vector<std::tuple<int,int> > &cluster);
 
+    /**
+     * @brief Get size of a 2D vector (represented by tuple<float,float>) squared
+     *
+     * @param vec - tuple of x and y coordinates of the point
+     * @return float - size of the vector squared
+    */
     float get_distance_squared(const std::tuple<float,float> &vec);
 }
 
