@@ -16,6 +16,10 @@ FlatFrameHandler::FlatFrameHandler(const FlatFrameHandler &other) : CalibrationF
     calibrate();
 };
 
+FlatFrameHandler::FlatFrameHandler(int width, int height, const std::vector<double> &image) : CalibrationFrameBase(width, height, image) {
+    calibrate();
+};
+
 void FlatFrameHandler::calibrate() {
     if (m_data_original == nullptr && m_data_calibrated.size() != 0) {
         return;

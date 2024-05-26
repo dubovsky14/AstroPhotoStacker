@@ -48,3 +48,13 @@ CalibrationFrameBase::CalibrationFrameBase(const CalibrationFrameBase &other) {
     m_data_calibrated = other.m_data_calibrated;
     m_colors = other.m_colors;
 };
+
+CalibrationFrameBase::CalibrationFrameBase(int width, int height, const std::vector<double> &image)   {
+    m_width = width;
+    m_height = height;
+    m_data_original = make_unique<unsigned short int[]>(m_width*m_height);
+    for (int i = 0; i < m_width*m_height; i++) {
+        m_data_original[i] = image[i];
+    }
+    m_colors = vector<char>(m_width*m_height, 0);
+};

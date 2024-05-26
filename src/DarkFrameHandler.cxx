@@ -16,6 +16,10 @@ DarkFrameHandler::DarkFrameHandler(const DarkFrameHandler &other) : CalibrationF
     calibrate();
 };
 
+DarkFrameHandler::DarkFrameHandler(int width, int height, const std::vector<double> &image) : CalibrationFrameBase(width, height, image) {
+    calibrate();
+};
+
 void DarkFrameHandler::calibrate() {
     if (m_data_original == nullptr && m_data_calibrated.size() != 0) {
         return;

@@ -26,6 +26,11 @@ namespace AstroPhotoStacker {
             */
             CalibrationFrameBase(const CalibrationFrameBase &other);
 
+            /**
+             * @brief Construct a new CalibrationFrameBase object from staker frame data
+            */
+            CalibrationFrameBase(int width, int height, const std::vector<double> &image);
+
             virtual ~CalibrationFrameBase() = default;
 
             /**
@@ -40,7 +45,7 @@ namespace AstroPhotoStacker {
             virtual float get_updated_pixel_value(float pixel_value, int x, int y) const = 0;
 
         protected:
-            virtual void calibrate() = 0;
+            virtual void calibrate() {};
 
             int m_width, m_height;
             std::unique_ptr<unsigned short int[]>   m_data_original;

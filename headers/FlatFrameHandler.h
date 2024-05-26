@@ -24,6 +24,10 @@ namespace AstroPhotoStacker {
             */
             FlatFrameHandler(const std::string &input_file);
 
+            /**
+             * @brief Construct a new FlatFrameHandler object from staker frame data
+            */
+            FlatFrameHandler(int width, int height, const std::vector<double> &image);
 
             /**
              * @brief Copy constructor

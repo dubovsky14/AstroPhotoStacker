@@ -24,6 +24,10 @@ namespace AstroPhotoStacker {
             */
             DarkFrameHandler(const std::string &input_file);
 
+            /**
+             * @brief Construct a new DarkFrameHandler object from staker frame data
+            */
+            DarkFrameHandler(int width, int height, const std::vector<double> &image);
 
             /**
              * @brief Copy constructor
