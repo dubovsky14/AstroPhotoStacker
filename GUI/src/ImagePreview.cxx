@@ -24,22 +24,6 @@ ImagePreview::ImagePreview(int width, int height, int max_value, bool use_color_
     m_use_color_interpolation = use_color_interpolation;
 };
 
-void ImagePreview::get_preview_from_stacked_picture(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original) {
-    m_current_preview_is_raw_file = false;
-    m_width_original = width_original;
-    m_height_original = height_original;
-    m_original_image = std::vector<std::vector<unsigned short int>>(3, std::vector<unsigned short int>(width_original*height_original,0));
-    for (int i_color = 0; i_color < 3; i_color++)   {
-        for (int i_pixel = 0; i_pixel < width_original*height_original; i_pixel++)   {
-            m_original_image[i_color][i_pixel] = stacked_image[i_color][i_pixel];
-        }
-    }
-    set_default_resized_area();
-    m_current_preview_is_raw_file = false;
-    update_max_values_original();
-    update_preview_data();
-};
-
 void ImagePreview::read_preview_from_file(const std::string &path)  {
     m_current_preview_is_raw_file = is_raw_file(path);
     if (m_current_preview_is_raw_file)  {
@@ -66,7 +50,19 @@ void ImagePreview::read_preview_from_file(const std::string &path)  {
 };
 
 void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {
-    get_preview_from_stacked_picture(stacked_image, width_original, height_original);
+    m_current_preview_is_raw_file = false;
+    m_width_original = width_original;
+    m_height_original = height_original;
+    m_original_image = std::vector<std::vector<unsigned short int>>(3, std::vector<unsigned short int>(width_original*height_original,0));
+    for (int i_color = 0; i_color < 3; i_color++)   {
+        for (int i_pixel = 0; i_pixel < width_original*height_original; i_pixel++)   {
+            m_original_image[i_color][i_pixel] = stacked_image[i_color][i_pixel];
+        }
+    }
+    set_default_resized_area();
+    m_current_preview_is_raw_file = false;
+    update_max_values_original();
+    update_preview_data();
 };
 
 void ImagePreview::update_preview_bitmap(wxStaticBitmap *static_bitmap) const  {
