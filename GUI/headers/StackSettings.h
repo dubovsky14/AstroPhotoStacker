@@ -4,6 +4,9 @@
 #include <thread>
 #include <vector>
 
+/**
+ * @brief Class responsible for storing settings for the stacking process.
+*/
 class StackSettings {
     public:
         StackSettings() = default;

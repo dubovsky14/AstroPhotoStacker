@@ -6,10 +6,24 @@
 #include <string>
 #include <memory>
 
+
+/**
+ * @brief Frame (window) for displaying a table.
+*/
 class ListFrame : public wxFrame  {
     public:
         ListFrame() = delete;
 
+        /**
+         * @brief Construct a new List Frame object
+         *
+         * @param parent pointer to the parent frame
+         * @param window_title title of the window
+         * @param inside_text text inside the window
+         * @param table_description description of the table columns
+         * @param tabular_data data to be displayed in the table (2D vector of strings - rows and columns)
+         * @param size size of the window
+         */
         ListFrame(  wxFrame *parent,
                     const std::string &window_title,
                     const std::string &inside_text,
