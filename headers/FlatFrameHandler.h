@@ -44,14 +44,7 @@ namespace AstroPhotoStacker {
             };
 
         private:
-            void calibrate();
-
-            int m_width, m_height;
-            std::unique_ptr<unsigned short int[]>   m_data_original;
-            std::vector<float>                      m_data_calibrated;
-            std::vector<char>                       m_colors;
-
-            bool                                    m_read_from_raw_file = false;
+            virtual void calibrate() override;
 
     };
 }
