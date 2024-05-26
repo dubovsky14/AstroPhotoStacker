@@ -143,6 +143,9 @@ FileAlignmentInformation PhotoAlignmentHandler::get_alignment_parameters(const s
     throw runtime_error("File not found in alignment file: " + file_address);
 }
 
+const std::vector<FileAlignmentInformation>& PhotoAlignmentHandler::get_alignment_parameters_vector() const    {
+    return PhotoAlignmentHandler::m_alignment_information_vector;
+};
 
 std::vector<std::string> PhotoAlignmentHandler::get_file_addresses() const  {
     vector<string> file_addresses;
@@ -174,4 +177,8 @@ void PhotoAlignmentHandler::limit_fraction_of_files(float fraction) {
     const int n_files = m_alignment_information_vector.size();
     const int n_files_to_keep = n_files*fraction;
     limit_number_of_files(n_files_to_keep);
+};
+
+const std::atomic<int>& PhotoAlignmentHandler::get_number_of_aligned_files() const {
+    return m_n_files_aligned;
 };
