@@ -15,7 +15,7 @@ class RecentPathsHandler    {
          *
          * @param storage_folder path to the folder where the text files with the paths are stored
         */
-        RecentPathsHandler(const std::string &storage_folder = "../data/recent_paths/");
+        RecentPathsHandler(const std::string &storage_folder);
 
         /**
          * @brief Get the recent file path

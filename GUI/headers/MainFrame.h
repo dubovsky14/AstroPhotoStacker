@@ -145,7 +145,7 @@ class MyFrame : public wxFrame  {
         void on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title);
         void on_open_lights(wxCommandEvent& event);
         void on_open_flats (wxCommandEvent& event);
-        RecentPathsHandler m_recent_paths_handler;
+        std::unique_ptr<RecentPathsHandler> m_recent_paths_handler = nullptr;
 
         void on_save_stacked(wxCommandEvent& event);
         void on_exit(wxCommandEvent& event);
@@ -166,6 +166,7 @@ class MyFrame : public wxFrame  {
         wxStaticText* m_text_color_channels_mean_values = nullptr;
         wxStaticText* m_text_color_channels_median_values = nullptr;
 
+        static std::string s_gui_folder_path;
 };
 
 inline int unique_counter()    {

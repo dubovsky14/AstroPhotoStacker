@@ -17,9 +17,13 @@
 #include <wx/artprov.h>
 
 #include <iostream>
+#include <filesystem>
+
 #include <opencv2/opencv.hpp>
 
 using namespace std;
+
+std::string MyFrame::s_gui_folder_path = std::filesystem::path(__FILE__).parent_path().parent_path().string() + "/";
 
 bool MyApp::OnInit()    {
     MyFrame *frame = new MyFrame();
@@ -30,11 +34,13 @@ bool MyApp::OnInit()    {
 MyFrame::MyFrame()
     : wxFrame(nullptr, wxID_ANY, "AstroPhotoStacker GUI") {
 
+    m_recent_paths_handler = make_unique<RecentPathsHandler>(s_gui_folder_path + "data/recent_paths/");
+
     // full screen
     SetSize(wxGetDisplaySize());
 
 
-    m_sizer_main_frame = new wxBoxSizer(wxVERTICAL);
+    m_sizer_main_frame  = new wxBoxSizer(wxVERTICAL);
     m_sizer_top         = new wxBoxSizer(wxHORIZONTAL);
     m_sizer_button_bar  = new wxBoxSizer(wxHORIZONTAL);
     m_sizer_main_frame->Add(m_sizer_top,        9, wxEXPAND | wxALL, 5);
@@ -97,7 +103,7 @@ void MyFrame::add_alignment_menu()  {
     int id = unique_counter();
     alignment_menu->Append(id, "Save alignment info", "Save alignment info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        const std::string default_path = m_recent_paths_handler.get_recent_file_path(FileTypes::LIGHT, "");
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
         wxFileDialog dialog(this, "Save alignment info", "", default_path + "/alignment.txt", "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
@@ -108,7 +114,7 @@ void MyFrame::add_alignment_menu()  {
     id = unique_counter();
     alignment_menu->Append(id, "Load alignment info", "Load alignment info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        const std::string default_path = m_recent_paths_handler.get_recent_file_path(FileTypes::LIGHT, "");
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
         wxFileDialog dialog(this, "Load alignment info", "", default_path, "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
@@ -129,7 +135,7 @@ void MyFrame::add_hot_pixel_menu()  {
         if (m_hot_pixel_identifier == nullptr)  {
             return;
         }
-        const std::string default_path = m_recent_paths_handler.get_recent_file_path(FileTypes::LIGHT, "");
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
         wxFileDialog dialog(this, "Save hot pixel info", "", default_path, "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
@@ -140,7 +146,7 @@ void MyFrame::add_hot_pixel_menu()  {
     id = unique_counter();
     hot_pixel_menu->Append(id, "Load hot pixel info", "Load hot pixel info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        const std::string default_path = m_recent_paths_handler.get_recent_file_path(FileTypes::LIGHT, "");
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
         wxFileDialog dialog(this, "Load hot pixel info", "", default_path, "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
@@ -176,8 +182,8 @@ void MyFrame::add_files_to_stack_checkbox()  {
     wxStaticText* sortByNameText = new wxStaticText(headerPanel, wxID_ANY, "Sort by Name",wxDefaultPosition);
     wxStaticText* sortByScoreText = new wxStaticText(headerPanel, wxID_ANY, "Sort by Score",wxDefaultPosition);
 
-    wxBitmap arrow_down_bitmap("../data/png/arrows/arrow_down_20x10.png", wxBITMAP_TYPE_PNG);
-    wxBitmap arrow_up_bitmap("../data/png/arrows/arrow_up_20x10.png", wxBITMAP_TYPE_PNG);
+    wxBitmap arrow_down_bitmap(s_gui_folder_path + "data/png/arrows/arrow_down_20x10.png", wxBITMAP_TYPE_PNG);
+    wxBitmap arrow_up_bitmap(s_gui_folder_path + "data/png/arrows/arrow_up_20x10.png", wxBITMAP_TYPE_PNG);
     wxSize arrow_size(40, 20);
     wxBitmapButton* sortByNameArrowUpButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, arrow_size);
     wxBitmapButton* sortByNameArrowDownButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, arrow_size);
@@ -748,7 +754,7 @@ void MyFrame::add_step_control_part()    {
         wxFont font = text_aligned->GetFont();
         font.SetPointSize(14);
         text_aligned->SetFont(font);
-        *status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap("../data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
+        *status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap(s_gui_folder_path + "data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
 
         wxButton *button = new wxButton(this, wxID_ANY, button_text);
         button->Bind(wxEVT_BUTTON, on_button_function);
@@ -928,7 +934,7 @@ void MyFrame::update_histogram()    {
 };
 
 void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title)    {
-    const std::string default_path = m_recent_paths_handler.get_recent_file_path(type, "");
+    const std::string default_path = m_recent_paths_handler->get_recent_file_path(type, "");
     wxFileDialog dialog(this, title, "", default_path, "*[!'.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
     if (dialog.ShowModal() == wxID_OK) {
         wxArrayString paths;
@@ -943,7 +949,7 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
                 }
             }
             m_filelist_handler.add_file(path.ToStdString(), type);
-            m_recent_paths_handler.set_recent_file_path_from_file(type, path.ToStdString());
+            m_recent_paths_handler->set_recent_file_path_from_file(type, path.ToStdString());
         }
     }
     dialog.Destroy();
@@ -985,8 +991,8 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
 };
 
 void MyFrame::update_status_icon(wxStaticBitmap *status_icon, bool is_ok)   {
-    const std::string file_checkmark    = "../data/png/checkmarks/20px/checkmark.png";
-    const std::string file_cross        = "../data/png/checkmarks/20px/red_cross.png";
+    const std::string file_checkmark    = s_gui_folder_path + "data/png/checkmarks/20px/checkmark.png";
+    const std::string file_cross        = s_gui_folder_path + "data/png/checkmarks/20px/red_cross.png";
     if (is_ok)  {
         status_icon->SetBitmap(wxBitmap(file_checkmark, wxBITMAP_TYPE_PNG));
     }
