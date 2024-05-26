@@ -50,10 +50,6 @@ FlatFrameHandler::FlatFrameHandler(const FlatFrameHandler &other) {
     m_colors = other.m_colors;
 };
 
-float FlatFrameHandler::get_pixel_value_inverted(int x, int y) const {
-    return m_data_calibrated[y*m_width + x];
-};
-
 void FlatFrameHandler::calibrate() {
     if (m_data_original == nullptr && m_data_calibrated.size() != 0) {
         return;

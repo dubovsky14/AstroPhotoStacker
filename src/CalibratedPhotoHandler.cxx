@@ -71,7 +71,7 @@ void CalibratedPhotoHandler::calibrate() {
                             m_data_shifted_color_interpolation[color][index_shifted] = m_data_original_color_interpolation[color][index_original];
                         }
                         else {
-                            const float value = m_data_original_color_interpolation[color][index_original]*m_flat_frame->get_pixel_value_inverted(x_int, y_int);
+                            const float value = m_flat_frame->get_updated_pixel_value(m_data_original_color_interpolation[color][index_original], x_int, y_int);
                             m_data_shifted_color_interpolation[color][index_shifted] = min(m_max_allowed_pixel_value, (unsigned int)(value)); // stars in corners can "overflow" without this check
                         }
                     }
@@ -102,7 +102,7 @@ void CalibratedPhotoHandler::calibrate() {
                         m_data_shifted[index_shifted] = m_data_original[index_original];
                     }
                     else {
-                        const float value = m_data_original[index_original]*m_flat_frame->get_pixel_value_inverted(x_int, y_int);
+                        const float value = m_flat_frame->get_updated_pixel_value(m_data_original[index_original], x_int, y_int);
                         m_data_shifted[index_shifted] = min(m_max_allowed_pixel_value, (unsigned int)(value)); // stars in corners can "overflow" without this check
                     }
                     m_colors_shifted[index_shifted] = m_colors_original[index_original];
