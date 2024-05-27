@@ -145,6 +145,7 @@ class MyFrame : public wxFrame  {
         void on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title);
         void on_open_lights(wxCommandEvent& event);
         void on_open_flats (wxCommandEvent& event);
+        void on_open_darks (wxCommandEvent& event);
         std::unique_ptr<RecentPathsHandler> m_recent_paths_handler = nullptr;
 
         void on_save_stacked(wxCommandEvent& event);

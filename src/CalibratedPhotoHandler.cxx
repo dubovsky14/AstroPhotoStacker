@@ -32,6 +32,10 @@ void CalibratedPhotoHandler::limit_y_range(int y_min, int y_max) {
     }
 };
 
+void CalibratedPhotoHandler::register_calibration_frame(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler)  {
+    m_calibration_frames.push_back(std::move(calibration_frame_handler));
+};
+
 void CalibratedPhotoHandler::register_flat_frame(const FlatFrameHandler *flat_frame_handler)   {
     m_flat_frame = flat_frame_handler;
 };
@@ -67,13 +71,12 @@ void CalibratedPhotoHandler::calibrate() {
                     if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
                         const unsigned int index_shifted = y_shifted*m_width + x_shifted;
                         const unsigned int index_original = y_int*m_width + x_int;
-                        if (m_flat_frame == nullptr) {
-                            m_data_shifted_color_interpolation[color][index_shifted] = m_data_original_color_interpolation[color][index_original];
+                        for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler : m_calibration_frames) {
+                            auto &value = m_data_original_color_interpolation[color][index_original];
+                            value = calibration_frame_handler->get_updated_pixel_value(value, x_int, y_int);
                         }
-                        else {
-                            const float value = m_flat_frame->get_updated_pixel_value(m_data_original_color_interpolation[color][index_original], x_int, y_int);
-                            m_data_shifted_color_interpolation[color][index_shifted] = min(m_max_allowed_pixel_value, (unsigned int)(value)); // stars in corners can "overflow" without this check
-                        }
+
+                        m_data_shifted_color_interpolation[color][index_shifted] = m_data_original_color_interpolation[color][index_original];
                     }
                 }
             }
@@ -98,13 +101,13 @@ void CalibratedPhotoHandler::calibrate() {
                 if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
                     const unsigned int index_shifted = y_shifted*m_width + x_shifted;
                     const unsigned int index_original = y_int*m_width + x_int;
-                    if (m_flat_frame == nullptr) {
-                        m_data_shifted[index_shifted] = m_data_original[index_original];
+
+                    for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler : m_calibration_frames) {
+                        auto &value = m_data_original[index_original];
+                        value = calibration_frame_handler->get_updated_pixel_value(value, x_int, y_int);
                     }
-                    else {
-                        const float value = m_flat_frame->get_updated_pixel_value(m_data_original[index_original], x_int, y_int);
-                        m_data_shifted[index_shifted] = min(m_max_allowed_pixel_value, (unsigned int)(value)); // stars in corners can "overflow" without this check
-                    }
+
+                    m_data_shifted[index_shifted] = m_data_original[index_original];
                     m_colors_shifted[index_shifted] = m_colors_original[index_original];
                 }
             }

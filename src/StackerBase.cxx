@@ -39,6 +39,10 @@ void StackerBase::add_flat_frame(const string &file_address) {
     m_flat_frame_handler = make_unique<FlatFrameHandler>(file_address);
 };
 
+void StackerBase::add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler) {
+    m_calibration_frame_handlers.push_back(calibration_frame_handler);
+};
+
 void StackerBase::register_hot_pixels_file(const std::string &hot_pixels_file)  {
     m_hot_pixel_identifier = make_unique<HotPixelIdentifier>();
     m_hot_pixel_identifier->load_hot_pixels_from_file(hot_pixels_file);

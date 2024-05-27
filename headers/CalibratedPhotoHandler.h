@@ -57,6 +57,13 @@ namespace AstroPhotoStacker {
             void limit_y_range(int y_min, int y_max);
 
             /**
+             * @brief Register calibration frame which will then be applied to the photo.
+             *
+             * @param calibration_frame_handler The calibration frame handler to be registered.
+            */
+            void register_calibration_frame(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler);
+
+            /**
              * @brief Register a flat frame handler to the CalibratedPhotoHandler object.
              *
              * @param flat_frame_handler The flat frame handler to be registered.
@@ -103,6 +110,7 @@ namespace AstroPhotoStacker {
 
             const FlatFrameHandler *m_flat_frame                = nullptr;
             const HotPixelIdentifier *m_hot_pixel_identifier    = nullptr;
+            std::vector<std::shared_ptr<const CalibrationFrameBase>> m_calibration_frames;
 
             std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
             std::unique_ptr<short unsigned int[]> m_data_original           = nullptr;

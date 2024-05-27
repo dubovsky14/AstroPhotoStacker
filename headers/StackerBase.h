@@ -3,6 +3,7 @@
 #include "../headers/FlatFrameHandler.h"
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/HotPixelIdentifier.h"
+#include "../headers/CalibrationFrameBase.h"
 
 #include <memory>
 #include <string>
@@ -71,6 +72,13 @@ namespace AstroPhotoStacker {
              * @param file_address - path to the file
             */
             virtual void add_flat_frame(const std::string &file_address);
+
+            /**
+             * @brief Add calibration frame handler
+             *
+             * @param calibration frame handler
+            */
+            void add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler);
 
             /**
              * @brief Read hot pixels from a file
@@ -185,6 +193,8 @@ namespace AstroPhotoStacker {
             std::unique_ptr<FlatFrameHandler> m_flat_frame_handler              = nullptr;
             std::unique_ptr<PhotoAlignmentHandler> m_photo_alignment_handler    = nullptr;
             std::unique_ptr<HotPixelIdentifier> m_hot_pixel_identifier          = nullptr;
+
+            std::vector<std::shared_ptr<const CalibrationFrameBase> > m_calibration_frame_handlers;
 
             std::atomic<int> m_n_tasks_processed = 0;
     };

@@ -4,6 +4,10 @@
 #include "../../headers/StackerKappaSigmaBase.h"
 #include "../../headers/StackerMeanValue.h"
 
+#include "../../headers/FlatFrameHandler.h"
+
+#include <memory>
+
 using namespace std;
 using namespace AstroPhotoStacker;
 
@@ -37,8 +41,9 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
 
     const vector<string> &flat_frames = filelist_handler_only_checked.get_files(FileTypes::FLAT);
     if (flat_frames.size() > 0) {
+        std::shared_ptr<const CalibrationFrameBase> flat_frames_handler = std::make_shared<FlatFrameHandler>(flat_frames[0]);
         cout << "Adding flat frame: " << flat_frames[0] << endl;
-        stacker->add_flat_frame(flat_frames[0]);
+        stacker->add_calibration_frame_handler(flat_frames_handler);
     }
     return stacker;
 };

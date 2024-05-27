@@ -87,6 +87,10 @@ void MyFrame::add_file_menu()  {
     Bind(wxEVT_MENU, &MyFrame::on_open_flats, this, id);
 
     id = unique_counter();
+    m_file_menu->Append(id, "Open dark frames", "Open dark frames");
+    Bind(wxEVT_MENU, &MyFrame::on_open_darks, this, id);
+
+    id = unique_counter();
     m_file_menu->Append(id, "Save stacked file", "Save stacked file");
     Bind(wxEVT_MENU, &MyFrame::on_save_stacked, this, id);
 
@@ -964,6 +968,10 @@ void MyFrame::on_open_lights(wxCommandEvent& event)    {
 
 void MyFrame::on_open_flats(wxCommandEvent& event)    {
     on_open_frames(event, FileTypes::FLAT, "Open flat frames");
+}
+
+void MyFrame::on_open_darks(wxCommandEvent& event)    {
+    on_open_frames(event, FileTypes::DARK, "Open dark frames");
 }
 
 void MyFrame::on_save_stacked(wxCommandEvent& event) {
