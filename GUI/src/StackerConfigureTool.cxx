@@ -5,6 +5,7 @@
 #include "../../headers/StackerMeanValue.h"
 
 #include "../../headers/FlatFrameHandler.h"
+#include "../../headers/DarkFrameHandler.h"
 
 #include <memory>
 
@@ -45,6 +46,14 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
         cout << "Adding flat frame: " << flat_frames[0] << endl;
         stacker->add_calibration_frame_handler(flat_frames_handler);
     }
+
+    const vector<string> &dark_frames = filelist_handler_only_checked.get_files(FileTypes::DARK);
+    if (dark_frames.size() > 0) {
+        std::shared_ptr<const CalibrationFrameBase> dark_frames_handler = std::make_shared<DarkFrameHandler>(dark_frames[0]);
+        cout << "Adding dark frame: " << dark_frames[0] << endl;
+        stacker->add_calibration_frame_handler(dark_frames_handler);
+    }
+
     return stacker;
 };
 
