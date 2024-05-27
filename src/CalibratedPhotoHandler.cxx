@@ -36,10 +36,6 @@ void CalibratedPhotoHandler::register_calibration_frame(std::shared_ptr<const Ca
     m_calibration_frames.push_back(std::move(calibration_frame_handler));
 };
 
-void CalibratedPhotoHandler::register_flat_frame(const FlatFrameHandler *flat_frame_handler)   {
-    m_flat_frame = flat_frame_handler;
-};
-
 void CalibratedPhotoHandler::register_hot_pixel_identifier(const HotPixelIdentifier *hot_pixel_identifier)  {
     m_hot_pixel_identifier = hot_pixel_identifier;
 };

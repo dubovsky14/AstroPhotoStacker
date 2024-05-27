@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../headers/GeometricTransformations.h"
-#include "../headers/FlatFrameHandler.h"
+#include "../headers/CalibrationFrameBase.h"
 #include "../headers/HotPixelIdentifier.h"
 
 #include <string>
@@ -64,20 +64,11 @@ namespace AstroPhotoStacker {
             void register_calibration_frame(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler);
 
             /**
-             * @brief Register a flat frame handler to the CalibratedPhotoHandler object.
-             *
-             * @param flat_frame_handler The flat frame handler to be registered.
-            */
-            void register_flat_frame(const FlatFrameHandler *flat_frame_handler);
-
-            /**
              * @brief Register a hot pixel identifier to the CalibratedPhotoHandler object.
              *
              * @param hot_pixel_identifier The hot pixel identifier to be registered.
             */
             void register_hot_pixel_identifier(const HotPixelIdentifier *hot_pixel_identifier);
-
-            void apply_dark_frame()   {}; // TODO: implement
 
             /**
              * @brief Get the value of the pixel and its color at the given coordinates in the reference frame. If color is negative, the pixel coordinates are out of the image boundaries
@@ -108,7 +99,6 @@ namespace AstroPhotoStacker {
             int m_y_max = -1;
             unsigned int m_max_allowed_pixel_value = 1 << 14;
 
-            const FlatFrameHandler *m_flat_frame                = nullptr;
             const HotPixelIdentifier *m_hot_pixel_identifier    = nullptr;
             std::vector<std::shared_ptr<const CalibrationFrameBase>> m_calibration_frames;
 

@@ -35,10 +35,6 @@ void StackerBase::add_photo(const string &file_address, bool apply_alignment) {
     m_apply_alignment.push_back(apply_alignment);
 };
 
-void StackerBase::add_flat_frame(const string &file_address) {
-    m_flat_frame_handler = make_unique<FlatFrameHandler>(file_address);
-};
-
 void StackerBase::add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler) {
     m_calibration_frame_handlers.push_back(calibration_frame_handler);
 };

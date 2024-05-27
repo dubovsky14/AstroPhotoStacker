@@ -92,11 +92,8 @@ void StackerMeanValue::add_photo_to_stack(unsigned int i_file)  {
 
     CalibratedPhotoHandler calibrated_photo(file_address);
     calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
-    if (m_flat_frame_handler != nullptr) {
-        calibrated_photo.register_flat_frame(m_flat_frame_handler.get());
-    }
-    if (m_hot_pixel_identifier != nullptr) {
-        calibrated_photo.register_hot_pixel_identifier(m_hot_pixel_identifier.get());
+    for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame : m_calibration_frame_handlers) {
+        calibrated_photo.register_calibration_frame(calibration_frame);
     }
     calibrated_photo.calibrate();
 

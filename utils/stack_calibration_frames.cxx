@@ -2,6 +2,7 @@
 #include "../headers/StackerFactory.h"
 #include "../headers/InputArgumentsParser.h"
 #include "../headers/Common.h"
+#include "../headers/FlatFrameHandler.h"
 
 #include <thread>
 #include <string>
@@ -64,7 +65,8 @@ void configure_stacker_with_optional_arguments(StackerBase *stacker, const Input
     // flat frame
     const string flat_frame_file    = input_parser.get_optional_argument<string>("flat_frame", "");
     if (flat_frame_file != "")  {
-        stacker->add_flat_frame(flat_frame_file);
+        std::shared_ptr<const CalibrationFrameBase> flat_frame_handler = make_shared<FlatFrameHandler>(flat_frame_file);
+        stacker->add_calibration_frame_handler(flat_frame_handler);
         if (print_info) cout << "Flat frame file: " << flat_frame_file << "\n";
     }
 
