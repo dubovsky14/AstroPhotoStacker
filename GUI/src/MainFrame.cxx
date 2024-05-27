@@ -396,6 +396,7 @@ void MyFrame::add_button_bar()   {
     button_stack_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         update_checked_files_in_filelist();
         const bool files_aligned = m_filelist_handler.all_checked_files_are_aligned();
+        stack_calibration_frames();
         if (!files_aligned) {
             wxMessageDialog dialog(this, "Please align the files first!", "Files not aligned");
             if (dialog.ShowModal() == wxID_YES) {
@@ -1017,4 +1018,67 @@ void MyFrame::update_color_channels_mean_and_median_values_text()   {
 
     update_one_text(m_text_color_channels_mean_values, "Mean values: ", m_histogram_data_tool_gui->get_mean_values());
     update_one_text(m_text_color_channels_median_values, "Median values: ", m_histogram_data_tool_gui->get_median_values());
+};
+
+void MyFrame::stack_calibration_frames() {
+    for (FileTypes type : {FileTypes::BIAS, FileTypes::DARK, FileTypes::FLAT}) {
+        // get vector of checked files
+        const vector<string> &all_files           = m_filelist_handler.get_files(type);
+        const vector<bool>   &files_checked_flags = m_filelist_handler.get_files_checked(type);
+        vector<string> files_to_stack;
+        for (unsigned int i_file = 0; i_file < all_files.size(); ++i_file) {
+            if (files_checked_flags[i_file]) {
+                files_to_stack.push_back(all_files[i_file]);
+            }
+        }
+
+        // nothing to stack
+        if (files_to_stack.size() < 2) {
+            continue;
+        }
+
+        // add files to new filelist handler
+        FilelistHandler calibration_files_handler;
+        for (const auto &file : files_to_stack) {
+            // LIGHT is not a bug - we do not use files as correction here, we are stacking them
+            calibration_files_handler.add_file(file, FileTypes::LIGHT, true);
+        }
+
+        // create a separate stacker
+        std::unique_ptr<AstroPhotoStacker::StackerBase> calibration_stacker = get_configured_stacker(m_stack_settings, calibration_files_handler);
+
+        const string file_type_name = to_string(type);
+        const int tasks_total = calibration_stacker->get_tasks_total();
+        const std::atomic<int> &tasks_processed = calibration_stacker->get_tasks_processed();
+
+        wxProgressDialog progress_bar("File stacking", "Stacking " + file_type_name + " frames: 0 / " + std::to_string(tasks_total), tasks_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
+        progress_bar.Update(tasks_processed);
+
+        thread_pool pool(1);
+        pool.submit([this, &calibration_stacker](){
+            calibration_stacker->calculate_stacked_photo();
+        });
+
+        while (pool.get_tasks_total()) {
+            if (tasks_processed < tasks_total) {
+                progress_bar.Update(tasks_processed, "Stacking " + file_type_name + " frames: " + std::to_string(tasks_processed) + " / " + std::to_string(tasks_total));
+            }
+            else {
+                progress_bar.Update(tasks_total-1, "Calculating final "  + file_type_name + " frame ...");
+            }
+            wxMilliSleep(100);
+        }
+        pool.wait_for_tasks();
+
+        progress_bar.Close();
+        progress_bar.Destroy();
+
+        const string master_frame_name = files_to_stack.back().substr(0, files_to_stack.back().find_last_of('.')) + "_master" + file_type_name + ".tif";
+        calibration_stacker->save_stacked_photo(master_frame_name, CV_16UC3);
+
+        // remove original calibration frames from filelist handler
+        m_filelist_handler.remove_all_files_of_selected_type(type);
+        m_filelist_handler.add_file(master_frame_name, type, true);
+        update_files_to_stack_checkbox();
+    }
 };

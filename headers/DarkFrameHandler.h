@@ -10,7 +10,7 @@
 namespace AstroPhotoStacker {
 
     /**
-     * @brief A class that handles a flat frame data - it can read both raw files and tif/jpg images
+     * @brief A class that handles a dark frame data - it can read both raw files and tif/jpg images
      *
     */
     class DarkFrameHandler : public CalibrationFrameBase  {
@@ -20,7 +20,7 @@ namespace AstroPhotoStacker {
             /**
              * @brief Construct a new DarkFrameHandler object
              *
-             * @param input_file The file to read the flat frame data from
+             * @param input_file The file to read the dark frame data from
             */
             DarkFrameHandler(const std::string &input_file);
 

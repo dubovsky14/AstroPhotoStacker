@@ -320,3 +320,11 @@ void FilelistHandler::sort_by_filename(bool ascending)    {
     rearange_vector(&m_filelist_checked.at(FileTypes::LIGHT), indices.data());
     rearange_vector(&m_filelist_alignment_info, indices.data());
 };
+
+void FilelistHandler::remove_all_files_of_selected_type(FileTypes type)  {
+    m_filelist[type].clear();
+    m_filelist_checked[type].clear();
+    if (type == FileTypes::LIGHT)   {
+        m_filelist_alignment_info.clear();
+    }
+};

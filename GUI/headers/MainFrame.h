@@ -167,6 +167,8 @@ class MyFrame : public wxFrame  {
         wxStaticText* m_text_color_channels_median_values = nullptr;
 
         static std::string s_gui_folder_path;
+
+        void stack_calibration_frames();
 };
 
 inline int unique_counter()    {

@@ -37,6 +37,7 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
 
     const vector<string> &flat_frames = filelist_handler_only_checked.get_files(FileTypes::FLAT);
     if (flat_frames.size() > 0) {
+        cout << "Adding flat frame: " << flat_frames[0] << endl;
         stacker->add_flat_frame(flat_frames[0]);
     }
     return stacker;

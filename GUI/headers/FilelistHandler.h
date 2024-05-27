@@ -237,6 +237,11 @@ class FilelistHandler   {
         */
         void sort_by_filename(bool ascending = true);
 
+        /**
+         * @brief Remove all files of a given type
+        */
+        void remove_all_files_of_selected_type(FileTypes type);
+
     private:
         std::map<FileTypes, std::vector<std::string>>       m_filelist;
         std::map<FileTypes, std::vector<bool>>              m_filelist_checked;
