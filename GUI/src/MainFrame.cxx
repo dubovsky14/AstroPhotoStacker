@@ -35,6 +35,7 @@ MyFrame::MyFrame()
     : wxFrame(nullptr, wxID_ANY, "AstroPhotoStacker GUI") {
 
     m_recent_paths_handler = make_unique<RecentPathsHandler>(s_gui_folder_path + "data/recent_paths/");
+    m_stack_settings = make_unique<StackSettingsSaver>(s_gui_folder_path + "data/stack_settings.txt");
 
     // full screen
     SetSize(wxGetDisplaySize());
@@ -332,7 +333,7 @@ void MyFrame::add_button_bar()   {
             dialog->ShowModal();
             return;
         }
-        AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, &m_stack_settings);
+        AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, m_stack_settings.get());
         select_alignment_window->Show(true);
     });
 
@@ -369,7 +370,7 @@ void MyFrame::add_button_bar()   {
         }
 
         m_hot_pixel_identifier = make_unique<AstroPhotoStacker::HotPixelIdentifier>();
-        m_hot_pixel_identifier->set_n_cpu(m_stack_settings.get_n_cpus());
+        m_hot_pixel_identifier->set_n_cpu(m_stack_settings->get_n_cpus());
         const std::atomic<int> &n_processed = m_hot_pixel_identifier->get_number_of_processed_photos();
         const int files_total = files.size();
 
@@ -404,7 +405,7 @@ void MyFrame::add_button_bar()   {
         if (!files_aligned) {
             wxMessageDialog dialog(this, "Please align the files first!", "Files not aligned");
             if (dialog.ShowModal() == wxID_YES) {
-                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, &m_stack_settings);
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, static_cast<StackSettings *>(m_stack_settings.get()));
                 select_alignment_window->Show(true);
             }
             else {
@@ -412,8 +413,8 @@ void MyFrame::add_button_bar()   {
             }
         }
 
-        m_stacker = get_configured_stacker(m_stack_settings, m_filelist_handler);
-        if (this->m_stack_settings.use_hot_pixel_correction()) {
+        m_stacker = get_configured_stacker(*m_stack_settings, m_filelist_handler);
+        if (this->m_stack_settings->use_hot_pixel_correction()) {
             m_stacker->set_hot_pixels(m_hot_pixel_identifier->get_hot_pixels());
         }
         const int tasks_total = m_stacker->get_tasks_total();
@@ -464,12 +465,12 @@ void MyFrame::add_stack_settings_preview()   {
 };
 
 void MyFrame::add_n_cpu_slider()    {
-    const int max_cpu = m_stack_settings.get_max_threads();
-    const int default_value = std::max<int>(max_cpu/2,1);
+    const int max_cpu = m_stack_settings->get_max_threads();
+    const int default_value = m_stack_settings->get_n_cpus();
 
     // Create a wxStaticText to display the current value
     wxStaticText* n_cpu_text = new wxStaticText(this, wxID_ANY, wxString::Format(wxT("Number of CPUs: %d"), default_value ));
-    m_stack_settings.set_n_cpus(default_value);
+    m_stack_settings->set_n_cpus(default_value);
 
     // Create the wxSlider
     wxSlider* slider_ncpu = new wxSlider(this, wxID_ANY, default_value, 1, max_cpu, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
@@ -477,7 +478,7 @@ void MyFrame::add_n_cpu_slider()    {
     // Bind the slider's wxEVT_SLIDER event to a lambda function that updates the value text
     slider_ncpu->Bind(wxEVT_SLIDER, [n_cpu_text, slider_ncpu, this](wxCommandEvent&){
         int current_value = slider_ncpu->GetValue();
-        (this->m_stack_settings).set_n_cpus(current_value);
+        m_stack_settings->set_n_cpus(current_value);
         n_cpu_text->SetLabel(wxString::Format(wxT("Number of CPUs: %d"), current_value));
     });
 
@@ -489,21 +490,39 @@ void MyFrame::add_n_cpu_slider()    {
 void MyFrame::add_stacking_algorithm_choice_box()  {
     wxStaticText* stacking_algorithm_text = new wxStaticText(this, wxID_ANY, "Stacking algorithm:");
 
-    wxString stacking_algorithms[m_stack_settings.get_stacking_algorithms().size()];
-    for (unsigned int i = 0; i < m_stack_settings.get_stacking_algorithms().size(); ++i) {
-        stacking_algorithms[i] = m_stack_settings.get_stacking_algorithms()[i];
+    wxString stacking_algorithms[m_stack_settings->get_stacking_algorithms().size()];
+    for (unsigned int i = 0; i < m_stack_settings->get_stacking_algorithms().size(); ++i) {
+        stacking_algorithms[i] = m_stack_settings->get_stacking_algorithms()[i];
     }
-    wxChoice* choice_box_stacking_algorithm = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_stack_settings.get_stacking_algorithms().size(), stacking_algorithms);
-    choice_box_stacking_algorithm->SetSelection(0);
+
+    const vector<string> &stacking_algorithms_vector = m_stack_settings->get_stacking_algorithms();
+    int defaut_choice = 0;
+    for (unsigned int i = 0; i < stacking_algorithms_vector.size(); ++i) {
+        if (stacking_algorithms_vector[i] == m_stack_settings->get_stacking_algorithm()) {
+            defaut_choice = i;
+            break;
+        }
+    }
+
+    cout << "Stacking algorithm: " << m_stack_settings->get_stacking_algorithm() << endl;
+    wxChoice* choice_box_stacking_algorithm = new wxChoice( this,
+                                                            wxID_ANY,
+                                                            wxDefaultPosition,
+                                                            wxDefaultSize,
+                                                            m_stack_settings->get_stacking_algorithms().size(),
+                                                            stacking_algorithms);
+
+    choice_box_stacking_algorithm->SetSelection(defaut_choice);
+    //choice_box_stacking_algorithm->SetSelection(0);
     choice_box_stacking_algorithm->Bind(wxEVT_CHOICE, [choice_box_stacking_algorithm, this](wxCommandEvent&){
         int current_selection = choice_box_stacking_algorithm->GetSelection();
-        (this->m_stack_settings).set_stacking_algorithm(choice_box_stacking_algorithm->GetString(current_selection).ToStdString());
+        m_stack_settings->set_stacking_algorithm(choice_box_stacking_algorithm->GetString(current_selection).ToStdString());
         update_kappa_sigma_visibility();
         update_cut_off_average_visibility();
     });
 
     int current_selection = choice_box_stacking_algorithm->GetSelection();
-    m_stack_settings.set_stacking_algorithm(choice_box_stacking_algorithm->GetString(current_selection).ToStdString());
+    m_stack_settings->set_stacking_algorithm(choice_box_stacking_algorithm->GetString(current_selection).ToStdString());
 
     m_sizer_top_left->Add(stacking_algorithm_text, 0, wxEXPAND, 5);
     m_sizer_top_left->Add(choice_box_stacking_algorithm, 0,  wxEXPAND, 5);
@@ -536,14 +555,15 @@ void MyFrame::add_kappa_sigma_options() {
     wxBoxSizer* kappa_sizer  = new wxBoxSizer(wxVERTICAL);
     kappa_sigma_sizer->Add(kappa_sizer, 0, wxEXPAND, 5);
     m_kappa_text = new wxStaticText(this, wxID_ANY, "Kappa:");
-    m_spin_ctrl_kappa = new wxSpinCtrlDouble(this, wxID_ANY, "3.0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 6, 2, 0.1);
+    const float default_kappa = m_stack_settings->get_kappa();
+    m_spin_ctrl_kappa = new wxSpinCtrlDouble(this, wxID_ANY, to_string(default_kappa), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 6, default_kappa, 0.1);
 
     m_spin_ctrl_kappa->Bind(wxEVT_SPINCTRLDOUBLE, [this](wxCommandEvent&){
         double current_value = m_spin_ctrl_kappa->GetValue();
-        (this->m_stack_settings).set_kappa(current_value);
+        m_stack_settings->set_kappa(current_value);
     });
     double current_kappa = m_spin_ctrl_kappa->GetValue();
-    m_stack_settings.set_kappa(current_kappa);
+    m_stack_settings->set_kappa(current_kappa);
 
     kappa_sizer->Add(m_kappa_text, 0, wxEXPAND, 5);
     kappa_sizer->Add(m_spin_ctrl_kappa, 0,  wxEXPAND, 5);
@@ -551,21 +571,22 @@ void MyFrame::add_kappa_sigma_options() {
     wxBoxSizer* kappa_sigma_iter_sizer  = new wxBoxSizer(wxVERTICAL);
     kappa_sigma_sizer->Add(kappa_sigma_iter_sizer, 0, wxEXPAND, 5);
     m_kappa_sigma_iter_text = new wxStaticText(this, wxID_ANY, "Iterations:");
-    m_spin_ctrl_kappa_sigma_iter = new wxSpinCtrl(this, wxID_ANY, "3", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100, 3);
+    const int default_iter = m_stack_settings->get_kappa_sigma_iter();
+    m_spin_ctrl_kappa_sigma_iter = new wxSpinCtrl(this, wxID_ANY, to_string(default_iter), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100, default_iter);
 
     m_spin_ctrl_kappa_sigma_iter->Bind(wxEVT_SPINCTRL, [this](wxCommandEvent&){
         int current_value = m_spin_ctrl_kappa_sigma_iter->GetValue();
-        (this->m_stack_settings).set_kappa_sigma_iter(current_value);
+        m_stack_settings->set_kappa_sigma_iter(current_value);
     });
     int current_n_iter = m_spin_ctrl_kappa_sigma_iter->GetValue();
-    m_stack_settings.set_kappa_sigma_iter(current_n_iter);
+    m_stack_settings->set_kappa_sigma_iter(current_n_iter);
 
     kappa_sigma_iter_sizer->Add(m_kappa_sigma_iter_text, 0, wxEXPAND, 5);
     kappa_sigma_iter_sizer->Add(m_spin_ctrl_kappa_sigma_iter, 0,  wxEXPAND, 5);
 };
 
 void MyFrame::update_kappa_sigma_visibility()   {
-    if (!m_stack_settings.is_kappa_sigma()) {
+    if (!m_stack_settings->is_kappa_sigma()) {
         m_kappa_text->Hide();
         m_spin_ctrl_kappa->Hide();
         m_kappa_sigma_iter_text->Hide();
@@ -590,10 +611,10 @@ void MyFrame::add_cut_off_average_options()  {
 
     m_spin_ctrl_cut_off_average->Bind(wxEVT_SPINCTRLDOUBLE, [this](wxCommandEvent&){
         double current_value = m_spin_ctrl_cut_off_average->GetValue();
-        (this->m_stack_settings).set_cut_off_tail_fraction(current_value);
+        m_stack_settings->set_cut_off_tail_fraction(current_value);
     });
     double current_cut_off = m_spin_ctrl_cut_off_average->GetValue();
-    m_stack_settings.set_cut_off_tail_fraction(current_cut_off);
+    m_stack_settings->set_cut_off_tail_fraction(current_cut_off);
 
     cut_off_sizer->Add(m_cut_off_average_text, 0, wxEXPAND, 5);
     cut_off_sizer->Add(m_spin_ctrl_cut_off_average, 0,  wxEXPAND, 5);
@@ -601,7 +622,7 @@ void MyFrame::add_cut_off_average_options()  {
 };
 
 void MyFrame::update_cut_off_average_visibility()   {
-    if (m_stack_settings.get_stacking_algorithm() != "cut-off average") {
+    if (m_stack_settings->get_stacking_algorithm() != "cut-off average") {
         m_cut_off_average_text->Hide();
         m_spin_ctrl_cut_off_average->Hide();
     }
@@ -621,34 +642,34 @@ void MyFrame::add_hot_pixel_correction_checkbox()    {
             return;
         }
         bool is_checked = checkbox_hot_pixel_correction->GetValue();
-        (this->m_stack_settings).set_hot_pixel_correction(is_checked);
+        m_stack_settings->set_hot_pixel_correction(is_checked);
     });
     bool is_checked = checkbox_hot_pixel_correction->GetValue();
-    m_stack_settings.set_hot_pixel_correction(is_checked);
+    m_stack_settings->set_hot_pixel_correction(is_checked);
 
     m_sizer_top_left->Add(checkbox_hot_pixel_correction, 0, wxEXPAND, 5);
 };
 
 void MyFrame::add_color_interpolation_checkbox()    {
     wxCheckBox* checkbox_color_interpolation = new wxCheckBox(this, wxID_ANY, "Color interpolation");
-    const bool is_checked = m_stack_settings.use_color_interpolation();
+    const bool is_checked = m_stack_settings->use_color_interpolation();
     checkbox_color_interpolation->SetValue(is_checked);
     checkbox_color_interpolation->SetToolTip("This will calculate all 3 color channels for each pixels, using information from its neighbors. It helps to further suppress the noise and avoid weird color artifacts, but it also leads to approx. 3 times slower stacking and might result in slightly less detailed stacked image.");
     checkbox_color_interpolation->Bind(wxEVT_CHECKBOX, [checkbox_color_interpolation, this](wxCommandEvent&){
         const bool is_checked = checkbox_color_interpolation->GetValue();
-        (this->m_stack_settings).set_use_color_interpolation(is_checked);
+        m_stack_settings->set_use_color_interpolation(is_checked);
     });
     m_sizer_top_left->Add(checkbox_color_interpolation, 0, wxEXPAND, 5);
 };
 
 void MyFrame::add_color_stretching_checkbox()   {
     wxCheckBox* checkbox_color_stretching = new wxCheckBox(this, wxID_ANY, "Apply color stretching to output file");
-    const bool is_checked = m_stack_settings.apply_color_stretching();
+    const bool is_checked = m_stack_settings->apply_color_stretching();
     checkbox_color_stretching->SetValue(is_checked);
     checkbox_color_stretching->SetToolTip("If checked, the color stretching from RGB sliders will be used in the output image.");
     checkbox_color_stretching->Bind(wxEVT_CHECKBOX, [checkbox_color_stretching, this](wxCommandEvent&){
         const bool is_checked = checkbox_color_stretching->GetValue();
-        (this->m_stack_settings).set_apply_color_stretching(is_checked);
+        m_stack_settings->set_apply_color_stretching(is_checked);
     });
     m_sizer_top_left->Add(checkbox_color_stretching, 0, wxEXPAND, 5);
 };
@@ -656,13 +677,14 @@ void MyFrame::add_color_stretching_checkbox()   {
 void MyFrame::add_max_memory_spin_ctrl() {
     wxStaticText* memory_usage_text = new wxStaticText(this, wxID_ANY, "Maximum memory usage (MB):");
 
-    wxSpinCtrl* spin_ctrl_max_memory = new wxSpinCtrl(this, wxID_ANY, "16000", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100000, 16000);
+    const int memory_defeault = m_stack_settings->get_max_memory();
+    wxSpinCtrl* spin_ctrl_max_memory = new wxSpinCtrl(this, wxID_ANY, std::to_string(memory_defeault), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100000, memory_defeault);
     spin_ctrl_max_memory->Bind(wxEVT_SPINCTRL, [spin_ctrl_max_memory, this](wxCommandEvent&){
         int current_value = spin_ctrl_max_memory->GetValue();
-        (this->m_stack_settings).set_max_memory(current_value);
+        m_stack_settings->set_max_memory(current_value);
     });
     int current_value = spin_ctrl_max_memory->GetValue();
-    m_stack_settings.set_max_memory(current_value);
+    m_stack_settings->set_max_memory(current_value);
 
     m_sizer_top_left->Add(memory_usage_text, 0, wxEXPAND, 5);
     m_sizer_top_left->Add(spin_ctrl_max_memory, 0,  wxEXPAND, 5);
@@ -984,7 +1006,7 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
             file_address += ".tif";
         }
 
-        if (m_stack_settings.apply_color_stretching()) {
+        if (m_stack_settings->apply_color_stretching()) {
             std::vector<std::vector<double> > stacked_image = m_stacker->get_stacked_image();
             m_color_stretcher.stretch_image(&stacked_image, pow(2,13), false);
             AstroPhotoStacker::StackerBase::save_stacked_photo(file_address,
@@ -1053,7 +1075,7 @@ void MyFrame::stack_calibration_frames() {
         }
 
         // create a separate stacker
-        StackSettings calibration_frames_settings = m_stack_settings;
+        StackSettings calibration_frames_settings = *m_stack_settings;
         calibration_frames_settings.set_use_color_interpolation(false);
         std::unique_ptr<AstroPhotoStacker::StackerBase> calibration_stacker = get_configured_stacker(calibration_frames_settings, calibration_files_handler);
 

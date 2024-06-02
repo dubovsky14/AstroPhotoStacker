@@ -42,7 +42,7 @@ void StackSettings::set_stacking_algorithm(const std::string& stacking_algorithm
         m_stacking_algorithm = stacking_algorithm;
     }
     else    {
-        throw std::invalid_argument("Stacking algorithm not found");
+        throw std::invalid_argument("Stacking algorithm not found: \'" + stacking_algorithm + "\'");
     }
 };
 

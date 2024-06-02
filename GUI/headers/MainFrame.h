@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../headers/FilelistHandler.h"
-#include "../headers/StackSettings.h"
+#include "../headers/StackSettingsSaver.h"
 #include "../headers/ImagePreview.h"
 #include "../headers/RecentPathsHandler.h"
 #include "../headers/CombinedColorStrecherTool.h"
@@ -138,7 +138,7 @@ class MyFrame : public wxFrame  {
 
 
         FilelistHandler m_filelist_handler;
-        StackSettings   m_stack_settings;
+        std::unique_ptr<StackSettingsSaver>    m_stack_settings = nullptr;
         std::unique_ptr<AstroPhotoStacker::HotPixelIdentifier>  m_hot_pixel_identifier = nullptr;
         std::unique_ptr<AstroPhotoStacker::StackerBase>         m_stacker = nullptr;
 

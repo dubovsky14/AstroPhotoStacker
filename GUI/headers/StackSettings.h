@@ -55,7 +55,7 @@ class StackSettings {
 
     private:
         std::string m_alignment_file;
-        std::string m_stacking_algorithm = "average";
+        std::string m_stacking_algorithm = "kappa-sigma mean";
         int m_n_cpus = get_max_threads();
         int m_max_memory = 8000;
 
