@@ -128,6 +128,25 @@ void MyFrame::add_alignment_menu()  {
         }
     }, id);
 
+
+    id = unique_counter();
+    alignment_menu->Append(id, "Enable stack without alignment", "Enable stack without alignment");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        m_filelist_handler.get_files(FileTypes::LIGHT);
+        for (unsigned int i_file = 0; i_file < m_filelist_handler.get_files(FileTypes::LIGHT).size(); ++i_file) {
+            AlignmentFileInfo alignment_file_info;
+            alignment_file_info.shift_x = 0;
+            alignment_file_info.shift_y = 0;
+            alignment_file_info.rotation_center_x = 0;
+            alignment_file_info.rotation_center_y = 0;
+            alignment_file_info.rotation = 0;
+            alignment_file_info.ranking = 0;
+            alignment_file_info.initialized = true;
+            m_filelist_handler.set_alignment_info(i_file, alignment_file_info);
+            update_alignment_status();
+        }
+    }, id);
+
     m_menu_bar->Append(alignment_menu, "&Alignment");
 };
 
