@@ -72,6 +72,9 @@ std::string get_stacker_type_for_factory(const std::string &stacking_algorithm_a
     else if (stacking_algorithm_app_name == "cut-off average") {
         return "cut_off_average";
     }
+    else if (stacking_algorithm_app_name == "maximum") {
+        return "maximum";
+    }
     else {
         throw std::runtime_error("Unknown stacker type: " + stacking_algorithm_app_name);
     }
