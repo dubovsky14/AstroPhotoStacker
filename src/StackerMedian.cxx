@@ -57,7 +57,6 @@ void StackerMedian::calculate_stacked_photo()  {
             }
         }
         pool.wait_for_tasks();
-
         auto submit_median_calculation = [this, y_min, y_max](int i_color, int y_final_array, int y_values_to_stack_array ) {
             process_line(y_final_array, y_values_to_stack_array, i_color);
         };
@@ -114,14 +113,12 @@ void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y
 
     if (m_interpolate_colors)   {
         for (int color = 0; color < 3; color++)   {
-            unsigned int value;
+            const unsigned int slice_shift = y_min*m_width;
             for (int y = y_min; y < y_max; y++)  {
+                const unsigned int start_of_line_index_reference_frame = y*m_width;
+                const unsigned int start_of_line_index_this_slice = (y*m_width - slice_shift)*n_files + file_index;
                 for (int x = 0; x < m_width; x++)   {
-                    calibrated_photo.get_value_by_reference_frame_coordinates(x, y, color, &value);
-                    const unsigned int index_stacking_array = (y-y_min)*m_width + x;
-                    if (color >= 0) {
-                        m_values_to_stack[color][n_files*index_stacking_array + file_index] = value;
-                    }
+                    m_values_to_stack[color][start_of_line_index_this_slice + x*n_files] = calibrated_photo.get_value_by_reference_frame_index(start_of_line_index_reference_frame+x, color);
                 }
             }
         }

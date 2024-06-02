@@ -78,8 +78,7 @@ namespace AstroPhotoStacker {
              * @param value The value of the pixel at the given coordinates.
              * @param color The color of the pixel at the given coordinates.
             */
-            void get_value_by_reference_frame_coordinates(float x, float y, unsigned int *value, char *color) const;
-
+            void get_value_by_reference_frame_coordinates(int x, int y, unsigned int *value, char *color) const;
 
             /**
              * @brief Get the value of the pixel at the given coordinates in the reference frame, when color interpolation is used.
@@ -89,7 +88,18 @@ namespace AstroPhotoStacker {
              * @param color The color of the pixel at the given coordinates.
              * @param value The value of the pixel at the given coordinates.
             */
-            void get_value_by_reference_frame_coordinates(float x, float y, int color, unsigned int *value) const;
+            void get_value_by_reference_frame_coordinates(int x, int y, int color, unsigned int *value) const;
+
+            /**
+             * @brief Get the value of the pixel at the given index in the reference frame, when color interpolation is used. This method is optimized for speed, no boundary checks are performed.
+             *
+             * @param index The index of the pixel in the reference frame.
+             * @param color The color of the pixel at the given index.
+             * @return The value of the pixel at the given index.
+            */
+            inline int get_value_by_reference_frame_index(int index, int color) const {
+                return m_data_shifted_color_interpolation[color][index];
+            }
 
         private:
             int m_width;

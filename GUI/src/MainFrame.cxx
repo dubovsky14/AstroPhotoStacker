@@ -1053,7 +1053,9 @@ void MyFrame::stack_calibration_frames() {
         }
 
         // create a separate stacker
-        std::unique_ptr<AstroPhotoStacker::StackerBase> calibration_stacker = get_configured_stacker(m_stack_settings, calibration_files_handler);
+        StackSettings calibration_frames_settings = m_stack_settings;
+        calibration_frames_settings.set_use_color_interpolation(false);
+        std::unique_ptr<AstroPhotoStacker::StackerBase> calibration_stacker = get_configured_stacker(calibration_frames_settings, calibration_files_handler);
 
         const string file_type_name = to_string(type);
         const int tasks_total = calibration_stacker->get_tasks_total();
@@ -1082,7 +1084,7 @@ void MyFrame::stack_calibration_frames() {
         progress_bar.Destroy();
 
         const string master_frame_name = files_to_stack.back().substr(0, files_to_stack.back().find_last_of('.')) + "_master" + file_type_name + ".tif";
-        calibration_stacker->save_stacked_photo(master_frame_name, CV_16UC3);
+        calibration_stacker->save_stacked_photo(master_frame_name, false, CV_16U);
 
         // remove original calibration frames from filelist handler
         m_filelist_handler.remove_all_files_of_selected_type(type);

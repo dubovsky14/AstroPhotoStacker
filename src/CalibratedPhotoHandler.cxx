@@ -115,12 +115,9 @@ void CalibratedPhotoHandler::calibrate() {
     m_colors_original.clear();
 };
 
-void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(float x, float y, unsigned int *value, char *color) const {
-    const int x_int = int(x);
-    const int y_int = int(y);
-
-    if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
-        const unsigned int index = y_int*m_width + x_int;
+void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int y, unsigned int *value, char *color) const {
+    if (x >= 0 && x < m_width && y >= 0 && y < m_height) {
+        const unsigned int index = y*m_width + x;
         *value = m_data_shifted[index];
         *color = m_color_conversion_table[m_colors_shifted[index]];
     }
@@ -130,17 +127,14 @@ void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(float x, f
     }
 };
 
-void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(float x, float y, int color, unsigned int *value) const   {
-    const int x_int = int(x);
-    const int y_int = int(y);
-
+void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int y, int color, unsigned int *value) const   {
     if (!m_use_color_interpolation) {
         *value = 0;
         return;
     }
 
-    if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
-        const unsigned int index = y_int*m_width + x_int;
+    if (x >= 0 && x < m_width && y >= 0 && y < m_height) {
+        const unsigned int index = y*m_width + x;
         *value = m_data_shifted_color_interpolation[color][index];
     }
     else {
