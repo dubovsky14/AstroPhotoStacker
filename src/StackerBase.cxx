@@ -8,7 +8,7 @@ StackerBase::StackerBase(int number_of_colors, int width, int height, bool inter
     m_number_of_colors = number_of_colors;
     m_width = width;
     m_height = height;
-    m_stacked_image = vector<vector<double> >(m_number_of_colors, vector<double>(m_width*m_height, 0));
+    m_stacked_image = vector<vector<double> >(m_number_of_colors, vector<double>(m_width*m_height, c_empty_pixel_value));
     m_interpolate_colors = interpolate_colors;
 };
 
