@@ -59,6 +59,12 @@ void StackerMeanValue::set_number_of_cpu_threads(unsigned int n_cpu) {
     m_n_cpu = n_cpu;
 };
 
+
+void StackerMeanValue::process_pixel(int i_color, int i_pixel, int value, int i_thread) {
+    m_values_to_stack_individual_threads[i_thread][i_color][i_pixel] += value;
+    m_counts_to_stack_individual_threads[i_thread][i_color][i_pixel] += 1;
+};
+
 void StackerMeanValue::add_photo_to_stack(unsigned int i_file, int y_min, int y_max)  {
     cout << "Adding " + m_files_to_stack[i_file] + " to stack\n";
     CalibratedPhotoHandler calibrated_photo = get_calibrated_photo(i_file, y_min, y_max);
@@ -71,18 +77,26 @@ void StackerMeanValue::add_photo_to_stack(unsigned int i_file, int y_min, int y_
             continue;
         }
 
-        vector<vector<int>>                 &stacked_image = m_values_to_stack_individual_threads[i_thread];
-        vector<vector<short unsigned int>>  &number_of_stacked_pixels = m_counts_to_stack_individual_threads[i_thread];
-
-        unsigned int value;
-        char color;
-        for (int y = 0; y < m_height; y++)  {
-            for (int x = 0; x < m_width; x++)   {
-                calibrated_photo.get_value_by_reference_frame_coordinates(x, y, &value, &color);
-                if (color >= 0) {
-                    const unsigned int index = y*m_width + x;
-                    stacked_image[color][index]   += value;
-                    number_of_stacked_pixels[color][index] += 1;
+        if (m_interpolate_colors)   {
+            for (int color = 0; color < 3; color++)   {
+                for (int y = 0; y < m_height; y++)  {
+                    for (int x = 0; x < m_width; x++)   {
+                        const int index = y*m_width + x;
+                        const auto value = calibrated_photo.get_value_by_reference_frame_index(index, color);
+                        process_pixel(color, index, value, i_thread);
+                    }
+                }
+            }
+        }
+        else   {
+            unsigned int value;
+            char color;
+            for (int y = 0; y < m_height; y++)  {
+                for (int x = 0; x < m_width; x++)   {
+                    calibrated_photo.get_value_by_reference_frame_coordinates(x, y, &value, &color);
+                    if (color >= 0) {
+                        process_pixel(color, y*m_width + x, value, i_thread);
+                    }
                 }
             }
         }

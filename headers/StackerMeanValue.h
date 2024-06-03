@@ -71,5 +71,16 @@ namespace AstroPhotoStacker {
              * @brief Clean up the arrays for stacking where partial results were stored
             */
             virtual void deallocate_arrays_for_stacking();
+
+
+            /**
+             * @brief Process the given pixel for given color
+             *
+             * @param i_color - color index
+             * @param i_pixel - pixel index (it's the total index = y*width + x)
+             * @param value - value of the pixel from individual photo
+             * @param i_thread - thread index
+            */
+            virtual void process_pixel(int i_color, int i_pixel, int value, int i_thread);
     };
 }
