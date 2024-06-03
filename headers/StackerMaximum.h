@@ -3,7 +3,7 @@
 #include "../headers/StackerMedian.h"
 
 /**
- * @brief Class for stacking photos using maximal value
+ * @brief Class for stacking photos using maximal value. This can be useful to stack star trails or thunderstorms.
  *
  * #TODO: This is quite dumb implementation - we do not need the whole array in the memory. Need to change it in a future.
  */
