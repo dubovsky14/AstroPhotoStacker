@@ -56,5 +56,20 @@ namespace AstroPhotoStacker {
             virtual int get_height_range_limit() const;
 
             virtual void add_photo_to_stack(unsigned int file_index, int y_min, int y_max) override;
+
+            /**
+             * @brief Put all the partial results together
+            */
+            virtual void calculate_final_image();
+
+            /**
+             * @brief Allocate arrays for stacking where partial results are stored
+            */
+            virtual void allocate_arrays_for_stacking();
+
+            /**
+             * @brief Clean up the arrays for stacking where partial results were stored
+            */
+            virtual void deallocate_arrays_for_stacking();
     };
 }

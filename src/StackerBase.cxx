@@ -175,7 +175,7 @@ CalibratedPhotoHandler StackerBase::get_calibrated_photo(unsigned int i_file, in
     const float rot_center_y    = alignment_info.rotation_center_y;
     const float rotation        = alignment_info.rotation;
 
-    CalibratedPhotoHandler calibrated_photo(file_address);
+    CalibratedPhotoHandler calibrated_photo(file_address, m_interpolate_colors);
     calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
     calibrated_photo.limit_y_range(y_min, y_max);
     for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame : m_calibration_frame_handlers) {
