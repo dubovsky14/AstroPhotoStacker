@@ -58,12 +58,20 @@ namespace AstroPhotoStacker {
             /**
              * @brief Put all the partial results together
             */
-            virtual void calculate_final_image() = 0;
+            virtual void calculate_final_image(int y_min, int y_max) = 0;
+
+            /**
+             * @brief Set again default values to these arrays
+             *
+            */
+            virtual void reset_values_in_arrays_for_stacking() = 0;
 
             /**
              * @brief Allocate arrays for stacking where partial results are stored
+             *
+             * @param dy - number of pixel lines to be processed at once
             */
-            virtual void allocate_arrays_for_stacking() = 0;
+            virtual void allocate_arrays_for_stacking(int dy) = 0;
 
             /**
              * @brief Clean up the arrays for stacking where partial results were stored

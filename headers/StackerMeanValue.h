@@ -29,13 +29,24 @@ namespace AstroPhotoStacker {
 
             /**
              * @brief Put all the partial results together
+             *
+             * @param y_min - minimal y-coordinate of the area to be processed
+             * @param y_max - maximal y-coordinate of the area to be processed
             */
-            virtual void calculate_final_image() override;
+            virtual void calculate_final_image(int y_min, int y_max) override;
 
             /**
              * @brief Allocate arrays for stacking where partial results are stored
+             *
+             * @param dy - number of pixel lines to be processed at once
             */
-            virtual void allocate_arrays_for_stacking() override;
+            virtual void allocate_arrays_for_stacking(int dy) override;
+
+            /**
+             * @brief Set again default values to these arrays
+             *
+            */
+            virtual void reset_values_in_arrays_for_stacking() override;
 
             /**
              * @brief Clean up the arrays for stacking where partial results were stored

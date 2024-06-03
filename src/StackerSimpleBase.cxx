@@ -19,26 +19,34 @@ StackerSimpleBase::StackerSimpleBase(int number_of_colors, int width, int height
 void StackerSimpleBase::calculate_stacked_photo()  {
     m_mutexes = vector<mutex>(m_n_cpu);
 
-    allocate_arrays_for_stacking();
+    const int height_range = get_height_range_limit();
 
-    int y_min = 0;
-    int y_max = get_height_range_limit();
-    if (m_n_cpu == 1)   {
-        for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
-            add_photo_to_stack(i_file, y_min, y_max);
+    allocate_arrays_for_stacking(height_range);
+
+    for (int y_min = 0; y_min < m_height; y_min += height_range) {
+        if (y_min != 0) {
+            reset_values_in_arrays_for_stacking();
         }
-    }
-    else    {
-        thread_pool pool(m_n_cpu);
-        for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
-            pool.submit([this, i_file, y_min, y_max]() {
+
+        const int y_max = min(y_min + height_range, m_height);
+        if (m_n_cpu == 1)   {
+            for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
                 add_photo_to_stack(i_file, y_min, y_max);
-            });
+            }
         }
-        pool.wait_for_tasks();
+        else    {
+            thread_pool pool(m_n_cpu);
+            for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
+                pool.submit([this, i_file, y_min, y_max]() {
+                    add_photo_to_stack(i_file, y_min, y_max);
+                });
+            }
+            pool.wait_for_tasks();
+        }
+        cout << "Calculating final image in range " << y_min << " - " << y_max << "\n";
+        calculate_final_image(y_min, y_max);
     }
-
-    calculate_final_image();
+    cout << "Fixing empty pixels\n";
 
     fix_empty_pixels();
 
@@ -54,6 +62,8 @@ void StackerSimpleBase::add_photo_to_stack(unsigned int i_file, int y_min, int y
     cout << "Adding " + m_files_to_stack[i_file] + " to stack\n";
     CalibratedPhotoHandler calibrated_photo = get_calibrated_photo(i_file, y_min, y_max);
 
+    const int pixel_shift = y_min*m_width;
+
     unsigned int i_thread = 0;
     while (true) {
         i_thread = (i_thread+1) % m_mutexes.size();
@@ -64,11 +74,11 @@ void StackerSimpleBase::add_photo_to_stack(unsigned int i_file, int y_min, int y
 
         if (m_interpolate_colors)   {
             for (int color = 0; color < 3; color++)   {
-                for (int y = 0; y < m_height; y++)  {
+                for (int y = y_min; y < y_max; y++)  {
                     for (int x = 0; x < m_width; x++)   {
                         const int index = y*m_width + x;
                         const auto value = calibrated_photo.get_value_by_reference_frame_index(index, color);
-                        process_pixel(color, index, value, i_thread);
+                        process_pixel(color, index - pixel_shift, value, i_thread);
                     }
                 }
             }
@@ -76,11 +86,11 @@ void StackerSimpleBase::add_photo_to_stack(unsigned int i_file, int y_min, int y
         else   {
             unsigned int value;
             char color;
-            for (int y = 0; y < m_height; y++)  {
+            for (int y = y_min; y < y_max; y++)  {
                 for (int x = 0; x < m_width; x++)   {
                     calibrated_photo.get_value_by_reference_frame_coordinates(x, y, &value, &color);
                     if (color >= 0) {
-                        process_pixel(color, y*m_width + x, value, i_thread);
+                        process_pixel(color, (y-y_min)*m_width + x, value, i_thread);
                     }
                 }
             }
@@ -92,9 +102,13 @@ void StackerSimpleBase::add_photo_to_stack(unsigned int i_file, int y_min, int y
 };
 
 int StackerSimpleBase::get_height_range_limit() const  {
-    return m_width;
+    return m_height;
 };
 
 int StackerSimpleBase::get_tasks_total() const  {
-    return m_files_to_stack.size();
+    const long long int n_files = m_files_to_stack.size();
+    const int height_range = get_height_range_limit();
+    int n_slices = m_height/height_range + (m_height % height_range > 0);
+
+    return n_slices*n_files;
 };
