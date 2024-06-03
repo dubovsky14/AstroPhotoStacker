@@ -20,13 +20,6 @@ namespace AstroPhotoStacker {
             virtual void calculate_stacked_photo() override;
 
             /**
-             * @brief Set the number of CPU threads to be used for stacking
-             *
-             * @param n_cpu - number of CPU threads
-            */
-            virtual void set_number_of_cpu_threads(unsigned int n_cpu) override;
-
-            /**
              * @brief Get the number of tasks to be done by the stacker
              *
              * @return int - number of tasks
@@ -37,9 +30,9 @@ namespace AstroPhotoStacker {
             std::vector<std::vector<unsigned short>> m_number_of_stacked_pixels;
             std::vector<std::unique_ptr<short[]>> m_values_to_stack;
 
-            void add_photo_to_stack(unsigned int file_index, int y_min, int y_max);
+            virtual void add_photo_to_stack(unsigned int file_index, int y_min, int y_max) override;
 
-            int get_height_range_limit()    const;
+            virtual int get_height_range_limit() const override;
 
             virtual void process_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color);
 

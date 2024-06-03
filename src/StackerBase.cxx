@@ -89,6 +89,10 @@ void StackerBase::save_stacked_photo(const std::string &file_address, const std:
     }
 };
 
+void StackerBase::set_number_of_cpu_threads(unsigned int n_cpu) {
+    m_n_cpu = n_cpu;
+};
+
 void StackerBase::fix_empty_pixels()    {
     auto get_average_from_pixels_around = [](const vector<double> &color_channel, int width, int pixel_index) {
         double sum = 0;
@@ -159,4 +163,24 @@ const std::atomic<int>& StackerBase::get_tasks_processed() const    {
 
 const std::vector<std::vector<double> >& StackerBase::get_stacked_image() const {
     return m_stacked_image;
+};
+
+CalibratedPhotoHandler StackerBase::get_calibrated_photo(unsigned int i_file, int y_min, int y_max) const    {
+    const string file_address = m_files_to_stack[i_file];
+    const bool apply_alignment = m_apply_alignment[i_file];
+    const FileAlignmentInformation alignment_info = apply_alignment ? m_photo_alignment_handler->get_alignment_parameters(file_address) : FileAlignmentInformation();
+    const float shift_x         = alignment_info.shift_x;
+    const float shift_y         = alignment_info.shift_y;
+    const float rot_center_x    = alignment_info.rotation_center_x;
+    const float rot_center_y    = alignment_info.rotation_center_y;
+    const float rotation        = alignment_info.rotation;
+
+    CalibratedPhotoHandler calibrated_photo(file_address);
+    calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+    calibrated_photo.limit_y_range(y_min, y_max);
+    for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame : m_calibration_frame_handlers) {
+        calibrated_photo.register_calibration_frame(calibration_frame);
+    }
+    calibrated_photo.calibrate();
+    return calibrated_photo;
 };

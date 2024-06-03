@@ -21,16 +21,18 @@ void StackerMeanValue::calculate_stacked_photo()  {
     m_values_to_stack_individual_threads = vector<vector<vector<int>>>(m_n_cpu, vector<vector<int>>(m_number_of_colors, vector<int>(m_width*m_height, 0)));
     m_counts_to_stack_individual_threads = vector<vector<vector<short unsigned int>>>(m_n_cpu, vector<vector<short unsigned int>>(m_number_of_colors, vector<short unsigned int>(m_width*m_height, 0)));
 
+    int y_min = 0;
+    int y_max = get_height_range_limit();
     if (m_n_cpu == 1)   {
         for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
-            add_photo_to_stack(i_file);
+            add_photo_to_stack(i_file, y_min, y_max);
         }
     }
     else    {
         thread_pool pool(m_n_cpu);
         for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
-            pool.submit([this, i_file]() {
-                add_photo_to_stack(i_file);
+            pool.submit([this, i_file, y_min, y_max]() {
+                add_photo_to_stack(i_file, y_min, y_max);
             });
         }
         pool.wait_for_tasks();
@@ -78,24 +80,10 @@ void StackerMeanValue::set_number_of_cpu_threads(unsigned int n_cpu) {
     m_n_cpu = n_cpu;
 };
 
-void StackerMeanValue::add_photo_to_stack(unsigned int i_file)  {
+void StackerMeanValue::add_photo_to_stack(unsigned int i_file, int y_min, int y_max)  {
     cout << "Adding " + m_files_to_stack[i_file] + " to stack\n";
 
-    const string file_address = m_files_to_stack[i_file];
-    const bool apply_alignment = m_apply_alignment[i_file];
-    const FileAlignmentInformation alignment_info = apply_alignment ? m_photo_alignment_handler->get_alignment_parameters(file_address) : FileAlignmentInformation();
-    const float shift_x         = alignment_info.shift_x;
-    const float shift_y         = alignment_info.shift_y;
-    const float rot_center_x    = alignment_info.rotation_center_x;
-    const float rot_center_y    = alignment_info.rotation_center_y;
-    const float rotation        = alignment_info.rotation;
-
-    CalibratedPhotoHandler calibrated_photo(file_address);
-    calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
-    for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame : m_calibration_frame_handlers) {
-        calibrated_photo.register_calibration_frame(calibration_frame);
-    }
-    calibrated_photo.calibrate();
+    CalibratedPhotoHandler calibrated_photo = get_calibrated_photo(i_file, y_min, y_max);
 
 
     for (unsigned int i_thread = 0; i_thread < m_mutexes.size(); i_thread++) {
@@ -122,6 +110,10 @@ void StackerMeanValue::add_photo_to_stack(unsigned int i_file)  {
     }
 
     m_n_tasks_processed++;
+};
+
+int StackerMeanValue::get_height_range_limit() const  {
+    return m_width;
 };
 
 int StackerMeanValue::get_tasks_total() const  {

@@ -87,29 +87,10 @@ void StackerMedian::calculate_stacked_photo()  {
     fix_empty_pixels();
 };
 
-void StackerMedian::set_number_of_cpu_threads(unsigned int n_cpu) {
-    m_n_cpu = n_cpu;
-};
-
 void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y_max)  {
-    const string &file_address = m_files_to_stack[file_index];
     const unsigned long long int n_files = m_files_to_stack.size();
-    const bool apply_alignment = m_apply_alignment[file_index];
 
-    const FileAlignmentInformation alignment_info = apply_alignment ? m_photo_alignment_handler->get_alignment_parameters(file_address) : FileAlignmentInformation();
-    const float shift_x         = alignment_info.shift_x;
-    const float shift_y         = alignment_info.shift_y;
-    const float rot_center_x    = alignment_info.rotation_center_x;
-    const float rot_center_y    = alignment_info.rotation_center_y;
-    const float rotation        = alignment_info.rotation;
-
-    CalibratedPhotoHandler calibrated_photo(file_address, m_interpolate_colors);
-    calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
-    calibrated_photo.limit_y_range(y_min, y_max);
-    for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame : m_calibration_frame_handlers) {
-        calibrated_photo.register_calibration_frame(calibration_frame);
-    }
-    calibrated_photo.calibrate();
+    CalibratedPhotoHandler calibrated_photo = get_calibrated_photo(file_index, y_min, y_max);
 
     if (m_interpolate_colors)   {
         for (int color = 0; color < 3; color++)   {

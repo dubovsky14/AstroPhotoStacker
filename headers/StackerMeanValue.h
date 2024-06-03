@@ -48,6 +48,13 @@ namespace AstroPhotoStacker {
             std::vector<std::vector<std::vector<int>>>                  m_values_to_stack_individual_threads;  // [thread][color][pixel]
             std::vector<std::vector<std::vector<short unsigned int>>>   m_counts_to_stack_individual_threads;  // [thread][color][pixel]
 
-            void add_photo_to_stack(unsigned int i_file);
+            /**
+             * @brief Get number of pixel lines that we can proces at once (limited by memory usage)
+             *
+             * @return int - number of pixel lines that we can proces at once
+            */
+            virtual int get_height_range_limit() const;
+
+            virtual void add_photo_to_stack(unsigned int file_index, int y_min, int y_max) override;
     };
 }

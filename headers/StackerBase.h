@@ -4,6 +4,7 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/HotPixelIdentifier.h"
 #include "../headers/CalibrationFrameBase.h"
+#include "../headers/CalibratedPhotoHandler.h"
 
 #include <memory>
 #include <string>
@@ -104,7 +105,7 @@ namespace AstroPhotoStacker {
              *
              * @param n_cpu - number of CPU threads
             */
-            virtual void set_number_of_cpu_threads(unsigned int n_cpu) = 0;
+            virtual void set_number_of_cpu_threads(unsigned int n_cpu);
 
             /**
              * @brief The method that calculates the stacked photo - pure virtual method in the base class
@@ -167,6 +168,24 @@ namespace AstroPhotoStacker {
             const int get_height() const { return m_height; };
 
         protected:
+            virtual void add_photo_to_stack(unsigned int file_index, int y_min, int y_max) = 0;
+
+            /**
+             * @brief Get number of pixel lines that we can proces at once (limited by memory usage)
+             *
+             * @return int - number of pixel lines that we can proces at once
+            */
+            virtual int get_height_range_limit() const = 0;
+
+            /**
+             * @brief Take i_file-th file from the stack, calibrate it and return the calibrated photo handler
+             *
+             * @param i_file - index of the file in the stack
+             * @param y_min - minimal y-coordinate of the photo (for memory consumption limits)
+             * @param y_max - maximal y-coordinate of the photo (for memory consumption limits)
+            */
+            virtual CalibratedPhotoHandler get_calibrated_photo(unsigned int i_file, int y_min, int y_max) const;
+
             int m_number_of_colors;
             int m_width;
             int m_height;
