@@ -43,10 +43,8 @@ void StackerSimpleBase::calculate_stacked_photo()  {
             }
             pool.wait_for_tasks();
         }
-        cout << "Calculating final image in range " << y_min << " - " << y_max << "\n";
         calculate_final_image(y_min, y_max);
     }
-    cout << "Fixing empty pixels\n";
 
     fix_empty_pixels();
 

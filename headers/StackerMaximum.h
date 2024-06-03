@@ -59,5 +59,12 @@ namespace AstroPhotoStacker {
              * @param i_thread - thread index
             */
             virtual void process_pixel(int i_color, int i_pixel, int value, int i_thread) override;
+
+            /**
+             * @brief Get number of pixel lines that we can proces at once (limited by memory usage)
+             *
+             * @return int - number of pixel lines that we can proces at once
+            */
+            virtual int get_height_range_limit() const override;
     };
 }
