@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <stdexcept>
+#include <map>
 
 namespace AstroPhotoStacker {
 
@@ -286,4 +287,14 @@ namespace AstroPhotoStacker {
     T force_range(T x, T min_value, T max_value) {
         return std::max(min_value, std::min(max_value, x));
     }
+
+    template <class KeyType, class ValueType>
+    ValueType get_with_default(const std::map<KeyType, ValueType> &map, const KeyType &key, const ValueType &default_value) {
+        auto it = map.find(key);
+        if (it == map.end()) {
+            return default_value;
+        }
+        return it->second;
+    }
+
 }
