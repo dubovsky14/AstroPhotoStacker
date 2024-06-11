@@ -1,6 +1,8 @@
 #include "../headers/FitFileReader.h"
 #include "../headers/Common.h"
 
+#include <algorithm>
+
 using namespace AstroPhotoStacker;
 using namespace std;
 
@@ -18,7 +20,13 @@ FitFileReader::FitFileReader(const std::string &input_file)    {
 void FitFileReader::read_header(std::ifstream &file)   {
     const string header = get_header_string(file);
     parse_header(header);
-    fill_metadata();
+
+    try {
+        fill_metadata();
+    }
+    catch (const std::invalid_argument &e) {
+        throw std::runtime_error("Could not read metadata from header");
+    }
 };
 
 void FitFileReader::parse_header(const std::string &header)    {
@@ -81,11 +89,14 @@ void FitFileReader::fill_metadata()    {
     m_height = std::stoi(get_with_default<string,string>(m_metadata, "NAXIS2", "0"));
     m_bit_depth = std::stoi(get_with_default<string,string>(m_metadata, "BITPIX", "0"));
     m_exposure_time = std::stof(get_with_default<string,string>(m_metadata, "EXPTIME", "0"));
+
+    // get zero point
+    m_zero_point = std::stoi(get_with_default<string,string>(m_metadata, "BZERO", "0"));
 };
 
 void FitFileReader::read_data(std::ifstream &file) {
     const int n_elements = m_width*m_height;
-    m_data = std::make_unique<unsigned short int[]>(n_elements);
+    m_data = std::vector<unsigned short int>(n_elements);
 
     // skip whitespaces
     char x;
@@ -97,5 +108,11 @@ void FitFileReader::read_data(std::ifstream &file) {
     // shift stream one byte back
     file.seekg(current_pos - 1);
 
-    file.read((char *)m_data.get(), n_elements*sizeof(unsigned short int));
+    // lines are indexed from bottom to top ...
+    for (int i_line = 0; i_line < m_height; i_line++) {
+        file.read((char *)&m_data[(m_height - i_line - 1)*m_width], m_width*2);
+    }
+
+    // subtract zero point
+    std::transform(m_data.begin(), m_data.end(), m_data.begin(), [this](unsigned short int x) {return x - m_zero_point;});
 };

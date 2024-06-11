@@ -5,6 +5,7 @@
 #include <fstream>
 #include <memory>
 #include <map>
+#include <vector>
 
 namespace AstroPhotoStacker {
     class FitFileReader {
@@ -31,8 +32,8 @@ namespace AstroPhotoStacker {
                 return m_exposure_time;
             }
 
-            const unsigned short int *get_data() const {
-                return m_data.get();
+            const std::vector<unsigned short int> get_data() const {
+                return m_data;
             }
 
 
@@ -52,8 +53,9 @@ namespace AstroPhotoStacker {
             int m_width;
             int m_height;
             int m_bit_depth;
+            unsigned int m_zero_point;
             float m_exposure_time;
 
-            std::unique_ptr<unsigned short int[]> m_data;
+            std::vector<unsigned short int> m_data;
     };
 }
