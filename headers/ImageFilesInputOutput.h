@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <vector>
 #include <iostream>
+#include <type_traits>
 
 namespace AstroPhotoStacker {
 
@@ -174,4 +175,12 @@ namespace AstroPhotoStacker {
 
         return result;
     }
+
+    template <class ValueType>
+    void decrease_image_bit_depth(ValueType *data, size_t data_size, int bits_to_drop) {
+        static_assert(std::is_integral<ValueType>::value, "The data type must be an integral type");
+        for (size_t i = 0; i < data_size; i++) {
+            data[i] = data[i] >> bits_to_drop;
+        }
+    };
 }
