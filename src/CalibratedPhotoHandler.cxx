@@ -54,7 +54,7 @@ void CalibratedPhotoHandler::set_bit_depth(unsigned short int bit_depth)    {
 void CalibratedPhotoHandler::calibrate() {
     if (m_use_color_interpolation || !m_is_raw_file) {
         // run color interpolation on original data (before alignment and calibration)
-        if (m_use_color_interpolation) {
+        if (m_use_color_interpolation && m_is_raw_file) {
             run_color_interpolation();
         }
 
@@ -68,11 +68,6 @@ void CalibratedPhotoHandler::calibrate() {
                     m_geometric_transformer->transform_from_reference_to_shifted_frame(&x_original, &y_original);
                     int x_int = int(x_original);
                     int y_int = int(y_original);
-                    if (m_hot_pixel_identifier != nullptr) {
-                        if (m_hot_pixel_identifier->is_hot_pixel(x_int, y_int)) {
-                            fix_hot_pixel(x_int, y_int);
-                        }
-                    }
                     if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
                         const unsigned int index_shifted = y_shifted*m_width + x_shifted;
                         const unsigned int index_original = y_int*m_width + x_int;
@@ -122,6 +117,8 @@ void CalibratedPhotoHandler::calibrate() {
     // clean up unused memory
     m_data_original.clear();
     m_colors_original.clear();
+
+    cout << "Calibration done\n";
 };
 
 void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int y, unsigned int *value, char *color) const {

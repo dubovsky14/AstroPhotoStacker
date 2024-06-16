@@ -1,6 +1,7 @@
 #include "../headers/PhotoRanker.h"
 #include "../headers/StarFinder.h"
 #include "../headers/raw_file_reader.h"
+#include "../headers/ImageFilesInputOutput.h"
 #include "../headers/Common.h"
 
 #include <filesystem>
@@ -28,7 +29,15 @@ void PhotoRanker::rank_all_files()    {
 
 float PhotoRanker::calculate_file_ranking(const std::string &file_address)  {
     int width, height;
-    std::vector<unsigned short> brightness = read_raw_file<unsigned short>(file_address, &width, &height);
+
+    const bool raw_file = is_raw_file(file_address);
+    std::vector<unsigned short> brightness;
+    if (raw_file) {
+        brightness = read_raw_file<unsigned short>(file_address, &width, &height);
+    }
+    else {
+        brightness = read_rgb_image_as_gray_scale<unsigned short>(file_address, &width, &height);
+    }
     const float threshold_value = get_threshold_value(brightness.data(), width*height, 0.002);
     std::vector<std::vector<std::tuple<int,int>>> clusters = get_clusters(brightness.data(), width, height, threshold_value);
 

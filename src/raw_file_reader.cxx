@@ -71,7 +71,7 @@ std::vector<char> AstroPhotoStacker::get_color_info_as_number(const std::string 
 };
 
 
-bool AstroPhotoStacker::get_photo_resolution(const std::string &raw_file, int *width, int *height) {
+bool AstroPhotoStacker::get_photo_resolution_raw_file(const std::string &raw_file, int *width, int *height) {
     LibRaw raw_processor;
     raw_processor.open_file(raw_file.c_str());
     raw_processor.unpack();

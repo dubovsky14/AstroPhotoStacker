@@ -1,6 +1,6 @@
 #include "../headers/StackerConfigureTool.h"
 
-#include "../../headers/raw_file_reader.h"
+#include "../../headers/ImageFilesInputOutput.h"
 #include "../../headers/StackerKappaSigmaBase.h"
 #include "../../headers/StackerMeanValue.h"
 

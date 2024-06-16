@@ -210,6 +210,8 @@ namespace AstroPhotoStacker {
     };
 
 
+    bool get_photo_resolution(const std::string &input_file, int *width, int *height);
+
     template <class ValueType>
     void decrease_image_bit_depth(ValueType *data, size_t data_size, int bits_to_drop) {
         static_assert(std::is_integral<ValueType>::value, "The data type must be an integral type");

@@ -1018,12 +1018,14 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
         }
 
         if (m_stack_settings->apply_color_stretching()) {
+            const bool apply_green_correction = true;
             std::vector<std::vector<double> > stacked_image = m_stacker->get_stacked_image();
             m_color_stretcher.stretch_image(&stacked_image, pow(2,13), false);
             AstroPhotoStacker::StackerBase::save_stacked_photo(file_address,
                                             stacked_image,
                                             m_stacker->get_width(),
                                             m_stacker->get_height(),
+                                            apply_green_correction,
                                             CV_16UC3);
         }
         else    {

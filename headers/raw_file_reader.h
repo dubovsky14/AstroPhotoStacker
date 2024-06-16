@@ -119,5 +119,5 @@ namespace AstroPhotoStacker   {
      * @param width - pointer to the variable where the width of the photo will be stored
      * @param height - pointer to the variable where the height of the photo will be stored
     */
-    bool get_photo_resolution(const std::string &raw_file, int *width, int *height);
+    bool get_photo_resolution_raw_file(const std::string &raw_file, int *width, int *height);
 }

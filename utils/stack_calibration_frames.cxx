@@ -3,6 +3,7 @@
 #include "../headers/InputArgumentsParser.h"
 #include "../headers/Common.h"
 #include "../headers/FlatFrameHandler.h"
+#include "../headers/ImageFilesInputOutput.h"
 
 #include <thread>
 #include <string>
