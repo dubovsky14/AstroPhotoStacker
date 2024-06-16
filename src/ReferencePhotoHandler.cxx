@@ -1,5 +1,6 @@
 #include "../headers/ReferencePhotoHandler.h"
 #include "../headers/raw_file_reader.h"
+#include "../headers/ImageFilesInputOutput.h"
 #include "../headers/AsterismHasher.h"
 
 #include <vector>
@@ -12,8 +13,15 @@ using namespace AstroPhotoStacker;
 
 
 ReferencePhotoHandler::ReferencePhotoHandler(const std::string &raw_file_address, float threshold_fraction) {
-    unique_ptr<unsigned short[]> brightness = read_raw_file(raw_file_address, &m_width, &m_height);
-    initialize(&brightness[0], m_width, m_height, threshold_fraction);
+    const bool raw_file = is_raw_file(raw_file_address);
+    if (raw_file) {
+        vector<unsigned short int> brightness = read_raw_file<unsigned short int>(raw_file_address, &m_width, &m_height);
+        initialize(brightness.data(), m_width, m_height, threshold_fraction);
+    }
+    else {
+        vector<unsigned short int> brightness = read_rgb_image_as_gray_scale<unsigned short int>(raw_file_address, &m_width, &m_height);
+        initialize(brightness.data(), m_width, m_height, threshold_fraction);
+    }
 };
 
 void ReferencePhotoHandler::initialize(const std::vector<std::tuple<float, float, int> > &stars, int width, int height)  {
@@ -50,9 +58,9 @@ bool ReferencePhotoHandler::plate_solve(const std::string &file_address,
                                         float *rot_center_x, float *rot_center_y, float *rotation) const    {
     try {
         int width, height;
-        unique_ptr<unsigned short[]> brightness = read_raw_file(file_address, &width, &height);
-        const unsigned short threshold = get_threshold_value<unsigned short>(&brightness[0], width*height, 0.0005);
-        vector<tuple<float,float,int> > stars = get_stars(&brightness[0], width, height, threshold);
+        vector<unsigned short> brightness = read_raw_file(file_address, &width, &height);
+        const unsigned short threshold = get_threshold_value<unsigned short>(brightness.data(), width*height, 0.0005);
+        vector<tuple<float,float,int> > stars = get_stars(brightness.data(), width, height, threshold);
         keep_only_stars_above_size(&stars, 9);
         sort_stars_by_size(&stars);
         stars.resize(min<int>(stars.size(), 20));

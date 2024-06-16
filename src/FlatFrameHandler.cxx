@@ -21,7 +21,7 @@ FlatFrameHandler::FlatFrameHandler(int width, int height, const std::vector<doub
 };
 
 void FlatFrameHandler::calibrate() {
-    if (m_data_original == nullptr && m_data_calibrated.size() != 0) {
+    if (m_data_original.size() == 0 && m_data_calibrated.size() != 0) {
         return;
     }
 
@@ -56,6 +56,6 @@ void FlatFrameHandler::calibrate() {
         m_data_calibrated[(m_height-1)*m_width + x] = m_data_calibrated[(m_height-2)*m_width + x];
     }
 
-    m_data_original = nullptr;
+    m_data_original.clear();
     m_colors.clear();
 }

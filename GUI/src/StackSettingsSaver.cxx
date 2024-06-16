@@ -49,8 +49,6 @@ void StackSettingsSaver::load() {
             const string &key = tokens[0];
             const string &value = tokens[1];
 
-            cout << "Key: " << key << " Value: " << value << endl;
-
             if (key == m_dict_string_n_cpus) {
                 set_n_cpus(stoi(value));
             }

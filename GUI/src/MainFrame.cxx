@@ -9,6 +9,7 @@
 
 #include "../../headers/Common.h"
 #include "../../headers/raw_file_reader.h"
+#include "../../headers/MetadataReader.h"
 #include "../../headers/thread_pool.h"
 #include "../../headers/StackerBase.h"
 
@@ -284,12 +285,12 @@ void MyFrame::update_files_to_stack_checkbox()   {
             // aperture, exposure time, ISO, and focal length
             std::string metadata_string = "";
             if (type == FileTypes::LIGHT)   {
-                const std::tuple<float, float, int, float> metadata = AstroPhotoStacker::read_metadata(file);
+                const AstroPhotoStacker::Metadata metadata = AstroPhotoStacker::read_metadata(file);
                 const AlignmentFileInfo alignment_info = m_filelist_handler.get_alignment_info(FileTypes::LIGHT)[i_file];
                 const float alignment_score = alignment_info.ranking;
-                metadata_string =   "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(get<0>(metadata)) +
-                                    "\t\t" + AstroPhotoStacker::round_and_convert_to_string(get<1>(metadata)) + " s"
-                                    "\t\t" + to_string(get<2>(metadata)) + " ISO" +
+                metadata_string =   "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture) +
+                                    "\t\t" + AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s"
+                                    "\t\t" + to_string(metadata.iso) + " ISO" +
                                     "\t\t\tscore: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3);
             }
             const std::string file_string = to_string(type) + "\t\t" + file + metadata_string;
@@ -523,7 +524,6 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
         }
     }
 
-    cout << "Stacking algorithm: " << m_stack_settings->get_stacking_algorithm() << endl;
     wxChoice* choice_box_stacking_algorithm = new wxChoice( this,
                                                             wxID_ANY,
                                                             wxDefaultPosition,
@@ -986,14 +986,6 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
         wxArrayString paths;
         dialog.GetPaths(paths);
         for (auto path : paths) {
-            if (type == FileTypes::LIGHT) {
-                const bool this_file_is_raw_file = AstroPhotoStacker::is_raw_file(path.ToStdString());
-                if (!this_file_is_raw_file) {
-                    wxMessageDialog *dialog = new wxMessageDialog(this, "The file " + path + " is not a raw file. Please select raw files only.", "File type error");
-                    dialog->ShowModal();
-                    continue;
-                }
-            }
             m_filelist_handler.add_file(path.ToStdString(), type);
             m_recent_paths_handler->set_recent_file_path_from_file(type, path.ToStdString());
         }

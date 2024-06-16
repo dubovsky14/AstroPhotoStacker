@@ -24,7 +24,7 @@ namespace AstroPhotoStacker {
             /**
              * @brief Copy constructor
             */
-            CalibrationFrameBase(const CalibrationFrameBase &other);
+            CalibrationFrameBase(const CalibrationFrameBase &other) = default;
 
             /**
              * @brief Construct a new CalibrationFrameBase object from staker frame data
@@ -48,9 +48,9 @@ namespace AstroPhotoStacker {
             virtual void calibrate() {};
 
             int m_width, m_height;
-            std::unique_ptr<unsigned short int[]>   m_data_original;
-            std::vector<float>                      m_data_calibrated;
-            std::vector<char>                       m_colors;
+            std::vector<unsigned short int>     m_data_original;
+            std::vector<float>                  m_data_calibrated;
+            std::vector<char>                   m_colors;
 
     };
 }

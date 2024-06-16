@@ -70,10 +70,10 @@ int main(int argc, char **argv) {
 
         int width, height;
         vector<char> colors;
-        unique_ptr<unsigned short[]> brightness = read_raw_file<unsigned short>(input_file, &width, &height, &colors);
+        vector<unsigned short> brightness = read_raw_file<unsigned short>(input_file, &width, &height, &colors);
         cout << colors.size() << endl;
 
-        auto image = convert_raw_data_to_rgb_image(brightness.get(), colors.data(), width, height);
+        auto image = convert_raw_data_to_rgb_image(brightness.data(), colors.data(), width, height);
         scale_to_8_bits(&image, width, height);
         crate_color_image(&image[0][0],&image[1][0], &image[2][0], width, height, output_file);
     }

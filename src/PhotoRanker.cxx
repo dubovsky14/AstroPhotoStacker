@@ -28,9 +28,9 @@ void PhotoRanker::rank_all_files()    {
 
 float PhotoRanker::calculate_file_ranking(const std::string &file_address)  {
     int width, height;
-    std::unique_ptr<unsigned short[]> brightness = read_raw_file(file_address, &width, &height);
-    const float threshold_value = get_threshold_value(brightness.get(), width*height, 0.002);
-    std::vector<std::vector<std::tuple<int,int>>> clusters = get_clusters(brightness.get(), width, height, threshold_value);
+    std::vector<unsigned short> brightness = read_raw_file<unsigned short>(file_address, &width, &height);
+    const float threshold_value = get_threshold_value(brightness.data(), width*height, 0.002);
+    std::vector<std::vector<std::tuple<int,int>>> clusters = get_clusters(brightness.data(), width, height, threshold_value);
 
     vector<float> cluster_excentricities;
     for (const auto &cluster : clusters) {

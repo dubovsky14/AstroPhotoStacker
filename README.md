@@ -29,6 +29,12 @@ and ```OpenCV```:
 sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
 ```
 
+and ```exiv2```:
+
+
+```
+sudo apt-get install exiv2
+```
 
 Now you should have all the dependencies installed.
 

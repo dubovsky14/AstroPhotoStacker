@@ -5,7 +5,7 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-std::tuple<float, float, int, float> AstroPhotoStacker::read_metadata(const std::string &raw_file_address) {
+Metadata AstroPhotoStacker::read_metadata_from_raw_file(const std::string &raw_file_address) {
     // create a LibRaw object
     LibRaw raw_processor;
 
@@ -14,16 +14,18 @@ std::tuple<float, float, int, float> AstroPhotoStacker::read_metadata(const std:
         throw std::runtime_error("Cannot open raw file " + raw_file_address);
     }
 
+    Metadata result;
+
     // get the exif data
-    float aperture      = raw_processor.imgdata.other.aperture;
-    float exposure_time = raw_processor.imgdata.other.shutter;
-    int iso             = raw_processor.imgdata.other.iso_speed;
-    float focal_length  = raw_processor.imgdata.other.focal_len;
+    result.aperture      = raw_processor.imgdata.other.aperture;
+    result.exposure_time = raw_processor.imgdata.other.shutter;
+    result.iso           = raw_processor.imgdata.other.iso_speed;
+    result.focal_length  = raw_processor.imgdata.other.focal_len;
 
     // close the file
     raw_processor.recycle();
 
-    return std::make_tuple(aperture, exposure_time, iso, focal_length);
+    return result;
 };
 
 bool AstroPhotoStacker::is_raw_file(const std::string &file_address)   {

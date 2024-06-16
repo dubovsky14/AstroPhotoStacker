@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(AstroPhotoStacker)
 find_package(OpenCV)
+find_package(exiv2)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${OpenCV_INCLUDE_DIRS})
 
 set(CMAKE_CXX_STANDARD 17)
@@ -10,6 +11,8 @@ set(CMAKE_CXX_FLAGS "-Wall -O3")
 
 file(GLOB SOURCES "src/*.cxx")
 
+#linker flags
+set(LINKER_FLAGS "-lexiv2 -lraw")
 
 add_library(AstroPhotoStackerLib SHARED ${SOURCES})
 
@@ -31,9 +34,9 @@ add_dependencies(tests AstroPhotoStackerLib)
 add_dependencies(stack_calibration_frames AstroPhotoStackerLib)
 
 # link the libraw library
-target_link_libraries(AstroPhotoStacker AstroPhotoStackerLib -lraw ${OpenCV_LIBS})
-target_link_libraries(produce_alignment_file AstroPhotoStackerLib -lraw ${OpenCV_LIBS})
-target_link_libraries(convert_raw_to_jpg AstroPhotoStackerLib -lraw ${OpenCV_LIBS})
-target_link_libraries(identify_hot_pixels AstroPhotoStackerLib -lraw ${OpenCV_LIBS})
-target_link_libraries(tests AstroPhotoStackerLib -lraw ${OpenCV_LIBS})
-target_link_libraries(stack_calibration_frames AstroPhotoStackerLib -lraw ${OpenCV_LIBS})
+target_link_libraries(AstroPhotoStacker AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
+target_link_libraries(produce_alignment_file AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
+target_link_libraries(convert_raw_to_jpg AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
+target_link_libraries(identify_hot_pixels AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
+target_link_libraries(tests AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
+target_link_libraries(stack_calibration_frames AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})

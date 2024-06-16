@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../headers/Metadata.h"
+
 #include <memory>
 #include <string>
 #include <libraw/libraw.h>
@@ -13,9 +15,9 @@ namespace AstroPhotoStacker   {
      * @brief Read metadata from the raw file
      *
      * @param raw_file_address - path to the raw file
-     * @return std::tuple<float, float, int, float> - tuple containing the aperture, exposure time, ISO, and focal length
+     * @return Metadata - struct containing the aperture, exposure time, ISO, and focal length
     */
-    std::tuple<float, float, int, float> read_metadata(const std::string &raw_file_address);
+    Metadata read_metadata_from_raw_file(const std::string &raw_file_address);
 
     /**
      * @brief Check if the file is a raw file
@@ -29,15 +31,15 @@ namespace AstroPhotoStacker   {
     /**
      * @brief Read raw file and return the brightness values
      *
-     * @tparam output_type - type of the output values
+     * @tparam ValueType - type of the output values
      * @param raw_file_address - path to the raw file
      * @param width - pointer to the variable where the width of the photo will be stored
      * @param height - pointer to the variable where the height of the photo will be stored
      * @param colors - pointer to the vector where the color information will be stored
-     * @return std::unique_ptr<output_type[]> - pointer to the array containing the brightness values
+     * @return std::vector<ValueType> - pointer to the array containing the brightness values
     */
-    template<typename output_type = unsigned short>
-    std::unique_ptr<output_type[]> read_raw_file(const std::string &raw_file_address, int *width, int *height, std::vector<char> *colors = nullptr)   {
+    template<typename ValueType = unsigned short>
+    std::vector<ValueType> read_raw_file(const std::string &raw_file_address, int *width, int *height, std::vector<char> *colors = nullptr)   {
         // create a LibRaw object
         LibRaw raw_processor;
 
@@ -61,7 +63,7 @@ namespace AstroPhotoStacker   {
             std::swap(*width, *height);
         }
 
-        std::unique_ptr<output_type[]> brightness = std::unique_ptr<output_type[]>(new output_type[(*width)*(*height)]);
+        std::vector<ValueType> brightness(*width*(*height));
         if (colors != nullptr)   {
             colors->resize((*width)*(*height));
         }

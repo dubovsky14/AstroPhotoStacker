@@ -26,8 +26,8 @@ void HotPixelIdentifier::add_photos(const std::vector<std::string> &photo_addres
 
 void HotPixelIdentifier::add_photo(const std::string &photo_address)    {
     int width,height;
-    unique_ptr<unsigned short int[]> pixel_value_array = read_raw_file(photo_address, &width, &height);
-    add_photo(pixel_value_array.get(), width, height);
+    vector<unsigned short int> pixel_values = read_raw_file<unsigned short int>(photo_address, &width, &height);
+    add_photo(pixel_values.data(), width, height);
 };
 
 void HotPixelIdentifier::add_photo(const unsigned short int *pixel_value_array, int width, int height, int image_bit_depth) {

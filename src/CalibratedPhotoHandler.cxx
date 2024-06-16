@@ -1,13 +1,20 @@
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/raw_file_reader.h"
+#include "../headers/ImageFilesInputOutput.h"
 #include "../headers/ColorInterpolationTool.h"
 
 using namespace std;
 using namespace AstroPhotoStacker;
 
 CalibratedPhotoHandler::CalibratedPhotoHandler(const std::string &raw_file_address, bool use_color_interpolation)    {
-    m_data_original = read_raw_file<unsigned short>(raw_file_address, &m_width, &m_height, &m_colors_original);
-    m_color_conversion_table = get_color_info_as_number(raw_file_address);
+    m_is_raw_file = is_raw_file(raw_file_address);
+    if (m_is_raw_file)  {
+        m_data_original = read_raw_file<unsigned short>(raw_file_address, &m_width, &m_height, &m_colors_original);
+        m_color_conversion_table = get_color_info_as_number(raw_file_address);
+    }
+    else {
+        m_data_original_color_interpolation = read_rgb_image<unsigned short>(raw_file_address, &m_width, &m_height);
+    }
     m_use_color_interpolation = use_color_interpolation;
 
     m_y_min = 0;
@@ -45,9 +52,11 @@ void CalibratedPhotoHandler::set_bit_depth(unsigned short int bit_depth)    {
 };
 
 void CalibratedPhotoHandler::calibrate() {
-    if (m_use_color_interpolation) {
+    if (m_use_color_interpolation || !m_is_raw_file) {
         // run color interpolation on original data (before alignment and calibration)
-        run_color_interpolation();
+        if (m_use_color_interpolation) {
+            run_color_interpolation();
+        }
 
         // having the interpolated values for all pixels, let's just shift them
         for (int color = 0; color < 3; color++) {
@@ -111,7 +120,7 @@ void CalibratedPhotoHandler::calibrate() {
     }
 
     // clean up unused memory
-    m_data_original = nullptr;
+    m_data_original.clear();
     m_colors_original.clear();
 };
 
@@ -178,6 +187,6 @@ void CalibratedPhotoHandler::fix_hot_pixel(int x, int y)    {
 };
 
 void CalibratedPhotoHandler::run_color_interpolation()  {
-    ColorInterpolationTool color_interpolation_tool(m_data_original.get(), m_width, m_height, m_colors_original, m_color_conversion_table);
+    ColorInterpolationTool color_interpolation_tool(m_data_original.data(), m_width, m_height, m_colors_original, m_color_conversion_table);
     m_data_original_color_interpolation = color_interpolation_tool.get_interpolated_rgb_image();
 };

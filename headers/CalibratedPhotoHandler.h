@@ -105,6 +105,8 @@ namespace AstroPhotoStacker {
             int m_width;
             int m_height;
 
+            bool m_is_raw_file = false;
+
             int m_y_min = -1;
             int m_y_max = -1;
             unsigned int m_max_allowed_pixel_value = 1 << 14;
@@ -113,7 +115,7 @@ namespace AstroPhotoStacker {
             std::vector<std::shared_ptr<const CalibrationFrameBase>> m_calibration_frames;
 
             std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
-            std::unique_ptr<short unsigned int[]> m_data_original           = nullptr;
+            std::vector<short unsigned int> m_data_original;
 
             bool m_use_color_interpolation = false;
             std::vector<std::vector<short unsigned int>> m_data_original_color_interpolation;

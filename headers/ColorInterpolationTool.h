@@ -111,9 +111,9 @@ namespace AstroPhotoStacker {
                 int temp_width;
                 int temp_height;
                 std::vector<char> colors;
-                std::unique_ptr<unsigned short[]> raw_data = read_raw_file<unsigned short int>(raw_file, &temp_width, &temp_height, &colors);
+                std::vector<unsigned short> raw_data = read_raw_file<unsigned short int>(raw_file, &temp_width, &temp_height, &colors);
                 const std::vector<char> color_conversion_table = get_color_info_as_number(raw_file);
-                ColorInterpolationTool color_interpolation_tool(raw_data.get(), temp_width, temp_height, colors, color_conversion_table);
+                ColorInterpolationTool color_interpolation_tool(raw_data.data(), temp_width, temp_height, colors, color_conversion_table);
 
                 if (width != nullptr) {
                     *width = temp_width;

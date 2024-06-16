@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../headers/Metadata.h"
+
 #include <opencv2/opencv.hpp>
 
 #include <string>
@@ -175,6 +177,38 @@ namespace AstroPhotoStacker {
 
         return result;
     }
+
+    template<class ValueType>
+    std::vector<std::vector<ValueType> > read_rgb_image(const std::string &input_file, int *width, int *height) {
+        cv::Mat image = cv::imread(input_file, cv::IMREAD_COLOR);
+        *width = image.cols;
+        *height = image.rows;
+        std::vector<std::vector<ValueType>> result(3, std::vector<ValueType>(*width*(*height)));
+
+        for (int y = 0; y < *height; y++) {
+            for (int x = 0; x < *width; x++) {
+                for (int color = 0; color < 3; color++) {
+                    result[color][y*(*width) + x] = image.at<cv::Vec3b>(y, x)[color];
+                }
+            }
+        }
+        return result;
+    };
+
+    template<class ValueType>
+    std::vector<ValueType> read_rgb_image_as_gray_scale(const std::string &input_file, int *width, int *height) {
+        cv::Mat image = cv::imread(input_file, -1);
+        *width = image.cols;
+        *height = image.rows;
+        std::vector<ValueType> result((*width)*(*height));
+        for (int y = 0; y < (*height); y++) {
+            for (int x = 0; x < (*width); x++) {
+                result[y*(*width) + x] = image.at<unsigned short>(y, x);
+            }
+        }
+        return result;
+    };
+
 
     template <class ValueType>
     void decrease_image_bit_depth(ValueType *data, size_t data_size, int bits_to_drop) {

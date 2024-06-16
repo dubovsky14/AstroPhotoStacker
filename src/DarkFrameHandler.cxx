@@ -21,7 +21,7 @@ DarkFrameHandler::DarkFrameHandler(int width, int height, const std::vector<doub
 };
 
 void DarkFrameHandler::calibrate() {
-    if (m_data_original == nullptr && m_data_calibrated.size() != 0) {
+    if (m_data_original.size() && m_data_calibrated.size() != 0) {
         return;
     }
 
@@ -31,7 +31,7 @@ void DarkFrameHandler::calibrate() {
         m_data_calibrated[i] = m_data_original[i];
     }
 
-    m_data_original = nullptr;
+    m_data_original.clear();
     m_colors.clear();
 }
 
