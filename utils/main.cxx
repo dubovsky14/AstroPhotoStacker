@@ -1,5 +1,6 @@
 #include "../headers/raw_file_reader.h"
 #include "../headers/PhotoAlignmentHandler.h"
+#include "../headers/ImageFilesInputOutput.h"
 #include "../headers/StackerFactory.h"
 #include "../headers/InputArgumentsParser.h"
 #include "../headers/PhotoRanker.h"
@@ -12,9 +13,6 @@
 #include <tuple>
 #include <opencv2/opencv.hpp>
 
-#include "../headers/FitFileReader.h"
-#include "../headers/ImageFilesInputOutput.h"
-
 using namespace std;
 
 using namespace cv;
@@ -23,61 +21,7 @@ using namespace AstroPhotoStacker;
 tuple<int, float> get_nfiles_or_fraction_of_files(const InputArgumentsParser &input_parser);
 void configure_stacker_with_optional_arguments(StackerBase *stacker, const InputArgumentsParser &input_parser, bool print_info = true);
 
-
-void scale_to_8_bits(unsigned short *image, int width, int height)   {
-
-    int max_value = 0;
-    for (int i_pixel = 0; i_pixel < width*height; i_pixel++) {
-        if (image[i_pixel] > max_value) {
-            max_value = image[i_pixel];
-        }
-    }
-
-    max_value = pow(2,16)-1;
-
-    // scale
-    const double scale_factor = 255.0/max_value;
-    for (int i_pixel = 0; i_pixel < width*height; i_pixel++) {
-        image[i_pixel] *= scale_factor;
-    }
-}
-
 int main(int argc, const char **argv) {
-
-    // picture file
-    FitFileReader fit_file_reader(argv[1]);
-    const map<string,string> &metadata = fit_file_reader.get_metadata();
-    for (const auto & [key, value] : metadata) {
-        cout << key << " : " << value << "\n";
-    }
-
-    cout << endl << endl;
-
-    cout << "Width: " << fit_file_reader.get_width() << "\n";
-    cout << "Height: " << fit_file_reader.get_height() << "\n";
-    cout << "Bit depth: " << fit_file_reader.get_bit_depth() << "\n";
-    cout << "Exposure time: " << fit_file_reader.get_exposure_time() << "\n";
-
-
-    vector<unsigned short int> data = fit_file_reader.get_data();
-
-    //for (int x = 0; x < fit_file_reader.get_width(); x++) {
-    //    for (int y = 0; y < fit_file_reader.get_height(); y++) {
-    //        cout << hex << data[y*fit_file_reader.get_width() + x] << " ";
-    //    }
-    //    cout << "\n";
-    //}
-
-    vector<int> x(3);
-    decrease_image_bit_depth(x.data(), x.size(), 8);
-
-    //scale_to_8_bits(data.data(), fit_file_reader.get_width(), fit_file_reader.get_height());
-    decrease_image_bit_depth(data.data(), fit_file_reader.get_width()*fit_file_reader.get_height(), 8);
-    create_gray_scale_image(data.data(), fit_file_reader.get_width(), fit_file_reader.get_height(), "test.png");
-
-    return 0;
-
-
     try {
         InputArgumentsParser input_arguments_parser(argc, argv);
 
