@@ -15,7 +15,7 @@ jobs:
               sudo apt-get install python3-dev gcc cmake
               sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
               sudo apt-get install libraw-dev
-              sudo apt-get install exiv2
+              sudo apt-get install -y libexiv2-dev
               mkdir bin
               cd bin
               cmake ../.
@@ -43,6 +43,7 @@ jobs:
             mkdir bin
               sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
               sudo apt-get install libraw-dev
+              sudo apt-get install -y libexiv2-dev
       - uses: actions/download-artifact@v3
         with:
           name: artifact-linux-build
@@ -67,6 +68,7 @@ jobs:
             mkdir bin
               sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
               sudo apt-get install libraw-dev
+              sudo apt-get install -y libexiv2-dev
       - uses: actions/download-artifact@v3
         with:
           name: artifact-linux-build
@@ -114,6 +116,7 @@ jobs:
       - run: |
               sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
               sudo apt-get install libraw-dev
+              sudo apt-get install -y libexiv2-dev
         name: install-dependencies
       - uses: actions/download-artifact@v3
         with:

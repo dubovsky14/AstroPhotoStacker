@@ -33,7 +33,7 @@ and ```exiv2```:
 
 
 ```
-sudo apt-get install exiv2
+sudo apt-get install -y libexiv2-dev
 ```
 
 Now you should have all the dependencies installed.
