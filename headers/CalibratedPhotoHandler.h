@@ -118,6 +118,14 @@ namespace AstroPhotoStacker {
                 return m_input_file_type;
             };
 
+            int get_width() const {
+                return m_width;
+            };
+
+            int get_height() const {
+                return m_height;
+            };
+
         private:
             int m_width;
             int m_height;
