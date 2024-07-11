@@ -88,6 +88,14 @@ class ImagePreview {
         void update_preview_bitmap(wxStaticBitmap *static_bitmap) const;
 
         /**
+         * @brief Update preview bitmap - an object in GUI
+         *
+         * @param static_bitmap pointer to static bitmap to update
+         * @param apply_green_correction whether to apply green channel correction
+        */
+        void update_preview_bitmap(wxStaticBitmap *static_bitmap, bool apply_gree_correction) const;
+
+        /**
          * @brief Zoom in the preview at a given position
          *
          * @param mouse_position_relative_x relative x position of the mouse

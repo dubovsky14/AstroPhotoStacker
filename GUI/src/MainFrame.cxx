@@ -782,7 +782,17 @@ void MyFrame::update_image_preview_with_stacked_image()  {
     const int width = m_stacker->get_width();
     const int height = m_stacker->get_height();
     m_current_preview->read_preview_from_stacked_image(stacked_image, width, height);
-    update_image_preview();
+
+    const bool rgb_raw_files_only = m_stacker->contains_only_rgb_raw_files();
+    if (rgb_raw_files_only) {
+        m_current_preview->update_preview_bitmap(m_preview_bitmap);
+    }
+    else {
+        m_current_preview->update_preview_bitmap(m_preview_bitmap, false);
+    }
+    m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
+    update_histogram();
+    update_color_channels_mean_and_median_values_text();
 };
 
 void MyFrame::update_image_preview()  {

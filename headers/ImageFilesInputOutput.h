@@ -197,13 +197,15 @@ namespace AstroPhotoStacker {
 
     template<class ValueType>
     std::vector<ValueType> read_rgb_image_as_gray_scale(const std::string &input_file, int *width, int *height) {
-        cv::Mat image = cv::imread(input_file, -1);
-        *width = image.cols;
-        *height = image.rows;
-        std::vector<ValueType> result((*width)*(*height));
+        cv::Mat image = cv::imread(input_file);
+        cv::Mat gray_scale_image;
+        cv::cvtColor(image, gray_scale_image, cv::COLOR_BGR2GRAY);
+        *width = gray_scale_image.cols;
+        *height = gray_scale_image.rows;
+        std::vector<ValueType> result((*width)*(*height),0);
         for (int y = 0; y < (*height); y++) {
             for (int x = 0; x < (*width); x++) {
-                result[y*(*width) + x] = image.at<unsigned short>(y, x);
+                result[y*(*width) + x] = gray_scale_image.at<uchar>(y, x);
             }
         }
         return result;

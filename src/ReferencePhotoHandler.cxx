@@ -67,6 +67,8 @@ bool ReferencePhotoHandler::plate_solve(const std::string &file_address,
             brightness = read_rgb_image_as_gray_scale<unsigned short>(file_address, &width, &height);
         }
         const unsigned short threshold = get_threshold_value<unsigned short>(brightness.data(), width*height, 0.0005);
+
+
         vector<tuple<float,float,int> > stars = get_stars(brightness.data(), width, height, threshold);
         keep_only_stars_above_size(&stars, 9);
         sort_stars_by_size(&stars);

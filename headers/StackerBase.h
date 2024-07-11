@@ -167,6 +167,13 @@ namespace AstroPhotoStacker {
             */
             const int get_height() const { return m_height; };
 
+            /**
+             * @brief Does the stack contain only raw RBG files (in order to apply green channel correction)
+             *
+             * @return bool - true if the stack contains only raw RGB files
+             */
+            bool contains_only_rgb_raw_files() const { return m_contain_only_rgb_raw_files; };
+
         protected:
             virtual void add_photo_to_stack(unsigned int file_index, int y_min, int y_max) = 0;
 
@@ -190,6 +197,9 @@ namespace AstroPhotoStacker {
             int m_width;
             int m_height;
             bool m_interpolate_colors;
+
+            // needed for color correction
+            bool m_contain_only_rgb_raw_files = true;
 
             constexpr static short int c_empty_pixel_value = -1;
 

@@ -1,5 +1,6 @@
 #include "../headers/StackerBase.h"
 #include "../headers/ImageFilesInputOutput.h"
+#include "../headers/raw_file_reader.h"
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -33,6 +34,8 @@ void StackerBase::add_alignment_info(const std::string &file_address, float x_sh
 void StackerBase::add_photo(const string &file_address, bool apply_alignment) {
     m_files_to_stack.push_back(file_address);
     m_apply_alignment.push_back(apply_alignment);
+
+    m_contain_only_rgb_raw_files = m_contain_only_rgb_raw_files && is_raw_file(file_address);
 };
 
 void StackerBase::add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler) {

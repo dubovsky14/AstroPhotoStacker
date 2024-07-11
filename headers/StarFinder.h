@@ -123,10 +123,7 @@ namespace AstroPhotoStacker {
     */
     template<typename pixel_type>
     pixel_type get_threshold_value(const pixel_type *brightness, unsigned int array_size, float fraction)    {
-        std::unique_ptr<unsigned int[]> histogram = std::unique_ptr<unsigned int[]>(new unsigned int[USHRT_MAX]);
-        for (unsigned int i = 0; i < USHRT_MAX; i++)    {
-            histogram[i] = 0;
-        }
+        std::vector<unsigned int> histogram(USHRT_MAX, 0);
 
         for (unsigned int i = 0; i < array_size; i++)    {
             histogram[brightness[i]]++;
@@ -137,8 +134,7 @@ namespace AstroPhotoStacker {
         for (unsigned int i = 0; i < USHRT_MAX; i++)    {
             sum += histogram[i];
             if (sum > (1-fraction) * array_size)   {
-                threshold_index = i;
-                break;
+                return i;
             }
         }
         return threshold_index;

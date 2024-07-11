@@ -66,6 +66,11 @@ void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector
 };
 
 void ImagePreview::update_preview_bitmap(wxStaticBitmap *static_bitmap) const  {
+    const bool apply_green_correction = (m_current_preview_is_raw_file || m_use_color_interpolation);
+    update_preview_bitmap(static_bitmap, apply_green_correction);
+};
+
+void ImagePreview::update_preview_bitmap(wxStaticBitmap *static_bitmap, bool apply_green_correction) const  {
     wxImage image_wx(m_width, m_height);
     auto set_pixels = [&image_wx, this](float green_channel_correction) {
         const float scale_factor = pow(2,m_exposure_correction)*2*255.0 / m_max_value;
@@ -93,7 +98,7 @@ void ImagePreview::update_preview_bitmap(wxStaticBitmap *static_bitmap) const  {
         }
     };
 
-    if (m_current_preview_is_raw_file || m_use_color_interpolation) {
+    if (apply_green_correction) {
         set_pixels(0.5);
     }
     else {

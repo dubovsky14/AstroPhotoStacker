@@ -11,9 +11,11 @@ CalibratedPhotoHandler::CalibratedPhotoHandler(const std::string &raw_file_addre
     if (m_is_raw_file)  {
         m_data_original = read_raw_file<unsigned short>(raw_file_address, &m_width, &m_height, &m_colors_original);
         m_color_conversion_table = get_color_info_as_number(raw_file_address);
+        m_input_file_type = InputFileType::RAW_RGB;
     }
     else {
         m_data_original_color_interpolation = read_rgb_image<unsigned short>(raw_file_address, &m_width, &m_height);
+        m_input_file_type = InputFileType::IMAGE_RGB;
     }
     m_use_color_interpolation = use_color_interpolation;
 
@@ -117,8 +119,6 @@ void CalibratedPhotoHandler::calibrate() {
     // clean up unused memory
     m_data_original.clear();
     m_colors_original.clear();
-
-    cout << "Calibration done\n";
 };
 
 void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int y, unsigned int *value, char *color) const {
