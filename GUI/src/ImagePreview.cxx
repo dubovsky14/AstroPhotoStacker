@@ -4,6 +4,7 @@
 #include "../../headers/ImageFilesInputOutput.h"
 #include "../../headers/ColorInterpolationTool.h"
 
+
 #include <opencv2/opencv.hpp>
 
 #include <vector>
@@ -19,6 +20,8 @@ ImagePreview::ImagePreview(wxFrame *parent, int width, int height, int max_value
     m_parent = parent;
     m_width = width;
     m_height = height;
+    m_image_resize_tool.set_preview_size(m_width, m_height);
+    m_image_resize_tool.set_zoom_factor(1);
     m_max_value = max_value;
     m_preview_data = std::vector<std::vector<int>>(3, std::vector<int>(m_width*m_height, 0));
     m_exposure_correction = 0;
@@ -49,39 +52,42 @@ void ImagePreview::initialize_bitmap()    {
 void ImagePreview::read_preview_from_file(const std::string &path)  {
     m_current_preview_is_raw_file = is_raw_file(path);
     if (m_current_preview_is_raw_file)  {
-        m_original_image = ColorInterpolationTool::get_interpolated_rgb_image(path, &m_width_original, &m_height_original);
+        int width_original, height_original;
+        m_original_image = ColorInterpolationTool::get_interpolated_rgb_image(path, &width_original, &height_original);
+        m_image_resize_tool.set_original_size(width_original, height_original);
     }
     else {
         // picture file
         cv::Mat image = cv::imread(path, 1);
-        m_width_original = image.cols;
-        m_height_original = image.rows;
-        m_original_image = std::vector<std::vector<unsigned short int>>(3, std::vector<unsigned short int>(m_width_original*m_height_original,0));
-        for (int y = 0; y < m_height_original; y++) {
-            for (int x = 0; x < m_width_original; x++) {
+        m_image_resize_tool.set_original_size(image.cols, image.rows);
+        m_original_image = std::vector<std::vector<unsigned short int>>(3, std::vector<unsigned short int>(
+            m_image_resize_tool.get_width_original()* m_image_resize_tool.get_height_original(),0)
+        );
+
+        for (int y = 0; y < m_image_resize_tool.get_height_original(); y++) {
+            for (int x = 0; x < m_image_resize_tool.get_width_original(); x++) {
                 cv::Vec3b pixel = image.at<cv::Vec3b>(y,x);
-                m_original_image[0][y*m_width_original + x] = pixel[2];
-                m_original_image[1][y*m_width_original + x] = 2*pixel[1];
-                m_original_image[2][y*m_width_original + x] = pixel[0];
+                m_original_image[0][y*m_image_resize_tool.get_width_original() + x] = pixel[2];
+                m_original_image[1][y*m_image_resize_tool.get_width_original() + x] = 2*pixel[1];
+                m_original_image[2][y*m_image_resize_tool.get_width_original() + x] = pixel[0];
             }
         }
     }
-    set_default_resized_area();
+    m_image_resize_tool.set_default_resized_area();
     update_max_values_original();
     update_preview_data();
 };
 
 void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {
     m_current_preview_is_raw_file = false;
-    m_width_original = width_original;
-    m_height_original = height_original;
+    m_image_resize_tool.set_original_size(width_original, height_original);
     m_original_image = std::vector<std::vector<unsigned short int>>(3, std::vector<unsigned short int>(width_original*height_original,0));
     for (int i_color = 0; i_color < 3; i_color++)   {
         for (int i_pixel = 0; i_pixel < width_original*height_original; i_pixel++)   {
             m_original_image[i_color][i_pixel] = stacked_image[i_color][i_pixel];
         }
     }
-    set_default_resized_area();
+    m_image_resize_tool.set_default_resized_area();
     m_current_preview_is_raw_file = false;
     update_max_values_original();
     update_preview_data();
@@ -135,22 +141,17 @@ void ImagePreview::update_preview_bitmap(bool apply_green_correction) const  {
 
 void ImagePreview::zoom_in(float mouse_position_relative_x, float mouse_position_relative_y)    {
     m_zoom_factor = min<double>(m_zoom_factor*pow(2,1./3), m_max_zoom_factor);
+    m_image_resize_tool.set_zoom_factor(m_zoom_factor);
     update_preview_data(mouse_position_relative_x, mouse_position_relative_y);
 };
 
 void ImagePreview::zoom_out(float mouse_position_relative_x, float mouse_position_relative_y)   {
     m_zoom_factor = max<double>(m_zoom_factor*pow(2,-1./3), m_min_zoom_factor);
+    m_image_resize_tool.set_zoom_factor(m_zoom_factor);
     update_preview_data(mouse_position_relative_x, mouse_position_relative_y);
 };
 
-void ImagePreview::set_default_resized_area()   {
-    if (m_i_x_resized_max < 0)  {
-        m_i_x_resized_min = 0;
-        m_i_x_resized_max = m_width_original;
-        m_i_y_resized_min = 0;
-        m_i_y_resized_max = m_height_original;
-    }
-};
+
 
 void ImagePreview::set_stretcher(const CombinedColorStrecherTool *color_stretcher)    {
     m_color_stretcher = color_stretcher;
@@ -159,7 +160,7 @@ void ImagePreview::set_stretcher(const CombinedColorStrecherTool *color_stretche
 void ImagePreview::update_max_values_original()    {
     m_max_values_original = std::vector<int>(3,0);
     for (int i_color = 0; i_color < 3; i_color++)   {
-        for (int i_pixel = 0; i_pixel < m_width_original*m_height_original; i_pixel++)   {
+        for (int i_pixel = 0; i_pixel < m_image_resize_tool.get_width_original()*m_image_resize_tool.get_height_original(); i_pixel++)   {
             m_max_values_original[i_color] = max<int>(m_max_values_original[i_color], m_original_image[i_color][i_pixel]);
         }
     }
@@ -171,39 +172,21 @@ void ImagePreview::update_preview_data(float mouse_position_relative_x, float mo
     m_preview_data = std::vector<std::vector<int>>(3, std::vector<int>(m_width*m_height,0)); // 2D vector of brightness values - first index = color, second index = pixel
     std::vector<int>                count(m_width*m_height,0);
 
-    const float step_x =  m_width_original  / (m_zoom_factor*float(m_width) );
-    const float step_y =  m_height_original / (m_zoom_factor*float(m_height));
+    m_image_resize_tool.set_relative_mouse_position(mouse_position_relative_x, mouse_position_relative_y);
+    m_image_resize_tool.update();
 
-    int x_center = m_i_x_resized_min + (m_i_x_resized_max - m_i_x_resized_min)*mouse_position_relative_x;
-    if (x_center < m_width_original/(m_zoom_factor*2)) {
-        x_center = m_width_original/(m_zoom_factor*2);
-    }
-    if (x_center > m_width_original - m_width_original/(m_zoom_factor*2)) {
-        x_center = m_width_original - m_width_original/(m_zoom_factor*2);
-    }
-
-    int y_center = m_i_y_resized_min + (m_i_y_resized_max - m_i_y_resized_min)*mouse_position_relative_y;
-    if (y_center < m_height_original/(m_zoom_factor*2)) {
-        y_center = m_height_original/(m_zoom_factor*2);
-    }
-    if (y_center > m_height_original - m_height_original/(m_zoom_factor*2)) {
-        y_center = m_height_original - m_height_original/(m_zoom_factor*2);
-    }
-
-    m_i_x_resized_min = max<int>(0, x_center - m_width_original/(m_zoom_factor*2));
-    m_i_x_resized_max = min<int>(m_width_original, x_center + m_width_original/(m_zoom_factor*2));
-
-    m_i_y_resized_min = max<int>(0, y_center - m_height_original/(m_zoom_factor*2));
-    m_i_y_resized_max = min<int>(m_height_original, y_center + m_height_original/(m_zoom_factor*2));
-
+    int x_resized_min, x_resized_max, y_resized_min, y_resized_max;
+    m_image_resize_tool.get_crop_borders_in_original_coordinates(&x_resized_min, &x_resized_max, &y_resized_min, &y_resized_max);
 
     for (int i_color = 0; i_color < 3; i_color++)   {
-        for (int i_original_y = m_i_y_resized_min; i_original_y < m_i_y_resized_max; i_original_y++)  {
-            for (int i_original_x = m_i_x_resized_min; i_original_x < m_i_x_resized_max ; i_original_x++)  {
-                const int index = i_original_y * m_width_original  + i_original_x;
-                const int i_pixel_new_y = (i_original_y-m_i_y_resized_min) / step_y;
-                const int i_pixel_new_x = (i_original_x-m_i_x_resized_min) / step_x;
-                const int index_new = i_pixel_new_y * m_width + i_pixel_new_x;
+        for (int i_original_y = y_resized_min; i_original_y < y_resized_max; i_original_y++)  {
+            for (int i_original_x = x_resized_min; i_original_x < x_resized_max ; i_original_x++)  {
+                const int index = i_original_y * m_image_resize_tool.get_width_original()  + i_original_x;
+
+                const int pixel_preview_x = m_image_resize_tool.get_preview_coordinate_x(i_original_x);
+                const int pixel_preview_y = m_image_resize_tool.get_preview_coordinate_y(i_original_y);
+
+                const int index_new = pixel_preview_y * m_width + pixel_preview_x;
                 m_preview_data[i_color][index_new] += m_original_image[i_color][index];
                 count.at(index_new)++;
             }

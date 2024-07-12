@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../headers/CombinedColorStrecherTool.h"
+#include "../headers/ImageResizeTool.h"
 
 #include <vector>
 #include <string>
@@ -29,7 +30,7 @@ class ImagePreview {
          *
          * @return true if the image is loaded
         */
-        bool image_loaded() const   { return m_width_original > 0 && m_height_original > 0;};
+        bool image_loaded() const   { return m_image_resize_tool.get_width_original() > 0 && m_image_resize_tool.get_height_original() > 0;};
 
         /**
          * @brief Get the width of the preview
@@ -140,9 +141,8 @@ class ImagePreview {
     protected:
         wxFrame *m_parent = nullptr;
         wxStaticBitmap                  *m_preview_bitmap       = nullptr;
+        ImageResizeTool m_image_resize_tool;
 
-        int m_width_original    = 0;
-        int m_height_original   = 0;
         std::vector<std::vector<short unsigned int>> m_original_image; // 3 color channels, each with width*height pixels
 
         int m_width;
@@ -158,11 +158,6 @@ class ImagePreview {
         double m_zoom_factor = 1.0;
         double m_max_zoom_factor = 8.0;
         double m_min_zoom_factor = 1;
-
-        int m_i_x_resized_min = -1;
-        int m_i_x_resized_max = -1;
-        int m_i_y_resized_min = -1;
-        int m_i_y_resized_max = -1;
 
         void initialize_bitmap();
 
