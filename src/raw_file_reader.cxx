@@ -1,6 +1,8 @@
 #include "../headers/raw_file_reader.h"
 
 #include <libraw/libraw.h>
+#include <iomanip>
+#include <sstream>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -21,6 +23,12 @@ Metadata AstroPhotoStacker::read_metadata_from_raw_file(const std::string &raw_f
     result.exposure_time = raw_processor.imgdata.other.shutter;
     result.iso           = raw_processor.imgdata.other.iso_speed;
     result.focal_length  = raw_processor.imgdata.other.focal_len;
+
+    // it's a bit tricky with timestamp
+    std::tm* t = std::gmtime(&raw_processor.imgdata.other.timestamp);
+    std::stringstream ss; // or if you're going to print, just input directly into the output stream
+    ss << std::put_time(t, "%Y-%m-%d %I:%M:%S %p");
+    result.date_time     = ss.str();
 
     // close the file
     raw_processor.recycle();

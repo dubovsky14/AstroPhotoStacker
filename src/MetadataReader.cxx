@@ -49,6 +49,12 @@ Metadata AstroPhotoStacker::read_metadata_rgb_image(const std::string &input_fil
             metadata.focal_length= focalLength->toFloat();
         }
 
+        // Date and Time
+        const auto dateTime = exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal"));
+        if (dateTime != exifData.end()) {
+            metadata.date_time = dateTime->toString();
+        }
+
     } catch (Exiv2::AnyError& e) {
         std::cerr << "Error reading file " << input_file << ": " << e.what() << std::endl;
     }
