@@ -50,6 +50,7 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
     const StackSettings *stack_settings = m_parent->get_stack_settings();
     const FilelistHandler *filelist_handler = &m_parent->get_filelist_handler();
     m_aligned_images_producer = make_unique<AlignedImagesProducer>(stack_settings->get_n_cpus());
+    m_aligned_images_producer->set_add_datetime(true);
 
     // Light frames
     const vector<string>    &light_frames = filelist_handler->get_files(FileTypes::LIGHT);

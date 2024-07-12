@@ -19,6 +19,10 @@ namespace AstroPhotoStacker {
 
             void add_image(const std::string &file_address, const FileAlignmentInformation &alignment_info = FileAlignmentInformation());
 
+            void set_add_datetime(bool add_datetime)    {
+                m_add_datetime = add_datetime;
+            };
+
             void produce_aligned_images(const std::string &output_folder_address) const;
 
         private:
@@ -28,6 +32,8 @@ namespace AstroPhotoStacker {
             int m_height            = -1;
 
             int m_n_cpu             = 1;
+
+            bool m_add_datetime     = false;
 
             std::vector<std::string>                m_files_to_align;
             std::vector<FileAlignmentInformation>   m_alignment_info;
@@ -39,6 +45,8 @@ namespace AstroPhotoStacker {
             void produce_aligned_image( const std::string &input_file_address,
                                         const std::string &output_file_address,
                                         const FileAlignmentInformation &alignment_info) const;
+
+
 
     };
 }

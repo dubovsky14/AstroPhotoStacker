@@ -1,7 +1,11 @@
 #include "../headers/AlignedImagesProducer.h"
 #include "../headers/CalibratedPhotoHandler.h"
-#include "../headers/thread_pool.h"
 #include "../headers/ImageFilesInputOutput.h"
+#include "../headers/MetadataReader.h"
+
+#include "../headers/thread_pool.h"
+
+#include <opencv2/opencv.hpp>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -94,5 +98,17 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
         }
     }
 
-    crate_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height, output_file_address);
+    if (!m_add_datetime) {
+        crate_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height, output_file_address);
+    }
+    else {
+        const Metadata metadata = read_metadata(input_file_address);
+        const string datetime = metadata.date_time;
+
+        cv::Mat opencv_image = get_opencv_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height);
+
+        cv::putText(opencv_image, datetime, cv::Point(0.7*width, 0.9*height), cv::FONT_HERSHEY_SIMPLEX, 3, CV_RGB(255, 0, 0), 2);
+
+        cv::imwrite(output_file_address, opencv_image);
+    }
 };

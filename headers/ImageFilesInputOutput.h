@@ -76,8 +76,8 @@ namespace AstroPhotoStacker {
      * @param image_settings The settings of the image
     */
     template <typename pixel_values_type, typename pixel_3d_type = cv::Vec3b>
-    void crate_color_image_3d_template( const pixel_values_type* arr_red, const pixel_values_type* arr_green, const pixel_values_type* arr_blue,
-                            int width, int height, const std::string& filename, int image_settings = CV_8UC3) {
+    cv::Mat get_opencv_color_image_3d_template( const pixel_values_type* arr_red, const pixel_values_type* arr_green, const pixel_values_type* arr_blue,
+                            int width, int height, int image_settings = CV_8UC3) {
 
         cv::Mat image(height, width, image_settings);
         for (int y = 0; y < height-1; y++) {
@@ -89,7 +89,53 @@ namespace AstroPhotoStacker {
                 pixel[2] = arr_red  [index_pixel];
             }
         }
-        cv::imwrite(filename, image);
+        return image;
+    }
+
+    /**
+     * @brief Create a color image from an array of pixel values
+     *
+     * @tparam pixel_values_type The type of the pixel values
+     * @param arr_red The array of red pixel values
+     * @param arr_green The array of green pixel values
+     * @param arr_blue The array of blue pixel values
+     * @param width The width of the image
+     * @param height The height of the image
+     * @param filename The filename of the image
+     * @param image_settings The settings of the image
+    */
+    template <typename pixel_values_type>
+    cv::Mat get_opencv_color_image( const pixel_values_type* arr_red, const pixel_values_type* arr_green, const pixel_values_type* arr_blue,
+                            int width, int height, int image_settings = CV_8UC3) {
+
+        const int mask = 0b111;
+        if ((image_settings & mask) == CV_8U) {
+            return get_opencv_color_image_3d_template<pixel_values_type, cv::Vec3b>(arr_red, arr_green, arr_blue, width, height, image_settings);
+        }
+        else if ((image_settings & mask) == CV_16U) {
+            return get_opencv_color_image_3d_template<pixel_values_type, cv::Vec3w>(arr_red, arr_green, arr_blue, width, height, image_settings);
+        }
+        else if ((image_settings & mask) == CV_8S) {
+            return get_opencv_color_image_3d_template<pixel_values_type, cv::Vec3s>(arr_red, arr_green, arr_blue, width, height, image_settings);
+        }
+        else if ((image_settings & mask) == CV_16S) {
+            return get_opencv_color_image_3d_template<pixel_values_type, cv::Vec3s>(arr_red, arr_green, arr_blue, width, height, image_settings);
+        }
+        else if ((image_settings & mask) == CV_32S) {
+            return get_opencv_color_image_3d_template<pixel_values_type, cv::Vec3i>(arr_red, arr_green, arr_blue, width, height, image_settings);
+        }
+        else if ((image_settings & mask) == CV_32F) {
+            return get_opencv_color_image_3d_template<pixel_values_type, cv::Vec3f>(arr_red, arr_green, arr_blue, width, height, image_settings);
+        }
+        else if ((image_settings & mask) == CV_64F) {
+            return get_opencv_color_image_3d_template<pixel_values_type, cv::Vec3d>(arr_red, arr_green, arr_blue, width, height, image_settings);
+        }
+        else if ((image_settings & mask) == CV_16F) {
+            return get_opencv_color_image_3d_template<pixel_values_type, cv::Vec3w>(arr_red, arr_green, arr_blue, width, height, image_settings);
+        }
+        else    {
+            throw std::runtime_error("Unsupported image type");
+        }
     }
 
     /**
@@ -108,34 +154,8 @@ namespace AstroPhotoStacker {
     void crate_color_image( const pixel_values_type* arr_red, const pixel_values_type* arr_green, const pixel_values_type* arr_blue,
                             int width, int height, const std::string& filename, int image_settings = CV_8UC3) {
 
-        const int mask = 0b111;
-        if ((image_settings & mask) == CV_8U) {
-            crate_color_image_3d_template<pixel_values_type, cv::Vec3b>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
-        }
-        else if ((image_settings & mask) == CV_16U) {
-            crate_color_image_3d_template<pixel_values_type, cv::Vec3w>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
-        }
-        else if ((image_settings & mask) == CV_8S) {
-            crate_color_image_3d_template<pixel_values_type, cv::Vec3s>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
-        }
-        else if ((image_settings & mask) == CV_16S) {
-            crate_color_image_3d_template<pixel_values_type, cv::Vec3s>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
-        }
-        else if ((image_settings & mask) == CV_32S) {
-            crate_color_image_3d_template<pixel_values_type, cv::Vec3i>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
-        }
-        else if ((image_settings & mask) == CV_32F) {
-            crate_color_image_3d_template<pixel_values_type, cv::Vec3f>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
-        }
-        else if ((image_settings & mask) == CV_64F) {
-            crate_color_image_3d_template<pixel_values_type, cv::Vec3d>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
-        }
-        else if ((image_settings & mask) == CV_16F) {
-            crate_color_image_3d_template<pixel_values_type, cv::Vec3w>(arr_red, arr_green, arr_blue, width, height, filename, image_settings);
-        }
-        else    {
-            throw std::runtime_error("Unsupported image type");
-        }
+        cv::Mat image = get_opencv_color_image(arr_red, arr_green, arr_blue, width, height, image_settings);
+        cv::imwrite(filename, image);
     }
 
     /**
