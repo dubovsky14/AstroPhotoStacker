@@ -45,11 +45,22 @@ class MyFrame : public wxFrame  {
         void update_alignment_status();
         void update_files_to_stack_checkbox();
 
+        const FilelistHandler& get_filelist_handler() const {
+            return m_filelist_handler;
+        };
+
+        const StackSettingsSaver *get_stack_settings() const {
+            return m_stack_settings.get();
+        };
+
+        void stack_calibration_frames();
+
     private:
 
         void add_file_menu();
         void add_alignment_menu();
         void add_hot_pixel_menu();
+        void add_aligned_images_producer_menu();
 
         void add_menu_bar();
 
@@ -169,7 +180,6 @@ class MyFrame : public wxFrame  {
 
         static std::string s_gui_folder_path;
 
-        void stack_calibration_frames();
 };
 
 inline int unique_counter()    {

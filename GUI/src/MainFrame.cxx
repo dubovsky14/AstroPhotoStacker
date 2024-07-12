@@ -3,6 +3,7 @@
 #include "../headers/ListFrame.h"
 #include "../headers/StackerConfigureTool.h"
 #include "../headers/ThreePointSlider.h"
+#include "../headers/AlignedImagesProducerGUI.h"
 
 #include "../headers/IndividualColorStretchingBlackMidtoneWhite.h"
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
@@ -186,12 +187,41 @@ void MyFrame::add_hot_pixel_menu()  {
     m_menu_bar->Append(hot_pixel_menu, "&Hot pixels");
 };
 
+void MyFrame::add_aligned_images_producer_menu()  {
+    wxMenu *produce_aligned_images_menu = new wxMenu;
+
+
+    int id = unique_counter();
+    produce_aligned_images_menu->Append(id, "Produce aligned images", "Produce aligned images");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const bool files_aligned = m_filelist_handler.all_checked_files_are_aligned();
+        stack_calibration_frames();
+        if (!files_aligned) {
+            wxMessageDialog dialog(this, "Please align the files first!", "Files not aligned");
+            if (dialog.ShowModal() == wxID_YES) {
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, static_cast<StackSettings *>(m_stack_settings.get()));
+                select_alignment_window->Show(true);
+            }
+            else {
+                return;
+            }
+        }
+
+        AlignedImagesProducerGUI *aligned_images_producer_gui = new AlignedImagesProducerGUI(this);
+        aligned_images_producer_gui->Show(true);
+
+    }, id);
+
+    m_menu_bar->Append(produce_aligned_images_menu, "&Produce aligned images");
+}
+
 void MyFrame::add_menu_bar()    {
     m_menu_bar = new wxMenuBar;
 
     add_file_menu();
     add_alignment_menu();
     add_hot_pixel_menu();
+    add_aligned_images_producer_menu();
 
     SetMenuBar(m_menu_bar);
 };

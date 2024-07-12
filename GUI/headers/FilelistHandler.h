@@ -127,6 +127,14 @@ class FilelistHandler   {
         const std::vector<bool>&        get_files_checked(FileTypes type)   const;
 
         /**
+         * @brief Get the checked files
+         *
+         * @param type type of the files
+         * @return std::vector<std::string> vector of the file paths
+         */
+        std::vector<std::string> get_checked_files(FileTypes type) const;
+
+        /**
          * @brief Get the number of checked files of a given type
          *
          * @param type type of the files

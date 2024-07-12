@@ -1,7 +1,7 @@
 #pragma once
 
-#include "headers/PhotoAlignmentHandler.h"
-#include "headers/CalibrationFrameBase.h"
+#include "../headers/PhotoAlignmentHandler.h"
+#include "../headers/CalibrationFrameBase.h"
 
 #include <string>
 #include <vector>
