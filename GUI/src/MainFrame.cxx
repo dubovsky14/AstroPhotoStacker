@@ -780,25 +780,8 @@ void MyFrame::on_mouse_wheel(wxMouseEvent& event) {
 };
 
 void MyFrame::add_image_preview()    {
-    // Create a wxImage
-    wxImage image(m_preview_size[0], m_preview_size[1]);
-
-    // Set the image to black
-    for (int x = 0; x < m_preview_size[0]; ++x) {
-        for (int y = 0; y < m_preview_size[1]; ++y) {
-            image.SetRGB(x, y, 0,0,0);
-        }
-    }
-
-    // Convert the wxImage to a wxBitmap
-    wxBitmap bitmap(image);
-
-    // Create a wxStaticBitmap to display the image
-    m_preview_bitmap = new wxStaticBitmap(this, wxID_ANY, bitmap);
-    this->Bind(wxEVT_MOUSEWHEEL, &MyFrame::on_mouse_wheel, this);
-
     // Add the wxStaticBitmap to a sizer
-    m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
+    m_sizer_top_center->Add(m_current_preview->get_image_preview_bitmap(), 1, wxCENTER, 0);
 };
 
 void MyFrame::update_image_preview_file(const std::string& file_address)  {
@@ -815,19 +798,19 @@ void MyFrame::update_image_preview_with_stacked_image()  {
 
     const bool rgb_raw_files_only = m_stacker->contains_only_rgb_raw_files();
     if (rgb_raw_files_only) {
-        m_current_preview->update_preview_bitmap(m_preview_bitmap);
+        m_current_preview->update_preview_bitmap();
     }
     else {
-        m_current_preview->update_preview_bitmap(m_preview_bitmap, false);
+        m_current_preview->update_preview_bitmap(false);
     }
-    m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
+    //m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
     update_histogram();
     update_color_channels_mean_and_median_values_text();
 };
 
 void MyFrame::update_image_preview()  {
-    m_current_preview->update_preview_bitmap(m_preview_bitmap);
-    m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
+    m_current_preview->update_preview_bitmap();
+    //m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
     update_histogram();
     update_color_channels_mean_and_median_values_text();
 };

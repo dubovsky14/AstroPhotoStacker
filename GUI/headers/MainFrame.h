@@ -55,6 +55,7 @@ class MyFrame : public wxFrame  {
 
         void stack_calibration_frames();
 
+        void on_mouse_wheel(wxMouseEvent& event);
     private:
 
         void add_file_menu();
@@ -78,7 +79,6 @@ class MyFrame : public wxFrame  {
         void add_stack_settings_preview();
 
         void add_upper_middle_panel();
-        void on_mouse_wheel(wxMouseEvent& event);
         void add_image_preview();
         void update_image_preview_file(const std::string& file_address);
         void update_image_preview_with_stacked_image();
@@ -136,7 +136,7 @@ class MyFrame : public wxFrame  {
         wxSpinCtrlDouble    *m_spin_ctrl_cut_off_average    = nullptr;
 
         int                             m_preview_size[2]   = {600, 400};
-        std::unique_ptr<ImagePreview>   m_current_preview = std::make_unique<ImagePreview>(m_preview_size[0], m_preview_size[1], 255, true);
+        std::unique_ptr<ImagePreview>   m_current_preview = std::make_unique<ImagePreview>(this, m_preview_size[0], m_preview_size[1], 255, true);
         wxStaticBitmap                  *m_preview_bitmap       = nullptr;
 
         std::unique_ptr<HistogramDataTool> m_histogram_data_tool            = nullptr;

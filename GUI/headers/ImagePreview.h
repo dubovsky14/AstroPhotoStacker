@@ -22,7 +22,7 @@ class ImagePreview {
          * @param max_value maximum value of the pixel
          * @param use_color_interpolation whether to use color interpolation when resizing the image
         */
-        ImagePreview(int width, int height, int max_value, bool use_color_interpolation);
+        ImagePreview(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation);
 
         /**
          * @brief Is an image loaded?
@@ -85,7 +85,7 @@ class ImagePreview {
          *
          * @param static_bitmap pointer to static bitmap to update
         */
-        void update_preview_bitmap(wxStaticBitmap *static_bitmap) const;
+        void update_preview_bitmap() const;
 
         /**
          * @brief Update preview bitmap - an object in GUI
@@ -93,7 +93,7 @@ class ImagePreview {
          * @param static_bitmap pointer to static bitmap to update
          * @param apply_green_correction whether to apply green channel correction
         */
-        void update_preview_bitmap(wxStaticBitmap *static_bitmap, bool apply_gree_correction) const;
+        void update_preview_bitmap(bool apply_gree_correction) const;
 
         /**
          * @brief Zoom in the preview at a given position
@@ -132,7 +132,15 @@ class ImagePreview {
         */
         const std::vector<std::vector<short unsigned int>>& get_original_image() const { return m_original_image;};
 
-    private:
+        /**
+         * @brief Image preview bitmap (for sizer)
+        */
+       wxStaticBitmap *get_image_preview_bitmap()   const   {return m_preview_bitmap;};
+
+    protected:
+        wxFrame *m_parent = nullptr;
+        wxStaticBitmap                  *m_preview_bitmap       = nullptr;
+
         int m_width_original    = 0;
         int m_height_original   = 0;
         std::vector<std::vector<short unsigned int>> m_original_image; // 3 color channels, each with width*height pixels
@@ -155,6 +163,8 @@ class ImagePreview {
         int m_i_x_resized_max = -1;
         int m_i_y_resized_min = -1;
         int m_i_y_resized_max = -1;
+
+        void initialize_bitmap();
 
         void set_default_resized_area();
         void update_max_values_original();

@@ -21,10 +21,34 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
-    wxFrame(parent, wxID_ANY, "Produce aligned images")  {
+        wxFrame(parent, wxID_ANY, "Produce aligned images", wxDefaultPosition, wxSize(1000, 800)),
+        m_parent(parent)    {
 
-    const StackSettings *stack_settings = parent->get_stack_settings();
-    const FilelistHandler *filelist_handler = &parent->get_filelist_handler();
+    m_main_vertical_sizer = new wxBoxSizer(wxVERTICAL);
+
+    wxButton *button_select_output_folder      = new wxButton(this, wxID_ANY, "Select output folder");
+    button_select_output_folder->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        wxDirDialog dialog(this, "Select folder for output images", "");
+        if (dialog.ShowModal() == wxID_OK) {
+            m_output_folder_address = dialog.GetPath().ToStdString();
+        }
+    });
+    m_main_vertical_sizer->Add(button_select_output_folder, 1, wxALL, 5);
+
+
+    wxButton *button_produce_images      = new wxButton(this, wxID_ANY, "Produce images");
+    button_produce_images->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        this->initialize_aligned_images_producer();
+        m_aligned_images_producer->produce_aligned_images(m_output_folder_address);
+    });
+    m_main_vertical_sizer->Add(button_produce_images, 1, wxALL, 5);
+
+    SetSizer(m_main_vertical_sizer);
+};
+
+void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
+    const StackSettings *stack_settings = m_parent->get_stack_settings();
+    const FilelistHandler *filelist_handler = &m_parent->get_filelist_handler();
     m_aligned_images_producer = make_unique<AlignedImagesProducer>(stack_settings->get_n_cpus());
 
     // Light frames
@@ -66,14 +90,4 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
             m_aligned_images_producer->add_calibration_frame_handler(calibration_frame_handler);
         }
     }
-
-    wxButton *button_produce_images      = new wxButton(this, wxID_ANY, "Select output folder & run");
-    button_produce_images->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
-        wxDirDialog dialog(this, "Load alignment info", "");
-        if (dialog.ShowModal() == wxID_OK) {
-            const std::string folder_address = dialog.GetPath().ToStdString();
-            m_aligned_images_producer->produce_aligned_images(folder_address);
-        }
-    });
-
 };

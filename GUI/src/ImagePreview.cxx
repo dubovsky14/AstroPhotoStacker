@@ -15,13 +15,34 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-ImagePreview::ImagePreview(int width, int height, int max_value, bool use_color_interpolation)    {
+ImagePreview::ImagePreview(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation)    {
+    m_parent = parent;
     m_width = width;
     m_height = height;
     m_max_value = max_value;
     m_preview_data = std::vector<std::vector<int>>(3, std::vector<int>(m_width*m_height, 0));
     m_exposure_correction = 0;
     m_use_color_interpolation = use_color_interpolation;
+    initialize_bitmap();
+};
+
+void ImagePreview::initialize_bitmap()    {
+    // Create a wxImage
+    wxImage image(m_width, m_height);
+
+    // Set the image to black
+    for (int x = 0; x < m_width; ++x) {
+        for (int y = 0; y < m_height; ++y) {
+            image.SetRGB(x, y, 0,0,0);
+        }
+    }
+
+    // Convert the wxImage to a wxBitmap
+    wxBitmap bitmap(image);
+
+    // Create a wxStaticBitmap to display the image
+    m_preview_bitmap = new wxStaticBitmap(m_parent, wxID_ANY, bitmap);
+    //m_parent->Bind(wxEVT_MOUSEWHEEL, &MyFrame::on_mouse_wheel, m_parent);
 };
 
 void ImagePreview::read_preview_from_file(const std::string &path)  {
@@ -65,12 +86,12 @@ void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector
     update_preview_data();
 };
 
-void ImagePreview::update_preview_bitmap(wxStaticBitmap *static_bitmap) const  {
+void ImagePreview::update_preview_bitmap() const  {
     const bool apply_green_correction = (m_current_preview_is_raw_file || m_use_color_interpolation);
-    update_preview_bitmap(static_bitmap, apply_green_correction);
+    update_preview_bitmap(apply_green_correction);
 };
 
-void ImagePreview::update_preview_bitmap(wxStaticBitmap *static_bitmap, bool apply_green_correction) const  {
+void ImagePreview::update_preview_bitmap(bool apply_green_correction) const  {
     wxImage image_wx(m_width, m_height);
     auto set_pixels = [&image_wx, this](float green_channel_correction) {
         const float scale_factor = pow(2,m_exposure_correction)*2*255.0 / m_max_value;
@@ -108,7 +129,7 @@ void ImagePreview::update_preview_bitmap(wxStaticBitmap *static_bitmap, bool app
     // Convert the wxImage to a wxBitmap
     wxBitmap bitmap(image_wx);
 
-    static_bitmap->SetBitmap(bitmap);
+    m_preview_bitmap->SetBitmap(bitmap);
 };
 
 void ImagePreview::zoom_in(float mouse_position_relative_x, float mouse_position_relative_y)    {
