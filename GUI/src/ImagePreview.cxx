@@ -42,7 +42,8 @@ void ImagePreview::initialize_bitmap()    {
 
     // Create a wxStaticBitmap to display the image
     m_preview_bitmap = new wxStaticBitmap(m_parent, wxID_ANY, bitmap);
-    //m_parent->Bind(wxEVT_MOUSEWHEEL, &MyFrame::on_mouse_wheel, m_parent);
+
+    m_parent->Bind(wxEVT_MOUSEWHEEL, &ImagePreview::on_mouse_wheel, this);
 };
 
 void ImagePreview::read_preview_from_file(const std::string &path)  {
@@ -214,6 +215,35 @@ void ImagePreview::update_preview_data(float mouse_position_relative_x, float mo
             if (count[i_pixel] > 0) {
                 m_preview_data[i_color][i_pixel] /= count[i_pixel];
             }
+        }
+    }
+};
+
+void ImagePreview::on_mouse_wheel(wxMouseEvent& event) {
+    // Get the mouse position in screen coordinates
+    wxPoint screen_pos = event.GetPosition();
+    screen_pos += wxPoint(0, 0.155*m_height);   // shift the position to the center of the image - wxStaticBitmap is buggy ...
+
+    // Convert the mouse position to client coordinates relative to the wxStaticBitmap
+    wxPoint client_position = m_preview_bitmap->ScreenToClient(screen_pos);
+
+    // Check if the mouse is over the wxStaticBitmap
+    if (wxRect(m_preview_bitmap->GetSize()).Contains(client_position)) {
+        // Get the amount of rotation
+        int rotation = event.GetWheelRotation();
+
+        // Calculate the relative position of the mouse within the wxStaticBitmap
+        wxSize bitmapSize = m_preview_bitmap->GetSize();
+        float relative_x = static_cast<float>(client_position.x) / bitmapSize.GetWidth();
+        float relative_y = static_cast<float>(client_position.y) / bitmapSize.GetHeight();
+
+        // Check the direction of the rotation
+        if (rotation > 0) {
+            this->zoom_in(relative_x, relative_y);
+            this->update_preview_bitmap();
+        } else if (rotation < 0) {
+            this->zoom_out(relative_x, relative_y);
+            this->update_preview_bitmap();
         }
     }
 };

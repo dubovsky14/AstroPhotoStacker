@@ -55,7 +55,6 @@ class MyFrame : public wxFrame  {
 
         void stack_calibration_frames();
 
-        void on_mouse_wheel(wxMouseEvent& event);
     private:
 
         void add_file_menu();
@@ -137,7 +136,6 @@ class MyFrame : public wxFrame  {
 
         int                             m_preview_size[2]   = {600, 400};
         std::unique_ptr<ImagePreview>   m_current_preview = std::make_unique<ImagePreview>(this, m_preview_size[0], m_preview_size[1], 255, true);
-        wxStaticBitmap                  *m_preview_bitmap       = nullptr;
 
         std::unique_ptr<HistogramDataTool> m_histogram_data_tool            = nullptr;
         std::unique_ptr<HistogramDataToolGUI> m_histogram_data_tool_gui     = nullptr;

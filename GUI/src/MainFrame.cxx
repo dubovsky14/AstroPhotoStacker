@@ -750,34 +750,6 @@ void MyFrame::add_upper_middle_panel()   {
     add_step_control_part();
 };
 
-void MyFrame::on_mouse_wheel(wxMouseEvent& event) {
-    // Get the mouse position in screen coordinates
-    wxPoint screen_pos = event.GetPosition();
-    screen_pos += wxPoint(0, 0.155*m_preview_size[1]);   // shift the position to the center of the image - wxStaticBitmap is buggy ...
-
-    // Convert the mouse position to client coordinates relative to the wxStaticBitmap
-    wxPoint client_position = m_preview_bitmap->ScreenToClient(screen_pos);
-
-    // Check if the mouse is over the wxStaticBitmap
-    if (wxRect(m_preview_bitmap->GetSize()).Contains(client_position)) {
-        // Get the amount of rotation
-        int rotation = event.GetWheelRotation();
-
-        // Calculate the relative position of the mouse within the wxStaticBitmap
-        wxSize bitmapSize = m_preview_bitmap->GetSize();
-        float relative_x = static_cast<float>(client_position.x) / bitmapSize.GetWidth();
-        float relative_y = static_cast<float>(client_position.y) / bitmapSize.GetHeight();
-
-        // Check the direction of the rotation
-        if (rotation > 0) {
-            m_current_preview->zoom_in(relative_x, relative_y);
-            update_image_preview();
-        } else if (rotation < 0) {
-            m_current_preview->zoom_out(relative_x, relative_y);
-            update_image_preview();
-        }
-    }
-};
 
 void MyFrame::add_image_preview()    {
     // Add the wxStaticBitmap to a sizer
@@ -803,14 +775,12 @@ void MyFrame::update_image_preview_with_stacked_image()  {
     else {
         m_current_preview->update_preview_bitmap(false);
     }
-    //m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
     update_histogram();
     update_color_channels_mean_and_median_values_text();
 };
 
 void MyFrame::update_image_preview()  {
     m_current_preview->update_preview_bitmap();
-    //m_sizer_top_center->Add(m_preview_bitmap, 1, wxCENTER, 0);
     update_histogram();
     update_color_channels_mean_and_median_values_text();
 };

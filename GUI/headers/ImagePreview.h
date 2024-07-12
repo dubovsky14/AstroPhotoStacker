@@ -170,4 +170,6 @@ class ImagePreview {
         void update_max_values_original();
 
         void update_preview_data(float mouse_position_relative_x = 0.5, float mouse_position_relative_y = 0.5);
+
+        void on_mouse_wheel(wxMouseEvent& event);
 };
