@@ -43,6 +43,7 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
     const int n_files = m_files_to_align.size();
     const int n_cpu = min(m_n_cpu, n_files);
 
+    m_n_tasks_processed = 0;
     thread_pool pool(n_cpu);
     for (int i_file = 0; i_file < n_files; i_file++) {
         const string output_file_address = output_folder_address + "/" + get_file_name(m_files_to_align[i_file]);
@@ -54,6 +55,14 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
         pool.submit(submit_alignment);
     }
     pool.wait_for_tasks();
+};
+
+const std::atomic<int>& AlignedImagesProducer::get_tasks_processed() const {
+    return m_n_tasks_processed;
+};
+
+int AlignedImagesProducer::get_tasks_total() const {
+    return m_files_to_align.size();
 };
 
 string AlignedImagesProducer::get_file_name(const std::string &file_address) {
@@ -116,4 +125,5 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
 
         cv::imwrite(output_file_address, opencv_image);
     }
+    m_n_tasks_processed++;
 };

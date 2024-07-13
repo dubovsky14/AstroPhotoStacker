@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <atomic>
 
 
 namespace AstroPhotoStacker {
@@ -31,6 +32,10 @@ namespace AstroPhotoStacker {
 
             void produce_aligned_images(const std::string &output_folder_address) const;
 
+            const std::atomic<int>& get_tasks_processed() const;
+
+            int get_tasks_total() const;
+
         private:
             int m_top_left_corner_x = 0;
             int m_top_left_corner_y = 0;
@@ -55,6 +60,7 @@ namespace AstroPhotoStacker {
                                         const FileAlignmentInformation &alignment_info) const;
 
 
+            mutable std::atomic<int> m_n_tasks_processed = 0;
 
     };
 }
