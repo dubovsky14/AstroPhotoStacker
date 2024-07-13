@@ -23,6 +23,10 @@ namespace AstroPhotoStacker {
                 m_add_datetime = add_datetime;
             };
 
+            bool get_add_datetime() const {
+                return m_add_datetime;
+            };
+
             void set_datetime_position(float x_frac, float y_frac);
 
             void produce_aligned_images(const std::string &output_folder_address) const;

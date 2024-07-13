@@ -47,4 +47,7 @@ class AlignedImagesProducerGUI : public wxFrame  {
         std::string get_reference_file_address() const;
 
         void add_exposure_correction_spin_ctrl();
+
+        void add_checkboxes();
+        bool m_add_datetime = false;
 };

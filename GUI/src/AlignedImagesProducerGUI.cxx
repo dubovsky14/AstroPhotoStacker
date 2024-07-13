@@ -40,6 +40,8 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
     m_main_vertical_sizer->Add(m_image_preview_crop_tool->get_image_preview_bitmap(), 1, wxCENTER, 0);
     add_exposure_correction_spin_ctrl();
 
+    add_checkboxes();
+
     wxBoxSizer *bottom_horizontal_sizer = new wxBoxSizer(wxHORIZONTAL);
 
     m_main_vertical_sizer->Add(bottom_horizontal_sizer, 1, wxEXPAND | wxALL, 5);
@@ -61,6 +63,7 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
     });
     bottom_horizontal_sizer->Add(button_produce_images, 1, wxALL, 5);
 
+
     SetSizer(m_main_vertical_sizer);
 };
 
@@ -68,7 +71,7 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
     const StackSettings *stack_settings = m_parent->get_stack_settings();
     const FilelistHandler *filelist_handler = &m_parent->get_filelist_handler();
     m_aligned_images_producer = make_unique<AlignedImagesProducer>(stack_settings->get_n_cpus());
-    m_aligned_images_producer->set_add_datetime(true);
+    m_aligned_images_producer->set_add_datetime(m_add_datetime);
 
     // Light frames
     const vector<string>    &light_frames = filelist_handler->get_files(FileTypes::LIGHT);
@@ -156,4 +159,17 @@ void AlignedImagesProducerGUI::add_exposure_correction_spin_ctrl()   {
     m_main_vertical_sizer->Add(exposure_correction_text, 0,   wxEXPAND, 5);
     m_main_vertical_sizer->Add(slider_exposure, 0,  wxEXPAND, 5);
 
+};
+
+
+void AlignedImagesProducerGUI::add_checkboxes()   {
+    wxCheckBox* add_datetime_checkbox = new wxCheckBox(this, wxID_ANY, "Add datetime to the output image");
+    const bool is_checked = m_add_datetime;
+    add_datetime_checkbox->SetValue(is_checked);
+    add_datetime_checkbox->SetToolTip("If checked, the datetime from photo's metadata will be shown in the image.");
+    add_datetime_checkbox->Bind(wxEVT_CHECKBOX, [add_datetime_checkbox, this](wxCommandEvent&){
+        const bool is_checked = add_datetime_checkbox->GetValue();
+        m_add_datetime = is_checked;
+    });
+    m_main_vertical_sizer->Add(add_datetime_checkbox, 0, wxEXPAND, 5);
 };
