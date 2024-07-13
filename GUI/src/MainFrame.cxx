@@ -4,6 +4,7 @@
 #include "../headers/StackerConfigureTool.h"
 #include "../headers/ThreePointSlider.h"
 #include "../headers/AlignedImagesProducerGUI.h"
+#include "../headers/ProgressBarWindow.h"
 
 #include "../headers/IndividualColorStretchingBlackMidtoneWhite.h"
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
@@ -424,22 +425,14 @@ void MyFrame::add_button_bar()   {
         const std::atomic<int> &n_processed = m_hot_pixel_identifier->get_number_of_processed_photos();
         const int files_total = files.size();
 
-        wxProgressDialog progress_bar("Hot pixel identification", "Processed 0 / " + std::to_string(files_total) + " files", files_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
-        progress_bar.Update(n_processed);
-
-        thread_pool pool(1);
-        pool.submit([this, files](){
-            m_hot_pixel_identifier->add_photos(files);
-        });
-
-        while (pool.get_tasks_total()) {
-            progress_bar.Update(n_processed, "Processed " + std::to_string(n_processed) + " / " + std::to_string(files_total) + " files");
-            wxMilliSleep(100);
-        }
-        progress_bar.Close();
-        progress_bar.Destroy();
-
-        pool.wait_for_tasks();
+        run_task_with_progress_dialog(  "Hot pixel identification",
+                                        "Processed",
+                                        "files",
+                                        n_processed,
+                                        files_total,
+                                        [this, files](){
+                                            m_hot_pixel_identifier->add_photos(files);
+                                        });
 
         m_hot_pixel_identifier->compute_hot_pixels();
 
@@ -470,28 +463,15 @@ void MyFrame::add_button_bar()   {
         const int tasks_total = m_stacker->get_tasks_total();
         const std::atomic<int> &tasks_processed = m_stacker->get_tasks_processed();
 
-        wxProgressDialog progress_bar("File stacking", "Finished 0 / " + std::to_string(tasks_total), tasks_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
-        progress_bar.Update(tasks_processed);
-
-        thread_pool pool(1);
-        pool.submit([this](){
-            m_stacker->calculate_stacked_photo();
-        });
-
-        while (pool.get_tasks_total()) {
-            if (tasks_processed < tasks_total) {
-                progress_bar.Update(tasks_processed, "Finished " + std::to_string(tasks_processed) + " / " + std::to_string(tasks_total));
-            }
-            else {
-                progress_bar.Update(tasks_total-1, "Calculating final image ...");
-            }
-            wxMilliSleep(100);
-        }
-        pool.wait_for_tasks();
-
-        progress_bar.Close();
-        progress_bar.Destroy();
-
+        run_task_with_progress_dialog(  "File stacking",
+                                "Finished",
+                                "",
+                                tasks_processed,
+                                tasks_total,
+                                [this](){
+                                    m_stacker->calculate_stacked_photo();
+                                },
+                                "Calculating final image ...");
 
         update_image_preview_with_stacked_image();
 
@@ -1089,27 +1069,15 @@ void MyFrame::stack_calibration_frames() {
         const int tasks_total = calibration_stacker->get_tasks_total();
         const std::atomic<int> &tasks_processed = calibration_stacker->get_tasks_processed();
 
-        wxProgressDialog progress_bar("File stacking", "Stacking " + file_type_name + " frames: 0 / " + std::to_string(tasks_total), tasks_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
-        progress_bar.Update(tasks_processed);
-
-        thread_pool pool(1);
-        pool.submit([this, &calibration_stacker](){
-            calibration_stacker->calculate_stacked_photo();
-        });
-
-        while (pool.get_tasks_total()) {
-            if (tasks_processed < tasks_total) {
-                progress_bar.Update(tasks_processed, "Stacking " + file_type_name + " frames: " + std::to_string(tasks_processed) + " / " + std::to_string(tasks_total));
-            }
-            else {
-                progress_bar.Update(tasks_total-1, "Calculating final "  + file_type_name + " frame ...");
-            }
-            wxMilliSleep(100);
-        }
-        pool.wait_for_tasks();
-
-        progress_bar.Close();
-        progress_bar.Destroy();
+        run_task_with_progress_dialog(  "File stacking",
+                                "Stacking " + file_type_name + " frames:",
+                                "",
+                                tasks_processed,
+                                tasks_total,
+                                [this, &calibration_stacker](){
+                                    calibration_stacker->calculate_stacked_photo();
+                                },
+                                "Calculating final "  + file_type_name + " frame ...");
 
         const string master_frame_name = files_to_stack.back().substr(0, files_to_stack.back().find_last_of('.')) + "_master" + file_type_name + ".tif";
         calibration_stacker->save_stacked_photo(master_frame_name, false, CV_16U);

@@ -10,6 +10,7 @@
 #include "../../headers/thread_pool.h"
 
 #include "../headers/MainFrame.h"
+#include "../headers/ProgressBarWindow.h"
 
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
@@ -65,22 +66,9 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
         const int tasks_total = m_aligned_images_producer->get_tasks_total();
         const std::atomic<int> &tasks_processed = m_aligned_images_producer->get_tasks_processed();
 
-        wxProgressDialog progress_bar("Producing aligned images", "Finished 0 / " + std::to_string(tasks_total), tasks_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
-        progress_bar.Update(tasks_processed);
-
-        thread_pool pool(1);
-        pool.submit([this](){
+        run_task_with_progress_dialog("Producing aligned images", "Finished", "", tasks_processed, tasks_total, [this](){
             m_aligned_images_producer->produce_aligned_images(m_output_folder_address);
         });
-
-        while (pool.get_tasks_total()) {
-            progress_bar.Update(tasks_processed, "Finished " + std::to_string(tasks_processed) + " / " + std::to_string(tasks_total));
-            wxMilliSleep(100);
-        }
-        pool.wait_for_tasks();
-
-        progress_bar.Close();
-        progress_bar.Destroy();
     });
     bottom_horizontal_sizer->Add(button_produce_images, 1, wxALL, 5);
 
