@@ -1,4 +1,5 @@
 #include "../headers/AlignedImagesProducerGUI.h"
+#include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 
 #include "../headers/StackSettings.h"
 
@@ -24,24 +25,41 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
         wxFrame(parent, wxID_ANY, "Produce aligned images", wxDefaultPosition, wxSize(1000, 800)),
         m_parent(parent)    {
 
+    m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackCorrectionWhite>());
+
     m_main_vertical_sizer = new wxBoxSizer(wxVERTICAL);
 
-    wxButton *button_select_output_folder      = new wxButton(this, wxID_ANY, "Select output folder");
+    m_image_preview_crop_tool = make_unique<ImagePreviewCropTool>(this, 600, 400, 255, true);
+    m_image_preview_crop_tool->set_stretcher(&m_color_stretcher);
+
+    const std::string reference_file = get_reference_file_address();
+    if (reference_file != "") {
+        m_image_preview_crop_tool->read_preview_from_file(reference_file);
+        m_image_preview_crop_tool->update_preview_bitmap();
+    }
+    m_main_vertical_sizer->Add(m_image_preview_crop_tool->get_image_preview_bitmap(), 1, wxCENTER, 0);
+    add_exposure_correction_spin_ctrl();
+
+    wxBoxSizer *bottom_horizontal_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+    m_main_vertical_sizer->Add(bottom_horizontal_sizer, 1, wxEXPAND | wxALL, 5);
+
+    wxButton *button_select_output_folder      = new wxButton(this, wxID_ANY, "Select output folder", wxDefaultPosition, wxSize(200, 50));
     button_select_output_folder->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         wxDirDialog dialog(this, "Select folder for output images", "");
         if (dialog.ShowModal() == wxID_OK) {
             m_output_folder_address = dialog.GetPath().ToStdString();
         }
     });
-    m_main_vertical_sizer->Add(button_select_output_folder, 1, wxALL, 5);
+    bottom_horizontal_sizer->Add(button_select_output_folder, 1, wxALL, 5);
 
 
-    wxButton *button_produce_images      = new wxButton(this, wxID_ANY, "Produce images");
+    wxButton *button_produce_images      = new wxButton(this, wxID_ANY, "Produce images", wxDefaultPosition, wxSize(200, 50));
     button_produce_images->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         this->initialize_aligned_images_producer();
         m_aligned_images_producer->produce_aligned_images(m_output_folder_address);
     });
-    m_main_vertical_sizer->Add(button_produce_images, 1, wxALL, 5);
+    bottom_horizontal_sizer->Add(button_produce_images, 1, wxALL, 5);
 
     SetSizer(m_main_vertical_sizer);
 };
@@ -91,4 +109,51 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
             m_aligned_images_producer->add_calibration_frame_handler(calibration_frame_handler);
         }
     }
+};
+
+std::string AlignedImagesProducerGUI::get_reference_file_address() const  {
+    const FilelistHandler *filelist_handler = &m_parent->get_filelist_handler();
+
+    // Light frames
+    const vector<string>    &light_frames = filelist_handler->get_files(FileTypes::LIGHT);
+    const vector<bool>      &files_are_checked = filelist_handler->get_files_checked(FileTypes::LIGHT);
+    const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler->get_alignment_info(FileTypes::LIGHT);
+    for (size_t i_file = 0; i_file < light_frames.size(); ++i_file) {
+        if (files_are_checked[i_file]) {
+            const string &file = light_frames[i_file];
+            const AlignmentFileInfo &alignment_info_gui = alignment_info_vec[i_file];
+
+            if (alignment_info_gui.ranking != 0 && alignment_info_gui.shift_x == 0 && alignment_info_gui.shift_y == 0 && alignment_info_gui.rotation == 0) {
+                return file;
+            }
+        }
+    }
+    return "";
+};
+
+void AlignedImagesProducerGUI::add_exposure_correction_spin_ctrl()   {
+    // Create a wxStaticText to display the current value
+    wxStaticText* exposure_correction_text = new wxStaticText(this, wxID_ANY, "Exposure correction: 0.0");
+
+    // Create the wxSlider
+    wxSlider* slider_exposure = new wxSlider(this, wxID_ANY, 0, -70, 70, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+
+    // Bind the slider's wxEVT_SLIDER event to a lambda function that updates the value text
+    slider_exposure->Bind(wxEVT_SLIDER, [exposure_correction_text, slider_exposure, this](wxCommandEvent&){
+        const float exposure_correction = slider_exposure->GetValue()/10.;
+        //m_current_preview->set_exposure_correction( exposure_correction );
+
+        IndividualColorStretchingToolBase &luminance_stretcher = m_color_stretcher.get_luminance_stretcher(0);
+        (dynamic_cast<IndividualColorStretchingBlackCorrectionWhite&>(luminance_stretcher)).set_stretching_parameters(0,exposure_correction,1);
+
+        m_image_preview_crop_tool->update_preview_bitmap();
+        const std::string new_label = "Exposure correction: " + to_string(exposure_correction+0.0001).substr(0,4);
+        exposure_correction_text->SetLabel(new_label);
+    });
+
+    // Add the controls to a sizer
+    //wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    m_main_vertical_sizer->Add(exposure_correction_text, 0,   wxEXPAND, 5);
+    m_main_vertical_sizer->Add(slider_exposure, 0,  wxEXPAND, 5);
+
 };

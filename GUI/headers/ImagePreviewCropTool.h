@@ -1,0 +1,31 @@
+#pragma once
+
+#include "../headers/ImagePreview.h"
+
+class ImagePreviewCropTool : public ImagePreview {
+    public:
+        /**
+         * @brief Construct a new Image Preview object
+         *
+         * @param width width of the preview
+         * @param height height of the preview
+         * @param max_value maximum value of the pixel
+         * @param use_color_interpolation whether to use color interpolation when resizing the image
+        */
+        ImagePreviewCropTool(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation);
+
+    protected:
+
+
+        void update_crop_preview(float mouse_position_relative_x = 0.5, float mouse_position_relative_y = 0.5);
+
+        void plot_crop_rectangle();
+
+        void plot_full_rectangle(int x1, int y1, int x2, int y2);
+
+        int m_crop_top_left_x = 0;
+        int m_crop_top_left_y = 0;
+
+        int m_crop_width  = -1;
+        int m_crop_height = -1;
+};

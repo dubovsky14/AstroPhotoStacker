@@ -2,6 +2,8 @@
 
 #include "../headers/FilelistHandler.h"
 #include "../headers/StackSettings.h"
+#include "../headers/ImagePreviewCropTool.h"
+#include "../headers/CombinedColorStrecherTool.h"
 
 #include "../../headers/AlignedImagesProducer.h"
 
@@ -35,8 +37,14 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
 
         std::unique_ptr<AstroPhotoStacker::AlignedImagesProducer> m_aligned_images_producer = nullptr;
+        std::unique_ptr<ImagePreviewCropTool> m_image_preview_crop_tool = nullptr;
+        CombinedColorStrecherTool m_color_stretcher; // for exposure correction
 
         std::string m_output_folder_address;
 
         void initialize_aligned_images_producer();
+
+        std::string get_reference_file_address() const;
+
+        void add_exposure_correction_spin_ctrl();
 };

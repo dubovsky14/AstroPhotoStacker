@@ -23,6 +23,8 @@ namespace AstroPhotoStacker {
                 m_add_datetime = add_datetime;
             };
 
+            void set_datetime_position(float x_frac, float y_frac);
+
             void produce_aligned_images(const std::string &output_folder_address) const;
 
         private:
@@ -34,6 +36,8 @@ namespace AstroPhotoStacker {
             int m_n_cpu             = 1;
 
             bool m_add_datetime     = false;
+            float m_datetime_pos_frac_x   = 0.7;
+            float m_datetime_pos_frac_y   = 0.9;
 
             std::vector<std::string>                m_files_to_align;
             std::vector<FileAlignmentInformation>   m_alignment_info;

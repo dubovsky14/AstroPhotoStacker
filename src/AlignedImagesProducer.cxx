@@ -30,6 +30,11 @@ void AlignedImagesProducer::add_calibration_frame_handler(std::shared_ptr<const 
     m_calibration_frame_handlers.push_back(calibration_frame_handler);
 };
 
+void AlignedImagesProducer::set_datetime_position(float x_frac, float y_frac)   {
+    m_datetime_pos_frac_x = x_frac;
+    m_datetime_pos_frac_y = y_frac;
+};
+
 void AlignedImagesProducer::produce_aligned_images(const std::string &output_folder_address) const {
     if (m_files_to_align.size() == 0) {
         return;
@@ -107,7 +112,7 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
 
         cv::Mat opencv_image = get_opencv_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height);
 
-        cv::putText(opencv_image, datetime, cv::Point(0.7*width, 0.9*height), cv::FONT_HERSHEY_SIMPLEX, 3, CV_RGB(255, 0, 0), 2);
+        cv::putText(opencv_image, datetime, cv::Point(m_datetime_pos_frac_x*width, m_datetime_pos_frac_y*height), cv::FONT_HERSHEY_SIMPLEX, 3, CV_RGB(255, 0, 0), 2);
 
         cv::imwrite(output_file_address, opencv_image);
     }
