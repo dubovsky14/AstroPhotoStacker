@@ -61,10 +61,22 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
 
     wxButton *button_produce_images      = new wxButton(this, wxID_ANY, "Produce images", wxDefaultPosition, wxSize(200, 50));
     button_produce_images->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        if (m_output_folder_address == "") {
+            wxMessageBox("Please select the output folder first.", "Error", wxICON_ERROR);
+            return;
+        }
+
+
         this->initialize_aligned_images_producer();
 
         const int tasks_total = m_aligned_images_producer->get_tasks_total();
         const std::atomic<int> &tasks_processed = m_aligned_images_producer->get_tasks_processed();
+
+        int crop_top_left_x, crop_top_left_y, crop_width, crop_height;
+        m_image_preview_crop_tool->get_crop_coordinates(&crop_top_left_x, &crop_top_left_y, &crop_width, &crop_height);
+        if (crop_width > 0 && crop_height > 0) {
+            m_aligned_images_producer->limit_output_image_size(crop_top_left_x, crop_top_left_y, crop_width, crop_height);
+        }
 
         run_task_with_progress_dialog("Producing aligned images", "Finished", "", tasks_processed, tasks_total, [this](){
             m_aligned_images_producer->produce_aligned_images(m_output_folder_address);

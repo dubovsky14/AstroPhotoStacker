@@ -14,6 +14,10 @@ class ImagePreviewCropTool : public ImagePreview {
         */
         ImagePreviewCropTool(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation);
 
+        virtual void update_preview_bitmap() override;
+
+        void get_crop_coordinates(int *top_left_x, int *top_left_y, int *width, int *height) const;
+
     protected:
 
 
@@ -22,6 +26,8 @@ class ImagePreviewCropTool : public ImagePreview {
         void plot_crop_rectangle();
 
         void plot_full_rectangle(int x1, int y1, int x2, int y2);
+
+        void bind_crop_events();
 
         int m_crop_top_left_x = 0;
         int m_crop_top_left_y = 0;

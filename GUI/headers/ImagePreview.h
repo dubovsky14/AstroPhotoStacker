@@ -86,7 +86,7 @@ class ImagePreview {
          *
          * @param static_bitmap pointer to static bitmap to update
         */
-        void update_preview_bitmap() const;
+        virtual void update_preview_bitmap();
 
         /**
          * @brief Update preview bitmap - an object in GUI
@@ -94,7 +94,7 @@ class ImagePreview {
          * @param static_bitmap pointer to static bitmap to update
          * @param apply_green_correction whether to apply green channel correction
         */
-        void update_preview_bitmap(bool apply_gree_correction) const;
+        virtual void update_preview_bitmap(bool apply_gree_correction);
 
         /**
          * @brief Zoom in the preview at a given position
