@@ -120,8 +120,8 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
 
         cv::Mat opencv_image = get_opencv_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height);
 
-        const float font_size = width/1600.0;
-        const float font_width = font_size;
+        const float font_size = width/1200.0;
+        const float font_width = font_size*2;
 
         cv::putText(opencv_image, datetime, cv::Point(m_datetime_pos_frac_x*width, m_datetime_pos_frac_y*height), cv::FONT_HERSHEY_SIMPLEX, font_size, CV_RGB(255, 0, 0), font_width);
 

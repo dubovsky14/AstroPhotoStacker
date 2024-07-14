@@ -109,8 +109,6 @@ void ImagePreviewCropTool::bind_crop_events() {
             float relative_x = static_cast<float>(client_position.x) / bitmapSize.GetWidth();
             float relative_y = static_cast<float>(client_position.y) / bitmapSize.GetHeight();
 
-            cout << "Left down, relative x: " << relative_x << " relative y: " << relative_y << endl;
-
             m_crop_top_left_x = m_image_resize_tool.get_original_coordinate_x(relative_x);
             m_crop_top_left_y = m_image_resize_tool.get_original_coordinate_y(relative_y);
         }
@@ -134,14 +132,10 @@ void ImagePreviewCropTool::bind_crop_events() {
             float relative_x = static_cast<float>(client_position.x) / bitmapSize.GetWidth();
             float relative_y = static_cast<float>(client_position.y) / bitmapSize.GetHeight();
 
-            cout << "Left up, relative x: " << relative_x << " relative y: " << relative_y << endl;
-
             m_crop_width = m_image_resize_tool.get_original_coordinate_x(relative_x) - m_crop_top_left_x;
             m_crop_height = m_image_resize_tool.get_original_coordinate_y(relative_y) - m_crop_top_left_y;
         }
 
         update_preview_bitmap();
-
-        cout << "Crop rectangle: " << m_crop_top_left_x << " " << m_crop_top_left_y << " " << m_crop_width << " " << m_crop_height << endl;
     });
 };

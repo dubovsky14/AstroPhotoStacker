@@ -45,7 +45,7 @@ namespace AstroPhotoStacker {
             int m_n_cpu             = 1;
 
             bool m_add_datetime     = false;
-            float m_datetime_pos_frac_x   = 0.7;
+            float m_datetime_pos_frac_x   = 0.6;
             float m_datetime_pos_frac_y   = 0.9;
 
             std::vector<std::string>                m_files_to_align;
