@@ -77,6 +77,14 @@ void ImagePreviewCropTool::plot_full_rectangle(int x1, int y1, int x2, int y2)  
     }
 };
 
+void ImagePreviewCropTool::drop_crop()    {
+    m_crop_top_left_x = 0;
+    m_crop_top_left_y = 0;
+    m_crop_width = -1;
+    m_crop_height = -1;
+
+};
+
 void ImagePreviewCropTool::bind_crop_events() {
 
     const wxPoint magic_point = wxPoint(0.368*m_width, 0.155*m_height);   // shift the position to the center of the image - wxStaticBitmap is buggy ...

@@ -18,6 +18,8 @@ class ImagePreviewCropTool : public ImagePreview {
 
         void get_crop_coordinates(int *top_left_x, int *top_left_y, int *width, int *height) const;
 
+        void drop_crop();
+
     protected:
 
 

@@ -58,6 +58,13 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
     });
     bottom_horizontal_sizer->Add(button_select_output_folder, 1, wxALL, 5);
 
+    wxButton *drop_crop_button = new wxButton(this, wxID_ANY, "Drop crop", wxDefaultPosition, wxSize(200, 50));
+    drop_crop_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        m_image_preview_crop_tool->drop_crop();
+        m_image_preview_crop_tool->update_preview_bitmap();
+    });
+    bottom_horizontal_sizer->Add(drop_crop_button, 1, wxALL, 5);
+
 
     wxButton *button_produce_images      = new wxButton(this, wxID_ANY, "Produce images", wxDefaultPosition, wxSize(200, 50));
     button_produce_images->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){

@@ -49,7 +49,6 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
         const string output_file_address = output_folder_address + "/" + get_file_name(m_files_to_align[i_file]);
         const FileAlignmentInformation alignment_info = m_alignment_info[i_file];
         auto submit_alignment = [this, i_file, output_file_address, alignment_info]() {
-            cout << "Aligning " << m_files_to_align[i_file] << endl;
             produce_aligned_image(m_files_to_align[i_file], output_file_address, alignment_info);
         };
         pool.submit(submit_alignment);
@@ -104,7 +103,7 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
             for (int x = 0; x < width; x++) {
                 const int x_original = x + m_top_left_corner_x;
                 const int y_original = y + m_top_left_corner_y;
-                int value = photo_handler.get_value_by_reference_frame_index(x_original + width*y_original, color);
+                int value = photo_handler.get_value_by_reference_frame_index(x_original + width_original*y_original, color);
                 if (value >= 0) {
                     output_image[color][x + width*y] = value;
                 }
@@ -121,7 +120,10 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
 
         cv::Mat opencv_image = get_opencv_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height);
 
-        cv::putText(opencv_image, datetime, cv::Point(m_datetime_pos_frac_x*width, m_datetime_pos_frac_y*height), cv::FONT_HERSHEY_SIMPLEX, 3, CV_RGB(255, 0, 0), 2);
+        const float font_size = width/1600.0;
+        const float font_width = font_size;
+
+        cv::putText(opencv_image, datetime, cv::Point(m_datetime_pos_frac_x*width, m_datetime_pos_frac_y*height), cv::FONT_HERSHEY_SIMPLEX, font_size, CV_RGB(255, 0, 0), font_width);
 
         cv::imwrite(output_file_address, opencv_image);
     }
