@@ -9,5 +9,6 @@ namespace AstroPhotoStacker {
         int iso                 = 0;
         float focal_length      = 0;
         std::string date_time   = "";
+        int max_value           = 0;
     };
 }

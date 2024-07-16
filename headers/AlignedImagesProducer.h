@@ -3,6 +3,7 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/CalibrationFrameBase.h"
 
+
 #include <string>
 #include <vector>
 #include <atomic>
@@ -53,7 +54,7 @@ namespace AstroPhotoStacker {
 
             std::vector<std::shared_ptr<const CalibrationFrameBase> > m_calibration_frame_handlers;
 
-            static std::string get_file_name(const std::string &file_address);
+            static std::string get_output_file_name(const std::string &input_file_address);
 
             void produce_aligned_image( const std::string &input_file_address,
                                         const std::string &output_file_address,
@@ -62,5 +63,6 @@ namespace AstroPhotoStacker {
 
             mutable std::atomic<int> m_n_tasks_processed = 0;
 
+            void scale_down_image(std::vector<std::vector<unsigned short>> *image, unsigned int origianal_max, unsigned int new_max) const;
     };
 }

@@ -2,6 +2,7 @@
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/MetadataReader.h"
+#include "../headers/raw_file_reader.h"
 
 #include "../headers/thread_pool.h"
 
@@ -46,7 +47,7 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
     m_n_tasks_processed = 0;
     thread_pool pool(n_cpu);
     for (int i_file = 0; i_file < n_files; i_file++) {
-        const string output_file_address = output_folder_address + "/" + get_file_name(m_files_to_align[i_file]);
+        const string output_file_address = output_folder_address + "/" + get_output_file_name(m_files_to_align[i_file]);
         const FileAlignmentInformation alignment_info = m_alignment_info[i_file];
         auto submit_alignment = [this, i_file, output_file_address, alignment_info]() {
             produce_aligned_image(m_files_to_align[i_file], output_file_address, alignment_info);
@@ -64,12 +65,18 @@ int AlignedImagesProducer::get_tasks_total() const {
     return m_files_to_align.size();
 };
 
-string AlignedImagesProducer::get_file_name(const std::string &file_address) {
-    const size_t last_slash = file_address.find_last_of("/");
-    if (last_slash == string::npos) {
-        return file_address;
+string AlignedImagesProducer::get_output_file_name(const std::string &input_file_address) {
+    std::string input_file_name = input_file_address;
+    const size_t last_slash = input_file_address.find_last_of("/");
+    if (last_slash != string::npos) {
+        input_file_name = input_file_address.substr(last_slash+1);
     }
-    return file_address.substr(last_slash+1);
+
+    const size_t last_dot = input_file_name.find_last_of(".");
+    if (last_dot != string::npos) {
+        input_file_name = input_file_name.substr(0, last_dot);
+    }
+    return input_file_name + ".jpg";
 };
 
 void AlignedImagesProducer::produce_aligned_image( const std::string &input_file_address,
@@ -111,11 +118,15 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
         }
     }
 
+    const Metadata metadata = read_metadata(input_file_address);
+    if (metadata.max_value > 255) {
+        scale_down_image(&output_image, metadata.max_value, 255);
+    }
+
     if (!m_add_datetime) {
         crate_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height, output_file_address);
     }
     else {
-        const Metadata metadata = read_metadata(input_file_address);
         const string datetime = metadata.date_time;
 
         cv::Mat opencv_image = get_opencv_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height);
@@ -128,4 +139,16 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
         cv::imwrite(output_file_address, opencv_image);
     }
     m_n_tasks_processed++;
+};
+
+
+void AlignedImagesProducer::scale_down_image(   std::vector<std::vector<unsigned short>> *image,
+                                                unsigned int origianal_max,
+                                                unsigned int new_max) const {
+
+    for (int color = 0; color < 3; color++) {
+        for (unsigned int i = 0; i < image->at(color).size(); i++) {
+            image->at(color)[i] = image->at(color)[i]*new_max/origianal_max;
+        }
+    }
 };

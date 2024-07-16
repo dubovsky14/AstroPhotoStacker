@@ -23,6 +23,7 @@ Metadata AstroPhotoStacker::read_metadata_from_raw_file(const std::string &raw_f
     result.exposure_time = raw_processor.imgdata.other.shutter;
     result.iso           = raw_processor.imgdata.other.iso_speed;
     result.focal_length  = raw_processor.imgdata.other.focal_len;
+    result.max_value     = raw_processor.imgdata.color.maximum;
 
     // it's a bit tricky with timestamp
     std::tm* t = std::gmtime(&raw_processor.imgdata.other.timestamp);

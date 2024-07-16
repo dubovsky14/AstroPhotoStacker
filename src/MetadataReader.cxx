@@ -55,6 +55,12 @@ Metadata AstroPhotoStacker::read_metadata_rgb_image(const std::string &input_fil
             metadata.date_time = dateTime->toString();
         }
 
+        // Max Value
+        const auto maxValue = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ExposureBiasValue"));
+        if (maxValue != exifData.end()) {
+            metadata.max_value = maxValue->toLong();
+        }
+
     } catch (Exiv2::AnyError& e) {
         std::cerr << "Error reading file " << input_file << ": " << e.what() << std::endl;
     }
