@@ -9,10 +9,15 @@ ImagePreviewCropTool::ImagePreviewCropTool(wxFrame *parent, int width, int heigh
 
 };
 
-void ImagePreviewCropTool::update_preview_bitmap()   {
-    update_preview_data(m_image_resize_tool.get_last_mouse_position_relative_x(), m_image_resize_tool.get_last_mouse_position_relative_y());
-    plot_crop_rectangle();
-    ImagePreview::update_preview_bitmap();
+void ImagePreviewCropTool::update_preview_bitmap(bool apply_green_correction) const   {
+    wxImage image_wx = get_updated_wximage(apply_green_correction);
+
+    plot_crop_rectangle(&image_wx);
+
+    // Convert the wxImage to a wxBitmap
+    wxBitmap bitmap(image_wx);
+
+    m_preview_bitmap->SetBitmap(bitmap);
 };
 
 void ImagePreviewCropTool::get_crop_coordinates(int *top_left_x, int *top_left_y, int *width, int *height) const {
@@ -22,7 +27,7 @@ void ImagePreviewCropTool::get_crop_coordinates(int *top_left_x, int *top_left_y
     *height = m_crop_height;
 };
 
-void ImagePreviewCropTool::plot_crop_rectangle()    {
+void ImagePreviewCropTool::plot_crop_rectangle(wxImage *wx_image)   const   {
     if (!image_loaded() || m_crop_width == -1 || m_crop_height == -1) {
         return;
     }
@@ -30,19 +35,19 @@ void ImagePreviewCropTool::plot_crop_rectangle()    {
     const int line_width = 2;
 
     // top line
-    plot_full_rectangle(m_crop_top_left_x, m_crop_top_left_y, m_crop_top_left_x + m_crop_width, m_crop_top_left_y+line_width);
+    plot_full_rectangle(wx_image, m_crop_top_left_x, m_crop_top_left_y, m_crop_top_left_x + m_crop_width, m_crop_top_left_y+line_width);
 
     // bottom line
-    plot_full_rectangle(m_crop_top_left_x, m_crop_top_left_y+ m_crop_height, m_crop_top_left_x + m_crop_width, m_crop_top_left_y + m_crop_height);
+    plot_full_rectangle(wx_image, m_crop_top_left_x, m_crop_top_left_y+ m_crop_height, m_crop_top_left_x + m_crop_width, m_crop_top_left_y + m_crop_height);
 
     // left line
-    plot_full_rectangle(m_crop_top_left_x, m_crop_top_left_y, m_crop_top_left_x - line_width, m_crop_top_left_y + m_crop_height);
+    plot_full_rectangle(wx_image, m_crop_top_left_x, m_crop_top_left_y, m_crop_top_left_x - line_width, m_crop_top_left_y + m_crop_height);
 
     // right line
-    plot_full_rectangle(m_crop_top_left_x + m_crop_width, m_crop_top_left_y, m_crop_top_left_x + m_crop_width + line_width, m_crop_top_left_y + m_crop_height);
+    plot_full_rectangle(wx_image, m_crop_top_left_x + m_crop_width, m_crop_top_left_y, m_crop_top_left_x + m_crop_width + line_width, m_crop_top_left_y + m_crop_height);
 };
 
-void ImagePreviewCropTool::plot_full_rectangle(int x1, int y1, int x2, int y2)    {
+void ImagePreviewCropTool::plot_full_rectangle(wxImage *wx_image, int x1, int y1, int x2, int y2)   const    {
     if (m_crop_width == -1 || m_crop_height == -1) {
         return;
     }
@@ -70,9 +75,7 @@ void ImagePreviewCropTool::plot_full_rectangle(int x1, int y1, int x2, int y2)  
                 continue;
             }
 
-            m_preview_data[0][y*m_width + x] = m_max_value;
-            m_preview_data[1][y*m_width + x] = 0;
-            m_preview_data[2][y*m_width + x] = 0;
+            wx_image->SetRGB(x, y, m_max_value, 0, 0);
         }
     }
 };

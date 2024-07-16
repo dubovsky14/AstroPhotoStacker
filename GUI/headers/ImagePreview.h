@@ -86,7 +86,7 @@ class ImagePreview {
          *
          * @param static_bitmap pointer to static bitmap to update
         */
-        virtual void update_preview_bitmap();
+        virtual void update_preview_bitmap() const;
 
         /**
          * @brief Update preview bitmap - an object in GUI
@@ -94,7 +94,7 @@ class ImagePreview {
          * @param static_bitmap pointer to static bitmap to update
          * @param apply_green_correction whether to apply green channel correction
         */
-        virtual void update_preview_bitmap(bool apply_gree_correction);
+        virtual void update_preview_bitmap(bool apply_gree_correction)  const;
 
         /**
          * @brief Zoom in the preview at a given position
@@ -167,4 +167,6 @@ class ImagePreview {
         void update_preview_data(float mouse_position_relative_x = 0.5, float mouse_position_relative_y = 0.5);
 
         void on_mouse_wheel(wxMouseEvent& event);
+
+        wxImage get_updated_wximage(bool apply_green_correction) const;
 };

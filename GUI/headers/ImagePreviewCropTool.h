@@ -14,7 +14,11 @@ class ImagePreviewCropTool : public ImagePreview {
         */
         ImagePreviewCropTool(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation);
 
-        virtual void update_preview_bitmap() override;
+        virtual void update_preview_bitmap() const override {
+            ImagePreview::update_preview_bitmap();
+        };
+
+        virtual void update_preview_bitmap(bool apply_green_correction) const override;
 
         void get_crop_coordinates(int *top_left_x, int *top_left_y, int *width, int *height) const;
 
@@ -25,9 +29,9 @@ class ImagePreviewCropTool : public ImagePreview {
 
         void update_crop_preview(float mouse_position_relative_x = 0.5, float mouse_position_relative_y = 0.5);
 
-        void plot_crop_rectangle();
+        void plot_crop_rectangle(wxImage *xw_image) const;
 
-        void plot_full_rectangle(int x1, int y1, int x2, int y2);
+        void plot_full_rectangle(wxImage *xw_image, int x1, int y1, int x2, int y2) const;
 
         void bind_crop_events();
 
