@@ -3,7 +3,7 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/CalibrationFrameBase.h"
 
-
+#include <functional>
 #include <string>
 #include <vector>
 #include <atomic>
@@ -37,6 +37,9 @@ namespace AstroPhotoStacker {
 
             int get_tasks_total() const;
 
+            void set_image_stretching_function(std::function<void(std::vector<std::vector<unsigned short>>*, unsigned short max_value)> image_stretching_function) {
+                m_image_stretching_function = image_stretching_function;
+            };
         private:
             int m_top_left_corner_x = 0;
             int m_top_left_corner_y = 0;
@@ -48,6 +51,8 @@ namespace AstroPhotoStacker {
             bool m_add_datetime     = false;
             float m_datetime_pos_frac_x   = 0.6;
             float m_datetime_pos_frac_y   = 0.9;
+
+            std::function<void(std::vector<std::vector<unsigned short>>*, unsigned short max_value)> m_image_stretching_function = nullptr;
 
             std::vector<std::string>                m_files_to_align;
             std::vector<FileAlignmentInformation>   m_alignment_info;
@@ -64,5 +69,7 @@ namespace AstroPhotoStacker {
             mutable std::atomic<int> m_n_tasks_processed = 0;
 
             void scale_down_image(std::vector<std::vector<unsigned short>> *image, unsigned int origianal_max, unsigned int new_max) const;
+
+            void apply_green_correction(std::vector<std::vector<unsigned short>> *image, unsigned short max_value) const;
     };
 }

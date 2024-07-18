@@ -105,6 +105,7 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
 
     std::vector<vector<unsigned short>> output_image(3, vector<unsigned short>(width*height, 0));
 
+    int max_value = 0;
     for (int color = 0; color < 3; color++) {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -113,20 +114,28 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
                 int value = photo_handler.get_value_by_reference_frame_index(x_original + width_original*y_original, color);
                 if (value >= 0) {
                     output_image[color][x + width*y] = value;
+                    max_value = max(max_value, value);
                 }
             }
         }
     }
 
-    const Metadata metadata = read_metadata(input_file_address);
-    if (metadata.max_value > 255) {
-        scale_down_image(&output_image, metadata.max_value, 255);
+
+    if (m_image_stretching_function) {
+        m_image_stretching_function(&output_image, max_value);
+    }
+    if (max_value > 255) {
+        scale_down_image(&output_image, max_value, 255);
+    }
+    if (is_raw_file(input_file_address)) {
+        apply_green_correction(&output_image, 255);
     }
 
     if (!m_add_datetime) {
         crate_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height, output_file_address);
     }
     else {
+        const Metadata metadata = read_metadata(input_file_address);
         const string datetime = metadata.date_time;
 
         cv::Mat opencv_image = get_opencv_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height);
@@ -151,4 +160,13 @@ void AlignedImagesProducer::scale_down_image(   std::vector<std::vector<unsigned
             image->at(color)[i] = image->at(color)[i]*new_max/origianal_max;
         }
     }
+};
+
+void AlignedImagesProducer::apply_green_correction(std::vector<std::vector<unsigned short>> *image, unsigned short max_value) const    {
+    // scale down green (we have 2 green channels)
+    std::transform(image->at(1).begin(), image->at(1).end(), image->at(1).begin(), [](unsigned short value) { return value; });
+
+    // for some reason, the max of blue and red has to be 32767, not 65534
+    std::transform(image->at(0).begin(), image->at(0).end(), image->at(0).begin(), [max_value](unsigned short value) { return std::min<unsigned short>(value*2, max_value); });
+    std::transform(image->at(2).begin(), image->at(2).end(), image->at(2).begin(), [max_value](unsigned short value) { return std::min<unsigned short>(value*2, max_value); });
 };

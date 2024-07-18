@@ -50,4 +50,5 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
         void add_checkboxes();
         bool m_add_datetime = false;
+        bool m_apply_color_stretcher = false;
 };

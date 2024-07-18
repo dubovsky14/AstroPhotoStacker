@@ -111,11 +111,9 @@ wxImage ImagePreview::get_updated_wximage(bool apply_green_correction)  const  {
 
                 if (m_color_stretcher != nullptr) {
                     if (m_color_stretcher->has_stretchers()) {
-                        for (int i_color = 0; i_color < 3; i_color++) {
-                            red   = m_color_stretcher->stretch(red,   m_max_value, 0);
-                            green = m_color_stretcher->stretch(green, m_max_value, 1);
-                            blue  = m_color_stretcher->stretch(blue,  m_max_value, 2);
-                        }
+                        red   = m_color_stretcher->stretch(red,   m_max_value, 0);
+                        green = m_color_stretcher->stretch(green, m_max_value, 1);
+                        blue  = m_color_stretcher->stretch(blue,  m_max_value, 2);
                     }
                 }
                 red   = min<int>(255,scale_factor*red  );

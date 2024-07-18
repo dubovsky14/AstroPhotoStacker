@@ -86,6 +86,11 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
         }
 
         run_task_with_progress_dialog("Producing aligned images", "Finished", "", tasks_processed, tasks_total, [this](){
+            if (m_apply_color_stretcher) {
+                m_aligned_images_producer->set_image_stretching_function([this](std::vector<std::vector<unsigned short>> *image, unsigned short max_value){
+                    m_color_stretcher.stretch_image(image, max_value, true);
+                });
+            }
             m_aligned_images_producer->produce_aligned_images(m_output_folder_address);
         });
     });
@@ -192,12 +197,20 @@ void AlignedImagesProducerGUI::add_exposure_correction_spin_ctrl()   {
 
 void AlignedImagesProducerGUI::add_checkboxes()   {
     wxCheckBox* add_datetime_checkbox = new wxCheckBox(this, wxID_ANY, "Add datetime to the output image");
-    const bool is_checked = m_add_datetime;
-    add_datetime_checkbox->SetValue(is_checked);
+    add_datetime_checkbox->SetValue(m_add_datetime);
     add_datetime_checkbox->SetToolTip("If checked, the datetime from photo's metadata will be shown in the image.");
     add_datetime_checkbox->Bind(wxEVT_CHECKBOX, [add_datetime_checkbox, this](wxCommandEvent&){
         const bool is_checked = add_datetime_checkbox->GetValue();
         m_add_datetime = is_checked;
     });
     m_main_vertical_sizer->Add(add_datetime_checkbox, 0, wxEXPAND, 5);
+
+    wxCheckBox* apply_color_stretcher = new wxCheckBox(this, wxID_ANY, "Apply exposure correction to the output image");
+    apply_color_stretcher->SetValue(m_apply_color_stretcher);
+    apply_color_stretcher->SetToolTip("If checked, the exposure correction used for preview will be used also for output images.");
+    apply_color_stretcher->Bind(wxEVT_CHECKBOX, [apply_color_stretcher, this](wxCommandEvent&){
+        const bool is_checked = apply_color_stretcher->GetValue();
+        m_apply_color_stretcher = is_checked;
+    });
+    m_main_vertical_sizer->Add(apply_color_stretcher, 0, wxEXPAND, 5);
 };
