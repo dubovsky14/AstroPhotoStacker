@@ -126,6 +126,15 @@ namespace AstroPhotoStacker {
                 return m_height;
             };
 
+            /**
+             * @brief Get the data of the calibrated photo.
+             *
+             * @return const std::vector<std::vector<short unsigned int>>& The data of the calibrated photo.
+            */
+            const std::vector<std::vector<short unsigned int>>& get_calibrated_data_after_color_interpolation() const {
+                return m_data_shifted_color_interpolation;
+            };
+
         private:
             int m_width;
             int m_height;

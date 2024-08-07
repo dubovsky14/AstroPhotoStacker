@@ -24,6 +24,7 @@ add_executable(produce_alignment_file utils/produce_alignment_file.cxx)
 add_executable(convert_raw_to_jpg utils/convert_raw_to_jpg.cxx)
 add_executable(identify_hot_pixels utils/identify_hot_pixels.cxx)
 add_executable(stack_calibration_frames utils/stack_calibration_frames.cxx)
+add_executable(rank_sharpness utils/rank_sharpness.cxx)
 add_executable(tests ${CI_TESTS_SOURCES} "utils/tests.cxx")
 
 add_dependencies(AstroPhotoStacker AstroPhotoStackerLib)
@@ -32,6 +33,7 @@ add_dependencies(convert_raw_to_jpg AstroPhotoStackerLib)
 add_dependencies(identify_hot_pixels AstroPhotoStackerLib)
 add_dependencies(tests AstroPhotoStackerLib)
 add_dependencies(stack_calibration_frames AstroPhotoStackerLib)
+add_dependencies(rank_sharpness AstroPhotoStackerLib)
 
 # link the libraw library
 target_link_libraries(AstroPhotoStacker AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
@@ -40,3 +42,4 @@ target_link_libraries(convert_raw_to_jpg AstroPhotoStackerLib ${LINKER_FLAGS} ${
 target_link_libraries(identify_hot_pixels AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
 target_link_libraries(tests AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
 target_link_libraries(stack_calibration_frames AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
+target_link_libraries(rank_sharpness AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
