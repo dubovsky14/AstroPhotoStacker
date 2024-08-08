@@ -29,6 +29,4 @@ namespace AstroPhotoStacker {
         }
         return sum_diff2_weighted / sum_weights;
     }
-
-
 }
