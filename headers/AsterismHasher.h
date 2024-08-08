@@ -18,7 +18,7 @@ namespace AstroPhotoStacker   {
      * @return true - valid hash
      * @return false - invalid hash (if 4 stars do not fit into the circle with diamater |AB| and center in the middle between star A and star B)
      */
-    bool calculate_asterism_hash(   const std::vector<std::tuple<float, float, int > > &stars, std::tuple<float,float,float,float> *result,
+    bool calculate_asterism_hash(   const std::vector<std::tuple<float, float, int > > &stars, std::vector<float> *result,
                                     unsigned int *index_star_A = nullptr,
                                     unsigned int *index_star_B = nullptr,
                                     unsigned int *index_star_C = nullptr,

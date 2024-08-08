@@ -22,7 +22,7 @@ namespace AstroPhotoStacker {
              * @param reference_photo_width - width of the reference photo
              * @param reference_photo_height - height of the reference photo
             */
-            PlateSolver(const KDTree *kdtree,
+            PlateSolver(const KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>> *kdtree,
                         const std::vector<std::tuple<float,float,int> > *reference_stars,
                         unsigned int reference_photo_width, unsigned int reference_photo_height);
 
@@ -44,7 +44,7 @@ namespace AstroPhotoStacker {
 
 
         private:
-            const KDTree *m_kdtree;
+            const KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>> *m_kdtree;
             const std::vector<std::tuple<float,float,int> > *m_reference_stars;
             unsigned int m_reference_photo_width;
             unsigned int m_reference_photo_height;

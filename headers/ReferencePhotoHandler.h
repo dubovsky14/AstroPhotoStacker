@@ -70,7 +70,7 @@ namespace AstroPhotoStacker   {
              *
              * @return unsigned int - number of hashes
             */
-            unsigned int get_number_of_hashes() const { return m_kd_tree->get_number_of_points_in_tree(); };
+            unsigned int get_number_of_hashes() const { return m_kd_tree->get_n_nodes(); };
 
             /**
              * @brief Plate-solve a photo - calculate how it should be rotated and shifted to match the reference photo
@@ -98,20 +98,12 @@ namespace AstroPhotoStacker   {
             */
             bool plate_solve(const std::vector<std::tuple<float, float, int> > &stars, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const;
 
-            /**
-             * @brief Get the hash with a given index from the reference photo
-             *
-             * @param hash_index - index of the hash
-             * @return std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> - tuple containing the hash (as tuple), followed by indices of the stars forming the hash
-            */
-            std::tuple<std::tuple<float,float,float,float>,unsigned int, unsigned int, unsigned int, unsigned int> get_hash(unsigned int hash_index) const;
-
         private:
             int m_width;
             int m_height;
 
             std::vector<std::tuple<float, float, int> > m_stars;
-            std::unique_ptr<KDTree> m_kd_tree = nullptr;
+            std::unique_ptr<KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>>> m_kd_tree = nullptr;
             std::unique_ptr<PlateSolver> m_plate_solver = nullptr;
 
             template<typename pixel_brightness_type = unsigned short>

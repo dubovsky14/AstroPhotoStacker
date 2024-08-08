@@ -6,7 +6,9 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
-PlateSolver::PlateSolver(   const KDTree *kdtree,
+using StarIndices = tuple<unsigned, unsigned, unsigned, unsigned>;
+
+PlateSolver::PlateSolver(   const KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>> *kdtree,
                             const vector<tuple<float,float,int> > *stars,
                             unsigned int reference_photo_width, unsigned int reference_photo_height) :
     m_kdtree(kdtree),
@@ -24,16 +26,16 @@ bool PlateSolver::plate_solve(  const std::vector<std::tuple<float,float,int> > 
 
                     vector<tuple<float,float,int> > four_stars_positions = {stars[i_star1], stars[i_star2], stars[i_star3], stars[i_star4]};
                     vector<unsigned int> four_stars_indices = {i_star1, i_star2, i_star3, i_star4};
-                    tuple<float,float,float,float> asterism_hash;
+                    vector<float> asterism_hash(4);
 
                     unsigned int starA, starB, starC, starD;
                     calculate_asterism_hash(four_stars_positions, &asterism_hash, &starA, &starB, &starC, &starD);
 
                     // closest hashes and star indices from the reference photo
-                    const std::vector<std::tuple<PointCoordinatesTuple, StarIndices> > nearest_neighbors =
-                        m_kdtree->get_k_nearest_neighbors(asterism_hash, 4);
+                    const std::vector<std::tuple<vector<float>, StarIndices> > nearest_neighbors =
+                        m_kdtree->get_k_nearest_neighbors(asterism_hash.data(), 4);
 
-                    for (const std::tuple<PointCoordinatesTuple, StarIndices> &hash_tuple : nearest_neighbors)  {
+                    for (const std::tuple<vector<float>, StarIndices> &hash_tuple : nearest_neighbors)  {
                         const StarIndices &reference_star_indices = get<1>(hash_tuple);
                         const tuple<float,float,int> &reference_star_A = m_reference_stars->at(get<0>(reference_star_indices));
                         const tuple<float,float,int> &reference_star_B = m_reference_stars->at(get<1>(reference_star_indices));

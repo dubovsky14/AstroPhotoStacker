@@ -1,33 +1,37 @@
 #pragma once
 
+#include "../headers/Common.h"
+
 #include<tuple>
 #include<vector>
 #include<map>
 #include<string>
 #include<memory>
+#include<algorithm>
 #include<fstream>
 #include <stdlib.h>
 
 namespace AstroPhotoStacker   {
-    typedef float CoordinateDataType;
-    typedef std::tuple<CoordinateDataType, CoordinateDataType, CoordinateDataType, CoordinateDataType> PointCoordinatesTuple;
-    typedef CoordinateDataType PointCoordinatesArray[4];
-    typedef std::tuple<unsigned int, unsigned int, unsigned int, unsigned int> StarIndices;
     typedef int PointIndexType;
 
-    class PointInKDTree {
+    template<typename CoordinateType, unsigned int NumberOfCoordinates, typename ValueType>
+    class KDTreeNode {
         public:
-            PointInKDTree();
-            PointInKDTree(const PointCoordinatesTuple &coordinates, const StarIndices &star_indices);
+            KDTreeNode() {
+                for (unsigned int i = 0; i < NumberOfCoordinates; ++i)  {
+                    m_coordinates[i] = 0;
+                }
+            };
+            KDTreeNode(const CoordinateType *coordinates, const ValueType &star_indices);
 
-            PointIndexType get_child_index(const CoordinateDataType *coordinates);
+            PointIndexType get_child_index(const CoordinateType *coordinates);
 
-            PointCoordinatesArray   m_coordinates;
-            StarIndices             m_star_indices;
-            short                   m_index_for_splitting   = -1;
-            PointIndexType          m_index_child_left      = -1;
-            PointIndexType          m_index_child_right     = -1;
-            PointIndexType          m_index_parent          = -1;
+            CoordinateType      m_coordinates[NumberOfCoordinates];
+            ValueType           m_value;
+            short               m_split_axis            = -1;
+            PointIndexType      m_index_child_left      = -1;
+            PointIndexType      m_index_child_right     = -1;
+            PointIndexType      m_index_parent          = -1;
 
     };
 
@@ -35,92 +39,341 @@ namespace AstroPhotoStacker   {
      * @brief Class implementing k-dimensional binary tree, which can be used to search for the nearest neighbors of a point
      *
      */
+    template<typename CoordinateType, unsigned int NumberOfCoordinates, typename ValueType>
     class KDTree    {
         public:
-            KDTree() = delete;
+            KDTree()  {
+                m_n_dim = NumberOfCoordinates;
+            };
+
+            KDTree(const KDTree<CoordinateType, NumberOfCoordinates, ValueType> &kd_tree) = delete;
 
             /**
-             * @brief Construct a new KDTree object
+             * @brief Get const reference to the node object, given index node_index
              *
-             * @param n_points approximate number of points that will be added (cannot be exceeded by any amount, but the performance will be slightly suboptimal)
+             * @param node_index
+             * @return const KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType>&
              */
-            KDTree(unsigned int n_points);
+            const KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType> &get_node(const long long int node_index) const {
+                return m_nodes[node_index];
+            };
+
 
             /**
-             * @brief Add point to the tree
+             * @brief Get the number of nodes in the tree
              *
-             * @param coordinates coordinates of the point in 4-dimensional space
-             * @param star_indices indices of the stars describing this point (additional data that have to be stored)
+             * @return long long int
              */
-            void add_point(const PointCoordinatesTuple &coordinates, const StarIndices &star_indices);
+            long long int get_n_nodes() const {
+                return m_nodes.size();
+            };
 
             /**
-             * @brief Find all node conditions and create a tree structure for the tree
+             * @brief Get index of the root node
              *
              */
-            void create_tree_structure();
+            long long int get_root_node_index() const {
+                return m_root_node_index;
+            }
 
             /**
-             * @brief Get the k nearest neighbors to the query point
+             * @brief Get const reference to the vector of nodes
              *
-             * @param query_point coordinates of the query point
-             * @param n_points how many closest neighbors do you want
-             * @return std::vector<std::tuple<PointCoordinatesTuple, StarIndices> > coordinates (hashes) and indices of the stars A,B,C and D from this point
+             * @return const std::vector<KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType>> &
              */
-            std::vector<std::tuple<PointCoordinatesTuple, StarIndices> > get_k_nearest_neighbors(const PointCoordinatesTuple &query_point, unsigned int n_points)   const;
+            const std::vector<KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType>> &get_nodes() const {
+                return m_nodes;
+            };
+
 
             /**
-             * @brief Get indices of the k nearest neighbors
+             * @brief Add point (node) to the tree. The tree structure must not be built yet.
              *
-             * @param query_point  coordinates of the query point
-             * @param n_points how many closest neighbors do you want
-             * @return std::vector<unsigned int> - indices of the nodes (leafs) of the nearest neighbors
+             * @param coordinates
+             * @param value - these are the additional data associated with the node
              */
-            std::vector<unsigned int> get_k_nearest_neighbors_indices(const PointCoordinatesTuple &query_point, unsigned int n_points)  const;
+            void add_point(const std::vector<CoordinateType> &coordinates, const ValueType &value)    {
+                if (m_tree_structure_built) {
+                    throw std::runtime_error("KDTree::add_point: tree structure already built.");
+                }
+
+                if (coordinates.size() != m_n_dim) {
+                    throw std::runtime_error("KDTree::add_point: coordinates must have m_n_dim elements.");
+                }
+                add_point(coordinates.data(), value);
+            };
+
 
             /**
-             * @brief Get indeces of the stars forming the closes hash
+             * @brief Add point (node) to the tree. The tree structure must not be built yet.
              *
-             * @param node_index index of the node
-             * @param coordinates array to store the coordinates
-             * @param star_indices indices of the stars describing this point (additional data that have to be stored)
+             * @param coordinates
+             * @param value - these are the additional data associated with the node
              */
-            void get_point(unsigned int node_index, PointCoordinatesArray coordinates, StarIndices *star_indices) const;
+            void add_point(const CoordinateType *coordinates, const ValueType &value)   {
+                KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType> node;
+                for (unsigned int i = 0; i < m_n_dim; ++i)  {
+                    node.m_coordinates[i] = coordinates[i];
+                }
+                node.m_value = value;
+
+                m_nodes.push_back(node);
+            }
 
             /**
-             * @brief Get the number of points in the tree
+             * @brief Add points (nodes) to the tree. The tree structure must not be built yet.
              *
-             * @return unsigned int number of points in the tree
+             * @param coordinates - vector of coordinates
+             * @param values - vector of the additional data associated with the nodes
              */
-            unsigned int get_number_of_points_in_tree() const   {return m_number_of_points_in_tree;}
+            void add_points(const std::vector<std::vector<CoordinateType>> &coordinates, const std::vector<ValueType> &values)    {
+                if (coordinates.size() != values.size())    {
+                    throw std::runtime_error("KDTree::add_points: coordinates and values must have the same size.");
+                }
+                for (const auto &coordinate : coordinates)  {
+                    if (coordinate.size() != m_n_dim)  {
+                        throw std::runtime_error("KDTree::add_points: coordinates must have m_n_dim elements.");
+                    }
+                }
+
+                for (int i = 0; i < coordinates.size(); ++i)  {
+                    add_point(coordinates[i], values[i]);
+                }
+            };
+
+            std::vector<std::tuple<std::vector<CoordinateType>, ValueType>> get_k_nearest_neighbors(const CoordinateType *query_point, unsigned int n_points)    const   {
+                std::vector<long long int> indices = get_k_nearest_neighbors_indices(query_point, n_points);
+                std::vector<std::tuple<std::vector<CoordinateType>, ValueType>> result;
+                result.reserve(indices.size());
+                for (long long int index : indices)  {
+                    const KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType> &point = m_nodes[index];
+                    std::vector<CoordinateType> coordinates;
+                    for (unsigned int i = 0; i < m_n_dim; ++i)  {
+                        coordinates.push_back(point.m_coordinates[i]);
+                    }
+                    result.push_back (
+                        std::tuple<std::vector<CoordinateType>, ValueType>   (
+                            coordinates,
+                            point.m_value
+                        )
+                    );
+                }
+                return result;
+            };
+
+            /**
+             * @brief Get vector of indices of n closest points to the query point.
+             *
+             * @param coordinates of the query point
+             * @param n - number of closest points to return
+             */
+            std::vector<long long int> get_k_nearest_neighbors_indices(const CoordinateType *coordinates, unsigned int n) const {
+                if (!m_tree_structure_built) {
+                    throw std::runtime_error("KDTree::get_k_nearest_neighbors_indices: tree structure not built.");
+                }
+                if (n > m_nodes.size()) {
+                    throw std::runtime_error("KDTree::get_k_nearest_neighbors_indices: n must be smaller than the number of nodes.");
+                }
+
+                std::vector<std::tuple<long long int, double>> indices_and_distances;
+                get_n_closest_nodes_recursive(coordinates, &indices_and_distances, n, m_root_node_index);
+
+                std::vector<long long int> result;
+                for (const auto &index_and_distance : indices_and_distances)  {
+                    result.push_back(std::get<0>(index_and_distance));
+                }
+                return result;
+            };
+
+            /**
+             * @brief Get vector of indices of all points closer than "distance" to the query point.
+             *
+             */
+            std::vector<long long int> get_nodes_closer_than_x(const CoordinateType *coordinates, const double distance) const {
+                if (!m_tree_structure_built) {
+                    throw std::runtime_error("KDTree::get_nodes_closer_than_x: tree structure not built.");
+                }
+
+                std::vector<std::tuple<long long int, double>> indices_and_distances;
+                get_nodes_closer_than_x_recursive(coordinates, &indices_and_distances, distance*distance, m_root_node_index);
+
+                std::vector<long long int> result;
+                for (const auto &index_and_distance : indices_and_distances)  {
+                    result.push_back(std::get<0>(index_and_distance));
+                }
+                return result;
+            }
+
+
+            /**
+             * @brief Create the tree structure from the added nodes. After this, no more nodes can be added.
+             *
+             */
+            void build_tree_structure()   {
+                if (m_tree_structure_built) {
+                    return;
+                }
+                std::vector<long long int> node_indices;
+                for (unsigned long long int i = 0; i < m_nodes.size(); ++i)  {
+                    node_indices.push_back(i);
+                }
+
+                m_root_node_index = build_node(node_indices, 0);
+                m_tree_structure_built = true;
+            };
+
+
+            const KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType> &get_point(long long int index) const {
+                return m_nodes[index];
+            };
 
         private:
+            bool m_tree_structure_built = false;
+            std::vector<KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType>> m_nodes;
+            long long int m_root_node_index = -1;
+            unsigned int m_n_dim = 0;
 
-            int m_root_node_index = -1;
+            /**
+             * @brief Takes a vector of node indices and builds a root node and its child nodes from them. Returns the index of the root node.
+             *
+             * @param node_indices - vector of node indices
+             * @param split_axis - axis along which to split the nodes
+             * @return long long int - index of the build node ("root" node)
+             */
+            long long int build_node(const std::vector<long long int> &node_indices, const int split_axis)    {
+                if (node_indices.size() == 0)   {
+                    return -1;
+                }
+                if (node_indices.size() == 1)   {
+                    m_nodes[node_indices[0]].m_split_axis = split_axis;
+                    return node_indices[0];
+                }
 
-            std::vector<PointInKDTree> m_points_in_tree;
-            unsigned int m_number_of_points_in_tree = 0;
+                std::vector<std::tuple<long long int, CoordinateType>> node_indices_and_coordinates;
+                for (long long int node_index : node_indices)  {
+                    node_indices_and_coordinates.push_back(std::make_tuple(node_index, m_nodes[node_index].m_coordinates[split_axis]));
+                }
 
-            // build node and return its index
-            int build_node(std::vector<unsigned int> *sub_indices, int parent_index);
+                std::sort(node_indices_and_coordinates.begin(), node_indices_and_coordinates.end(), [](const std::tuple<long long int, CoordinateType> &a, const std::tuple<long long int, CoordinateType> &b) {
+                    return std::get<1>(a) < std::get<1>(b);
+                });
 
-            void split_based_on_cut(    const std::vector<unsigned int> &sub_indices, short coordinate_index,
-                                        CoordinateDataType cut_value, unsigned int index_to_omit,
-                                        std::vector<unsigned int> *indices_lower_value, std::vector<unsigned int> *indices_higher_value);
+                const long long int median_node_index = std::get<0>(node_indices_and_coordinates[node_indices_and_coordinates.size() / 2]);
+                const CoordinateType median_coordinate = std::get<1>(node_indices_and_coordinates[node_indices_and_coordinates.size() / 2]);
 
-            CoordinateDataType get_median_and_its_index_from_sample(const std::vector<unsigned int> &sub_indices, short coordinate, unsigned int *median_index = nullptr)   const;
+                node_indices_and_coordinates.clear();
 
-            static float get_distance(const CoordinateDataType *x1, const CoordinateDataType *x2);
+                m_nodes[median_node_index].m_split_axis = split_axis;
 
-            void scan_children_nodes(   unsigned int node_index,
-                                        std::map<unsigned int, char> *visited_nodes,
-                                        std::vector<std::tuple <unsigned int, float> > *vector_index_distance,
-                                        const CoordinateDataType *query_point_array
-                                        )   const;
+                std::vector<long long int> left_node_indices;
+                std::vector<long long int> right_node_indices;
+                for (const long long int i_node : node_indices)  {
+                    if (i_node == median_node_index)    {
+                        continue;
+                    }
+                    if (m_nodes[i_node].m_coordinates[split_axis] < median_coordinate)    {
+                        left_node_indices.push_back(i_node);
+                    }
+                    else    {
+                        right_node_indices.push_back(i_node);
+                    }
+                }
 
-            // add point to the vector of the nearest neighbors if it is closer than the furthest neighbor - keep only n_points points in vector
-            static void add_node_to_vector_index_distance(float distance, std::vector<std::tuple <unsigned int, float> > *vector_index_distance, unsigned int n_points, unsigned int node_index);
+                m_nodes[median_node_index].m_index_child_left  = build_node(left_node_indices,  (split_axis + 1) % m_n_dim);
+                m_nodes[median_node_index].m_index_child_right = build_node(right_node_indices, (split_axis + 1) % m_n_dim);
 
-            PointInKDTree get_point_in_tree(unsigned int node_index) const;
+                return median_node_index;
+            };
+
+            void get_n_closest_nodes_recursive( const CoordinateType *coordinates,
+                                                std::vector<std::tuple<long long int, double>> *node_indices_and_distances,
+                                                unsigned int n_neighbors,
+                                                long long int node_index) const {
+
+                if (node_index == -1)   {
+                    return;
+                }
+
+                const KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType> &node = m_nodes[node_index];
+                const double distance_to_node = get_distance_squared(coordinates, node.m_coordinates);
+
+                if (node_indices_and_distances->size() < n_neighbors) {
+                    node_indices_and_distances->push_back(std::tuple<long long int, double>(node_index, distance_to_node));
+                    std::sort(node_indices_and_distances->begin(), node_indices_and_distances->end(), [](const auto &a, const auto &b) {
+                        return std::get<1>(a) < std::get<1>(b);
+                    });
+                }
+                else if (distance_to_node < std::get<1>(node_indices_and_distances->back())) {
+                    (*node_indices_and_distances)[n_neighbors-1] = std::tuple<long long int, double>(node_index, distance_to_node);
+                    std::sort(node_indices_and_distances->begin(), node_indices_and_distances->end(), [](const auto &a, const auto &b) {
+                        return std::get<1>(a) < std::get<1>(b);
+                    });
+                }
+
+                const bool go_to_left = coordinates[node.m_split_axis] < node.m_coordinates[node.m_split_axis];
+                if (go_to_left) {
+                    get_n_closest_nodes_recursive(coordinates, node_indices_and_distances, n_neighbors, node.m_index_child_left);
+                }
+                else    {
+                    get_n_closest_nodes_recursive(coordinates, node_indices_and_distances, n_neighbors, node.m_index_child_right);
+                }
+
+                const double distance_to_split_axis = pow2(coordinates[node.m_split_axis] - node.m_coordinates[node.m_split_axis]);
+                if (distance_to_split_axis < std::get<1>(node_indices_and_distances->back()) || node_indices_and_distances->size() < n_neighbors) {
+                    if (go_to_left) {
+                        get_n_closest_nodes_recursive(coordinates, node_indices_and_distances, n_neighbors, node.m_index_child_right);
+                    }
+                    else    {
+                        get_n_closest_nodes_recursive(coordinates, node_indices_and_distances, n_neighbors, node.m_index_child_left);
+                    }
+                }
+            };
+
+
+            void get_nodes_closer_than_x_recursive( const CoordinateType *coordinates,
+                                                std::vector<std::tuple<long long int, double>> *node_indices_and_distances,
+                                                double distance_squared,
+                                                long long int node_index) const {
+
+                if (node_index == -1)   {
+                    return;
+                }
+
+                const KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType> &node = m_nodes[node_index];
+                const double distance_to_node = get_distance_squared(coordinates, node.m_coordinates);
+
+                if (distance_to_node < distance_squared) {
+                    node_indices_and_distances->push_back(std::tuple<long long int, double>(node_index, distance_to_node));
+                }
+
+                const bool go_to_left = coordinates[node.m_split_axis] < node.m_coordinates[node.m_split_axis];
+                if (go_to_left) {
+                    get_nodes_closer_than_x_recursive(coordinates, node_indices_and_distances, distance_squared, node.m_left);
+                }
+                else    {
+                    get_nodes_closer_than_x_recursive(coordinates, node_indices_and_distances, distance_squared, node.m_right);
+                }
+
+                const double distance_to_split_axis = pow2(coordinates[node.m_split_axis] - node.m_coordinates[node.m_split_axis]);
+                if (distance_to_split_axis < distance_squared) {
+                    if (go_to_left) {
+                        get_nodes_closer_than_x_recursive(coordinates, node_indices_and_distances, distance_squared, node.m_right);
+                    }
+                    else    {
+                        get_nodes_closer_than_x_recursive(coordinates, node_indices_and_distances, distance_squared, node.m_left);
+                    }
+                }
+            };
+
+            double get_distance_squared(const CoordinateType *coordinates_1, const CoordinateType *coordinates_2)   const    {
+                double distance = 0.0;
+                for (unsigned int i = 0; i < m_n_dim; ++i)  {
+                    distance += (coordinates_1[i] - coordinates_2[i]) * (coordinates_1[i] - coordinates_2[i]);
+                }
+                return distance;
+            };
     };
+
+
+
 }
