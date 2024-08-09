@@ -24,7 +24,9 @@ namespace AstroPhotoStacker {
 
             void fit_parameters();
 
-            void get_flat_center(int *center_x, int *center_y);
+            float fit_center_x();
+
+            void get_flat_center(float *center_x, float *center_y);
 
             void save_flat(const std::string &output_file);
 
@@ -35,6 +37,11 @@ namespace AstroPhotoStacker {
             unsigned int m_height = 0;
 
             unsigned short m_threshold = 0;
+
+            unsigned int m_rescaled_square_size = 10;
+
+            float m_center_x = 0;
+            float m_center_y = 0;
 
     };
 }

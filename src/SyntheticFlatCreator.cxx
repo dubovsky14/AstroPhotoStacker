@@ -1,8 +1,11 @@
 #include "../headers/SyntheticFlatCreator.h"
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/KDTree.h"
+#include "../headers/Fitter.h"
 
 #include <algorithm>
+#include <iostream>
+#include <cmath>
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -14,7 +17,8 @@ SyntheticFlatCreator::SyntheticFlatCreator(const std::string &input_file) {
 void SyntheticFlatCreator::create_and_save_synthetic_flat(const std::string &output_file) {
     calculate_threshold();
     replace_values_above_threshold();
-    rebin_data(10);
+    rebin_data(m_rescaled_square_size);
+    fit_parameters();
     save_flat(output_file);
 };
 
@@ -99,11 +103,11 @@ void SyntheticFlatCreator::replace_values_above_threshold() {
 };
 
 void SyntheticFlatCreator::rebin_data(unsigned int new_bin_size)    {
-    const unsigned int rounded_width = m_width / new_bin_size * new_bin_size;
-    const unsigned int rounded_height = m_height / new_bin_size * new_bin_size;
+    const unsigned int rounded_width = (m_width / new_bin_size) * new_bin_size;
+    const unsigned int rounded_height = (m_height / new_bin_size) * new_bin_size;
     m_rebinned_data.resize(rounded_height / new_bin_size, vector<float>(rounded_width / new_bin_size, 0));
-    for (unsigned int y = 0; y < rounded_height; y += new_bin_size) {
-        for (unsigned int x = 0; x < rounded_width; x += new_bin_size) {
+    for (unsigned int y = 0; y < rounded_height; y++) {
+        for (unsigned int x = 0; x < rounded_width; x++) {
             const unsigned int x_new = x / new_bin_size;
             const unsigned int y_new = y / new_bin_size;
             m_rebinned_data[y_new][x_new] += m_original_gray_scale_data[y * m_width + x];
@@ -118,13 +122,65 @@ void SyntheticFlatCreator::rebin_data(unsigned int new_bin_size)    {
 };
 
 void SyntheticFlatCreator::fit_parameters() {
+    m_center_x = fit_center_x();
 
 };
 
-void SyntheticFlatCreator::get_flat_center(int *center_x, int *center_y)    {
+float SyntheticFlatCreator::fit_center_x()  {
+    vector<double> data_x;
+    for (unsigned int i = 0; i < m_rebinned_data[0].size(); i++) {
+        data_x.push_back((i+0.5)*m_rescaled_square_size);
+    }
+    vector<double> data_y(m_rebinned_data.at(0).size(), 0);
+
+    double center_position = 0;
+    vector<double> params;
+    params.push_back(m_rebinned_data.at(0).at(0)); // normalization
+    params.push_back(m_width/4);    // center
+    params.push_back(m_width);  // sigma
+    params.push_back(m_rebinned_data.at(0).at(0)); // background
+
+    vector<pair<double, double>> limits{
+        {0, 3*m_rebinned_data.at(0.5*m_height/m_rescaled_square_size).at(0.5*m_width/m_rescaled_square_size)},
+        {0, m_width},
+        {0, m_width*10},
+        {0, m_rebinned_data.at(0).at(0)*2}
+    };
+
+    auto gauss_on_flat_background = [](const double *parameters, double x) {
+        return parameters[0] * exp(-0.5 * (x - parameters[1]) * (x - parameters[1]) / (parameters[2] * parameters[2])) + parameters[3];
+    };
+
+    auto objective_function = [&data_x, &data_y, &gauss_on_flat_background](const double *parameters) {
+        double sum = 0;
+        for (unsigned int i = 0; i < data_x.size(); i++) {
+            const double y_fitted = gauss_on_flat_background(parameters, data_x.at(i));
+            const double diff = y_fitted - data_y.at(i);
+            sum += diff * diff;
+        }
+        return sum;
+    };
+
+    Fitter fitter(&params, limits);
+    for (unsigned int i_line = 0; i_line < m_rebinned_data.size(); i_line++) {
+        for (unsigned int i_column = 0; i_column < m_rebinned_data.at(i_line).size(); i_column++) {
+            data_y[i_column] = m_rebinned_data[i_line][i_column];
+        }
+        fitter.fit_gradient(objective_function, 0.02, 0.99, 1000);
+        center_position += params.at(1);
+        cout << "Line " << i_line << " center x = " << params.at(1) << endl;
+    }
+    center_position /= m_rebinned_data.size();
+    cout << "Center x = " << center_position << endl;
+    return center_position;
+};
+
+void SyntheticFlatCreator::get_flat_center(float *center_x, float *center_y)    {
+    *center_x = fit_center_x();
 
 };
 
 void SyntheticFlatCreator::save_flat(const std::string &output_file)    {
-
+    cout << "Saving flat\n";
+    cout << "Center x = " << m_center_x << endl;
 };
