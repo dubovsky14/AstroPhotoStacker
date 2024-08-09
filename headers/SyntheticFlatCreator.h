@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <functional>
 
 namespace AstroPhotoStacker {
     class SyntheticFlatCreator {
@@ -24,6 +25,10 @@ namespace AstroPhotoStacker {
 
             void fit_parameters();
 
+            void fit_function_of_distance();
+
+            std::pair<std::vector<float>, std::vector<float>> get_data_for_fit();
+
             float fit_center(const std::vector<std::vector<float>> &rebinned_data);
 
             void save_flat(const std::string &output_file);
@@ -41,5 +46,9 @@ namespace AstroPhotoStacker {
             float m_center_x = 0;
             float m_center_y = 0;
 
+            void initialize_function_of_distance_and_its_parameters();
+            std::function<double(double)> m_function_of_distance;
+            std::vector<double> m_function_parameters;
+            std::vector<std::pair<double,double>> m_function_parameter_limits;
     };
 }

@@ -3,6 +3,7 @@
 #include "../headers/KDTree.h"
 #include "../headers/Fitter.h"
 #include "../headers/Common.h"
+#include "../headers/ImageFilesInputOutput.h"
 
 #include <algorithm>
 #include <iostream>
@@ -18,6 +19,7 @@ SyntheticFlatCreator::SyntheticFlatCreator(const std::string &input_file) {
 void SyntheticFlatCreator::create_and_save_synthetic_flat(const std::string &output_file) {
     calculate_threshold();
     replace_values_above_threshold();
+    create_gray_scale_image(m_original_gray_scale_data.data(), m_width, m_height, "original_gray_scale.tif", CV_16U);
     rebin_data(m_rescaled_square_size);
     fit_parameters();
     save_flat(output_file);
@@ -90,13 +92,11 @@ void SyntheticFlatCreator::replace_values_above_threshold() {
 
                 if (neighbors.size() > 0) {
                     unsigned sum = 0;
-                    unsigned sum_weights = 0;
                     for (const auto &neighbor : neighbors) {
-                        const unsigned weight = std::get<1>(neighbor);
-                        sum += weight;
-                        sum_weights += weight;
+                        const unsigned brightness = std::get<1>(neighbor);
+                        sum += brightness;
                     }
-                    m_original_gray_scale_data[y * m_width + x] = sum / sum_weights;
+                    m_original_gray_scale_data[y * m_width + x] = sum / neighbors.size();
                 }
             }
         }
@@ -125,6 +125,67 @@ void SyntheticFlatCreator::rebin_data(unsigned int new_bin_size)    {
 void SyntheticFlatCreator::fit_parameters() {
     m_center_x = fit_center(m_rebinned_data);
     m_center_y = fit_center(get_transponded_vector(m_rebinned_data));
+    fit_function_of_distance();
+};
+
+void SyntheticFlatCreator::fit_function_of_distance()   {
+    initialize_function_of_distance_and_its_parameters();
+    const std::pair<vector<float>, vector<float>> data_for_fit = get_data_for_fit();
+    const vector<float> &distances         = data_for_fit.first;
+    const vector<float> &brightness_values = data_for_fit.second;
+
+    auto objective_function = [this, &distances, &brightness_values](const double *parameters) {
+        double sum = 0;
+        for (unsigned int i = 0; i < distances.size(); i++) {
+            const double y_fitted = m_function_of_distance(distances.at(i));
+            const double diff = y_fitted - brightness_values.at(i);
+            sum += diff * diff;
+        }
+        return sum;
+    };
+
+    cout << "Data for fitting:\n";
+    for (unsigned int i = 0; i < distances.size(); i++) {
+        cout << "\t" << distances.at(i) << "\t" << brightness_values.at(i) << endl;
+    }
+
+    Fitter fitter(&m_function_parameters, m_function_parameter_limits);
+    fitter.fit_gradient(objective_function, 0.02, 0.99, 1000);
+};
+
+std::pair<vector<float>, vector<float>> SyntheticFlatCreator::get_data_for_fit()    {
+    const unsigned int step = 10;
+    vector<vector<unsigned short>> data_to_sort; // first vector are all values in distance between 0 and step, second vector between step and 2*step, etc.
+
+    for (unsigned int y = 0; y < m_height; y++) {
+        for (unsigned int x = 0; x < m_width; x++) {
+            const float distance = sqrt((x - m_center_x)*(x - m_center_x) + (y - m_center_y)*(y - m_center_y));
+            const unsigned int bin = distance / step;
+            if (bin >= data_to_sort.size()) {
+                data_to_sort.resize(bin + 1);
+            }
+            data_to_sort[bin].push_back(m_original_gray_scale_data[y*m_width + x]);
+        }
+    }
+
+    vector<float> result_x;
+    vector<float> result_y;
+    for (unsigned int i = 0; i < data_to_sort.size(); i++) {
+        vector<unsigned short> &this_vector = data_to_sort[i];
+        std::sort(this_vector.begin(), this_vector.end());
+        result_x.push_back(i*step + 0.5*step);
+        if (this_vector.size() != 0) {
+            result_y.push_back(this_vector.at(this_vector.size()/2));
+        }
+        else if (i > 0) {
+            result_y.push_back(result_y.at(i-1));
+        }
+        else {
+            result_y.push_back(0);
+        }
+    }
+
+    return {result_x, result_y};
 };
 
 float SyntheticFlatCreator::fit_center(const std::vector<std::vector<float>> &rebinned_data)  {
@@ -188,4 +249,35 @@ void SyntheticFlatCreator::save_flat(const std::string &output_file)    {
     cout << "Saving flat\n";
     cout << "Center x = " << m_center_x << endl;
     cout << "Center y = " << m_center_y << endl;
+
+    cout << "Function parameters: ";
+    for (const auto &param : m_function_parameters) {
+        cout << "\t" << param << "\n";
+    }
+
+
+};
+
+void SyntheticFlatCreator::initialize_function_of_distance_and_its_parameters()  {
+    const float brightness_in_center = m_rebinned_data.at(m_rebinned_data.size()/2).at(m_rebinned_data.at(0).size()/2);
+
+    m_function_of_distance = [this](double r) {
+        r /= m_width;
+        return  m_function_parameters.at(0) +
+                m_function_parameters.at(1) * r +
+                m_function_parameters.at(2) * r * r +
+                m_function_parameters.at(3) * r * r * r +
+                m_function_parameters.at(4) * r * r * r * r;
+    };
+
+    m_function_parameter_limits = {
+        {-2*brightness_in_center, 2*brightness_in_center},
+        {-2*brightness_in_center, 2*brightness_in_center},
+        {-2*brightness_in_center, 2*brightness_in_center},
+        {-2*brightness_in_center, 2*brightness_in_center},
+        {-2*brightness_in_center, 2*brightness_in_center}
+    };
+
+    m_function_parameters = {brightness_in_center, -brightness_in_center, 0, 0, 0};
+
 };
