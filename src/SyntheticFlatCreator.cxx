@@ -133,7 +133,6 @@ float SyntheticFlatCreator::fit_center_x()  {
     }
     vector<double> data_y(m_rebinned_data.at(0).size(), 0);
 
-    double center_position = 0;
     vector<double> params;
     params.push_back(m_rebinned_data.at(0).at(0)); // normalization
     params.push_back(m_width/4);    // center
@@ -162,16 +161,22 @@ float SyntheticFlatCreator::fit_center_x()  {
     };
 
     Fitter fitter(&params, limits);
+    vector<float> partial_results;
     for (unsigned int i_line = 0; i_line < m_rebinned_data.size(); i_line++) {
         for (unsigned int i_column = 0; i_column < m_rebinned_data.at(i_line).size(); i_column++) {
             data_y[i_column] = m_rebinned_data[i_line][i_column];
         }
         fitter.fit_gradient(objective_function, 0.02, 0.99, 1000);
-        center_position += params.at(1);
+        partial_results.push_back(params.at(1));
         cout << "Line " << i_line << " center x = " << params.at(1) << endl;
     }
-    center_position /= m_rebinned_data.size();
-    cout << "Center x = " << center_position << endl;
+
+    if (partial_results.size() == 0) {
+        return -1;
+    }
+
+    std::sort(partial_results.begin(), partial_results.end());
+    const float center_position = partial_results.at(partial_results.size()/2);
     return center_position;
 };
 
