@@ -2,6 +2,7 @@
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/KDTree.h"
 #include "../headers/Fitter.h"
+#include "../headers/Common.h"
 
 #include <algorithm>
 #include <iostream>
@@ -122,28 +123,31 @@ void SyntheticFlatCreator::rebin_data(unsigned int new_bin_size)    {
 };
 
 void SyntheticFlatCreator::fit_parameters() {
-    m_center_x = fit_center_x();
-
+    m_center_x = fit_center(m_rebinned_data);
+    m_center_y = fit_center(get_transponded_vector(m_rebinned_data));
 };
 
-float SyntheticFlatCreator::fit_center_x()  {
+float SyntheticFlatCreator::fit_center(const std::vector<std::vector<float>> &rebinned_data)  {
+    const unsigned int width = m_rescaled_square_size * rebinned_data.at(0).size();
+
     vector<double> data_x;
-    for (unsigned int i = 0; i < m_rebinned_data[0].size(); i++) {
+    for (unsigned int i = 0; i < rebinned_data[0].size(); i++) {
         data_x.push_back((i+0.5)*m_rescaled_square_size);
     }
-    vector<double> data_y(m_rebinned_data.at(0).size(), 0);
+    vector<double> data_y(rebinned_data.at(0).size(), 0);
 
     vector<double> params;
-    params.push_back(m_rebinned_data.at(0).at(0)); // normalization
-    params.push_back(m_width/4);    // center
-    params.push_back(m_width);  // sigma
-    params.push_back(m_rebinned_data.at(0).at(0)); // background
+    params.push_back(rebinned_data.at(0).at(0)); // normalization
+    params.push_back(width/4);    // center
+    params.push_back(width);  // sigma
+    params.push_back(rebinned_data.at(0).at(0)); // background
 
+    const unsigned int rebinned_half_size = 0.5*rebinned_data.size();
     vector<pair<double, double>> limits{
-        {0, 3*m_rebinned_data.at(0.5*m_height/m_rescaled_square_size).at(0.5*m_width/m_rescaled_square_size)},
-        {0, m_width},
-        {0, m_width*10},
-        {0, m_rebinned_data.at(0).at(0)*2}
+        {0, 3*rebinned_data.at(rebinned_half_size).at(rebinned_data.at(0).size()/2)},
+        {0, width},
+        {0, width*10},
+        {0, rebinned_data.at(0).at(0)*2}
     };
 
     auto gauss_on_flat_background = [](const double *parameters, double x) {
@@ -162,9 +166,9 @@ float SyntheticFlatCreator::fit_center_x()  {
 
     Fitter fitter(&params, limits);
     vector<float> partial_results;
-    for (unsigned int i_line = 0; i_line < m_rebinned_data.size(); i_line++) {
-        for (unsigned int i_column = 0; i_column < m_rebinned_data.at(i_line).size(); i_column++) {
-            data_y[i_column] = m_rebinned_data[i_line][i_column];
+    for (unsigned int i_line = 0; i_line < rebinned_data.size(); i_line++) {
+        for (unsigned int i_column = 0; i_column < rebinned_data.at(i_line).size(); i_column++) {
+            data_y[i_column] = rebinned_data[i_line][i_column];
         }
         fitter.fit_gradient(objective_function, 0.02, 0.99, 1000);
         partial_results.push_back(params.at(1));
@@ -180,12 +184,8 @@ float SyntheticFlatCreator::fit_center_x()  {
     return center_position;
 };
 
-void SyntheticFlatCreator::get_flat_center(float *center_x, float *center_y)    {
-    *center_x = fit_center_x();
-
-};
-
 void SyntheticFlatCreator::save_flat(const std::string &output_file)    {
     cout << "Saving flat\n";
     cout << "Center x = " << m_center_x << endl;
+    cout << "Center y = " << m_center_y << endl;
 };

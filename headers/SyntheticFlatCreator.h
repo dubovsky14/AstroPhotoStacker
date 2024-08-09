@@ -24,9 +24,7 @@ namespace AstroPhotoStacker {
 
             void fit_parameters();
 
-            float fit_center_x();
-
-            void get_flat_center(float *center_x, float *center_y);
+            float fit_center(const std::vector<std::vector<float>> &rebinned_data);
 
             void save_flat(const std::string &output_file);
 

@@ -297,4 +297,19 @@ namespace AstroPhotoStacker {
         return it->second;
     }
 
+    template <class ElementType>
+    std::vector<std::vector<ElementType>> get_transponded_vector(const std::vector<std::vector<ElementType>> &input) {
+        if (input.size() == 0) {
+            return std::vector<std::vector<ElementType>>();
+        }
+        const unsigned int num_rows = input.size();
+        const unsigned int num_columns = input[0].size();
+        std::vector<std::vector<ElementType>> result(num_columns, std::vector<ElementType>(num_rows));
+        for (unsigned int i_row = 0; i_row < num_rows; i_row++) {
+            for (unsigned int i_column = 0; i_column < num_columns; i_column++) {
+                result[i_column][i_row] = input[i_row][i_column];
+            }
+        }
+        return result;
+    }
 }
