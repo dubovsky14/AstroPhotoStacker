@@ -47,7 +47,7 @@ namespace AstroPhotoStacker {
             float m_center_y = 0;
 
             void initialize_function_of_distance_and_its_parameters();
-            std::function<double(double)> m_function_of_distance;
+            std::function<double(double, const double *)> m_function_of_distance;
             std::vector<double> m_function_parameters;
             std::vector<std::pair<double,double>> m_function_parameter_limits;
     };

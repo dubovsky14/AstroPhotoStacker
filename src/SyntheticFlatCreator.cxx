@@ -137,20 +137,21 @@ void SyntheticFlatCreator::fit_function_of_distance()   {
     auto objective_function = [this, &distances, &brightness_values](const double *parameters) {
         double sum = 0;
         for (unsigned int i = 0; i < distances.size(); i++) {
-            const double y_fitted = m_function_of_distance(distances.at(i));
+            const double y_fitted = m_function_of_distance(distances.at(i), parameters);
             const double diff = y_fitted - brightness_values.at(i);
             sum += diff * diff;
         }
         return sum;
     };
 
-    cout << "Data for fitting:\n";
-    for (unsigned int i = 0; i < distances.size(); i++) {
-        cout << "\t" << distances.at(i) << "\t" << brightness_values.at(i) << endl;
-    }
 
     Fitter fitter(&m_function_parameters, m_function_parameter_limits);
-    fitter.fit_gradient(objective_function, 0.02, 0.99, 1000);
+    fitter.fit_gradient(objective_function, 0.05, 0.999, 10000);
+
+    //cout << "Data for fitting:\n";
+    //for (unsigned int i = 0; i < distances.size(); i++) {
+    //    cout << "\t" << distances.at(i) << "\t" << brightness_values.at(i) << "\t" << m_function_of_distance(distances.at(i), m_function_parameters.data()) << endl;
+    //}
 };
 
 std::pair<vector<float>, vector<float>> SyntheticFlatCreator::get_data_for_fit()    {
@@ -255,19 +256,29 @@ void SyntheticFlatCreator::save_flat(const std::string &output_file)    {
         cout << "\t" << param << "\n";
     }
 
+    vector<unsigned short> flat_data(m_width*m_height, 0);
+    for (unsigned int y = 0; y < m_height; y++) {
+        for (unsigned int x = 0; x < m_width; x++) {
+            const float distance = sqrt((x - m_center_x)*(x - m_center_x) + (y - m_center_y)*(y - m_center_y));
+            const float brightness = m_function_of_distance(distance, m_function_parameters.data());
+            flat_data[y*m_width + x] = brightness;
+        }
+    }
+
+    crate_color_image(flat_data.data(), flat_data.data(), flat_data.data(), m_width, m_height, output_file, CV_16UC3);
 
 };
 
 void SyntheticFlatCreator::initialize_function_of_distance_and_its_parameters()  {
     const float brightness_in_center = m_rebinned_data.at(m_rebinned_data.size()/2).at(m_rebinned_data.at(0).size()/2);
 
-    m_function_of_distance = [this](double r) {
+    m_function_of_distance = [this](double r, const double *parameters) {
         r /= m_width;
-        return  m_function_parameters.at(0) +
-                m_function_parameters.at(1) * r +
-                m_function_parameters.at(2) * r * r +
-                m_function_parameters.at(3) * r * r * r +
-                m_function_parameters.at(4) * r * r * r * r;
+        return  parameters[0] +
+                parameters[1] * r +
+                parameters[2] * r * r +
+                parameters[3] * r * r * r +
+                parameters[4] * r * r * r * r;
     };
 
     m_function_parameter_limits = {

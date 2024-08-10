@@ -30,6 +30,9 @@ void Fitter::fit_gradient(std::function<double(const double *parameters)> object
     double gradient[m_num_parameters];
     double second_derivative[m_num_parameters];
     for (unsigned int i_iter = 0; i_iter < max_iterations; i_iter++) {
+        if (m_debug) {
+            cout << "Iteration " << i_iter << endl;
+        }
         calculate_gradient_and_second_derivative(objective_function, gradient, second_derivative);
         //normalize_vector(gradient, m_num_parameters);
         for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
@@ -51,7 +54,7 @@ void Fitter::fit_gradient(std::function<double(const double *parameters)> object
 };
 
 void Fitter::calculate_gradient_and_second_derivative(std::function<double(const double *parameters)> objective_function, double *gradient, double *second_derivative)  {
-    const double delta = 1e-4;
+    const double delta = m_gradient_step;
     const double nominal_value = objective_function(m_parameters->data());
     for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
         if (m_limits[i_param].second == m_limits[i_param].first)    {
@@ -65,12 +68,20 @@ void Fitter::calculate_gradient_and_second_derivative(std::function<double(const
             parameters_plus_delta[j] = m_parameters->at(j);
             parameters_minus_delta[j] = m_parameters->at(j);
         }
+
         const double delta_this_parameter = delta*abs(m_limits[i_param].second - m_limits[i_param].first);
         parameters_plus_delta[i_param] += delta_this_parameter;
         parameters_minus_delta[i_param] -= delta_this_parameter;
 
         const double value_plus = objective_function(parameters_plus_delta);
         const double value_minus = objective_function(parameters_minus_delta);
+
+        if (m_debug)  {
+            cout << "\tParameter " << i_param << " " << m_parameters->at(i_param) << " (" << nominal_value << ")"  <<
+                "\t" << parameters_plus_delta[i_param] << " (" << value_plus << ")\t"
+                "\t" << parameters_minus_delta[i_param] << " (" << value_minus << ")\t"
+                 << endl;
+        }
 
         gradient[i_param] = (value_plus - value_minus) / (2*delta_this_parameter);
         second_derivative[i_param] = (value_plus - 2*nominal_value + value_minus) / (delta_this_parameter*delta_this_parameter);
@@ -86,4 +97,13 @@ void Fitter::normalize_vector(double *vector, unsigned int size) {
     for (unsigned int i = 0; i < size; i++) {
         vector[i] /= norm;
     }
+};
+
+void Fitter::set_debug(bool debug)  {
+    m_debug = debug;
+};
+
+
+void Fitter::set_gradient_step(double step) {
+    m_gradient_step = step;
 };
