@@ -256,7 +256,7 @@ void SyntheticFlatCreator::save_flat(const std::string &output_file)    {
         cout << "\t" << param << "\n";
     }
 
-    vector<unsigned short> flat_data(m_width*m_height, 0);
+    vector<float> flat_data(m_width*m_height, 0);
     for (unsigned int y = 0; y < m_height; y++) {
         for (unsigned int x = 0; x < m_width; x++) {
             const float distance = sqrt((x - m_center_x)*(x - m_center_x) + (y - m_center_y)*(y - m_center_y));
@@ -265,20 +265,37 @@ void SyntheticFlatCreator::save_flat(const std::string &output_file)    {
         }
     }
 
-    crate_color_image(flat_data.data(), flat_data.data(), flat_data.data(), m_width, m_height, output_file, CV_16UC3);
+    const float max_value = *max_element(flat_data.begin(), flat_data.end());
+    cout << "Current max value: " << max_value << endl;
+    const float new_max = 1 << 15;
+    if (max_value < new_max) {
+        const float ratio = new_max / max_value;
+        for (float &pixel : flat_data) {
+            pixel *= ratio;
+        }
+    }
 
+    //cout << "Middle line:\n";
+    //for (unsigned int x = 0; x < m_width; x++) {
+    //    cout << flat_data[m_height/2*m_width + x] << endl;
+    //}
+
+    //crate_color_image(flat_data.data(), flat_data.data(), flat_data.data(), m_width, m_height, output_file, CV_16UC3);
+    create_gray_scale_image(flat_data.data(), m_width, m_height, output_file, CV_16UC1);
 };
 
 void SyntheticFlatCreator::initialize_function_of_distance_and_its_parameters()  {
     const float brightness_in_center = m_rebinned_data.at(m_rebinned_data.size()/2).at(m_rebinned_data.at(0).size()/2);
 
-    m_function_of_distance = [this](double r, const double *parameters) {
+    m_function_of_distance = [this](double r, const double *parameters) -> double {
         r /= m_width;
         return  parameters[0] +
                 parameters[1] * r +
                 parameters[2] * r * r +
                 parameters[3] * r * r * r +
-                parameters[4] * r * r * r * r;
+                parameters[4] * r * r * r * r +
+                parameters[5] * r * r * r * r * r +
+                parameters[6] * r * r * r * r * r * r;
     };
 
     m_function_parameter_limits = {
@@ -286,9 +303,11 @@ void SyntheticFlatCreator::initialize_function_of_distance_and_its_parameters() 
         {-2*brightness_in_center, 2*brightness_in_center},
         {-2*brightness_in_center, 2*brightness_in_center},
         {-2*brightness_in_center, 2*brightness_in_center},
+        {-2*brightness_in_center, 2*brightness_in_center},
+        {-2*brightness_in_center, 2*brightness_in_center},
         {-2*brightness_in_center, 2*brightness_in_center}
     };
 
-    m_function_parameters = {brightness_in_center, -brightness_in_center, 0, 0, 0};
+    m_function_parameters = {brightness_in_center, -brightness_in_center, 0, 0, 0, 0, 0};
 
 };
