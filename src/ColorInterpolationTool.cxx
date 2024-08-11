@@ -3,7 +3,7 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-ColorInterpolationTool::ColorInterpolationTool(const short unsigned int *data_original, int width, int height, const std::vector<char> &colors_original, const std::vector<char> &color_conversion_table)    {
+ColorInterpolationTool::ColorInterpolationTool(const short int *data_original, int width, int height, const std::vector<char> &colors_original, const std::vector<char> &color_conversion_table)    {
     m_width = width;
     m_height = height;
     m_data_original = data_original;
@@ -16,7 +16,7 @@ void ColorInterpolationTool::get_closest_pixel_of_given_color(  int pos_x,
                                                                 int color,
                                                                 int step_x,
                                                                 int step_y,
-                                                                short unsigned int *value,
+                                                                short int *value,
                                                                 int *closest_distance,
                                                                 int n_steps_max) const {
 

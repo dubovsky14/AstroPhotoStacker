@@ -18,7 +18,7 @@ float get_sharpness_for_file(const std::string input_file)  {
     calibrated_photo_handler.define_alignment(0, 0, 0, 0, 0);
     calibrated_photo_handler.calibrate();
 
-    const std::vector<std::vector<short unsigned int>> &data = calibrated_photo_handler.get_calibrated_data_after_color_interpolation();
+    const std::vector<std::vector<short int>> &data = calibrated_photo_handler.get_calibrated_data_after_color_interpolation();
     const int width = calibrated_photo_handler.get_width();
     const int height = calibrated_photo_handler.get_height();
 

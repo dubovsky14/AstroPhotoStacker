@@ -9,12 +9,12 @@ using namespace AstroPhotoStacker;
 CalibratedPhotoHandler::CalibratedPhotoHandler(const std::string &raw_file_address, bool use_color_interpolation)    {
     m_is_raw_file = is_raw_file(raw_file_address);
     if (m_is_raw_file)  {
-        m_data_original = read_raw_file<unsigned short>(raw_file_address, &m_width, &m_height, &m_colors_original);
+        m_data_original = read_raw_file<short>(raw_file_address, &m_width, &m_height, &m_colors_original);
         m_color_conversion_table = get_color_info_as_number(raw_file_address);
         m_input_file_type = InputFileType::RAW_RGB;
     }
     else {
-        m_data_original_color_interpolation = read_rgb_image<unsigned short>(raw_file_address, &m_width, &m_height);
+        m_data_original_color_interpolation = read_rgb_image<short>(raw_file_address, &m_width, &m_height);
         m_input_file_type = InputFileType::IMAGE_RGB;
     }
     m_use_color_interpolation = use_color_interpolation;
@@ -62,7 +62,7 @@ void CalibratedPhotoHandler::calibrate() {
 
         // having the interpolated values for all pixels, let's just shift them
         for (int color = 0; color < 3; color++) {
-            m_data_shifted_color_interpolation.push_back(vector<unsigned short int>(m_width*m_height, 0));
+            m_data_shifted_color_interpolation.push_back(vector<short int>(m_width*m_height, -1));
             for (int y_shifted = 0; y_shifted < m_height; y_shifted++)  {
                 for (int x_shifted = 0; x_shifted < m_width; x_shifted++)   {
                     float x_original = x_shifted;
@@ -85,8 +85,8 @@ void CalibratedPhotoHandler::calibrate() {
         }
     }
     else {  // do not use color interpolation
-        m_data_shifted   = vector<unsigned short int>(m_width*m_height);
-        m_colors_shifted = vector<char>(m_width*m_height, -1);
+        m_data_shifted   = vector<short int>(m_width*m_height, -1);
+        m_colors_shifted = vector<char>(m_width*m_height);
 
         for (int y_shifted = 0; y_shifted < m_height; y_shifted++)  {
             for (int x_shifted = 0; x_shifted < m_width; x_shifted++)   {
@@ -121,7 +121,7 @@ void CalibratedPhotoHandler::calibrate() {
     m_colors_original.clear();
 };
 
-void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int y, unsigned int *value, char *color) const {
+void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int y, short int *value, char *color) const {
     if (x >= 0 && x < m_width && y >= 0 && y < m_height) {
         const unsigned int index = y*m_width + x;
         *value = m_data_shifted[index];
@@ -133,7 +133,7 @@ void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int
     }
 };
 
-void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int y, int color, unsigned int *value) const   {
+void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int y, int color, short int *value) const   {
     if (!m_use_color_interpolation) {
         *value = 0;
         return;

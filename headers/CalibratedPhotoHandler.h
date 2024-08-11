@@ -86,7 +86,7 @@ namespace AstroPhotoStacker {
              * @param value The value of the pixel at the given coordinates.
              * @param color The color of the pixel at the given coordinates.
             */
-            void get_value_by_reference_frame_coordinates(int x, int y, unsigned int *value, char *color) const;
+            void get_value_by_reference_frame_coordinates(int x, int y, short int *value, char *color) const;
 
             /**
              * @brief Get the value of the pixel at the given coordinates in the reference frame, when color interpolation is used.
@@ -96,7 +96,7 @@ namespace AstroPhotoStacker {
              * @param color The color of the pixel at the given coordinates.
              * @param value The value of the pixel at the given coordinates.
             */
-            void get_value_by_reference_frame_coordinates(int x, int y, int color, unsigned int *value) const;
+            void get_value_by_reference_frame_coordinates(int x, int y, int color, short int *value) const;
 
             /**
              * @brief Get the value of the pixel at the given index in the reference frame, when color interpolation is used. This method is optimized for speed, no boundary checks are performed.
@@ -105,7 +105,7 @@ namespace AstroPhotoStacker {
              * @param color The color of the pixel at the given index.
              * @return The value of the pixel at the given index.
             */
-            inline int get_value_by_reference_frame_index(int index, int color) const {
+            inline short int get_value_by_reference_frame_index(int index, int color) const {
                 return m_data_shifted_color_interpolation[color][index];
             };
 
@@ -129,9 +129,9 @@ namespace AstroPhotoStacker {
             /**
              * @brief Get the data of the calibrated photo.
              *
-             * @return const std::vector<std::vector<short unsigned int>>& The data of the calibrated photo.
+             * @return const std::vector<std::vector<short int>>& The data of the calibrated photo.
             */
-            const std::vector<std::vector<short unsigned int>>& get_calibrated_data_after_color_interpolation() const {
+            const std::vector<std::vector<short int>>& get_calibrated_data_after_color_interpolation() const {
                 return m_data_shifted_color_interpolation;
             };
 
@@ -151,13 +151,13 @@ namespace AstroPhotoStacker {
             std::vector<std::shared_ptr<const CalibrationFrameBase>> m_calibration_frames;
 
             std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
-            std::vector<short unsigned int> m_data_original;
+            std::vector<short int> m_data_original;
 
             bool m_use_color_interpolation = false;
-            std::vector<std::vector<short unsigned int>> m_data_original_color_interpolation;
-            std::vector<std::vector<short unsigned int>> m_data_shifted_color_interpolation;
+            std::vector<std::vector<short int>> m_data_original_color_interpolation;
+            std::vector<std::vector<short int>> m_data_shifted_color_interpolation;
 
-            std::vector<short unsigned int> m_data_shifted;
+            std::vector<short int> m_data_shifted;
             std::vector<char> m_colors_original;
             std::vector<char> m_colors_shifted;
             std::vector<char> m_color_conversion_table; // color number from the raw file usually can take values 0,1,2,3. 3 is usually green, but it is not guaranteed, so we need to convert it to 0,1,2

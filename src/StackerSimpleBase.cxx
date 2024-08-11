@@ -82,7 +82,7 @@ void StackerSimpleBase::add_photo_to_stack(unsigned int i_file, int y_min, int y
             }
         }
         else   {
-            unsigned int value;
+            short int value;
             char color;
             for (int y = y_min; y < y_max; y++)  {
                 for (int x = 0; x < m_width; x++)   {

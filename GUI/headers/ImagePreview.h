@@ -127,11 +127,11 @@ class ImagePreview {
         const std::vector<std::vector<int>>& get_preview_data() const { return m_preview_data;};
 
         /**
-         * @brief Get original image data as vector<vector<short unsigned int>> (3 color channels, each with width*height pixels)
+         * @brief Get original image data as vector<vector<short int>> (3 color channels, each with width*height pixels)
          *
-         * @return  const std::vector<std::vector<short unsigned int>>& original image data
+         * @return  const std::vector<std::vector<short int>>& original image data
         */
-        const std::vector<std::vector<short unsigned int>>& get_original_image() const { return m_original_image;};
+        const std::vector<std::vector<short int>>& get_original_image() const { return m_original_image;};
 
         /**
          * @brief Image preview bitmap (for sizer)
@@ -143,7 +143,7 @@ class ImagePreview {
         wxStaticBitmap                  *m_preview_bitmap       = nullptr;
         ImageResizeTool m_image_resize_tool;
 
-        std::vector<std::vector<short unsigned int>> m_original_image; // 3 color channels, each with width*height pixels
+        std::vector<std::vector<short int>> m_original_image; // 3 color channels, each with width*height pixels
 
         int m_width;
         int m_height;

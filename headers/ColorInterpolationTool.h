@@ -26,7 +26,7 @@ namespace AstroPhotoStacker {
              * @param colors_original The original colors of the image.
              * @param color_conversion_table The color conversion table -> there are usually 2 color codes for green color
             */
-            ColorInterpolationTool(const short unsigned int *data_original, int width, int height, const std::vector<char> &colors_original, const std::vector<char> &color_conversion_table);
+            ColorInterpolationTool(const short int *data_original, int width, int height, const std::vector<char> &colors_original, const std::vector<char> &color_conversion_table);
 
             /**
              * @brief Get the interpolated RGB image.
@@ -34,7 +34,7 @@ namespace AstroPhotoStacker {
              * @tparam output_type The data type of the output image.
              * @return The interpolated RGB image as a vector of vectors of the given data type.
             */
-            template<typename output_type = unsigned short>
+            template<typename output_type = short int>
             std::vector<std::vector<output_type>> get_interpolated_rgb_image() const {
                 std::vector<std::vector<output_type>> result;
                 for (int color = 0; color < 3; color++) {
@@ -47,7 +47,7 @@ namespace AstroPhotoStacker {
                             const int index = y*m_width + x;
                             const int color_original = (*m_color_conversion_table)[(*m_colors_original)[index]]; // there are sometimes 2 color codes for green color ...
 
-                            short unsigned int neighbors_values[8];
+                            short int neighbors_values[8];
                             int neighbors_distances[8];
 
                             neighbors_distances[0] = (i_color == color_original) ? 1 : -1;
@@ -106,12 +106,12 @@ namespace AstroPhotoStacker {
              * @param height The height of the image.
              * @return The interpolated RGB image as a vector of vectors of the given data type.
             */
-            template<typename output_type = unsigned short>
+            template<typename output_type = short int>
             static std::vector<std::vector<output_type>> get_interpolated_rgb_image(const std::string &raw_file, int *width, int *height) {
                 int temp_width;
                 int temp_height;
                 std::vector<char> colors;
-                std::vector<unsigned short> raw_data = read_raw_file<unsigned short int>(raw_file, &temp_width, &temp_height, &colors);
+                std::vector<short> raw_data = read_raw_file<short int>(raw_file, &temp_width, &temp_height, &colors);
                 const std::vector<char> color_conversion_table = get_color_info_as_number(raw_file);
                 ColorInterpolationTool color_interpolation_tool(raw_data.data(), temp_width, temp_height, colors, color_conversion_table);
 
@@ -128,7 +128,7 @@ namespace AstroPhotoStacker {
             int m_width;
             int m_height;
 
-            const short unsigned int *m_data_original = nullptr;
+            const short int *m_data_original = nullptr;
             const std::vector<char> *m_colors_original  = nullptr;
             const std::vector<char> *m_color_conversion_table   = nullptr;
 
@@ -138,7 +138,7 @@ namespace AstroPhotoStacker {
                                                     int color,
                                                     int step_x,
                                                     int step_y,
-                                                    short unsigned int *value,
+                                                    short int *value,
                                                     int *closest_distance,
                                                     int n_steps_max = 2) const;
     };

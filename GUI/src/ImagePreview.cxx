@@ -60,7 +60,7 @@ void ImagePreview::read_preview_from_file(const std::string &path)  {
         // picture file
         cv::Mat image = cv::imread(path, 1);
         m_image_resize_tool.set_original_size(image.cols, image.rows);
-        m_original_image = std::vector<std::vector<unsigned short int>>(3, std::vector<unsigned short int>(
+        m_original_image = std::vector<std::vector<short int>>(3, std::vector<short int>(
             m_image_resize_tool.get_width_original()* m_image_resize_tool.get_height_original(),0)
         );
 
@@ -81,7 +81,7 @@ void ImagePreview::read_preview_from_file(const std::string &path)  {
 void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {
     m_current_preview_is_raw_file = false;
     m_image_resize_tool.set_original_size(width_original, height_original);
-    m_original_image = std::vector<std::vector<unsigned short int>>(3, std::vector<unsigned short int>(width_original*height_original,0));
+    m_original_image = std::vector<std::vector<short int>>(3, std::vector<short int>(width_original*height_original,0));
     for (int i_color = 0; i_color < 3; i_color++)   {
         for (int i_pixel = 0; i_pixel < width_original*height_original; i_pixel++)   {
             m_original_image[i_color][i_pixel] = stacked_image[i_color][i_pixel];
