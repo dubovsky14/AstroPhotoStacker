@@ -29,27 +29,37 @@ void Fitter::set_limits(const std::vector<std::pair<double,double>> &limits)  {
 void Fitter::fit_gradient(std::function<double(const double *parameters)> objective_function, double learning_rate, double decay, unsigned int max_iterations)  {
     double gradient[m_num_parameters];
     double second_derivative[m_num_parameters];
+    vector<double> updated_parameters = *m_parameters;
     for (unsigned int i_iter = 0; i_iter < max_iterations; i_iter++) {
         if (m_debug) {
             cout << "Iteration " << i_iter << endl;
         }
         calculate_gradient_and_second_derivative(objective_function, gradient, second_derivative);
-        //normalize_vector(gradient, m_num_parameters);
+        normalize_vector(gradient, m_num_parameters);
+        const double nominal_value = objective_function(m_parameters->data());
+
+        updated_parameters = *m_parameters;
         for (unsigned int i_param = 0; i_param < m_num_parameters; i_param++) {
             if (second_derivative[i_param] == 0 || isnan(second_derivative[i_param]) || isnan(gradient[i_param])) {
                 continue;
             }
-            m_parameters->at(i_param) -= learning_rate*gradient[i_param]/second_derivative[i_param];
+            updated_parameters.at(i_param) -= learning_rate*gradient[i_param];
 
-            // force range
-            if (m_parameters->at(i_param) < m_limits[i_param].first) {
-                m_parameters->at(i_param) = m_limits[i_param].first;
+            if (updated_parameters.at(i_param) < m_limits[i_param].first) {
+                updated_parameters.at(i_param) = m_limits[i_param].first;
             }
-            if (m_parameters->at(i_param) > m_limits[i_param].second) {
-                m_parameters->at(i_param) = m_limits[i_param].second;
+            if (updated_parameters.at(i_param) > m_limits[i_param].second) {
+                updated_parameters.at(i_param) = m_limits[i_param].second;
             }
         }
-        learning_rate *= decay;
+        const double updated_value = objective_function(updated_parameters.data());
+        if (updated_value < nominal_value) {
+            *m_parameters = updated_parameters;
+            learning_rate /= decay;
+        }
+        else {
+            learning_rate *= decay;
+        }
     }
 };
 

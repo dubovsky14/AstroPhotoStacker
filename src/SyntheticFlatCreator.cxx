@@ -145,13 +145,16 @@ void SyntheticFlatCreator::fit_function_of_distance()   {
     };
 
 
-    Fitter fitter(&m_function_parameters, m_function_parameter_limits);
-    fitter.fit_gradient(objective_function, 0.05, 0.999, 10000);
+    m_brightnesses = brightness_values;
+    m_distances = distances;
 
-    //cout << "Data for fitting:\n";
-    //for (unsigned int i = 0; i < distances.size(); i++) {
-    //    cout << "\t" << distances.at(i) << "\t" << brightness_values.at(i) << "\t" << m_function_of_distance(distances.at(i), m_function_parameters.data()) << endl;
-    //}
+    Fitter fitter(&m_function_parameters, m_function_parameter_limits);
+    fitter.fit_gradient(objective_function, 0.05, 0.8, 10000);
+
+    cout << "Data for fitting:\n";
+    for (unsigned int i = 0; i < distances.size(); i++) {
+        cout << "\t" << distances.at(i) << "\t" << brightness_values.at(i) << "\t" << m_function_of_distance(distances.at(i), m_function_parameters.data()) << endl;
+    }
 };
 
 std::pair<vector<float>, vector<float>> SyntheticFlatCreator::get_data_for_fit()    {
@@ -176,7 +179,13 @@ std::pair<vector<float>, vector<float>> SyntheticFlatCreator::get_data_for_fit()
         std::sort(this_vector.begin(), this_vector.end());
         result_x.push_back(i*step + 0.5*step);
         if (this_vector.size() != 0) {
-            result_y.push_back(this_vector.at(this_vector.size()/2));
+            double mean = 0;
+            int count = 0;
+            for (unsigned int i = this_vector.size()/4; i <= 1.4*this_vector.size()/4; i++) {
+                mean += this_vector.at(i);
+                count++;
+            }
+            result_y.push_back(mean / count);
         }
         else if (i > 0) {
             result_y.push_back(result_y.at(i-1));
@@ -232,7 +241,7 @@ float SyntheticFlatCreator::fit_center(const std::vector<std::vector<float>> &re
         for (unsigned int i_column = 0; i_column < rebinned_data.at(i_line).size(); i_column++) {
             data_y[i_column] = rebinned_data[i_line][i_column];
         }
-        fitter.fit_gradient(objective_function, 0.02, 0.99, 1000);
+        fitter.fit_gradient(objective_function, 0.02, 0.8, 1000);
         partial_results.push_back(params.at(1));
         cout << "Line " << i_line << " center x = " << params.at(1) << endl;
     }
@@ -260,7 +269,8 @@ void SyntheticFlatCreator::save_flat(const std::string &output_file)    {
     for (unsigned int y = 0; y < m_height; y++) {
         for (unsigned int x = 0; x < m_width; x++) {
             const float distance = sqrt((x - m_center_x)*(x - m_center_x) + (y - m_center_y)*(y - m_center_y));
-            const float brightness = m_function_of_distance(distance, m_function_parameters.data());
+            //const float brightness = m_function_of_distance(distance, m_function_parameters.data());
+            const float brightness = get_brightness(distance);
             flat_data[y*m_width + x] = brightness;
         }
     }
@@ -295,19 +305,66 @@ void SyntheticFlatCreator::initialize_function_of_distance_and_its_parameters() 
                 parameters[3] * r * r * r +
                 parameters[4] * r * r * r * r +
                 parameters[5] * r * r * r * r * r +
-                parameters[6] * r * r * r * r * r * r;
+                parameters[6] * r * r * r * r * r * r +
+                parameters[7] * r * r * r * r * r * r * r +
+                parameters[8] * r * r * r * r * r * r * r  * r;
     };
 
     m_function_parameter_limits = {
         {-2*brightness_in_center, 2*brightness_in_center},
         {-2*brightness_in_center, 2*brightness_in_center},
-        {-2*brightness_in_center, 2*brightness_in_center},
-        {-2*brightness_in_center, 2*brightness_in_center},
-        {-2*brightness_in_center, 2*brightness_in_center},
-        {-2*brightness_in_center, 2*brightness_in_center},
-        {-2*brightness_in_center, 2*brightness_in_center}
+        {-3*brightness_in_center, 3*brightness_in_center},
+        {-3*brightness_in_center, 3*brightness_in_center},
+        {-3*brightness_in_center, 3*brightness_in_center},
+        {-3*brightness_in_center, 3*brightness_in_center},
+        {-3*brightness_in_center, 3*brightness_in_center},
+        {-3*brightness_in_center, 3*brightness_in_center},
+        {-3*brightness_in_center, 3*brightness_in_center}
     };
 
-    m_function_parameters = {brightness_in_center, -brightness_in_center, 0, 0, 0, 0, 0};
+    m_function_parameters = {brightness_in_center, -brightness_in_center, 0, 0, 0, 0, 0, 0, 0};
+
+};
+
+//vector<double> m_brightness_cache;
+float SyntheticFlatCreator::get_brightness(int distance)   {
+    if (m_brightness_cache.find(distance) != m_brightness_cache.end()) {
+        return m_brightness_cache.at(distance);
+    }
+
+    int index_before = -1;
+    int index_after  = -1;
+    for (unsigned int i = 0; i < m_distances.size(); i++) {
+        if (m_distances.at(i) < distance) {
+            index_before = i;
+        }
+        else if (index_before != -1) {
+            index_after = i;
+            break;
+        }
+    }
+
+    if (index_before == -1) {
+        return m_brightnesses.at(0);
+    }
+
+    if (index_after == -1) {
+        return m_brightnesses.at(m_brightnesses.size() - 1);
+    }
+
+    const double x1 = m_distances.at(index_before);
+    const double x2 = m_distances.at(index_after);
+
+    const double y1 = m_brightnesses.at(index_before);
+    const double y2 = m_brightnesses.at(index_after);
+
+    const double m = (y2 - y1) / (x2 - x1);
+    const double b = y1 - m*x1;
+
+    const double result = m*distance + b;
+
+    m_brightness_cache[distance] = result;
+
+    return m*distance + b;
 
 };

@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <map>
 #include <functional>
 
 namespace AstroPhotoStacker {
@@ -50,5 +51,11 @@ namespace AstroPhotoStacker {
             std::function<double(double, const double *)> m_function_of_distance;
             std::vector<double> m_function_parameters;
             std::vector<std::pair<double,double>> m_function_parameter_limits;
+
+            std::vector<float> m_brightnesses;
+            std::vector<float> m_distances;
+
+            std::map<int,float> m_brightness_cache;
+            float get_brightness(int distance);
     };
 }
