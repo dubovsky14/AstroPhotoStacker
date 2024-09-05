@@ -7,6 +7,7 @@
 #include "../headers/StackerKappaSigmaMedian.h"
 #include "../headers/StackerCutOffAverage.h"
 #include "../headers/StackerMaximum.h"
+#include "../headers/StackerMinimum.h"
 
 #include <string>
 #include <memory>
@@ -26,6 +27,9 @@ namespace AstroPhotoStacker {
         }
         else if (stacker_type == "maximum") {
             return std::make_unique<StackerMaximum>(number_of_colors, width, height, interpolate_colors);
+        }
+        else if (stacker_type == "minimum") {
+            return std::make_unique<StackerMinimum>(number_of_colors, width, height, interpolate_colors);
         }
         else {
             throw std::runtime_error("Unknown stacker type: " + stacker_type);
