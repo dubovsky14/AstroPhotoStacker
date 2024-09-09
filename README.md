@@ -1,6 +1,8 @@
 The framework is designed for stacking of astro-photos.
 The code is still under development.  There is also GUI, which is the recommended way on how to use the software, since some options are not supported via command line.
 
+Example images which were stacked by this framework can be found here: https://app.astrobin.com/equipment/explorer/software/13498/michal-dubovsky-astrophotostacker
+
 In order to use the GUI, you firstly need to compile the back-end part (see the instructions below), then you have to compile GUI part (instructions in ```GUI/``` folder).
 
 For now, the code is able to stack photos using arithmetic average, median or kappa-sigma clipping (again using either average or median).
