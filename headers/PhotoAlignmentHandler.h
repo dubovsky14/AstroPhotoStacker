@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/ReferencePhotoHandler.h"
+#include "../headers/ReferencePhotoHandlerBase.h"
 
 #include <memory>
 #include <string>
@@ -123,7 +123,7 @@ namespace   AstroPhotoStacker   {
             std::vector<FileAlignmentInformation> m_alignment_information_vector;
             std::atomic<int> m_n_files_aligned = 0;
             unsigned int m_n_cpu = 1;
-            std::unique_ptr<ReferencePhotoHandler> m_reference_photo_handler = nullptr;
+            std::unique_ptr<ReferencePhotoHandlerBase> m_reference_photo_handler = nullptr;
             const std::string c_reference_file_header = "reference_file";
     };
 }

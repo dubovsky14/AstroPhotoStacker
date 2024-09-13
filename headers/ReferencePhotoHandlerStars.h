@@ -3,6 +3,7 @@
 #include "../headers/StarFinder.h"
 #include "../headers/KDTree.h"
 #include "../headers/PlateSolver.h"
+#include "../headers/ReferencePhotoHandlerBase.h"
 
 #include <memory>
 #include <string>
@@ -14,10 +15,10 @@ namespace AstroPhotoStacker   {
     /**
      * @brief Class responsible for handling the reference photo. It provides also methods for plate-solving another photo - how it should be rotated and shifted to match the reference photo
     */
-    class ReferencePhotoHandler {
+    class ReferencePhotoHandlerStars : public ReferencePhotoHandlerBase {
         public:
-            ReferencePhotoHandler()                             = delete;
-            ReferencePhotoHandler(const ReferencePhotoHandler&) = delete;
+            ReferencePhotoHandlerStars()                             = delete;
+            ReferencePhotoHandlerStars(const ReferencePhotoHandlerStars&) = delete;
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -25,7 +26,7 @@ namespace AstroPhotoStacker   {
              * @param raw_file_address - path to the raw file
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandler(const std::string &raw_file_address, float threshold_fraction = 0.0005);
+            ReferencePhotoHandlerStars(const std::string &raw_file_address, float threshold_fraction = 0.0005);
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -35,8 +36,8 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            template<typename pixel_brightness_type = unsigned short>
-            ReferencePhotoHandler(const pixel_brightness_type *brightness, int width, int height, float threshold_fraction = 0.0005)    {
+            ReferencePhotoHandlerStars(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005)  :
+                ReferencePhotoHandlerBase(brightness, width, height, threshold_fraction) {
                 initialize(brightness, width, height, threshold_fraction);
             };
 
@@ -47,7 +48,8 @@ namespace AstroPhotoStacker   {
              * @param width - width of the photo in pixels
              * @param height - height of the photo in pixels
             */
-            ReferencePhotoHandler(const std::vector<std::tuple<float, float, int> > &stars, int width, int height)  {
+            ReferencePhotoHandlerStars(const std::vector<std::tuple<float, float, int> > &stars, int width, int height) :
+                ReferencePhotoHandlerBase(stars, width, height) {
                 initialize(stars, width, height);
             };
 
@@ -84,7 +86,7 @@ namespace AstroPhotoStacker   {
              * @return true - if the plate was solved
              * @return false - if the plate was not solved
             */
-            bool plate_solve(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const;
+            virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const override;
 
             /**
              * @brief Plate-solve a photo - calculate how it should be rotated and shifted to match the reference photo
@@ -106,8 +108,7 @@ namespace AstroPhotoStacker   {
             std::unique_ptr<KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>>> m_kd_tree = nullptr;
             std::unique_ptr<PlateSolver> m_plate_solver = nullptr;
 
-            template<typename pixel_brightness_type = unsigned short>
-            void initialize(const pixel_brightness_type *brightness, int width, int height, float threshold_fraction = 0.0005)   {
+            virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005) override   {
                 const unsigned short threshold = get_threshold_value<unsigned short>(&brightness[0], width*height, threshold_fraction);
                 std::vector<std::tuple<float, float, int> > stars = get_stars(&brightness[0], width, height, threshold);
                 keep_only_stars_above_size(&stars, 9);

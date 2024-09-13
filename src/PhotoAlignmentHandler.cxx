@@ -1,4 +1,5 @@
 #include "../headers/PhotoAlignmentHandler.h"
+#include "../headers/ReferencePhotoHandlerStars.h"
 #include "../headers/Common.h"
 #include "../headers/PhotoRanker.h"
 #include "../headers/thread_pool.h"
@@ -86,7 +87,7 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
 };
 
 void PhotoAlignmentHandler::align_files(const std::string &reference_file_address, const std::vector<std::string> &files) {
-    m_reference_photo_handler = make_unique<ReferencePhotoHandler>(reference_file_address, 0.0005);
+    m_reference_photo_handler = make_unique<ReferencePhotoHandlerStars>(reference_file_address, 0.0005);
     m_reference_file_address = reference_file_address;
 
     const unsigned int n_files = files.size();
@@ -94,7 +95,7 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
 
     auto align_file_multicore = [this](const std::string &file_name, unsigned int file_index) {
         float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
-        if (m_reference_photo_handler->plate_solve(file_name, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation)) {
+        if (m_reference_photo_handler->calculate_alignment(file_name, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation)) {
             FileAlignmentInformation &alignment_info = m_alignment_information_vector[file_index];
             alignment_info.file_address = file_name;
             alignment_info.shift_x = shift_x;

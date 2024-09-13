@@ -1,4 +1,4 @@
-#include "../headers/ReferencePhotoHandler.h"
+#include "../headers/ReferencePhotoHandlerStars.h"
 #include "../headers/raw_file_reader.h"
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/AsterismHasher.h"
@@ -12,7 +12,8 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 
-ReferencePhotoHandler::ReferencePhotoHandler(const std::string &raw_file_address, float threshold_fraction) {
+ReferencePhotoHandlerStars::ReferencePhotoHandlerStars(const std::string &raw_file_address, float threshold_fraction) :
+    ReferencePhotoHandlerBase(raw_file_address, threshold_fraction) {
     const bool raw_file = is_raw_file(raw_file_address);
     if (raw_file) {
         vector<unsigned short int> brightness = read_raw_file<unsigned short int>(raw_file_address, &m_width, &m_height);
@@ -24,7 +25,7 @@ ReferencePhotoHandler::ReferencePhotoHandler(const std::string &raw_file_address
     }
 };
 
-void ReferencePhotoHandler::initialize(const std::vector<std::tuple<float, float, int> > &stars, int width, int height)  {
+void ReferencePhotoHandlerStars::initialize(const std::vector<std::tuple<float, float, int> > &stars, int width, int height)  {
     m_stars = stars;
     m_width = width;
     m_height = height;
@@ -32,7 +33,7 @@ void ReferencePhotoHandler::initialize(const std::vector<std::tuple<float, float
     m_plate_solver = make_unique<PlateSolver>(m_kd_tree.get(), &m_stars, m_width, m_height);
 };
 
-bool ReferencePhotoHandler::plate_solve(const std::string &file_address,
+bool ReferencePhotoHandlerStars::calculate_alignment(const std::string &file_address,
                                         float *shift_x, float *shift_y,
                                         float *rot_center_x, float *rot_center_y, float *rotation) const    {
     try {
@@ -60,13 +61,13 @@ bool ReferencePhotoHandler::plate_solve(const std::string &file_address,
 };
 
 
-bool ReferencePhotoHandler::plate_solve(const std::vector<std::tuple<float, float, int> > &stars,
+bool ReferencePhotoHandlerStars::plate_solve(const std::vector<std::tuple<float, float, int> > &stars,
                                         float *shift_x, float *shift_y,
                                         float *rot_center_x, float *rot_center_y, float *rotation) const    {
     return m_plate_solver->plate_solve(stars, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
 };
 
-void ReferencePhotoHandler::calculate_and_store_hashes()  {
+void ReferencePhotoHandlerStars::calculate_and_store_hashes()  {
     m_kd_tree = make_unique<KDTree<float, 4, tuple<unsigned, unsigned, unsigned, unsigned>>>();
 
     const unsigned int n_stars = m_stars.size();
