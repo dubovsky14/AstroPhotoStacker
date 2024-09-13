@@ -54,6 +54,17 @@ void CalibratedPhotoHandler::set_bit_depth(unsigned short int bit_depth)    {
 };
 
 void CalibratedPhotoHandler::calibrate() {
+    // firstly apply the calibration frames on the original data
+    for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler : m_calibration_frames) {
+        for (int y = 0; y < m_height; y++) {
+            for (int x = 0; x < m_width; x++) {
+                const unsigned int index = y*m_width + x;
+                auto &value = m_data_original[index];
+                value = calibration_frame_handler->get_updated_pixel_value(value, x, y);
+            }
+        }
+    }
+
     if (m_use_color_interpolation || !m_is_raw_file) {
         // run color interpolation on original data (before alignment and calibration)
         if (m_use_color_interpolation && m_is_raw_file) {
@@ -73,11 +84,6 @@ void CalibratedPhotoHandler::calibrate() {
                     if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
                         const unsigned int index_shifted = y_shifted*m_width + x_shifted;
                         const unsigned int index_original = y_int*m_width + x_int;
-                        for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler : m_calibration_frames) {
-                            auto &value = m_data_original_color_interpolation[color][index_original];
-                            value = calibration_frame_handler->get_updated_pixel_value(value, x_int, y_int);
-                        }
-
                         m_data_shifted_color_interpolation[color][index_shifted] = m_data_original_color_interpolation[color][index_original];
                     }
                 }
@@ -103,11 +109,6 @@ void CalibratedPhotoHandler::calibrate() {
                 if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
                     const unsigned int index_shifted = y_shifted*m_width + x_shifted;
                     const unsigned int index_original = y_int*m_width + x_int;
-
-                    for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler : m_calibration_frames) {
-                        auto &value = m_data_original[index_original];
-                        value = calibration_frame_handler->get_updated_pixel_value(value, x_int, y_int);
-                    }
 
                     m_data_shifted[index_shifted] = m_data_original[index_original];
                     m_colors_shifted[index_shifted] = m_colors_original[index_original];
