@@ -1,5 +1,6 @@
 #include "../headers/raw_file_reader.h"
 #include "../headers/ImageFilesInputOutput.h"
+#include "../headers/FitFileReader.h"
 
 #include <vector>
 #include <filesystem>
@@ -70,11 +71,31 @@ int main(int argc, char **argv) {
 
         int width, height;
         vector<char> colors;
-        vector<unsigned short> brightness = read_raw_file<unsigned short>(input_file, &width, &height, &colors);
+        vector<unsigned short> brightness;
+        const bool is_fit_file = !is_raw_file(input_file);
+        if (is_fit_file)    {
+            FitFileReader fit_file_reader(input_file);
+            width = fit_file_reader.get_width();
+            height = fit_file_reader.get_height();
+            brightness = fit_file_reader.get_data();
+            if (fit_file_reader.is_rgb())   {
+                colors = fit_file_reader.get_colors();
+            }
+            else {
+                colors = vector<char>(width*height, 0);
+            }
+        }
+        else    {
+            brightness = read_raw_file<unsigned short>(input_file, &width, &height, &colors);
+        }
         cout << colors.size() << endl;
-
+        if (is_fit_file)    {
+            decrease_image_bit_depth(brightness.data(), width*height, 8);
+        }
         auto image = convert_raw_data_to_rgb_image(brightness.data(), colors.data(), width, height);
-        scale_to_8_bits(&image, width, height);
+        //if (!is_fit_file)   {
+            scale_to_8_bits(&image, width, height);
+        //}
         crate_color_image(&image[0][0],&image[1][0], &image[2][0], width, height, output_file);
     }
 
