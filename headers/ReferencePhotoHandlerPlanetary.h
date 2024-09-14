@@ -63,8 +63,9 @@ namespace AstroPhotoStacker   {
              * @param threshold - threshold value for the pixels
              * @return std::tuple<int,int,int,int> - coordinates of the window x0, y0, x1, y1
             */
-            std::tuple<int,int,int,int> get_alignment_window(const unsigned short *brightness, int width, int height, unsigned short threshold) const;
+            std::tuple<int,int,int,int> get_alignment_window(const unsigned short *brightness, unsigned short threshold) const;
 
+            std::vector<std::vector<double>> get_covariance_matrix(const unsigned short *brightness, unsigned short threshold, const std::tuple<int,int,int,int> &window_coordinates) const;
 
             /**
              * @brief get the center of mass of the planet
@@ -77,12 +78,13 @@ namespace AstroPhotoStacker   {
              *
              * @return std::tuple<double,double> - x and y coordinates of the center of mass
              */
-            std::tuple<double,double> get_center_of_mass(const unsigned short *brightness, int width, int height, unsigned short threshold, const std::tuple<int,int,int,int> &window_coordinates) const;
+            std::tuple<double,double> get_center_of_mass(const unsigned short *brightness, unsigned short threshold, const std::tuple<int,int,int,int> &window_coordinates) const;
 
-            virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005) override;
+            virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.5) override;
 
             double m_center_of_mass_x = 0;
             double m_center_of_mass_y = 0;
+            double m_rotation_angle = 0;
 
 
     };
