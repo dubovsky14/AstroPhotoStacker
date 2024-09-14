@@ -118,6 +118,18 @@ namespace   AstroPhotoStacker   {
              */
             const std::atomic<int>& get_number_of_aligned_files() const;
 
+            /**
+             * @brief Sets the alignment method.
+             * @param alignment_method The alignment method.
+             */
+            void set_alignment_method(const std::string& alignment_method) {m_alignment_method = alignment_method;};
+
+            /**
+             * @brief Gets the alignment method.
+             * @return The alignment method.
+             */
+            const std::string& get_alignment_method() const {return m_alignment_method;};
+
         private:
             std::string m_reference_file_address = "";
             std::vector<FileAlignmentInformation> m_alignment_information_vector;
@@ -125,5 +137,10 @@ namespace   AstroPhotoStacker   {
             unsigned int m_n_cpu = 1;
             std::unique_ptr<ReferencePhotoHandlerBase> m_reference_photo_handler = nullptr;
             const std::string c_reference_file_header = "reference_file";
+
+            //std::string m_alignment_method = "stars";
+            std::string m_alignment_method = "planetary";
+
+            std::unique_ptr<ReferencePhotoHandlerBase> reference_photo_handler_factory(const std::string& alignment_method) const;
     };
 }

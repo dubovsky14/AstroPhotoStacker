@@ -1,5 +1,6 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/ReferencePhotoHandlerStars.h"
+#include "../headers/ReferencePhotoHandlerPlanetary.h"
 #include "../headers/Common.h"
 #include "../headers/PhotoRanker.h"
 #include "../headers/thread_pool.h"
@@ -87,7 +88,7 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
 };
 
 void PhotoAlignmentHandler::align_files(const std::string &reference_file_address, const std::vector<std::string> &files) {
-    m_reference_photo_handler = make_unique<ReferencePhotoHandlerStars>(reference_file_address, 0.0005);
+    m_reference_photo_handler = reference_photo_handler_factory(reference_file_address);
     m_reference_file_address = reference_file_address;
 
     const unsigned int n_files = files.size();
@@ -182,4 +183,16 @@ void PhotoAlignmentHandler::limit_fraction_of_files(float fraction) {
 
 const std::atomic<int>& PhotoAlignmentHandler::get_number_of_aligned_files() const {
     return m_n_files_aligned;
+};
+
+unique_ptr<ReferencePhotoHandlerBase> PhotoAlignmentHandler::reference_photo_handler_factory(const std::string& raw_file_address)   const  {
+    if (m_alignment_method == "stars") {
+        return make_unique<ReferencePhotoHandlerStars>(raw_file_address);
+    }
+    else if (m_alignment_method == "planetary") {
+        return make_unique<ReferencePhotoHandlerPlanetary>(raw_file_address);
+    }
+    else {
+        throw runtime_error("Invalid alignment method: " + m_alignment_method);
+    }
 };
