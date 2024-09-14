@@ -3,6 +3,7 @@
 #include "../headers/ReferencePhotoHandlerPlanetary.h"
 #include "../headers/Common.h"
 #include "../headers/PhotoRanker.h"
+#include "../headers/SharpnessRanker.h"
 #include "../headers/thread_pool.h"
 
 #include <fstream>
@@ -104,7 +105,7 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
             alignment_info.rotation_center_x = rot_center_x;
             alignment_info.rotation_center_y = rot_center_y;
             alignment_info.rotation = rotation;
-            alignment_info.ranking = PhotoRanker::calculate_file_ranking(file_name);
+            alignment_info.ranking = get_ranking(file_name);
         }
         else {
             cout << "Plate solving failed for file: " + file_name + "\n";
@@ -191,6 +192,18 @@ unique_ptr<ReferencePhotoHandlerBase> PhotoAlignmentHandler::reference_photo_han
     }
     else if (m_alignment_method == "planetary") {
         return make_unique<ReferencePhotoHandlerPlanetary>(raw_file_address);
+    }
+    else {
+        throw runtime_error("Invalid alignment method: " + m_alignment_method);
+    }
+};
+
+float PhotoAlignmentHandler::get_ranking(const std::string &file_address) const    {
+    if (m_alignment_method == "stars") {
+        return PhotoRanker::calculate_file_ranking(file_address);
+    }
+    else if (m_alignment_method == "planetary") {
+        return 100./get_sharpness_for_file(file_address);
     }
     else {
         throw runtime_error("Invalid alignment method: " + m_alignment_method);

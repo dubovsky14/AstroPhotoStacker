@@ -13,25 +13,6 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-float get_sharpness_for_file(const std::string input_file)  {
-    CalibratedPhotoHandler calibrated_photo_handler(input_file, true);
-    calibrated_photo_handler.define_alignment(0, 0, 0, 0, 0);
-    calibrated_photo_handler.calibrate();
-
-    const std::vector<std::vector<short int>> &data = calibrated_photo_handler.get_calibrated_data_after_color_interpolation();
-    const int width = calibrated_photo_handler.get_width();
-    const int height = calibrated_photo_handler.get_height();
-
-    float average_sharpness = 0;
-    for (unsigned int i_color = 0; i_color < data.size(); i_color++)    {
-        const float sharpness = AstroPhotoStacker::get_sharpness_factor(data[i_color].data(), width, height);
-        average_sharpness += sharpness;
-    }
-    average_sharpness /= data.size();
-
-    return average_sharpness;
-}
-
 int main(int argc, const char **argv)   {
     if (argc != 2)   {
         std::cerr << "Usage: rank_sharpness <file>\n";

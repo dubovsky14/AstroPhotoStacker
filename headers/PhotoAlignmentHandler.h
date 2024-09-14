@@ -141,5 +141,7 @@ namespace   AstroPhotoStacker   {
             std::string m_alignment_method = "stars";
 
             std::unique_ptr<ReferencePhotoHandlerBase> reference_photo_handler_factory(const std::string& alignment_method) const;
+
+            float get_ranking(const std::string &file_address) const;
     };
 }
