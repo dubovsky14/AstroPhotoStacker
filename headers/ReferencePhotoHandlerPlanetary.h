@@ -26,7 +26,7 @@ namespace AstroPhotoStacker   {
              * @param raw_file_address - path to the raw file
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetary(const std::string &raw_file_address, float threshold_fraction = 0.0005);
+            ReferencePhotoHandlerPlanetary(const std::string &raw_file_address, float threshold_fraction = 0.5);
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -36,43 +36,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetary(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005)  :
-                ReferencePhotoHandlerBase(brightness, width, height, threshold_fraction) {
-                initialize(brightness, width, height, threshold_fraction);
-            };
-
-            /**
-             * @brief Construct a new Reference Photo Handler object
-             *
-             * @param stars - vector of tuples containing the x and y coordinates of the stars and number of their pixels together with the numbers of the pixels in individual stars
-             * @param width - width of the photo in pixels
-             * @param height - height of the photo in pixels
-            */
-            ReferencePhotoHandlerPlanetary(const std::vector<std::tuple<float, float, int> > &stars, int width, int height) :
-                ReferencePhotoHandlerBase(stars, width, height) {
-                initialize(stars, width, height);
-            };
-
-            /**
-             * @brief Get the width of the reference photo
-             *
-             * @return int - width of the reference photo
-            */
-            int get_width()     const   { return m_width; };
-
-            /**
-             * @brief Get the height of the reference photo
-             *
-             * @return int - height of the reference photo
-            */
-            int get_height()    const   { return m_height; };
-
-            /**
-             * @brief Get the number of precalculated hashes
-             *
-             * @return unsigned int - number of hashes
-            */
-            unsigned int get_number_of_hashes() const { return m_kd_tree->get_n_nodes(); };
+            ReferencePhotoHandlerPlanetary(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.5);
 
             /**
              * @brief Plate-solve a photo - calculate how it should be rotated and shifted to match the reference photo
@@ -88,38 +52,38 @@ namespace AstroPhotoStacker   {
             */
             virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const override;
 
+        protected:
+
             /**
-             * @brief Plate-solve a photo - calculate how it should be rotated and shifted to match the reference photo
+             * @brief Get coordinates of the window where the alignment should be calculated - surrounding the planet
              *
              * @param brightness - pointer to the array containing the brightness of the pixels
-             * @param shift_x - pointer to the variable where the horizontal shift will be stored
-             * @param shift_y - pointer to the variable where the vertical shift will be stored
-             * @param rot_center_x - pointer to the variable where the x coordinate of the rotation center will be stored
-             * @param rot_center_y - pointer to the variable where the y coordinate of the rotation center will be stored
-             * @param rotation - pointer to the variable where the rotation angle will be stored
+             * @param width - width of the photo
+             * @param height - height of the photo
+             * @param threshold - threshold value for the pixels
+             * @return std::tuple<int,int,int,int> - coordinates of the window x0, y0, x1, y1
             */
-            bool plate_solve(const std::vector<std::tuple<float, float, int> > &stars, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const;
+            std::tuple<int,int,int,int> get_alignment_window(const unsigned short *brightness, int width, int height, unsigned short threshold) const;
 
-        private:
-            int m_width;
-            int m_height;
 
-            std::vector<std::tuple<float, float, int> > m_stars;
-            std::unique_ptr<KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>>> m_kd_tree = nullptr;
-            std::unique_ptr<PlateSolver> m_plate_solver = nullptr;
+            /**
+             * @brief get the center of mass of the planet
+             *
+             * @param brightness - pointer to the array containing the brightness of the pixels
+             * @param width - width of the photo
+             * @param height - height of the photo
+             * @param threshold - threshold value for the pixels
+             * @param window_coordinates - coordinates of the window x0, y0, x1, y1
+             *
+             * @return std::tuple<double,double> - x and y coordinates of the center of mass
+             */
+            std::tuple<double,double> get_center_of_mass(const unsigned short *brightness, int width, int height, unsigned short threshold, const std::tuple<int,int,int,int> &window_coordinates) const;
 
-            virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005) override   {
-                const unsigned short threshold = get_threshold_value<unsigned short>(&brightness[0], width*height, threshold_fraction);
-                std::vector<std::tuple<float, float, int> > stars = get_stars(&brightness[0], width, height, threshold);
-                keep_only_stars_above_size(&stars, 9);
-                sort_stars_by_size(&stars);
+            virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005) override;
 
-                initialize(stars, width, height);
-            };
+            double m_center_of_mass_x = 0;
+            double m_center_of_mass_y = 0;
 
-            void initialize(const std::vector<std::tuple<float, float, int> > &stars, int width, int height);
-
-            void calculate_and_store_hashes();
 
     };
 }

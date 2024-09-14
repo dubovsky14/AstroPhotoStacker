@@ -42,32 +42,6 @@ namespace AstroPhotoStacker   {
             };
 
             /**
-             * @brief Construct a new Reference Photo Handler object
-             *
-             * @param stars - vector of tuples containing the x and y coordinates of the stars and number of their pixels together with the numbers of the pixels in individual stars
-             * @param width - width of the photo in pixels
-             * @param height - height of the photo in pixels
-            */
-            ReferencePhotoHandlerStars(const std::vector<std::tuple<float, float, int> > &stars, int width, int height) :
-                ReferencePhotoHandlerBase(stars, width, height) {
-                initialize(stars, width, height);
-            };
-
-            /**
-             * @brief Get the width of the reference photo
-             *
-             * @return int - width of the reference photo
-            */
-            int get_width()     const   { return m_width; };
-
-            /**
-             * @brief Get the height of the reference photo
-             *
-             * @return int - height of the reference photo
-            */
-            int get_height()    const   { return m_height; };
-
-            /**
              * @brief Get the number of precalculated hashes
              *
              * @return unsigned int - number of hashes
@@ -101,8 +75,6 @@ namespace AstroPhotoStacker   {
             bool plate_solve(const std::vector<std::tuple<float, float, int> > &stars, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const;
 
         private:
-            int m_width;
-            int m_height;
 
             std::vector<std::tuple<float, float, int> > m_stars;
             std::unique_ptr<KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>>> m_kd_tree = nullptr;

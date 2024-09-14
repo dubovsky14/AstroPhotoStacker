@@ -16,7 +16,6 @@ namespace AstroPhotoStacker   {
     */
     class ReferencePhotoHandlerBase {
         public:
-            ReferencePhotoHandlerBase()                             = delete;
             ReferencePhotoHandlerBase(const ReferencePhotoHandlerBase&) = delete;
 
             virtual ~ReferencePhotoHandlerBase()    {};
@@ -38,17 +37,6 @@ namespace AstroPhotoStacker   {
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
             ReferencePhotoHandlerBase(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005)    {
-
-            };
-
-            /**
-             * @brief Construct a new Reference Photo Handler object
-             *
-             * @param stars - vector of tuples containing the x and y coordinates of the stars and number of their pixels together with the numbers of the pixels in individual stars
-             * @param width - width of the photo in pixels
-             * @param height - height of the photo in pixels
-            */
-            ReferencePhotoHandlerBase(const std::vector<std::tuple<float, float, int> > &stars, int width, int height)  {
 
             };
 
@@ -80,7 +68,9 @@ namespace AstroPhotoStacker   {
             */
             virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const = 0;
 
-        private:
+        protected:
+            ReferencePhotoHandlerBase() {};
+
             int m_width;
             int m_height;
 
