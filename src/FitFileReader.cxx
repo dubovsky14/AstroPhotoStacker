@@ -1,6 +1,7 @@
 #include "../headers/FitFileReader.h"
 #include "../headers/Common.h"
 
+#include <iostream>
 #include <algorithm>
 
 using namespace AstroPhotoStacker;
@@ -87,6 +88,7 @@ std::string FitFileReader::get_header_string(std::ifstream &file)    {
 void FitFileReader::fill_metadata()    {
     m_width  = std::stoi(get_with_default<string,string>(m_metadata, "NAXIS1", "0"));
     m_height = std::stoi(get_with_default<string,string>(m_metadata, "NAXIS2", "0"));
+    m_n_colors = std::stoi(get_with_default<string,string>(m_metadata, "NAXIS3", "1"));
     m_bit_depth = std::stoi(get_with_default<string,string>(m_metadata, "BITPIX", "0"));
     m_exposure_time = std::stof(get_with_default<string,string>(m_metadata, "EXPTIME", "0"));
 
@@ -96,23 +98,26 @@ void FitFileReader::fill_metadata()    {
 
 void FitFileReader::read_data(std::ifstream &file) {
     const int n_elements = m_width*m_height;
-    m_data = std::vector<unsigned short int>(n_elements);
+    m_data = std::vector<std::vector<unsigned short int>>(m_n_colors, std::vector<unsigned short int>(n_elements));
 
-    // skip whitespaces
-    char x;
-    while (file.peek() == ' ') {
-        file.read(&x, 1);
+    for (int i_color = 0; i_color < m_n_colors; i_color++) {
+        cout << "Reading color " << i_color << endl;
+        // skip whitespaces
+        char x;
+        while (file.peek() == ' ') {
+            file.read(&x, 1);
+        }
+        int current_pos = file.tellg();
+
+        // shift stream one byte back
+        file.seekg(current_pos - 1);
+
+        // lines are indexed from bottom to top ...
+        for (int i_line = 0; i_line < m_height; i_line++) {
+            file.read((char *)&m_data[i_color][(m_height - i_line - 1)*m_width], m_width*2);
+        }
+
+        // subtract zero point
+        std::transform(m_data[i_color].begin(), m_data[i_color].end(), m_data[i_color].begin(), [this](unsigned short int x) {return x - m_zero_point;});
     }
-    int current_pos = file.tellg();
-
-    // shift stream one byte back
-    file.seekg(current_pos - 1);
-
-    // lines are indexed from bottom to top ...
-    for (int i_line = 0; i_line < m_height; i_line++) {
-        file.read((char *)&m_data[(m_height - i_line - 1)*m_width], m_width*2);
-    }
-
-    // subtract zero point
-    std::transform(m_data.begin(), m_data.end(), m_data.begin(), [this](unsigned short int x) {return x - m_zero_point;});
 };

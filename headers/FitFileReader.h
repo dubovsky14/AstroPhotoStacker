@@ -33,16 +33,12 @@ namespace AstroPhotoStacker {
             }
 
             bool is_rgb() const {
-                return m_colors.size() > 0;
+                return m_n_colors == 3;
             };
 
-            const std::vector<unsigned short int> &get_data() const {
+            const std::vector<std::vector<unsigned short int>> &get_data() const {
                 return m_data;
             }
-
-            const std::vector<char> &get_colors() const {
-                return m_colors;
-            };
 
         private:
             void read_header(std::ifstream &file);
@@ -59,12 +55,12 @@ namespace AstroPhotoStacker {
 
             int m_width;
             int m_height;
+            int m_n_colors = 1;
             int m_bit_depth;
             unsigned int m_zero_point;
             float m_exposure_time;
 
-            std::vector<unsigned short int> m_data;
-            std::vector<char> m_colors;
+            std::vector<std::vector<unsigned short int>> m_data;
 
     };
 }
