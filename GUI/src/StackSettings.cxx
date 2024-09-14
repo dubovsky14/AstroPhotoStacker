@@ -13,6 +13,15 @@ const std::string& StackSettings::get_alignment_file() const  {
     return m_alignment_file;
 };
 
+
+void StackSettings::set_alignment_method(const std::string& alignment_method)   {
+    m_alignment_method = alignment_method;
+};
+
+const std::string& StackSettings::get_alignment_method() const  {
+    return m_alignment_method;
+};
+
 int StackSettings::get_max_threads() const     {
     return std::thread::hardware_concurrency();
 };

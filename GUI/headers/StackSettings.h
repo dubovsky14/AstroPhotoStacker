@@ -15,6 +15,10 @@ class StackSettings {
         void set_alignment_file(const std::string& alignment_file);
         const std::string& get_alignment_file() const;
 
+        // alignment method
+        void set_alignment_method(const std::string& alignment_method);
+        const std::string& get_alignment_method() const;
+
         // nCPU
         int get_max_threads() const;
         void set_n_cpus(int n_cpus);
@@ -65,6 +69,8 @@ class StackSettings {
         bool  m_hot_pixel_correction = false;
         bool  m_use_color_interpolation = true;
         bool  m_apply_color_stretching = false;
+
+        std::string m_alignment_method = "stars";
 
         const std::vector<std::string> m_stacking_algorithms = {"kappa-sigma median", "kappa-sigma mean", "average", "median", "cut-off average", "maximum", "minimum"};
 

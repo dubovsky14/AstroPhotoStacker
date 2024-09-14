@@ -186,13 +186,10 @@ void  ReferencePhotoHandlerPlanetary::initialize(const unsigned short *brightnes
     image_data.width = width;
     image_data.height = height;
 
-    cout << "Initializing: " << width << " " << height << " " << threshold_fraction << endl;
-
     const tuple<float,float,float> center_of_mass_and_rotation_angle = get_center_of_mass_and_rotation_angle(image_data, threshold_fraction);
     m_center_of_mass_x = get<0>(center_of_mass_and_rotation_angle);
     m_center_of_mass_y = get<1>(center_of_mass_and_rotation_angle);
     m_rotation_angle = get<2>(center_of_mass_and_rotation_angle);
 
-    cout << "Initialized: Center of mass: " << m_center_of_mass_x << " " << m_center_of_mass_y << " " << m_rotation_angle << endl;
 };
 

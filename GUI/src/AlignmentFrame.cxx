@@ -44,10 +44,25 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
     });
 
 
+    wxStaticText* select_alignment_method = new wxStaticText(this, wxID_ANY, "Select alignment method:");
+    select_alignment_method->SetFont(wxFont(15, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+    std::vector<wxString> alignment_methods;
+    alignment_methods.push_back("stars");
+    alignment_methods.push_back("planetary");
+    wxChoice* choice_box_alignment_method = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, alignment_methods.size(), alignment_methods.data());
+    choice_box_alignment_method->SetSelection(0);
+    stack_settings->set_alignment_method("stars");
+    choice_box_alignment_method->Bind(wxEVT_CHOICE, [choice_box_alignment_method, stack_settings](wxCommandEvent&){
+        int current_selection = choice_box_alignment_method->GetSelection();
+        std::string alignment_method = choice_box_alignment_method->GetString(current_selection).ToStdString();
+        stack_settings->set_alignment_method(alignment_method);
+    });
+
     wxButton* button_ok = new wxButton(this, wxID_ANY, "Align files");
     button_ok->Bind(wxEVT_BUTTON, [this, files_to_align, indices_files_to_align, parent](wxCommandEvent&){
         // TODO
         AstroPhotoStacker::PhotoAlignmentHandler photo_alignment_handler;
+        photo_alignment_handler.set_alignment_method(m_stack_settings->get_alignment_method());
         photo_alignment_handler.set_number_of_cpu_threads(m_stack_settings->get_n_cpus());
         const std::atomic<int> &n_processed = photo_alignment_handler.get_number_of_aligned_files();
 
@@ -90,6 +105,8 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
 
     main_sizer->Add(select_file_text, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
     main_sizer->Add(choice_box_alignment_file, 0,  wxEXPAND, 5);
+    main_sizer->Add(select_alignment_method, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
+    main_sizer->Add(choice_box_alignment_method, 0,  wxEXPAND, 5);
     main_sizer->Add(button_ok, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
     this->SetSizer(main_sizer);

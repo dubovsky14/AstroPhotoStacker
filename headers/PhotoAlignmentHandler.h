@@ -138,8 +138,7 @@ namespace   AstroPhotoStacker   {
             std::unique_ptr<ReferencePhotoHandlerBase> m_reference_photo_handler = nullptr;
             const std::string c_reference_file_header = "reference_file";
 
-            //std::string m_alignment_method = "stars";
-            std::string m_alignment_method = "planetary";
+            std::string m_alignment_method = "stars";
 
             std::unique_ptr<ReferencePhotoHandlerBase> reference_photo_handler_factory(const std::string& alignment_method) const;
     };
