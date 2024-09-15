@@ -14,15 +14,8 @@ using namespace AstroPhotoStacker;
 
 ReferencePhotoHandlerStars::ReferencePhotoHandlerStars(const std::string &raw_file_address, float threshold_fraction) :
     ReferencePhotoHandlerBase(raw_file_address, threshold_fraction) {
-    const bool raw_file = is_raw_file(raw_file_address);
-    if (raw_file) {
-        vector<unsigned short int> brightness = read_raw_file<unsigned short int>(raw_file_address, &m_width, &m_height);
-        initialize(brightness.data(), m_width, m_height, threshold_fraction);
-    }
-    else {
-        vector<unsigned short int> brightness = read_rgb_image_as_gray_scale<unsigned short int>(raw_file_address, &m_width, &m_height);
-        initialize(brightness.data(), m_width, m_height, threshold_fraction);
-    }
+    const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(raw_file_address, &m_width, &m_height);
+    initialize(brightness.data(), m_width, m_height, threshold_fraction);
 };
 
 void ReferencePhotoHandlerStars::initialize(const std::vector<std::tuple<float, float, int> > &stars, int width, int height)  {
@@ -38,14 +31,7 @@ bool ReferencePhotoHandlerStars::calculate_alignment(const std::string &file_add
                                         float *rot_center_x, float *rot_center_y, float *rotation) const    {
     try {
         int width, height;
-        vector<unsigned short> brightness;
-        const bool raw_file = is_raw_file(file_address);
-        if (raw_file) {
-            brightness = read_raw_file<unsigned short>(file_address, &width, &height);
-        }
-        else {
-            brightness = read_rgb_image_as_gray_scale<unsigned short>(file_address, &width, &height);
-        }
+        const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(file_address, &width, &height);
         const unsigned short threshold = get_threshold_value<unsigned short>(brightness.data(), width*height, 0.0005);
 
 

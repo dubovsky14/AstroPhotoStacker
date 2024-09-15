@@ -2,6 +2,7 @@
 
 #include "../headers/Metadata.h"
 #include "../headers/Common.h"
+#include "../headers/raw_file_reader.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -233,6 +234,23 @@ namespace AstroPhotoStacker {
         return result;
     };
 
+    template<class ValueType>
+    std::vector<ValueType> read_image_monochrome(const std::string &file_address, int *width, int *height)    {
+        const bool raw_file = is_raw_file(file_address);
+        std::vector<ValueType> brightness;
+        if (raw_file) {
+            brightness = read_raw_file<ValueType>(file_address, width, height);
+        }
+        else {
+            const std::vector<std::vector<ValueType>> brightness_rgb = read_rgb_image<ValueType>(file_address, width, height);
+            brightness = std::vector<ValueType>((*width)*(*height));
+            // calculate average of 3 color channels
+            for (unsigned int i = 0; i < brightness.size(); i++) {
+                brightness[i] = (brightness_rgb[0][i] + brightness_rgb[1][i] + brightness_rgb[2][i])/3;
+            }
+        }
+        return brightness;
+    };
 
     bool get_photo_resolution(const std::string &input_file, int *width, int *height);
 

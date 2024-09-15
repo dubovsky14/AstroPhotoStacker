@@ -9,21 +9,16 @@
 #include <vector>
 #include <tuple>
 #include <cmath>
+#include <algorithm>
 
 using namespace AstroPhotoStacker;
 using namespace std;
 
 ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const std::string &raw_file_address, float threshold_fraction)   :
     ReferencePhotoHandlerBase(raw_file_address, threshold_fraction) {
-    const bool raw_file = is_raw_file(raw_file_address);
-    if (raw_file) {
-        const vector<unsigned short int> brightness = read_raw_file<unsigned short int>(raw_file_address, &m_width, &m_height);
-        initialize(brightness.data(), m_width, m_height, threshold_fraction);
-    }
-    else {
-        const vector<unsigned short int> brightness = read_rgb_image_as_gray_scale<unsigned short int>(raw_file_address, &m_width, &m_height);
-        initialize(brightness.data(), m_width, m_height, threshold_fraction);
-    }
+
+    const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(raw_file_address, &m_width, &m_height);
+    initialize(brightness.data(), m_width, m_height, threshold_fraction);
 };
 
 ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const unsigned short *brightness, int width, int height, float threshold_fraction)  :
@@ -33,15 +28,8 @@ ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const unsigned sh
 
 
 bool ReferencePhotoHandlerPlanetary::calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const{
-    const bool raw_file = is_raw_file(file_address);
     int width, height;
-    vector<unsigned short int> brightness;
-    if (raw_file) {
-        brightness = read_raw_file<unsigned short int>(file_address, &width, &height);
-    }
-    else {
-        brightness = read_rgb_image_as_gray_scale<unsigned short int>(file_address, &width, &height);
-    }
+    const vector<unsigned short int> brightness = read_image_monochrome<unsigned short>(file_address, &width, &height);
 
     MonochromeImageData image_data;
     image_data.brightness = brightness.data();
@@ -56,7 +44,7 @@ bool ReferencePhotoHandlerPlanetary::calculate_alignment(const std::string &file
     *rot_center_x = center_of_mass_x;
     *rot_center_y = center_of_mass_y;
 
-    *rotation = rotation_angle - m_rotation_angle;
+    *rotation = m_rotation_angle - rotation_angle;
     //*rotation = 0;
     return true;
 };
@@ -68,7 +56,9 @@ std::tuple<int,int,int,int> ReferencePhotoHandlerPlanetary::get_alignment_window
     const int width = image_data.width;
     const int height = image_data.height;
 
-    const std::vector<std::tuple<float, float, int> > clusters = get_stars(brightness, width, height, threshold);
+    std::vector<std::tuple<float, float, int> > clusters = get_stars(brightness, width, height, threshold);
+    keep_only_stars_above_size(&clusters, 9);
+    sort_stars_by_size(&clusters);
 
     if (clusters.size() == 0) {
         throw runtime_error("No clusters found in the reference photo");
