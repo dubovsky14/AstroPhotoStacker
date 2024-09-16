@@ -80,14 +80,7 @@ namespace AstroPhotoStacker   {
             std::unique_ptr<KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>>> m_kd_tree = nullptr;
             std::unique_ptr<PlateSolver> m_plate_solver = nullptr;
 
-            virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005) override   {
-                const unsigned short threshold = get_threshold_value<unsigned short>(&brightness[0], width*height, threshold_fraction);
-                std::vector<std::tuple<float, float, int> > stars = get_stars(&brightness[0], width, height, threshold);
-                keep_only_stars_above_size(&stars, 9);
-                sort_stars_by_size(&stars);
-
-                initialize(stars, width, height);
-            };
+            virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005) override;
 
             void initialize(const std::vector<std::tuple<float, float, int> > &stars, int width, int height);
 

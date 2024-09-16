@@ -18,6 +18,15 @@ ReferencePhotoHandlerStars::ReferencePhotoHandlerStars(const std::string &raw_fi
     initialize(brightness.data(), m_width, m_height, threshold_fraction);
 };
 
+
+void ReferencePhotoHandlerStars::initialize(const unsigned short *brightness, int width, int height, float threshold_fraction)  {
+    const unsigned short threshold = get_threshold_value<unsigned short>(&brightness[0], width*height, threshold_fraction);
+    std::vector<std::tuple<float, float, int> > stars = get_stars(&brightness[0], width, height, threshold);
+    keep_only_stars_above_size(&stars, 9);
+    sort_stars_by_size(&stars);
+    initialize(stars, width, height);
+};
+
 void ReferencePhotoHandlerStars::initialize(const std::vector<std::tuple<float, float, int> > &stars, int width, int height)  {
     m_stars = stars;
     m_width = width;
