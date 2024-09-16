@@ -36,7 +36,7 @@ bool ReferencePhotoHandlerPlanetary::calculate_alignment(const std::string &file
     image_data.width = width;
     image_data.height = height;
 
-    const auto [center_of_mass_x, center_of_mass_y, rotation_angle] = get_center_of_mass_and_rotation_angle(image_data, 0.5);
+    const auto [center_of_mass_x, center_of_mass_y, eigenvec, eigenval] = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, 0.5);
 
     *shift_x = m_center_of_mass_x - center_of_mass_x;
     *shift_y = m_center_of_mass_y - center_of_mass_y;
@@ -44,7 +44,9 @@ bool ReferencePhotoHandlerPlanetary::calculate_alignment(const std::string &file
     *rot_center_x = center_of_mass_x;
     *rot_center_y = center_of_mass_y;
 
-    *rotation = m_rotation_angle - rotation_angle;
+    const double sin_angle = m_covariance_eigen_vectors[0][0]*eigenvec[0][1] - m_covariance_eigen_vectors[0][1]*eigenvec[0][0];
+
+    *rotation = std::asin(sin_angle);
     //*rotation = 0;
     return true;
 };
@@ -143,7 +145,8 @@ std::vector<std::vector<double>> ReferencePhotoHandlerPlanetary::get_covariance_
     return {{x2, xy}, {xy, y2}};
 };
 
-std::tuple<float,float,float> ReferencePhotoHandlerPlanetary::get_center_of_mass_and_rotation_angle(const MonochromeImageData &image_data, float threshold_fraction) const    {
+
+std::tuple<float,float,vector<vector<double>>,vector<double>> ReferencePhotoHandlerPlanetary::get_center_of_mass_eigenvectors_and_eigenvalues(const MonochromeImageData &image_data, float threshold_fraction) const    {
     const unsigned short *brightness = image_data.brightness;
     const int width = image_data.width;
     const int height = image_data.height;
@@ -161,9 +164,12 @@ std::tuple<float,float,float> ReferencePhotoHandlerPlanetary::get_center_of_mass
 
     const vector<vector<double>> covariance_matrix = get_covariance_matrix(image_data, center_of_mass, threshold, alignment_window);
 
-    const float rotation_angle = atan(2*covariance_matrix[0][1]/(covariance_matrix[0][0] - covariance_matrix[1][1]))/2;
+    vector<double> eigenvalues;
+    vector<vector<double>> eigenvectors;
+    calculate_eigenvectors_and_eigenvalues(covariance_matrix, &eigenvalues, &eigenvectors);
 
-    return make_tuple(center_of_mass_x, center_of_mass_y, rotation_angle);
+
+    return make_tuple(center_of_mass_x, center_of_mass_y, eigenvectors, eigenvalues);
 };
 
 
@@ -176,10 +182,72 @@ void  ReferencePhotoHandlerPlanetary::initialize(const unsigned short *brightnes
     image_data.width = width;
     image_data.height = height;
 
-    const tuple<float,float,float> center_of_mass_and_rotation_angle = get_center_of_mass_and_rotation_angle(image_data, threshold_fraction);
-    m_center_of_mass_x = get<0>(center_of_mass_and_rotation_angle);
-    m_center_of_mass_y = get<1>(center_of_mass_and_rotation_angle);
-    m_rotation_angle = get<2>(center_of_mass_and_rotation_angle);
+    std::tuple<float,float,vector<vector<double>>,vector<double>> center_of_mass_and_eigenvec_vals = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, threshold_fraction);
+    m_center_of_mass_x = get<0>(center_of_mass_and_eigenvec_vals);
+    m_center_of_mass_y = get<1>(center_of_mass_and_eigenvec_vals);
+    m_covariance_eigen_vectors = get<2>(center_of_mass_and_eigenvec_vals);
+    m_covariance_eigen_values = get<3>(center_of_mass_and_eigenvec_vals);
 
 };
 
+
+void ReferencePhotoHandlerPlanetary::calculate_eigenvectors_and_eigenvalues(
+                                            const std::vector<std::vector<double>> &covariance_matrix,
+                                            std::vector<double> *eigenvalues,
+                                            std::vector<std::vector<double>> *eigenvectors) {
+
+    if (covariance_matrix.size() != 2) {
+        throw runtime_error("Covariance matrix should be 2x2");
+    }
+    if (covariance_matrix[0].size() != 2 || covariance_matrix[1].size() != 2) {
+        throw runtime_error("Covariance matrix should be 2x2");
+    }
+
+    const double a = 1;
+    const double b = -covariance_matrix[0][0] - covariance_matrix[1][1];
+    const double c = covariance_matrix[0][0] * covariance_matrix[1][1] - covariance_matrix[0][1] * covariance_matrix[1][0];
+
+    const double delta = b*b - 4*a*c;
+
+    if (delta < 0) {
+        throw runtime_error("Delta is negative");
+    }
+
+    const double lambda1 = (-b + sqrt(delta))/(2*a);
+    const double lambda2 = (-b - sqrt(delta))/(2*a);
+
+    eigenvalues->clear();
+    eigenvalues->push_back(lambda1);
+    eigenvalues->push_back(lambda2);
+
+    eigenvectors->clear();
+    eigenvectors->push_back({covariance_matrix[0][1], covariance_matrix[0][0] - lambda1});
+    eigenvectors->push_back({covariance_matrix[0][1], covariance_matrix[0][0] - lambda2});
+
+    for (auto &eigenvector : *eigenvectors) {
+        const double length = sqrt(eigenvector[0]*eigenvector[0] + eigenvector[1]*eigenvector[1]);
+        eigenvector[0] /= length;
+        eigenvector[1] /= length;
+
+        if (eigenvector[0] < 0 && eigenvector[1] < 0) {
+            eigenvector[0] = -eigenvector[0];
+            eigenvector[1] = -eigenvector[1];
+        }
+    }
+
+    if (eigenvalues->at(0) < eigenvalues->at(1)) {
+        swap(eigenvalues->at(0), eigenvalues->at(1));
+        swap(eigenvectors->at(0), eigenvectors->at(1));
+    }
+};
+
+double ReferencePhotoHandlerPlanetary::scalar_product(const std::vector<double> &v1, const std::vector<double> &v2) {
+    if (v1.size() != v2.size()) {
+        throw runtime_error("Vectors have different sizes");
+    }
+    double result = 0;
+    for (unsigned int i = 0; i < v1.size(); i++) {
+        result += v1[i] * v2[i];
+    }
+    return result;
+};
