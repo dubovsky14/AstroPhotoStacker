@@ -340,3 +340,35 @@ void FilelistHandler::remove_all_files_of_selected_type(FileTypes type)  {
         m_filelist_alignment_info.clear();
     }
 };
+
+void FilelistHandler::keep_best_n_files(unsigned int n)   {
+    if (m_filelist[FileTypes::LIGHT].size() <= n) {
+        return;
+    }
+
+    vector<pair<float, unsigned int>> ranking_index;
+    for (unsigned int i = 0; i < m_filelist_alignment_info.size(); ++i)   {
+        ranking_index.push_back({m_filelist_alignment_info[i].ranking, i});
+    }
+
+    sort(ranking_index.begin(), ranking_index.end(), [](const pair<float, unsigned int> &a, const pair<float, unsigned int> &b) {
+        return a.first < b.first;
+    });
+
+    vector<unsigned int> indices(ranking_index.size());
+    for (unsigned int i = 0; i < ranking_index.size(); ++i)   {
+        indices[i] = ranking_index[i].second;
+    }
+
+    if (n > indices.size()) {
+        n = indices.size();
+    }
+
+    rearange_vector(&m_filelist.at(FileTypes::LIGHT), indices.data());
+    rearange_vector(&m_filelist_checked.at(FileTypes::LIGHT), indices.data());
+    rearange_vector(&m_filelist_alignment_info, indices.data());
+
+    m_filelist.at(FileTypes::LIGHT).resize(n);
+    m_filelist_checked.at(FileTypes::LIGHT).resize(n);
+    m_filelist_alignment_info.resize(n);
+};

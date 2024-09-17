@@ -256,12 +256,26 @@ void MyFrame::add_files_to_stack_checkbox()  {
     scoreArrowSizer->Add(sortByScoreArrowUpButton, 0, wxTOP | wxLEFT | wxRIGHT, 5);
     scoreArrowSizer->Add(sortByScoreArrowDownButton, 0, wxBOTTOM | wxLEFT | wxRIGHT, 5);
 
+    // button for keeping only best N files
+    wxButton *button_keep_best = new wxButton(headerPanel, wxID_ANY, "Keep best N", wxDefaultPosition, wxDefaultSize);
+    button_keep_best->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        const int n_files = m_filelist_handler.get_number_of_all_files();
+        const wxString default_value = wxString::Format(wxT("%d"), n_files);
+        wxTextEntryDialog dialog(this, "Enter the number of best files to keep", "Keep best N files", default_value);
+        if (dialog.ShowModal() == wxID_OK) {
+            const wxString value = dialog.GetValue();
+            const int n_files_to_keep = stoi(value.ToStdString());
+            m_filelist_handler.keep_best_n_files(n_files_to_keep);
+            update_files_to_stack_checkbox();
+        }
+    });
+
     // Add the static texts and arrow sizers to the header sizer
     headerSizer->Add(sortByNameText, 0, wxTOP, 5);
     headerSizer->Add(nameArrowSizer, 0, wxTOP, 5);
     headerSizer->Add(sortByScoreText, 0, wxTOP, 5);
     headerSizer->Add(scoreArrowSizer, 0, wxTOP, 5);
-
+    headerSizer->Add(button_keep_best, 0, wxTOP, 5);
 
     sortByScoreArrowUpButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
         this->m_filelist_handler.sort_by_alignment_ranking(true);

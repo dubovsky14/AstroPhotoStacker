@@ -250,6 +250,11 @@ class FilelistHandler   {
         */
         void remove_all_files_of_selected_type(FileTypes type);
 
+        /**
+         * @brief: Keep only best N files
+         */
+        void keep_best_n_files(unsigned int n);
+
     private:
         std::map<FileTypes, std::vector<std::string>>       m_filelist;
         std::map<FileTypes, std::vector<bool>>              m_filelist_checked;
