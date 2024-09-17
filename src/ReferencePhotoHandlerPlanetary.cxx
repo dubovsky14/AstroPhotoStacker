@@ -47,7 +47,6 @@ bool ReferencePhotoHandlerPlanetary::calculate_alignment(const std::string &file
     const double sin_angle = m_covariance_eigen_vectors[0][0]*eigenvec[0][1] - m_covariance_eigen_vectors[0][1]*eigenvec[0][0];
 
     *rotation = std::asin(sin_angle);
-    //*rotation = 0;
     return true;
 };
 
@@ -239,15 +238,4 @@ void ReferencePhotoHandlerPlanetary::calculate_eigenvectors_and_eigenvalues(
         swap(eigenvalues->at(0), eigenvalues->at(1));
         swap(eigenvectors->at(0), eigenvectors->at(1));
     }
-};
-
-double ReferencePhotoHandlerPlanetary::scalar_product(const std::vector<double> &v1, const std::vector<double> &v2) {
-    if (v1.size() != v2.size()) {
-        throw runtime_error("Vectors have different sizes");
-    }
-    double result = 0;
-    for (unsigned int i = 0; i < v1.size(); i++) {
-        result += v1[i] * v2[i];
-    }
-    return result;
 };
