@@ -2,14 +2,22 @@
 
 #include "../headers/CalibratedPhotoHandler.h"
 
+#include <tuple>
+
 namespace AstroPhotoStacker {
     template<class ValueType>
-    float get_sharpness_factor(const ValueType *image_data, unsigned int width, unsigned int height)    {
+    float get_sharpness_factor(const ValueType *image_data, unsigned int width, unsigned int height, const std::tuple<int,int,int,int> &alignment_window = {-1,-1,-1,-1})    {
         double sum_weights          = 0;
         double sum_diff2_weighted   = 0;
 
-        for (unsigned int y = 0; y < height; y++)    {
-            for (unsigned int x = 0; x < width; x++)    {
+        const bool use_alignment_window = std::get<0>(alignment_window) >= 0 && std::get<1>(alignment_window) >= 0 && std::get<2>(alignment_window) >= 0 && std::get<3>(alignment_window) >= 0;
+        const unsigned int x0 = use_alignment_window ? std::get<0>(alignment_window) : 0;
+        const unsigned int y0 = use_alignment_window ? std::get<1>(alignment_window) : 0;
+        const unsigned int x1 = use_alignment_window ? std::get<2>(alignment_window) : width;
+        const unsigned int y1 = use_alignment_window ? std::get<3>(alignment_window) : height;
+
+        for (unsigned int y = y0; y < y1; y++)    {
+            for (unsigned int x = x0; x < x1; x++)    {
                 // right
                 if (x < width - 1)  {
                     const double diff = image_data[y * width + x] - image_data[y * width + x + 1];
@@ -31,23 +39,6 @@ namespace AstroPhotoStacker {
     }
 
 
-    float get_sharpness_for_file(const std::string &input_file)  {
-        CalibratedPhotoHandler calibrated_photo_handler(input_file, true);
-        calibrated_photo_handler.define_alignment(0, 0, 0, 0, 0);
-        calibrated_photo_handler.calibrate();
-
-        const std::vector<std::vector<short int>> &data = calibrated_photo_handler.get_calibrated_data_after_color_interpolation();
-        const int width = calibrated_photo_handler.get_width();
-        const int height = calibrated_photo_handler.get_height();
-
-        float average_sharpness = 0;
-        for (unsigned int i_color = 0; i_color < data.size(); i_color++)    {
-            const float sharpness = AstroPhotoStacker::get_sharpness_factor(data[i_color].data(), width, height);
-            average_sharpness += sharpness;
-        }
-        average_sharpness /= data.size();
-
-        return average_sharpness;
-    }
+    float get_sharpness_for_file(const std::string &input_file, const std::tuple<int,int,int,int> &alignment_window = {-1,-1,-1,-1});
 
 }

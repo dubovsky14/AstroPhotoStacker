@@ -69,10 +69,11 @@ namespace AstroPhotoStacker   {
              * @param rot_center_x - pointer to the variable where the x coordinate of the rotation center will be stored
              * @param rot_center_y - pointer to the variable where the y coordinate of the rotation center will be stored
              * @param rotation - pointer to the variable where the rotation angle will be stored
-             * @return true - if the plate was solved
-             * @return false - if the plate was not solved
+             * @param ranking - pointer to the variable where the ranking of the plate will be stored
+             *
+             * @return bool - was plate solving successful?
             */
-            virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const = 0;
+            virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking = nullptr) const = 0;
 
         protected:
             ReferencePhotoHandlerBase() {};

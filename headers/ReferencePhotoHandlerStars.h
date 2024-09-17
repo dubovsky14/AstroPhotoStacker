@@ -60,7 +60,7 @@ namespace AstroPhotoStacker   {
              * @return true - if the plate was solved
              * @return false - if the plate was not solved
             */
-            virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const override;
+            virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking = nullptr) const override;
 
             /**
              * @brief Plate-solve a photo - calculate how it should be rotated and shifted to match the reference photo
@@ -71,6 +71,9 @@ namespace AstroPhotoStacker   {
              * @param rot_center_x - pointer to the variable where the x coordinate of the rotation center will be stored
              * @param rot_center_y - pointer to the variable where the y coordinate of the rotation center will be stored
              * @param rotation - pointer to the variable where the rotation angle will be stored
+             * @param ranking - pointer to the variable where the ranking of the plate will be stored
+             *
+             * @return bool - was plate solving successful?
             */
             bool plate_solve(const std::vector<std::tuple<float, float, int> > &stars, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const;
 

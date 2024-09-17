@@ -96,8 +96,8 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
     m_alignment_information_vector.resize(n_files);
 
     auto align_file_multicore = [this](const std::string &file_name, unsigned int file_index) {
-        float shift_x, shift_y, rot_center_x, rot_center_y, rotation;
-        if (m_reference_photo_handler->calculate_alignment(file_name, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation)) {
+        float shift_x, shift_y, rot_center_x, rot_center_y, rotation, ranking;
+        if (m_reference_photo_handler->calculate_alignment(file_name, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation, &ranking)) {
             FileAlignmentInformation &alignment_info = m_alignment_information_vector[file_index];
             alignment_info.file_address = file_name;
             alignment_info.shift_x = shift_x;
@@ -105,7 +105,7 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
             alignment_info.rotation_center_x = rot_center_x;
             alignment_info.rotation_center_y = rot_center_y;
             alignment_info.rotation = rotation;
-            alignment_info.ranking = get_ranking(file_name);
+            alignment_info.ranking = ranking;
         }
         else {
             cout << "Plate solving failed for file: " + file_name + "\n";
@@ -192,18 +192,6 @@ unique_ptr<ReferencePhotoHandlerBase> PhotoAlignmentHandler::reference_photo_han
     }
     else if (m_alignment_method == "planetary") {
         return make_unique<ReferencePhotoHandlerPlanetary>(raw_file_address);
-    }
-    else {
-        throw runtime_error("Invalid alignment method: " + m_alignment_method);
-    }
-};
-
-float PhotoAlignmentHandler::get_ranking(const std::string &file_address) const    {
-    if (m_alignment_method == "stars") {
-        return PhotoRanker::calculate_file_ranking(file_address);
-    }
-    else if (m_alignment_method == "planetary") {
-        return 100./get_sharpness_for_file(file_address);
     }
     else {
         throw runtime_error("Invalid alignment method: " + m_alignment_method);

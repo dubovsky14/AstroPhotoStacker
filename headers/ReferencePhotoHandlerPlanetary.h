@@ -47,10 +47,11 @@ namespace AstroPhotoStacker   {
              * @param rot_center_x - pointer to the variable where the x coordinate of the rotation center will be stored
              * @param rot_center_y - pointer to the variable where the y coordinate of the rotation center will be stored
              * @param rotation - pointer to the variable where the rotation angle will be stored
-             * @return true - if the plate was solved
-             * @return false - if the plate was not solved
+             * @param ranking - pointer to the variable where the ranking of the plate will be stored
+             *
+             * @return bool - was plate solving successful?
             */
-            virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const override;
+            virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking = nullptr) const override;
 
         protected:
 
@@ -80,7 +81,7 @@ namespace AstroPhotoStacker   {
              */
             std::tuple<double,double> get_center_of_mass(const MonochromeImageData &image_data, unsigned short threshold, const std::tuple<int,int,int,int> &window_coordinates) const;
 
-            std::tuple<float,float,std::vector<std::vector<double>>,std::vector<double>> get_center_of_mass_eigenvectors_and_eigenvalues(const MonochromeImageData &image_data, float threshold_fraction) const;
+            std::tuple<float,float,std::vector<std::vector<double>>,std::vector<double>> get_center_of_mass_eigenvectors_and_eigenvalues(const MonochromeImageData &image_data, float threshold_fraction, std::tuple<int,int,int,int> *window_coordinates = nullptr) const;
 
             virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.5) override;
 

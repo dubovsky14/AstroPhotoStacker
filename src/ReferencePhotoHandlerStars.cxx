@@ -2,6 +2,7 @@
 #include "../headers/raw_file_reader.h"
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/AsterismHasher.h"
+#include "../headers/PhotoRanker.h"
 
 #include <vector>
 #include <tuple>
@@ -37,7 +38,7 @@ void ReferencePhotoHandlerStars::initialize(const std::vector<std::tuple<float, 
 
 bool ReferencePhotoHandlerStars::calculate_alignment(const std::string &file_address,
                                         float *shift_x, float *shift_y,
-                                        float *rot_center_x, float *rot_center_y, float *rotation) const    {
+                                        float *rot_center_x, float *rot_center_y, float *rotation, float *ranking) const    {
     try {
         int width, height;
         const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(file_address, &width, &height);
@@ -48,6 +49,11 @@ bool ReferencePhotoHandlerStars::calculate_alignment(const std::string &file_add
         keep_only_stars_above_size(&stars, 9);
         sort_stars_by_size(&stars);
         stars.resize(min<int>(stars.size(), 20));
+
+        if (ranking != nullptr) {
+            *ranking = PhotoRanker::calculate_file_ranking(file_address);
+        }
+
         return plate_solve(stars, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
     }
     catch (runtime_error &e)    {
