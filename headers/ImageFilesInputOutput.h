@@ -219,10 +219,7 @@ namespace AstroPhotoStacker {
 
     template<class ValueType>
     std::vector<ValueType> read_rgb_image_as_gray_scale(const std::string &input_file, int *width, int *height) {
-        const std::string extension = input_file.substr(input_file.find_last_of(".") + 1);
-        const bool is_jpg = (to_upper_copy(extension) == "JPG" || to_upper_copy(extension) == "JPEG");
-
-        cv::Mat image = cv::imread(input_file, is_jpg ? cv::IMREAD_COLOR : cv::IMREAD_ANYDEPTH);
+        cv::Mat image = cv::imread(input_file, cv::IMREAD_ANYDEPTH);
         *width = image.cols;
         *height = image.rows;
         std::vector<ValueType> result((*width)*(*height),0);
