@@ -3,6 +3,8 @@
 #include "../headers/StarFinder.h"
 #include "../headers/KDTree.h"
 #include "../headers/PlateSolver.h"
+#include "../headers/MonochromeImageData.h"
+
 
 #include <memory>
 #include <string>
@@ -10,13 +12,6 @@
 #include <tuple>
 
 namespace AstroPhotoStacker   {
-
-    struct MonochromeImageData {
-        const unsigned short *brightness = nullptr;
-        int width  = 0;
-        int height = 0;
-    };
-
     /**
      * @brief Class responsible for handling the reference photo. It provides also methods for plate-solving another photo - how it should be rotated and shifted to match the reference photo
     */
