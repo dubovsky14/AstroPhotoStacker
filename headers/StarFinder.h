@@ -89,6 +89,88 @@ namespace AstroPhotoStacker {
     };
 
     /**
+     * @brief Get the clusters of pixels in the image
+     *
+     * @tparam pixel_type - type of pixel values
+     * @param brightness - array of pixel brightness values
+     * @param width - width of the image
+     * @param height - height of the image
+     * @param threshold - pixels with brightness below this value will not be added to the cluster
+     * @return std::vector<std::vector<std::tuple<int, int> > > - vector of clusters, each cluster is a vector of tuples representing x and y coordinates of the pixels
+    */
+    template<typename pixel_type>
+    std::vector< std::vector<std::tuple<int, int> > > get_clusters_non_recursive(const pixel_type *brightness, int width, int height, float threshold)  {
+        std::vector< std::vector<std::tuple<int, int> > >  result;
+        std::vector< std::vector<std::tuple<int, int> > >  active_clusters;
+        std::vector< std::vector<std::tuple<int, int> > >  active_clusters_previous_line;
+        std::vector< std::vector<std::tuple<int, int> > >  active_clusters_this_line;
+        std::vector<bool> cluster_is_active;
+
+        auto get_active_cluster_index = [&active_clusters_previous_line, &active_clusters_this_line] (int x, int y) -> int {
+            for (unsigned int i_cluster = 0; i_cluster < active_clusters_this_line.size(); i_cluster++) {
+                for (const std::tuple<int, int> &pixel : active_clusters_this_line[i_cluster]) {
+                    if (std::get<0>(pixel) == x-1 && std::get<1>(pixel) == y) {     // left
+                        return i_cluster;
+                    }
+                }
+            }
+            for (unsigned int i_cluster = 0; i_cluster < active_clusters_previous_line.size(); i_cluster++) {
+                for (const std::tuple<int, int> &pixel : active_clusters_previous_line[i_cluster]) {
+                    if (std::get<0>(pixel) == x-1 && std::get<1>(pixel) == y-1) {   // top left
+                        return i_cluster;
+                    }
+                    if (std::get<0>(pixel) == x && std::get<1>(pixel) == y-1) {     // top
+                        return i_cluster;
+                    }
+                    if (std::get<0>(pixel) == x+1 && std::get<1>(pixel) == y-1) {   // top right
+                        return i_cluster;
+                    }
+                }
+            }
+
+            return -1;
+        };
+
+        for (int y_pos = 0; y_pos < height; y_pos++)    {
+            active_clusters_previous_line = active_clusters_this_line;
+            active_clusters_this_line.clear();
+            active_clusters_this_line.resize(active_clusters.size());
+            for (unsigned int i_cluster = 0; i_cluster < cluster_is_active.size(); i_cluster++) {
+                cluster_is_active[i_cluster] = false;
+            }
+
+            for (int x_pos = 0; x_pos < width; x_pos++)    {
+                if (brightness[y_pos*width + x_pos] < threshold)   continue;
+
+                const int active_cluster_index = get_active_cluster_index(x_pos, y_pos);
+                if (active_cluster_index == -1) {
+                    std::vector<std::tuple<int, int> > new_cluster;
+                    new_cluster.push_back(std::make_tuple(x_pos, y_pos));
+                    active_clusters.push_back(new_cluster);
+                    active_clusters_this_line.push_back(new_cluster);
+                    cluster_is_active.push_back(true);
+                } else {
+                    active_clusters[active_cluster_index].push_back(std::make_tuple(x_pos, y_pos));
+                    active_clusters_this_line[active_cluster_index].push_back(std::make_tuple(x_pos, y_pos));
+                    cluster_is_active[active_cluster_index] = true;
+                }
+            }
+
+            // drop inactive clusters
+            for (int i_cluster = 0; i_cluster < int(active_clusters.size()); i_cluster++) {
+                if (!cluster_is_active[i_cluster]) {
+                    result.push_back(active_clusters[i_cluster]);
+                    active_clusters.erase(active_clusters.begin() + i_cluster);
+                    active_clusters_this_line.erase(active_clusters_this_line.begin() + i_cluster);
+                    cluster_is_active.erase(cluster_is_active.begin() + i_cluster);
+                    i_cluster--;
+                }
+            }
+        }
+        return result;
+    };
+
+    /**
      * @brief Get the stars in the image as a vector of tuples of x and y coordinates and number of pixels in the star
      *
      * @tparam pixel_type - type of pixel values
@@ -101,9 +183,8 @@ namespace AstroPhotoStacker {
     template<typename pixel_type>
     std::vector<std::tuple<float, float,int>> get_stars(const pixel_type *brightness, int width, int height, pixel_type threshold) {
         std::vector<std::tuple<float, float, int>> stars;
-        std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters(brightness, width, height, threshold);
+        std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters_non_recursive(brightness, width, height, threshold);
 
-        auto cluster_shifts = get_cluster_smearing_vector(clusters);
         for (auto cluster : clusters)   {
             auto [x_mean, y_mean] = get_center_of_cluster(cluster);
             const int n_pixels = cluster.size();
