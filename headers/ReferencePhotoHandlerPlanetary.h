@@ -26,7 +26,7 @@ namespace AstroPhotoStacker   {
              * @param raw_file_address - path to the raw file
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetary(const std::string &raw_file_address, float threshold_fraction = 0.5);
+            ReferencePhotoHandlerPlanetary(const std::string &raw_file_address, float threshold_fraction);
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -36,7 +36,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetary(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.5);
+            ReferencePhotoHandlerPlanetary(const unsigned short *brightness, int width, int height, float threshold_fraction);
 
             /**
              * @brief Plate-solve a photo - calculate how it should be rotated and shifted to match the reference photo
@@ -83,12 +83,13 @@ namespace AstroPhotoStacker   {
 
             std::tuple<float,float,std::vector<std::vector<double>>,std::vector<double>> get_center_of_mass_eigenvectors_and_eigenvalues(const MonochromeImageData &image_data, float threshold_fraction, std::tuple<int,int,int,int> *window_coordinates = nullptr) const;
 
-            virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.5) override;
+            virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction) override;
 
             static void calculate_eigenvectors_and_eigenvalues(const std::vector<std::vector<double>> &covariance_matrix, std::vector<double> *eigenvalues, std::vector<std::vector<double>> *eigenvectors);
 
             double m_center_of_mass_x = 0;
             double m_center_of_mass_y = 0;
+            float  m_threshold_fraction = 0.5;
 
             std::vector<std::vector<double>> m_covariance_eigen_vectors;
             std::vector<double> m_covariance_eigen_values;

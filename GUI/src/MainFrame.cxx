@@ -1017,7 +1017,8 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
                                             CV_16UC3);
         }
         else    {
-            const bool apply_green_correction = m_stacker->contains_only_rgb_raw_files();
+            const bool apply_green_correction = false;
+            cout << "apply green correction: " << apply_green_correction << endl;
             m_stacker->save_stacked_photo(file_address, apply_green_correction, CV_16UC3);
         }
     }

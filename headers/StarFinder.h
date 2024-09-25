@@ -106,29 +106,49 @@ namespace AstroPhotoStacker {
         std::vector< std::vector<std::tuple<int, int> > >  active_clusters_this_line;
         std::vector<bool> cluster_is_active;
 
-        auto get_active_cluster_index = [&active_clusters_previous_line, &active_clusters_this_line] (int x, int y) -> int {
-            for (unsigned int i_cluster = 0; i_cluster < active_clusters_this_line.size(); i_cluster++) {
-                for (const std::tuple<int, int> &pixel : active_clusters_this_line[i_cluster]) {
-                    if (std::get<0>(pixel) == x-1 && std::get<1>(pixel) == y) {     // left
-                        return i_cluster;
-                    }
-                }
-            }
-            for (unsigned int i_cluster = 0; i_cluster < active_clusters_previous_line.size(); i_cluster++) {
-                for (const std::tuple<int, int> &pixel : active_clusters_previous_line[i_cluster]) {
-                    if (std::get<0>(pixel) == x-1 && std::get<1>(pixel) == y-1) {   // top left
-                        return i_cluster;
-                    }
-                    if (std::get<0>(pixel) == x && std::get<1>(pixel) == y-1) {     // top
-                        return i_cluster;
-                    }
-                    if (std::get<0>(pixel) == x+1 && std::get<1>(pixel) == y-1) {   // top right
-                        return i_cluster;
-                    }
-                }
-            }
+        auto get_active_cluster_index = [&active_clusters_previous_line, &active_clusters_this_line] (int x, int y) -> std::tuple<int,int> {
+            std::tuple<int,int> result(-1,-1);
 
-            return -1;
+            for (int i_cluster = 0; i_cluster < int(active_clusters_this_line.size()); i_cluster++) {
+                for (const std::tuple<int, int> &pixel : active_clusters_this_line[i_cluster]) {
+                    if (std::get<0>(pixel) == (x-1) && std::get<1>(pixel) == y) {     // left
+                        std::get<0>(result) = i_cluster;
+                        break;
+                    }
+                }
+            }
+            for (int i_cluster = 0; i_cluster < int(active_clusters_previous_line.size()); i_cluster++) {
+                if (std::get<0>(result) == i_cluster)  continue;
+                for (const std::tuple<int, int> &pixel : active_clusters_previous_line[i_cluster]) {
+                    if ((std::get<0>(pixel) == x-1 && std::get<1>(pixel) == y-1) || // top left
+                        (std::get<0>(pixel) == x   && std::get<1>(pixel) == y-1) || // top
+                        (std::get<0>(pixel) == x+1 && std::get<1>(pixel) == y-1)) { // top right
+
+                        if (std::get<0>(result) < 0) {
+                            std::get<0>(result) = i_cluster;
+                            break;
+                        }
+                        else {
+                            std::get<1>(result) = i_cluster;
+                            return result;
+                        }
+                    }
+                }
+            }
+            return result;
+        };
+
+        auto merge_vectors = []( std::vector<std::vector<std::tuple<int, int> > > *source_vector, unsigned int source_index,
+                            std::vector<std::vector<std::tuple<int, int> > > *destination_vector, unsigned int destination_index) -> void {
+
+            if (source_index == destination_index) {
+                const std::string error_message = "Error: source and destination indices are the same: " + std::to_string(source_index) + "\n";
+                std::cout << error_message;
+            }
+            for (const std::tuple<int, int> &pixel : source_vector->at(source_index)) {
+                destination_vector->at(destination_index).push_back(pixel);
+            }
+            source_vector->erase(source_vector->begin() + source_index);
         };
 
         for (int y_pos = 0; y_pos < height; y_pos++)    {
@@ -142,17 +162,28 @@ namespace AstroPhotoStacker {
             for (int x_pos = 0; x_pos < width; x_pos++)    {
                 if (brightness[y_pos*width + x_pos] < threshold)   continue;
 
-                const int active_cluster_index = get_active_cluster_index(x_pos, y_pos);
-                if (active_cluster_index == -1) {
+                const std::tuple<int,int> active_cluster_indices = get_active_cluster_index(x_pos, y_pos);
+                const int index_0 = std::get<0>(active_cluster_indices);
+                const int index_1 = std::get<1>(active_cluster_indices);
+                if (index_0 == -1) {
                     std::vector<std::tuple<int, int> > new_cluster;
                     new_cluster.push_back(std::make_tuple(x_pos, y_pos));
                     active_clusters.push_back(new_cluster);
                     active_clusters_this_line.push_back(new_cluster);
+                    active_clusters_previous_line.push_back(std::vector<std::tuple<int, int> >());
                     cluster_is_active.push_back(true);
                 } else {
-                    active_clusters[active_cluster_index].push_back(std::make_tuple(x_pos, y_pos));
-                    active_clusters_this_line[active_cluster_index].push_back(std::make_tuple(x_pos, y_pos));
-                    cluster_is_active[active_cluster_index] = true;
+                    active_clusters[index_0].push_back(std::make_tuple(x_pos, y_pos));
+                    active_clusters_this_line[index_0].push_back(std::make_tuple(x_pos, y_pos));
+                    cluster_is_active[index_0] = true;
+                }
+
+                // merge clusters
+                if (index_1 != -1)   {
+                    cluster_is_active.erase(cluster_is_active.begin() + index_1);
+                    merge_vectors(&active_clusters, index_1, &active_clusters, index_0);
+                    merge_vectors(&active_clusters_this_line, index_1, &active_clusters_this_line, index_0);
+                    merge_vectors(&active_clusters_previous_line, index_1, &active_clusters_previous_line, index_0);
                 }
             }
 
@@ -167,6 +198,16 @@ namespace AstroPhotoStacker {
                 }
             }
         }
+
+        // take care of the last line
+        for (std::vector<std::tuple<int,int> > &cluster : active_clusters) {
+            result.push_back(cluster);
+        }
+
+        std::sort(result.begin(), result.end(), [](const std::vector<std::tuple<int, int> > &a, const std::vector<std::tuple<int, int> > &b) {
+            return a.size() > b.size();
+        });
+
         return result;
     };
 

@@ -191,7 +191,7 @@ unique_ptr<ReferencePhotoHandlerBase> PhotoAlignmentHandler::reference_photo_han
         return make_unique<ReferencePhotoHandlerStars>(raw_file_address);
     }
     else if (m_alignment_method == "planetary") {
-        return make_unique<ReferencePhotoHandlerPlanetary>(raw_file_address);
+        return make_unique<ReferencePhotoHandlerPlanetary>(raw_file_address, 0.1);
     }
     else {
         throw runtime_error("Invalid alignment method: " + m_alignment_method);

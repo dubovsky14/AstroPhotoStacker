@@ -18,15 +18,16 @@ using namespace std;
 ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const std::string &raw_file_address, float threshold_fraction)   :
     ReferencePhotoHandlerBase(raw_file_address, threshold_fraction) {
 
+    m_threshold_fraction = threshold_fraction;
     const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(raw_file_address, &m_width, &m_height);
     initialize(brightness.data(), m_width, m_height, threshold_fraction);
 };
 
 ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const unsigned short *brightness, int width, int height, float threshold_fraction)  :
     ReferencePhotoHandlerBase(brightness, width, height, threshold_fraction) {
+    m_threshold_fraction = threshold_fraction;
     initialize(brightness, width, height, threshold_fraction);
 };
-
 
 bool ReferencePhotoHandlerPlanetary::calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking) const{
     int width, height;
@@ -38,7 +39,7 @@ bool ReferencePhotoHandlerPlanetary::calculate_alignment(const std::string &file
     image_data.height = height;
 
     std::tuple<int,int,int,int> window_coordinates;
-    const auto [center_of_mass_x, center_of_mass_y, eigenvec, eigenval] = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, 0.5, &window_coordinates);
+    const auto [center_of_mass_x, center_of_mass_y, eigenvec, eigenval] = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, m_threshold_fraction, &window_coordinates);
 
     *shift_x = m_center_of_mass_x - center_of_mass_x;
     *shift_y = m_center_of_mass_y - center_of_mass_y;
