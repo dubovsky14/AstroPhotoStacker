@@ -49,6 +49,7 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
     std::vector<wxString> alignment_methods;
     alignment_methods.push_back("stars");
     alignment_methods.push_back("planetary");
+    alignment_methods.push_back("surface");
     wxChoice* choice_box_alignment_method = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, alignment_methods.size(), alignment_methods.data());
     choice_box_alignment_method->SetSelection(0);
     stack_settings->set_alignment_method("stars");

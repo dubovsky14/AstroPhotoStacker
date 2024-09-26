@@ -95,7 +95,7 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
 
     const unsigned int n_files = files.size();
     m_alignment_information_vector.resize(n_files);
-
+    m_local_shifts_vector.resize(n_files);
     auto align_file_multicore = [this](const std::string &file_name, unsigned int file_index) {
         float shift_x, shift_y, rot_center_x, rot_center_y, rotation, ranking;
         if (m_reference_photo_handler->calculate_alignment(file_name, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation, &ranking)) {
@@ -107,6 +107,12 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
             alignment_info.rotation_center_y = rot_center_y;
             alignment_info.rotation = rotation;
             alignment_info.ranking = ranking;
+
+            const ReferencePhotoHandlerSurface *surface_handler = dynamic_cast<const ReferencePhotoHandlerSurface*>(m_reference_photo_handler.get());
+            if (surface_handler != nullptr) {
+                vector<tuple<int,int,int,int,bool>> local_shifts = surface_handler->get_local_shifts(file_name, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+                m_local_shifts_vector[file_index] = local_shifts;
+            }
         }
         else {
             cout << "Plate solving failed for file: " + file_name + "\n";
