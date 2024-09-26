@@ -13,6 +13,13 @@ namespace AstroPhotoStacker {
 
             static bool is_valid_ap(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_size, unsigned short max_value);
 
+            static void  set_contrast_threshold(float threshold);
+
+            static float get_contrast_threshold();
+
+            float get_relative_rms() const;
+
+            bool good_match(float chi2) const;
 
         private:
             std::vector<unsigned short> m_brightness;
@@ -20,5 +27,7 @@ namespace AstroPhotoStacker {
             int m_y_center;
             unsigned int m_box_size;
             unsigned short m_max_value;
+
+            static float s_contrast_threshold;
     };
 }

@@ -100,6 +100,8 @@ namespace AstroPhotoStacker {
     */
     template<typename pixel_type>
     std::vector< std::vector<std::tuple<int, int> > > get_clusters_non_recursive(const pixel_type *brightness, int width, int height, float threshold)  {
+        // yes, this function is a mess and it can be done elegantly with recursion, but for large objects (i.e. Moon) it will cause stack overflow
+
         std::vector< std::vector<std::tuple<int, int> > >  result;
         std::vector< std::vector<std::tuple<int, int> > >  active_clusters;
         std::vector< std::vector<std::tuple<int, int> > >  active_clusters_previous_line;

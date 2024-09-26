@@ -1,10 +1,13 @@
 #include "../headers/AlignmentPointBox.h"
 
 #include <limits>
+#include <cmath>
 
 using namespace std;
 using namespace AstroPhotoStacker;
 
+
+float AlignmentPointBox::s_contrast_threshold = 0.3;
 
 AlignmentPointBox::AlignmentPointBox(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_size, unsigned short max_value)   {
     m_x_center = x_center;
@@ -67,14 +70,38 @@ bool AlignmentPointBox::is_valid_ap(const MonochromeImageData &image_data, int x
         }
     }
 
-    // check if there is enough structure in the box to be able to compute alignment
     if (max_brightness < 0.4*max_value) {
         return false;
     }
 
-    if (max_brightness/float(min_brightness) < 1.5) {
+    if (float(min_brightness)/max_brightness < s_contrast_threshold) {
         return false;
     }
 
     return true;
+};
+
+void  AlignmentPointBox::set_contrast_threshold(float threshold)   {
+    s_contrast_threshold = threshold;
+};
+
+float AlignmentPointBox::get_contrast_threshold()  {
+    return s_contrast_threshold;
+};
+
+float AlignmentPointBox::get_relative_rms() const  {
+    double sum = 0;
+    double sum_sq = 0;
+    for (unsigned short brightness : m_brightness) {
+        sum += brightness;
+        sum_sq += brightness*brightness;
+    }
+
+    const double mean = sum/m_brightness.size();
+    const double rms = sqrt(sum_sq/m_brightness.size() - mean*mean);
+    return rms/mean;
+};
+
+bool AlignmentPointBox::good_match(float chi2) const   {
+    return true; // #TODO: Implement this
 };

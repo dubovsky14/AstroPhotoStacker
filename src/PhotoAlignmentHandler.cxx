@@ -1,6 +1,7 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/ReferencePhotoHandlerStars.h"
 #include "../headers/ReferencePhotoHandlerPlanetary.h"
+#include "../headers/ReferencePhotoHandlerSurface.h"
 #include "../headers/Common.h"
 #include "../headers/PhotoRanker.h"
 #include "../headers/SharpnessRanker.h"
@@ -191,7 +192,10 @@ unique_ptr<ReferencePhotoHandlerBase> PhotoAlignmentHandler::reference_photo_han
         return make_unique<ReferencePhotoHandlerStars>(raw_file_address);
     }
     else if (m_alignment_method == "planetary") {
-        return make_unique<ReferencePhotoHandlerPlanetary>(raw_file_address, 0.1);
+        return make_unique<ReferencePhotoHandlerPlanetary>(raw_file_address, 0.05);
+    }
+    else if (m_alignment_method == "surface") {
+        return make_unique<ReferencePhotoHandlerSurface>(raw_file_address, 0.05);
     }
     else {
         throw runtime_error("Invalid alignment method: " + m_alignment_method);

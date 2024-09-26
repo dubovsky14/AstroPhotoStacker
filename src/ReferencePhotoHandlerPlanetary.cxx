@@ -192,7 +192,7 @@ void  ReferencePhotoHandlerPlanetary::initialize(const unsigned short *brightnes
     image_data.width = width;
     image_data.height = height;
 
-    std::tuple<float,float,vector<vector<double>>,vector<double>> center_of_mass_and_eigenvec_vals = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, threshold_fraction);
+    std::tuple<float,float,vector<vector<double>>,vector<double>> center_of_mass_and_eigenvec_vals = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, threshold_fraction, &m_alignment_window);
     m_center_of_mass_x = get<0>(center_of_mass_and_eigenvec_vals);
     m_center_of_mass_y = get<1>(center_of_mass_and_eigenvec_vals);
     m_covariance_eigen_vectors = get<2>(center_of_mass_and_eigenvec_vals);

@@ -17,7 +17,6 @@ namespace AstroPhotoStacker   {
      */
     class ReferencePhotoHandlerPlanetary : public ReferencePhotoHandlerBase {
         public:
-            ReferencePhotoHandlerPlanetary()                             = delete;
             ReferencePhotoHandlerPlanetary(const ReferencePhotoHandlerPlanetary&) = delete;
 
             /**
@@ -54,6 +53,7 @@ namespace AstroPhotoStacker   {
             virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking = nullptr) const override;
 
         protected:
+            ReferencePhotoHandlerPlanetary() : ReferencePhotoHandlerBase() {};
 
             /**
              * @brief Get coordinates of the window where the alignment should be calculated - surrounding the planet
@@ -93,6 +93,8 @@ namespace AstroPhotoStacker   {
 
             std::vector<std::vector<double>> m_covariance_eigen_vectors;
             std::vector<double> m_covariance_eigen_values;
+
+            std::tuple<int,int,int,int> m_alignment_window = {0,0,0,0};
 
 
     };
