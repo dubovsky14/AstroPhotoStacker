@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -43,8 +44,9 @@ std::vector<std::tuple<int,int,int,int,bool>> AlignmentPointBoxGrid::get_local_s
         int best_y = adjusted_y;
         float best_chi2 = apb.get_chi2(calibrated_image, best_x, best_x);
 
-        for (int y_shift = -1; y_shift <= 1; y_shift++) {
-            for (int x_shift = -1; x_shift <= 1; x_shift++) {
+        const int max_shift_size = 5;
+        for (int y_shift = -max_shift_size; y_shift <= max_shift_size; y_shift++) {
+            for (int x_shift = -max_shift_size; x_shift <= max_shift_size; x_shift++) {
                 const float chi2 = apb.get_chi2(calibrated_image, adjusted_x + x_shift, adjusted_y + y_shift);
                 if (chi2 < best_chi2) {
                     best_chi2 = chi2;
@@ -67,6 +69,9 @@ std::vector<std::tuple<int,int,int,int,bool>> AlignmentPointBoxGrid::get_local_s
 
 std::tuple<int,int> AlignmentPointBoxGrid::get_interpolated_shift(const std::vector<std::tuple<int,int,int,int,bool>> &local_shifts, int x, int y)   {
     vector<std::tuple<int,int,float>> shifts_distances;
+    if (local_shifts.size() == 0) {
+        return std::make_tuple(0, 0);
+    }
     const int n_points = 4;
     for (const auto &shift : local_shifts) {
         if (get<4>(shift) == false) {

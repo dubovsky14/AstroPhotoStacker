@@ -2,30 +2,27 @@
 
 #include <limits>
 #include <cmath>
-
 using namespace std;
 using namespace AstroPhotoStacker;
 
 
-float AlignmentPointBox::s_contrast_threshold = 0.3;
+float AlignmentPointBox::s_contrast_threshold = 0.8;
 
 AlignmentPointBox::AlignmentPointBox(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_size, unsigned short max_value)   {
     m_x_center = x_center;
     m_y_center = y_center;
     m_box_size = box_size % 2 == 1 ? box_size : box_size + 1;
     m_max_value = max_value;
-    m_brightness = vector<unsigned short>(box_size*box_size);
+    m_brightness = vector<unsigned short>(m_box_size*m_box_size);
 
 
     unsigned int y_min = y_center - m_box_size/2;
-    unsigned int y_max = y_center + m_box_size/2;
     unsigned int x_min = x_center - m_box_size/2;
-    unsigned int x_max = x_center + m_box_size/2;
 
 
-    for (unsigned int y = y_min; y <= y_max; y++) {
-        for (unsigned int x = x_min; x <= x_max; x++) {
-            m_brightness[y * m_box_size + x] = image_data.brightness[(y_center + y) * image_data.width + x_center + x];
+    for (unsigned int y = 0; y < m_box_size; y++) {
+        for (unsigned int x = 0; x < m_box_size; x++) {
+            m_brightness[y * m_box_size + x] = image_data.brightness[(y_min + y) * image_data.width + x_min + x];
         }
     }
 };
@@ -51,8 +48,8 @@ bool AlignmentPointBox::is_valid_ap(const MonochromeImageData &image_data, int x
 
     int y_min = y_center - box_size/2;
     int y_max = y_center + box_size/2;
-    int x_max = x_center - box_size/2;
-    int x_min = x_center + box_size/2;
+    int x_min = x_center - box_size/2;
+    int x_max = x_center + box_size/2;
 
     if (y_min < 0 || y_max >= image_data.height || x_min < 0 || x_max >= image_data.width) {
         return false;
@@ -60,7 +57,7 @@ bool AlignmentPointBox::is_valid_ap(const MonochromeImageData &image_data, int x
 
     for (int y = y_min; y <= y_max; y++) {
         for (int x = x_min; x <= x_max; x++) {
-            const unsigned short brightness = image_data.brightness[(y_center + y) * image_data.width + x_center + x];
+            const unsigned short brightness = image_data.brightness[y * image_data.width + x];
             if (brightness < min_brightness) {
                 min_brightness = brightness;
             }
@@ -70,11 +67,11 @@ bool AlignmentPointBox::is_valid_ap(const MonochromeImageData &image_data, int x
         }
     }
 
-    if (max_brightness < 0.4*max_value) {
+    if (max_brightness < 0.3*max_value) {
         return false;
     }
 
-    if (float(min_brightness)/max_brightness < s_contrast_threshold) {
+    if (float(min_brightness)/max_brightness > s_contrast_threshold) {
         return false;
     }
 

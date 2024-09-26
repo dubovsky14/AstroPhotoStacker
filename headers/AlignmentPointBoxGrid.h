@@ -23,6 +23,8 @@ namespace AstroPhotoStacker {
              */
             std::vector<std::tuple<int,int,int,int,bool>> get_local_shifts(const MonochromeImageData &calibrated_image) const;
 
+            const std::vector<std::tuple<int,int,AlignmentPointBox>> &get_alignment_boxes() const {return m_boxes;};
+
 
         private:
             static std::tuple<int,int> get_interpolated_shift(const std::vector<std::tuple<int,int,int,int,bool>> &local_shifts, int x, int y);

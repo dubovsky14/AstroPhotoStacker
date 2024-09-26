@@ -33,11 +33,13 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
     blurred_image_data.width = m_width;
     blurred_image_data.height = m_height;
 
-    const int alignment_box_size = get<2>(m_alignment_window) - get<0>(m_alignment_window);
-    const int box_size = alignment_box_size / 10;
-    const int box_spacing = 0;
+    //const int alignment_box_size = get<2>(m_alignment_window) - get<0>(m_alignment_window);
+    const int box_size = 50;
+    const int box_spacing = 10;
 
     m_alignment_point_box_grid = make_unique<AlignmentPointBoxGrid>(blurred_image_data, m_alignment_window, box_size, box_spacing, m_center_of_mass_x, m_center_of_mass_y);
+
+    cout << "Alignment grid initialized, number of boxes: " << m_alignment_point_box_grid->get_alignment_boxes().size() << endl;
 };
 
 std::vector<std::tuple<int,int,int,int,bool>> ReferencePhotoHandlerSurface::get_local_shifts(   const std::string &file_address,
@@ -46,7 +48,6 @@ std::vector<std::tuple<int,int,int,int,bool>> ReferencePhotoHandlerSurface::get_
                                                                                                 float rotation_center_x,
                                                                                                 float rotation_center_y,
                                                                                                 float rotation) const   {
-
 
     CalibratedPhotoHandler calibrated_photo_handler(file_address, true);
     calibrated_photo_handler.define_alignment(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation);
@@ -77,6 +78,5 @@ std::vector<std::tuple<int,int,int,int,bool>> ReferencePhotoHandlerSurface::get_
 
     vector<unsigned short int> smeared_data = gaussian_blur(calibrated_image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
     calibrated_image_data.brightness = smeared_data.data();
-
     return m_alignment_point_box_grid->get_local_shifts(calibrated_image_data);
 };
