@@ -44,7 +44,7 @@ std::vector<std::tuple<int,int,int,int,bool>> AlignmentPointBoxGrid::get_local_s
         int best_y = adjusted_y;
         float best_chi2 = apb.get_chi2(calibrated_image, best_x, best_x);
 
-        const int max_shift_size = 5;
+        const int max_shift_size = 10;
         for (int y_shift = -max_shift_size; y_shift <= max_shift_size; y_shift++) {
             for (int x_shift = -max_shift_size; x_shift <= max_shift_size; x_shift++) {
                 const float chi2 = apb.get_chi2(calibrated_image, adjusted_x + x_shift, adjusted_y + y_shift);
