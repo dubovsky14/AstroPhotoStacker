@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <tuple>
-#include <memory>
 
 #include "../headers/KDTree.h"
 
@@ -10,7 +9,9 @@
 namespace AstroPhotoStacker {
     class LocalShiftsHandler {
         public:
-            LocalShiftsHandler() = delete;
+            LocalShiftsHandler() = default;
+
+            LocalShiftsHandler(const LocalShiftsHandler &local_shifts_handler) = default;
 
             LocalShiftsHandler(const std::vector<std::tuple<int, int, int, int, bool>> &shifts);
 
@@ -20,10 +21,14 @@ namespace AstroPhotoStacker {
 
             bool calculate_shifted_coordinates(int x, int y, int *shifted_x, int *shifted_y) const;
 
+            inline bool empty() const { return m_empty; };
+
         private:
             std::vector<std::tuple<int, int, int, int, bool>> m_shifts;
 
-            std::unique_ptr<KDTree<int,2,std::tuple<int,int,bool>>> m_kd_tree_shifts = nullptr;
+            KDTree<int,2,std::tuple<int,int,bool>> m_kd_tree_shifts;
+
+            bool m_empty = true;
 
     };
 }

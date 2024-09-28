@@ -27,6 +27,10 @@ void CalibratedPhotoHandler::define_alignment(float shift_x, float shift_y, floa
     m_geometric_transformer = make_unique<GeometricTransformer>(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation);
 };
 
+void CalibratedPhotoHandler::define_local_shifts(const LocalShiftsHandler &local_shifts_handler)   {
+    m_local_shifts_handler = local_shifts_handler;
+};
+
 void CalibratedPhotoHandler::limit_y_range(int y_min, int y_max) {
     if (y_min >= y_max) {
         return;
@@ -78,7 +82,21 @@ void CalibratedPhotoHandler::calibrate() {
                 for (int x_shifted = 0; x_shifted < m_width; x_shifted++)   {
                     float x_original = x_shifted;
                     float y_original = y_shifted;
+                    // translations and rotations
                     m_geometric_transformer->transform_from_reference_to_shifted_frame(&x_original, &y_original);
+
+                    // seeing effect, accounting for local shifts
+                    if (!m_local_shifts_handler.empty()) {
+                        int x_int = int(x_original);
+                        int y_int = int(y_original);
+                        if (m_local_shifts_handler.calculate_shifted_coordinates(x_int, y_int, &x_int, &y_int)) {
+                            x_original = x_int;
+                            y_original = y_int;
+                        }
+                        else {
+                            continue;
+                        }
+                    }
                     int x_int = int(x_original);
                     int y_int = int(y_original);
                     if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
@@ -98,7 +116,21 @@ void CalibratedPhotoHandler::calibrate() {
             for (int x_shifted = 0; x_shifted < m_width; x_shifted++)   {
                 float x_original = x_shifted;
                 float y_original = y_shifted;
+                // translations and rotations
                 m_geometric_transformer->transform_from_reference_to_shifted_frame(&x_original, &y_original);
+
+                // seeing effect, accounting for local shifts
+                if (!m_local_shifts_handler.empty()) {
+                    int x_int = int(x_original);
+                    int y_int = int(y_original);
+                    if (m_local_shifts_handler.calculate_shifted_coordinates(x_int, y_int, &x_int, &y_int)) {
+                        x_original = x_int;
+                        y_original = y_int;
+                    }
+                    else {
+                        continue;
+                    }
+                }
                 int x_int = int(x_original);
                 int y_int = int(y_original);
                 if (m_hot_pixel_identifier != nullptr) {

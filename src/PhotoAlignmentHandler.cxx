@@ -55,7 +55,7 @@ void PhotoAlignmentHandler::read_from_text_file(const std::string &alignment_fil
     alignment_file.close();
 }
 
-void PhotoAlignmentHandler::add_alignment_info(const std::string &file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking) {
+void PhotoAlignmentHandler::add_alignment_info(const std::string &file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler) {
     FileAlignmentInformation alignment_info;
     alignment_info.file_address = file_address;
     alignment_info.shift_x = x_shift;
@@ -64,6 +64,8 @@ void PhotoAlignmentHandler::add_alignment_info(const std::string &file_address, 
     alignment_info.rotation_center_y = rotation_center_y;
     alignment_info.rotation = rotation;
     alignment_info.ranking = ranking;
+    alignment_info.local_shifts_handler = local_shifts_handler;
+
     m_alignment_information_vector.push_back(alignment_info);
 };
 
@@ -74,7 +76,7 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
     ofstream alignment_file(alignment_file_address);
     alignment_file << c_reference_file_header << " | " << m_reference_file_address << endl;
     alignment_file << "# File address | shift_x | shift_y | rotation_center_x | rotation_center_y | rotation | ranking" << endl;
-    for (FileAlignmentInformation alignment_info : m_alignment_information_vector) {
+    for (const FileAlignmentInformation &alignment_info : m_alignment_information_vector) {
         if (alignment_info.file_address == "")  {   // plate-solving failed
             continue;
         }
@@ -112,6 +114,7 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
             if (surface_handler != nullptr) {
                 vector<tuple<int,int,int,int,bool>> local_shifts = surface_handler->get_local_shifts(file_name, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
                 m_local_shifts_vector[file_index] = local_shifts;
+                alignment_info.local_shifts_handler = LocalShiftsHandler(local_shifts);
             }
         }
         else {
@@ -191,6 +194,15 @@ void PhotoAlignmentHandler::limit_fraction_of_files(float fraction) {
 
 const std::atomic<int>& PhotoAlignmentHandler::get_number_of_aligned_files() const {
     return m_n_files_aligned;
+};
+
+std::vector<std::tuple<int,int,int,int,bool>> PhotoAlignmentHandler::get_local_shifts(const std::string& file_address) const   {
+    for (unsigned int i_file = 0; i_file < m_alignment_information_vector.size(); i_file++) {
+        if (m_alignment_information_vector[i_file].file_address == file_address) {
+            return m_local_shifts_vector[i_file];
+        }
+    }
+    throw runtime_error("File not found in alignment file: " + file_address);
 };
 
 unique_ptr<ReferencePhotoHandlerBase> PhotoAlignmentHandler::reference_photo_handler_factory(const std::string& raw_file_address)   const  {

@@ -372,3 +372,7 @@ void FilelistHandler::keep_best_n_files(unsigned int n)   {
     m_filelist_checked.at(FileTypes::LIGHT).resize(n);
     m_filelist_alignment_info.resize(n);
 };
+
+void FilelistHandler::set_local_shifts(int i_file, const std::vector<std::tuple<int,int,int,int,bool>> &shifts)   {
+    m_filelist_alignment_info[i_file].local_shifts_handler = LocalShiftsHandler(shifts);
+};

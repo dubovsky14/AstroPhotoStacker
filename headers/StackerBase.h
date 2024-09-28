@@ -5,6 +5,7 @@
 #include "../headers/HotPixelIdentifier.h"
 #include "../headers/CalibrationFrameBase.h"
 #include "../headers/CalibratedPhotoHandler.h"
+#include "../headers/LocalShiftsHandler.h"
 
 #include <memory>
 #include <string>
@@ -57,7 +58,7 @@ namespace AstroPhotoStacker {
              * @param rotation - rotation angle
              * @param ranking - ranking of the alignment
             */
-            void add_alignment_info(const std::string &file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking);
+            void add_alignment_info(const std::string &file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler = LocalShiftsHandler());
 
             /**
              * @brief Add a photo to the stack

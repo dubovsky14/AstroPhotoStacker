@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../headers/LocalShiftsHandler.h"
+
 #include <string>
 #include <map>
 #include <memory>
@@ -45,6 +47,7 @@ struct AlignmentFileInfo {
     float rotation           = 0;
     float ranking            = 0;
     bool  initialized        = false;
+    AstroPhotoStacker::LocalShiftsHandler local_shifts_handler;
 };
 
 std::ostream& operator<<(std::ostream& os, const AlignmentFileInfo& alignment_info);
@@ -254,6 +257,8 @@ class FilelistHandler   {
          * @brief: Keep only best N files
          */
         void keep_best_n_files(unsigned int n);
+
+        void set_local_shifts(int i_file, const std::vector<std::tuple<int,int,int,int,bool>> &shifts);
 
     private:
         std::map<FileTypes, std::vector<std::string>>       m_filelist;

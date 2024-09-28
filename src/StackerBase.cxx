@@ -24,11 +24,11 @@ void StackerBase::add_alignment_text_file(const string &alignment_file_address) 
     m_photo_alignment_handler->read_from_text_file(alignment_file_address);
 };
 
-void StackerBase::add_alignment_info(const std::string &file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking) {
+void StackerBase::add_alignment_info(const std::string &file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler) {
     if (m_photo_alignment_handler == nullptr) {
         m_photo_alignment_handler = make_unique<PhotoAlignmentHandler>();
     }
-    m_photo_alignment_handler->add_alignment_info(file_address, x_shift, y_shift, rotation_center_x, rotation_center_y, rotation, ranking);
+    m_photo_alignment_handler->add_alignment_info(file_address, x_shift, y_shift, rotation_center_x, rotation_center_y, rotation, ranking, local_shifts_handler);
 };
 
 void StackerBase::add_photo(const string &file_address, bool apply_alignment) {
@@ -180,6 +180,7 @@ CalibratedPhotoHandler StackerBase::get_calibrated_photo(unsigned int i_file, in
 
     CalibratedPhotoHandler calibrated_photo(file_address, m_interpolate_colors);
     calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+    calibrated_photo.define_local_shifts(alignment_info.local_shifts_handler);
     calibrated_photo.limit_y_range(y_min, y_max);
     for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame : m_calibration_frame_handlers) {
         calibrated_photo.register_calibration_frame(calibration_frame);

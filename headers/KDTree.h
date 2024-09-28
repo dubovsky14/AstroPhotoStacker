@@ -46,7 +46,7 @@ namespace AstroPhotoStacker   {
                 m_n_dim = NumberOfCoordinates;
             };
 
-            KDTree(const KDTree<CoordinateType, NumberOfCoordinates, ValueType> &kd_tree) = delete;
+            KDTree(const KDTree<CoordinateType, NumberOfCoordinates, ValueType> &kd_tree) = default;
 
             /**
              * @brief Get const reference to the node object, given index node_index

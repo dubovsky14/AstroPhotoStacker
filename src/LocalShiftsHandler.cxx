@@ -7,20 +7,23 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 LocalShiftsHandler::LocalShiftsHandler(const std::vector<std::tuple<int, int, int, int, bool>> &shifts) : m_shifts(shifts) {
-    m_kd_tree_shifts = std::make_unique<KDTree<int,2,std::tuple<int,int,bool>>>();
     for (const auto &shift : shifts) {
         const std::vector<int> coordinate = {std::get<0>(shift), std::get<1>(shift)};
         const std::tuple<int,int,bool> value = std::tuple<int,int,bool>(std::get<2>(shift), std::get<3>(shift), std::get<4>(shift));
 
-        m_kd_tree_shifts->add_point(coordinate, value);
+        m_kd_tree_shifts.add_point(coordinate, value);
     }
-    m_kd_tree_shifts->build_tree_structure();
+    m_kd_tree_shifts.build_tree_structure();
+    m_empty = false;
 };
 
 bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifted_x, int *shifted_y) const  {
+    if (empty()) {
+        return false;
+    }
     const int n_neighbors = 3;
     const int query_point[2] = {x, y};
-    std::vector<std::tuple<std::vector<int>, tuple<int,int,bool>>> closest_nodes = m_kd_tree_shifts->get_k_nearest_neighbors(query_point, n_neighbors);
+    std::vector<std::tuple<std::vector<int>, tuple<int,int,bool>>> closest_nodes = m_kd_tree_shifts.get_k_nearest_neighbors(query_point, n_neighbors);
     if (closest_nodes.size() == 0) {
         return false;
     }
@@ -52,8 +55,8 @@ bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifte
         sum_x += weight * dx;
         sum_y += weight * dy;
     }
-    *shifted_x = sum_x / sum_weights;
-    *shifted_y = sum_y / sum_weights;
+    *shifted_x = x + sum_x / sum_weights;
+    *shifted_y = y + sum_y / sum_weights;
     return true;
 };
 

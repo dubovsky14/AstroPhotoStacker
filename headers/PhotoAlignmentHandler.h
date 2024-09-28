@@ -1,12 +1,14 @@
 #pragma once
 
 #include "../headers/ReferencePhotoHandlerBase.h"
+#include "../headers/LocalShiftsHandler.h"
 
 #include <memory>
 #include <string>
 #include <vector>
 #include <atomic>
 #include <tuple>
+#include <optional>
 
 namespace   AstroPhotoStacker   {
     struct FileAlignmentInformation    {
@@ -17,6 +19,7 @@ namespace   AstroPhotoStacker   {
         float rotation_center_y  = 0;
         float rotation           = 0;
         float ranking            = 0;
+        LocalShiftsHandler local_shifts_handler;
     };
 
     /**
@@ -43,7 +46,7 @@ namespace   AstroPhotoStacker   {
              * @param rotation The rotation angle.
              * @param ranking The ranking of the alignment.
              */
-            void add_alignment_info(const std::string& file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking);
+            void add_alignment_info(const std::string& file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler = LocalShiftsHandler());
 
             /**
              * @brief Reads alignment information from a text file.
@@ -130,6 +133,10 @@ namespace   AstroPhotoStacker   {
              * @return The alignment method.
              */
             const std::string& get_alignment_method() const {return m_alignment_method;};
+
+            std::vector<std::tuple<int,int,int,int,bool>> get_local_shifts(const std::string& file_address) const;
+
+            const std::vector<std::vector<std::tuple<int,int,int,int,bool>>>& get_local_shifts_vector() const {return m_local_shifts_vector;};
 
         private:
             std::string m_reference_file_address = "";

@@ -85,6 +85,7 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
         pool.wait_for_tasks();
 
         const std::vector<AstroPhotoStacker::FileAlignmentInformation> &alignment_info = photo_alignment_handler.get_alignment_parameters_vector();
+        const std::vector<std::vector<std::tuple<int,int,int,int,bool>>> &local_shifts = photo_alignment_handler.get_local_shifts_vector();
 
         for (unsigned int i_selected_file = 0; i_selected_file < indices_files_to_align.size(); ++i_selected_file) {
             int i_file = indices_files_to_align[i_selected_file];
@@ -98,6 +99,11 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
             alignment_file_info.ranking = info.ranking;
             alignment_file_info.initialized = true;
             m_filelist_handler->set_alignment_info(i_file, alignment_file_info);
+
+            const std::vector<std::tuple<int,int,int,int,bool>> &shifts = local_shifts[i_selected_file];
+            if (shifts.size() > 0) {
+                m_filelist_handler->set_local_shifts(i_file, shifts);
+            }
         }
         parent->update_files_to_stack_checkbox();
         parent->update_alignment_status();

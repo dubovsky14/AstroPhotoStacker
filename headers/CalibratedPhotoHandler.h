@@ -3,6 +3,7 @@
 #include "../headers/GeometricTransformations.h"
 #include "../headers/CalibrationFrameBase.h"
 #include "../headers/HotPixelIdentifier.h"
+#include "../headers/LocalShiftsHandler.h"
 
 #include <string>
 #include <memory>
@@ -43,6 +44,13 @@ namespace AstroPhotoStacker {
              * @param rotation The rotation angle in radians.
             */
             void define_alignment(float shift_x, float shift_y, float rotation_center_x, float rotation_center_y, float rotation);
+
+            /**
+             * @brief Define local shifts to compensate for effect of the seeing in case of planetary and Lunar images.
+             *
+             * @param shifts: LocalShiftHandler object with local shifts (or empty).
+            */
+            void define_local_shifts(const LocalShiftsHandler &local_shift_handler);
 
             /**
              * @brief Set the bit depth of the raw file.
@@ -151,6 +159,7 @@ namespace AstroPhotoStacker {
             std::vector<std::shared_ptr<const CalibrationFrameBase>> m_calibration_frames;
 
             std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
+            LocalShiftsHandler m_local_shifts_handler;
             std::vector<short int> m_data_original;
 
             bool m_use_color_interpolation = false;
