@@ -206,6 +206,9 @@ void ImagePreview::update_preview_data(float mouse_position_relative_x, float mo
 };
 
 void ImagePreview::on_mouse_wheel(wxMouseEvent& event) {
+    if (m_original_image.size() == 0) {
+        return;
+    }
     // Get the mouse position in screen coordinates
     wxPoint screen_pos = event.GetPosition();
     screen_pos += wxPoint(0, 0.155*m_height);   // shift the position to the center of the image - wxStaticBitmap is buggy ...

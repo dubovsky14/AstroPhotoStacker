@@ -122,6 +122,7 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
             alignment_info.rotation_center_y = alignment_info_gui.rotation_center_y;
             alignment_info.rotation = alignment_info_gui.rotation;
             alignment_info.ranking = alignment_info_gui.ranking;
+            alignment_info.local_shifts_handler = alignment_info_gui.local_shifts_handler;
 
             m_aligned_images_producer->add_image(file, alignment_info);
         }

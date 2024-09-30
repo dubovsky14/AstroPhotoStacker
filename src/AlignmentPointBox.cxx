@@ -25,6 +25,8 @@ AlignmentPointBox::AlignmentPointBox(const MonochromeImageData &image_data, int 
             m_brightness[y * m_box_size + x] = image_data.brightness[(y_min + y) * image_data.width + x_min + x];
         }
     }
+
+    m_max_acceptable_chi2 = calculate_acceptable_chi2(image_data);
 };
 
 float AlignmentPointBox::get_chi2(const MonochromeImageData &image_data, int x_center, int y_center) const  {
@@ -67,7 +69,7 @@ bool AlignmentPointBox::is_valid_ap(const MonochromeImageData &image_data, int x
         }
     }
 
-    if (max_brightness < 0.3*max_value) {
+    if (max_brightness < 0.25*max_value) {
         return false;
     }
 
@@ -100,5 +102,16 @@ float AlignmentPointBox::get_relative_rms() const  {
 };
 
 bool AlignmentPointBox::good_match(float chi2) const   {
-    return true; // #TODO: Implement this
+    return chi2 < m_max_acceptable_chi2;
+};
+
+float AlignmentPointBox::calculate_acceptable_chi2(const MonochromeImageData &image_data) const {
+    const int max_shift = 2;
+    float result = 0;
+    for (int y_shift = -max_shift; y_shift <= max_shift; y_shift++) {
+        for (int x_shift = -max_shift; x_shift <= max_shift; x_shift++) {
+            result = max(result, get_chi2(image_data, m_x_center + x_shift, m_y_center + y_shift));
+        }
+    }
+    return result;
 };

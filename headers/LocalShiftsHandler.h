@@ -23,6 +23,9 @@ namespace AstroPhotoStacker {
 
             inline bool empty() const { return m_empty; };
 
+            // for debugging
+            void draw_ap_boxes_into_image(std::vector<std::vector<unsigned short>> *image, int width, int height, int boxsize, const std::vector<int> &valid_ap_color, const std::vector<int> &invalid_ap_color, int global_shift_x = 0, int global_shift_y = 0) const;
+
         private:
             std::vector<std::tuple<int, int, int, int, bool>> m_shifts;
 

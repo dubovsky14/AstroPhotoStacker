@@ -60,3 +60,33 @@ bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifte
     return true;
 };
 
+void LocalShiftsHandler::draw_ap_boxes_into_image(std::vector<std::vector<unsigned short>> *image, int width, int height, int boxsize, const std::vector<int> &valid_ap_color, const std::vector<int> &invalid_ap_color, int global_shift_x, int global_shift_y) const    {
+    for (const auto &shift : m_shifts) {
+        const int x = std::get<0>(shift) + std::get<2>(shift) - global_shift_x;
+        const int y = std::get<1>(shift) + std::get<3>(shift) - global_shift_y;
+        const bool valid_ap = std::get<4>(shift);
+
+        const int x_min = max(0, x - boxsize/2);
+        const int x_max = min(width-1, x + boxsize/2);
+        const int y_min = max(0, y - boxsize/2);
+        const int y_max = min(height-1, y + boxsize/2);
+
+        if (x_min >= width || x_max < 0 || y_min >= height || y_max < 0) {
+            continue;
+        }
+
+        const vector<int> &colors = valid_ap ? valid_ap_color : invalid_ap_color;
+
+        for (int i_color = 0; i_color < 3; i_color++) {
+            for (int y = y_min; y <= y_max; y++) {
+                (*image)[i_color][y*width + x_min] = colors[i_color]; // left
+                (*image)[i_color][y*width + x_max] = colors[i_color]; // right
+            }
+            for (int x = x_min; x <= x_max; x++) {
+                (*image)[i_color][y_min*width + x] = colors[i_color]; // top
+                (*image)[i_color][y_max*width + x] = colors[i_color]; // bottom
+            }
+        }
+    }
+};
+

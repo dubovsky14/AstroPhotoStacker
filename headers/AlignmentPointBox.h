@@ -27,7 +27,10 @@ namespace AstroPhotoStacker {
             int m_y_center;
             unsigned int m_box_size;
             unsigned short m_max_value;
+            float m_max_acceptable_chi2 = 10e100;
 
             static float s_contrast_threshold;
+
+            float calculate_acceptable_chi2(const MonochromeImageData &image_data) const;
     };
 }

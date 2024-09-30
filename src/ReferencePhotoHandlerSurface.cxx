@@ -34,7 +34,7 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
     blurred_image_data.height = m_height;
 
     //const int alignment_box_size = get<2>(m_alignment_window) - get<0>(m_alignment_window);
-    const int box_size = 50;
+    const int box_size = 100;
     const int box_spacing = 10;
 
     m_alignment_point_box_grid = make_unique<AlignmentPointBoxGrid>(blurred_image_data, m_alignment_window, box_size, box_spacing, m_center_of_mass_x, m_center_of_mass_y);

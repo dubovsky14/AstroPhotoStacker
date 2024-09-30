@@ -143,6 +143,8 @@ namespace AstroPhotoStacker {
                 return m_data_shifted_color_interpolation;
             };
 
+            const LocalShiftsHandler& get_local_shifts_handler()    { return m_local_shifts_handler; };
+
         private:
             int m_width;
             int m_height;

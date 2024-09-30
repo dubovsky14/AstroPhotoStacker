@@ -85,6 +85,7 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
 
     CalibratedPhotoHandler photo_handler(input_file_address, true);
     photo_handler.define_alignment(alignment_info.shift_x, alignment_info.shift_y, alignment_info.rotation_center_x, alignment_info.rotation_center_y, alignment_info.rotation);
+    photo_handler.define_local_shifts(alignment_info.local_shifts_handler);
     for (const auto &calibration_frame_handler : m_calibration_frame_handlers) {
         photo_handler.register_calibration_frame(calibration_frame_handler);
     }
@@ -120,7 +121,6 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
         }
     }
 
-
     if (m_image_stretching_function) {
         m_image_stretching_function(&output_image, max_value);
     }
@@ -129,6 +129,13 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
     }
     if (is_raw_file(input_file_address)) {
         apply_green_correction(&output_image, 255);
+    }
+
+    // show AP boxes
+    const LocalShiftsHandler &local_shifts_handler = photo_handler.get_local_shifts_handler();
+    if (!local_shifts_handler.empty()) {
+        cout << "Going to draw AP boxes\n";
+        local_shifts_handler.draw_ap_boxes_into_image(&output_image, width, height, 100, {0, 255, 0}, {255, 0, 0}, m_top_left_corner_x, m_top_left_corner_y);
     }
 
     if (!m_add_datetime) {
