@@ -3,7 +3,6 @@
 #include <cmath>
 #include <stdexcept>
 
-
 using namespace std;
 using namespace AstroPhotoStacker;
 
@@ -17,13 +16,13 @@ std::vector<unsigned short> AstroPhotoStacker::gaussian_blur(const MonochromeIma
     const int half_kernel_height = blur_height / 2;
 
     // Apply the kernel
-    for (int i_x_image = half_kernel_width; i_x_image < input_image.width - half_kernel_width; i_x_image++) {
-        for (int i_y_image = half_kernel_height; i_y_image < input_image.height - half_kernel_height; i_y_image++) {
+    for (int i_y_image = half_kernel_height; i_y_image < input_image.height - half_kernel_height; i_y_image++) {
+        for (int i_x_image = half_kernel_width; i_x_image < input_image.width - half_kernel_width; i_x_image++) {
             double sum = 0;
-            for (int i_x_kernel = 0; i_x_kernel < blur_width; i_x_kernel++) {
-                for (int i_y_kernel = 0; i_y_kernel < blur_height; i_y_kernel++) {
-                    int i_x_image_kernel = i_x_image + i_x_kernel - blur_width / 2;
-                    int i_y_image_kernel = i_y_image + i_y_kernel - blur_height / 2;
+            for (int i_y_kernel = 0; i_y_kernel < blur_height; i_y_kernel++) {
+                for (int i_x_kernel = 0; i_x_kernel < blur_width; i_x_kernel++) {
+                    const int i_x_image_kernel = i_x_image + i_x_kernel - blur_width / 2;
+                    const int i_y_image_kernel = i_y_image + i_y_kernel - blur_height / 2;
                     if (i_x_image_kernel >= 0 && i_x_image_kernel < input_image.width && i_y_image_kernel >= 0 && i_y_image_kernel < input_image.height) {
                         sum += input_image.brightness[i_y_image_kernel * input_image.width + i_x_image_kernel] * kernel[i_y_kernel * blur_width + i_x_kernel];
                     }
@@ -32,7 +31,6 @@ std::vector<unsigned short> AstroPhotoStacker::gaussian_blur(const MonochromeIma
             output_image[i_y_image * input_image.width + i_x_image] = sum;
         }
     }
-
     return output_image;
 }
 
