@@ -28,8 +28,27 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
         }
     }
 
+
+    auto get_side_and_index = [](int x_centered, int y_centered) {
+        const int max_coordinate = max(abs(x_centered), abs(y_centered));
+
+        if (y_centered == max_coordinate) {
+            return std::make_tuple(0, x_centered);
+        }
+        if (x_centered == max_coordinate) {
+            return std::make_tuple(1, -y_centered);
+        }
+        if (y_centered == -max_coordinate) {
+            return std::make_tuple(2, -x_centered);
+        }
+        if (x_centered == -max_coordinate) {
+            return std::make_tuple(3, y_centered);
+        }
+        return std::make_tuple(-1, -1);
+    };
+
     // sort them in a "snail" way
-    sort(m_boxes.begin(), m_boxes.end(), [center_x, center_y](const auto &a, const auto &b) {
+    sort(m_boxes.begin(), m_boxes.end(), [center_x, center_y, &get_side_and_index](const std::tuple<int,int,AlignmentPointBox> &a, const std::tuple<int,int,AlignmentPointBox> &b) {
         const int x0_centered = get<0>(a) - center_x;
         const int y0_centered = get<1>(a) - center_y;
         const int x1_centered = get<0>(b) - center_x;
@@ -37,53 +56,18 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
 
         int max_0 = max(abs(x0_centered), abs(y0_centered));
         int max_1 = max(abs(x1_centered), abs(y1_centered));
+        return max_0 < max_1;
         if (max_0 != max_1) {
             return max_0 < max_1;
         }
 
-        // top line
-        if (x0_centered == max_0) {
-            if (x1_centered == max_1) {
-                return y0_centered < y1_centered;
-            }
-            else {
-                return true;
-            }
-        }
+        const auto [side_0, index_0] = get_side_and_index(x0_centered, y0_centered);
+        const auto [side_1, index_1] = get_side_and_index(x1_centered, y1_centered);
 
-        // bottom line
-        if (x0_centered == -max_0) {
-            if (x1_centered == -max_1) {
-                return y0_centered > y1_centered;
-            }
-            else {
-                if (y1_centered == max_1 || x1_centered == max_1) {
-                    return false;
-                }
-                return true;
-            }
+        if (side_0 != side_1) {
+            return side_0 < side_1;
         }
-
-        // right line
-        if (y0_centered == max_0) {
-            if (y1_centered == max_1) {
-                return x0_centered > x1_centered;
-            }
-            else {
-                return x1_centered == -max_1;
-            }
-        }
-
-        // left line
-        if (y0_centered == -max_0) {
-            if (y1_centered == -max_1) {
-                return x0_centered < x1_centered;
-            }
-            else {
-                return true;
-            }
-        }
-
+        return index_0 < index_1;
     });
 };
 
@@ -101,6 +85,10 @@ std::vector<std::tuple<int,int,int,int,bool>> AlignmentPointBoxGrid::get_local_s
 
         int best_x = adjusted_x;
         int best_y = adjusted_y;
+        if (adjusted_x < 0 || adjusted_x >= calibrated_image.width || adjusted_y < 0 || adjusted_y >= calibrated_image.height) {
+            best_x = original_x;
+            best_y = original_y;
+        }
         float best_chi2 = apb.get_chi2(calibrated_image, best_x, best_x);
 
         const int max_shift_size = 20;
@@ -118,6 +106,7 @@ std::vector<std::tuple<int,int,int,int,bool>> AlignmentPointBoxGrid::get_local_s
             }
         }
 
+        //cout << "Coordinates: " << original_x << ", " << original_y << " -> " << best_x << ", " << best_y << " (chi2: " << best_chi2 << ")" << endl;
         if (apb.good_match(best_chi2)) {
             shifts.push_back(std::make_tuple(original_x, original_y, best_x - original_x, best_y - original_y, true));
             valid_boxes++;

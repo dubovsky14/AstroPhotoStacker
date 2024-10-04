@@ -6,6 +6,15 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
+struct LocalShift {
+    int x;
+    int y;
+    int dx;
+    int dy;
+    bool valid_ap;
+    float score;
+};
+
 LocalShiftsHandler::LocalShiftsHandler(const std::vector<std::tuple<int, int, int, int, bool>> &shifts) : m_shifts(shifts) {
     for (const auto &shift : shifts) {
         const std::vector<int> coordinate = {std::get<0>(shift), std::get<1>(shift)};

@@ -2,6 +2,8 @@
 
 #include <limits>
 #include <cmath>
+#include <stdexcept>
+
 using namespace std;
 using namespace AstroPhotoStacker;
 
@@ -16,8 +18,8 @@ AlignmentPointBox::AlignmentPointBox(const MonochromeImageData &image_data, int 
     m_brightness = vector<unsigned short>(m_box_size*m_box_size);
 
 
-    unsigned int y_min = y_center - m_box_size/2;
-    unsigned int x_min = x_center - m_box_size/2;
+    const unsigned int y_min = y_center - m_box_size/2;
+    const unsigned int x_min = x_center - m_box_size/2;
 
 
     for (unsigned int y = 0; y < m_box_size; y++) {
@@ -32,11 +34,17 @@ AlignmentPointBox::AlignmentPointBox(const MonochromeImageData &image_data, int 
 float AlignmentPointBox::get_chi2(const MonochromeImageData &image_data, int x_center, int y_center) const  {
     double chi2 = 0;
 
-    const int half_size = m_box_size/2;
-    for (int y_shift = -half_size; y_shift <= half_size; y_shift++) {
-        for (int x_shift = -half_size; x_shift <= half_size/2; x_shift++) {
-            const double brightness_input = image_data.brightness[(y_center + y_shift) * image_data.width + (x_center + x_shift)];
-            const double brightness_box = m_brightness[(half_size + y_shift) * m_box_size + (half_size + x_shift)];
+    const unsigned int y_min = y_center - m_box_size/2;
+    const unsigned int x_min = x_center - m_box_size/2;
+
+    if (y_min < 0 || int(y_min + m_box_size) >= image_data.height || x_min < 0 || int(x_min + m_box_size) >= image_data.width) {
+        throw runtime_error("AlignmentPointBox::get_chi2: Box out of bounds.");
+    }
+
+    for (unsigned int y = 0; y < m_box_size; y++) {
+        for (unsigned int x = 0; x < m_box_size; x++) {
+            const double brightness_input = image_data.brightness[(y_min + y) * image_data.width + x_min + x];
+            const double brightness_box = m_brightness[y * m_box_size + x];
             chi2 += (brightness_input - brightness_box) * (brightness_input - brightness_box);
         }
     }

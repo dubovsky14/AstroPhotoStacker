@@ -19,6 +19,14 @@ namespace AstroPhotoStacker {
 
             float get_relative_rms() const;
 
+            unsigned int get_box_size() const   {
+                return m_box_size;
+            };
+
+            unsigned short get_max_value() const    {
+                return m_max_value;
+            };
+
             bool good_match(float chi2) const;
 
         private:

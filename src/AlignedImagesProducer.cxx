@@ -132,10 +132,10 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
     }
 
     // show AP boxes
-    const LocalShiftsHandler &local_shifts_handler = photo_handler.get_local_shifts_handler();
+    const LocalShiftsHandler &local_shifts_handler = alignment_info.local_shifts_handler;
     if (!local_shifts_handler.empty()) {
         cout << "Going to draw AP boxes\n";
-        local_shifts_handler.draw_ap_boxes_into_image(&output_image, width, height, 100, {0, 255, 0}, {255, 0, 0}, m_top_left_corner_x, m_top_left_corner_y);
+        local_shifts_handler.draw_ap_boxes_into_image(&output_image, width, height, 50, {0, 255, 0}, {255, 0, 0}, m_top_left_corner_x, m_top_left_corner_y);
     }
 
     if (!m_add_datetime) {

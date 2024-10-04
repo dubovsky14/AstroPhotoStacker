@@ -58,10 +58,6 @@ void CalibratedPhotoHandler::set_bit_depth(unsigned short int bit_depth)    {
 };
 
 void CalibratedPhotoHandler::calibrate() {
-    cout << "Calibrating photo. \n\trun colorinterpolation: "s +
-            (m_use_color_interpolation ? "yes" : "no") +
-            "\n\tuse local shifts: " + (m_local_shifts_handler.empty() ? "no" : "yes") + "\n";
-
     // firstly apply the calibration frames on the original data
     for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler : m_calibration_frames) {
         for (int y = 0; y < m_height; y++) {
