@@ -62,12 +62,12 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
     cout << "Alignment grid initialized, number of boxes: " << m_alignment_point_box_grid->get_alignment_boxes().size() << endl;
 };
 
-std::vector<std::tuple<int,int,int,int,bool>> ReferencePhotoHandlerSurface::get_local_shifts(   const std::string &file_address,
-                                                                                                float shift_x,
-                                                                                                float shift_y,
-                                                                                                float rotation_center_x,
-                                                                                                float rotation_center_y,
-                                                                                                float rotation) const   {
+std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const std::string &file_address,
+                                                                        float shift_x,
+                                                                        float shift_y,
+                                                                        float rotation_center_x,
+                                                                        float rotation_center_y,
+                                                                        float rotation) const   {
 
     CalibratedPhotoHandler calibrated_photo_handler(file_address, true);
     calibrated_photo_handler.define_alignment(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation);

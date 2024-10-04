@@ -4,6 +4,7 @@
 #include <tuple>
 
 #include "../headers/KDTree.h"
+#include "../headers/LocalShift.h"
 
 
 namespace AstroPhotoStacker {
@@ -13,9 +14,9 @@ namespace AstroPhotoStacker {
 
             LocalShiftsHandler(const LocalShiftsHandler &local_shifts_handler) = default;
 
-            LocalShiftsHandler(const std::vector<std::tuple<int, int, int, int, bool>> &shifts);
+            LocalShiftsHandler(const std::vector<LocalShift> &shifts);
 
-            const std::vector<std::tuple<int, int, int, int, bool>> &get_shifts() const {
+            const std::vector<LocalShift> &get_shifts() const {
                 return m_shifts;
             };
 
@@ -27,7 +28,7 @@ namespace AstroPhotoStacker {
             void draw_ap_boxes_into_image(std::vector<std::vector<unsigned short>> *image, int width, int height, int boxsize, const std::vector<int> &valid_ap_color, const std::vector<int> &invalid_ap_color, int global_shift_x = 0, int global_shift_y = 0) const;
 
         private:
-            std::vector<std::tuple<int, int, int, int, bool>> m_shifts;
+            std::vector<LocalShift> m_shifts;
 
             KDTree<int,2,std::tuple<int,int,bool>> m_kd_tree_shifts;
 

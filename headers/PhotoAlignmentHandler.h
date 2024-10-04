@@ -2,6 +2,7 @@
 
 #include "../headers/ReferencePhotoHandlerBase.h"
 #include "../headers/LocalShiftsHandler.h"
+#include "../headers/LocalShift.h"
 
 #include <memory>
 #include <string>
@@ -134,14 +135,14 @@ namespace   AstroPhotoStacker   {
              */
             const std::string& get_alignment_method() const {return m_alignment_method;};
 
-            std::vector<std::tuple<int,int,int,int,bool>> get_local_shifts(const std::string& file_address) const;
+            std::vector<LocalShift> get_local_shifts(const std::string& file_address) const;
 
-            const std::vector<std::vector<std::tuple<int,int,int,int,bool>>>& get_local_shifts_vector() const {return m_local_shifts_vector;};
+            const std::vector<std::vector<LocalShift>>& get_local_shifts_vector() const {return m_local_shifts_vector;};
 
         private:
             std::string m_reference_file_address = "";
             std::vector<FileAlignmentInformation> m_alignment_information_vector;
-            std::vector<std::vector<std::tuple<int,int,int,int,bool>>> m_local_shifts_vector;
+            std::vector<std::vector<LocalShift>> m_local_shifts_vector;
             std::atomic<int> m_n_files_aligned = 0;
             unsigned int m_n_cpu = 1;
             std::unique_ptr<ReferencePhotoHandlerBase> m_reference_photo_handler = nullptr;

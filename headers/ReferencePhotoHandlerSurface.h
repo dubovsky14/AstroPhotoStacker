@@ -2,6 +2,7 @@
 
 #include "../headers/ReferencePhotoHandlerPlanetary.h"
 #include "../headers/AlignmentPointBoxGrid.h"
+#include "../headers/LocalShift.h"
 
 #include <memory>
 #include <string>
@@ -37,7 +38,7 @@ namespace AstroPhotoStacker   {
             */
             ReferencePhotoHandlerSurface(const unsigned short *brightness, int width, int height, float threshold_fraction);
 
-            std::vector<std::tuple<int,int,int,int,bool>> get_local_shifts( const std::string &file_address,
+            std::vector<LocalShift> get_local_shifts( const std::string &file_address,
                                                                             float shift_x,
                                                                             float shift_y,
                                                                             float rotation_center_x,

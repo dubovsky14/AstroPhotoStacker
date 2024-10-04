@@ -6,19 +6,10 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
-struct LocalShift {
-    int x;
-    int y;
-    int dx;
-    int dy;
-    bool valid_ap;
-    float score;
-};
-
-LocalShiftsHandler::LocalShiftsHandler(const std::vector<std::tuple<int, int, int, int, bool>> &shifts) : m_shifts(shifts) {
+LocalShiftsHandler::LocalShiftsHandler(const std::vector<LocalShift> &shifts) : m_shifts(shifts) {
     for (const auto &shift : shifts) {
-        const std::vector<int> coordinate = {std::get<0>(shift), std::get<1>(shift)};
-        const std::tuple<int,int,bool> value = std::tuple<int,int,bool>(std::get<2>(shift), std::get<3>(shift), std::get<4>(shift));
+        const std::vector<int> coordinate = {shift.x, shift.y};
+        const std::tuple<int,int,bool> value = std::tuple<int,int,bool>(shift.x, shift.y, shift.valid_ap);
 
         m_kd_tree_shifts.add_point(coordinate, value);
     }
@@ -71,9 +62,9 @@ bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifte
 
 void LocalShiftsHandler::draw_ap_boxes_into_image(std::vector<std::vector<unsigned short>> *image, int width, int height, int boxsize, const std::vector<int> &valid_ap_color, const std::vector<int> &invalid_ap_color, int global_shift_x, int global_shift_y) const    {
     for (const auto &shift : m_shifts) {
-        const int x = std::get<0>(shift) + std::get<2>(shift) - global_shift_x;
-        const int y = std::get<1>(shift) + std::get<3>(shift) - global_shift_y;
-        const bool valid_ap = std::get<4>(shift);
+        const int x = shift.x + shift.dx - global_shift_x;
+        const int y = shift.y + shift.dy - global_shift_y;
+        const bool valid_ap = shift.valid_ap;
 
         const int x_min = max(0, x - boxsize/2);
         const int x_max = min(width-1, x + boxsize/2);

@@ -258,7 +258,7 @@ class FilelistHandler   {
          */
         void keep_best_n_files(unsigned int n);
 
-        void set_local_shifts(int i_file, const std::vector<std::tuple<int,int,int,int,bool>> &shifts);
+        void set_local_shifts(int i_file, const std::vector<AstroPhotoStacker::LocalShift> &shifts);
 
     private:
         std::map<FileTypes, std::vector<std::string>>       m_filelist;

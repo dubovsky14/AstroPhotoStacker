@@ -112,7 +112,7 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
 
             const ReferencePhotoHandlerSurface *surface_handler = dynamic_cast<const ReferencePhotoHandlerSurface*>(m_reference_photo_handler.get());
             if (surface_handler != nullptr) {
-                vector<tuple<int,int,int,int,bool>> local_shifts = surface_handler->get_local_shifts(file_name, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+                vector<LocalShift> local_shifts = surface_handler->get_local_shifts(file_name, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
                 m_local_shifts_vector[file_index] = local_shifts;
                 alignment_info.local_shifts_handler = LocalShiftsHandler(local_shifts);
             }
@@ -196,7 +196,7 @@ const std::atomic<int>& PhotoAlignmentHandler::get_number_of_aligned_files() con
     return m_n_files_aligned;
 };
 
-std::vector<std::tuple<int,int,int,int,bool>> PhotoAlignmentHandler::get_local_shifts(const std::string& file_address) const   {
+std::vector<LocalShift> PhotoAlignmentHandler::get_local_shifts(const std::string& file_address) const   {
     for (unsigned int i_file = 0; i_file < m_alignment_information_vector.size(); i_file++) {
         if (m_alignment_information_vector[i_file].file_address == file_address) {
             return m_local_shifts_vector[i_file];

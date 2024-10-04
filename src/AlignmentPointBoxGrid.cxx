@@ -71,8 +71,8 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
     });
 };
 
-std::vector<std::tuple<int,int,int,int,bool>> AlignmentPointBoxGrid::get_local_shifts(const MonochromeImageData &calibrated_image) const {
-    vector<tuple<int,int,int,int,bool>> shifts;
+std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const MonochromeImageData &calibrated_image) const {
+    vector<LocalShift> shifts;
     int valid_boxes = 0;
     for (const auto &box : m_boxes) {
         const int original_x = get<0>(box);
@@ -106,46 +106,49 @@ std::vector<std::tuple<int,int,int,int,bool>> AlignmentPointBoxGrid::get_local_s
             }
         }
 
-        //cout << "Coordinates: " << original_x << ", " << original_y << " -> " << best_x << ", " << best_y << " (chi2: " << best_chi2 << ")" << endl;
-        if (apb.good_match(best_chi2)) {
-            shifts.push_back(std::make_tuple(original_x, original_y, best_x - original_x, best_y - original_y, true));
-            valid_boxes++;
-        }
-        else {
-            shifts.push_back(std::make_tuple(original_x, original_y, 0, 0, false));
-        }
-    }
+        const bool good_match = apb.good_match(best_chi2);
+        valid_boxes += good_match;
 
+        LocalShift local_shift;
+        local_shift.x = original_x;
+        local_shift.y = original_y;
+        local_shift.dx = good_match ?  best_x - original_x : 0;
+        local_shift.dy = good_match ?  best_y - original_y : 0;
+        local_shift.valid_ap = good_match;
+        local_shift.score = -best_chi2;
+
+        shifts.push_back(local_shift);
+    }
     cout << "Number of found alignment points: " << valid_boxes << " / " << m_boxes.size() << endl;
 
     return shifts;
 };
 
-std::tuple<int,int> AlignmentPointBoxGrid::get_interpolated_shift(const std::vector<std::tuple<int,int,int,int,bool>> &local_shifts, int x, int y)   {
+std::tuple<int,int> AlignmentPointBoxGrid::get_interpolated_shift(const vector<LocalShift> &local_shifts, int x, int y)   {
     vector<std::tuple<int,int,float>> shifts_distances;
     if (local_shifts.size() == 0) {
         return std::make_tuple(0, 0);
     }
     const int n_points = 4;
     for (const auto &shift : local_shifts) {
-        if (get<4>(shift) == false) {
+        if (shift.valid_ap == false) {
             continue;
         }
-        const int x0 = get<0>(shift);
-        const int y0 = get<1>(shift);
-        const int x1 = get<2>(shift);
-        const int y1 = get<3>(shift);
+        const int x0 = shift.x;
+        const int y0 = shift.y;
+        const int dx = shift.dx;
+        const int dy = shift.dy;
 
         const float distance = sqrt((x - x0)*(x - x0) + (y - y0)*(y - y0));
         if (shifts_distances.size() < n_points) {
-            shifts_distances.push_back(std::make_tuple(x1, y1, distance));
+            shifts_distances.push_back(std::make_tuple(dx, dy, distance));
             sort(shifts_distances.begin(), shifts_distances.end(), [](const auto &a, const auto &b) {
                 return get<2>(a) < get<2>(b);
             });
         }
         else {
             if (distance < get<2>(shifts_distances.back())) {
-                shifts_distances.back() = std::make_tuple(x1, y1, distance);
+                shifts_distances.back() = std::make_tuple(dx, dy, distance);
                 sort(shifts_distances.begin(), shifts_distances.end(), [](const auto &a, const auto &b) {
                     return get<2>(a) < get<2>(b);
                 });
