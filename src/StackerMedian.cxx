@@ -24,7 +24,7 @@ void StackerMedian::calculate_stacked_photo()  {
     }
 
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
-        m_values_to_stack.push_back(std::move(make_unique<short[]>(m_width*height_range*n_files)));
+        m_values_to_stack.push_back(vector<short>(m_width*height_range*n_files, -1));
     }
 
     int i_slice = 0;
@@ -34,12 +34,6 @@ void StackerMedian::calculate_stacked_photo()  {
         i_slice++;
         const int y_max = min(y_min + height_range, m_height);
         cout << "Stacking slice " << i_slice << " of " << n_slices << endl;
-        // set all values to -1
-        for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
-            for (long long i_pixel = 0; i_pixel < m_width*height_range*n_files; i_pixel++) {
-                m_values_to_stack[i_color][i_pixel] = -1;
-            }
-        }
 
         auto submit_photo_stack = [this, y_min, y_max](unsigned int file_index) {
             cout << string("Adding ") + m_files_to_stack[file_index] + string(" to stack\n");
