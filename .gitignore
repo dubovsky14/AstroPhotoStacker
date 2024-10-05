@@ -1,3 +1,4 @@
 .vscode
 bin
 GUI/data/stack_settings.txt
+output/
