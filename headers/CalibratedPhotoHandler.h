@@ -4,6 +4,7 @@
 #include "../headers/CalibrationFrameBase.h"
 #include "../headers/HotPixelIdentifier.h"
 #include "../headers/LocalShiftsHandler.h"
+#include "../headers/CalibratedPhotoScoreHandler.h"
 
 #include <string>
 #include <memory>
@@ -145,6 +146,12 @@ namespace AstroPhotoStacker {
 
             const LocalShiftsHandler& get_local_shifts_handler()    { return m_local_shifts_handler; };
 
+            bool has_score() const    { return !m_score_handler.empty(); };
+
+            float get_global_score() const    { return m_score_handler.get_global_score(); };
+
+            float get_score(int x, int y) const    { return m_score_handler.get_local_score(x, y); };
+
         private:
             int m_width;
             int m_height;
@@ -159,6 +166,7 @@ namespace AstroPhotoStacker {
 
             const HotPixelIdentifier *m_hot_pixel_identifier    = nullptr;
             std::vector<std::shared_ptr<const CalibrationFrameBase>> m_calibration_frames;
+            CalibratedPhotoScoreHandler m_score_handler;
 
             std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
             LocalShiftsHandler m_local_shifts_handler;
