@@ -1,12 +1,4 @@
 #include "../headers/StackerWeightedBestScore.h"
-#include "../headers/CalibratedPhotoHandler.h"
-
-#include "../headers/thread_pool.h"
-
-#include <opencv2/opencv.hpp>
-
-#include <iostream>
-#include <algorithm>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -20,9 +12,14 @@ double StackerWeightedBestScore::get_stacked_value_from_pixel_array(tuple<short,
         return c_empty_pixel_value;
     }
 
-    sort(ordered_array_begin, ordered_array_begin + number_of_stacked_pixels, [](const tuple<short,ScoreType> &a, const tuple<short,ScoreType> &b) {
-        return std::get<1>(a) < std::get<1>(b);
-    });
+    unsigned int max_score_index = 0;
+    ScoreType max_score = std::get<1>(ordered_array_begin[0]);
 
-    return std::get<0>(ordered_array_begin[number_of_stacked_pixels-1]);
+    for (unsigned int i_pixel = 1; i_pixel < number_of_stacked_pixels; i_pixel++) {
+        if (std::get<1>(ordered_array_begin[i_pixel]) > max_score) {
+            max_score = std::get<1>(ordered_array_begin[i_pixel]);
+            max_score_index = i_pixel;
+        }
+    }
+    return std::get<0>(ordered_array_begin[max_score_index]);
 };

@@ -27,7 +27,6 @@ namespace AstroPhotoStacker {
             virtual int get_tasks_total() const override;
 
         protected:
-            std::vector<std::vector<unsigned short>> m_number_of_stacked_pixels;
             std::vector<std::vector<short int>> m_values_to_stack;
 
             virtual void add_photo_to_stack(unsigned int file_index, int y_min, int y_max) override;

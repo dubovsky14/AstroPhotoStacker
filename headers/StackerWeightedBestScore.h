@@ -1,15 +1,12 @@
 #pragma once
 
-
 #include "../headers/StackerWeightedMedian.h"
 
-#include <vector>
 #include <tuple>
-#include <memory>
 
 namespace AstroPhotoStacker {
     /**
-     * @brief Class for stacking photos using median stacking algorithm. It serves also as a base class for all algorithms that stack require values from all photos to be stored in memory.
+     * @brief Stacking algorithm that for each pixel select the value with the highest score
      */
     class StackerWeightedBestScore : public StackerWeightedMedian {
         public:

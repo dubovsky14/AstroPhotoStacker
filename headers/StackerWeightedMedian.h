@@ -5,7 +5,6 @@
 
 #include <vector>
 #include <tuple>
-#include <memory>
 
 namespace AstroPhotoStacker {
     typedef float ScoreType;
