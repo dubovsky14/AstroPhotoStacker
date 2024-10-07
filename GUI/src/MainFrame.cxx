@@ -968,7 +968,7 @@ void MyFrame::update_histogram()    {
 
 void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title)    {
     const std::string default_path = m_recent_paths_handler->get_recent_file_path(type, "");
-    wxFileDialog dialog(this, title, "", default_path, "*[!'.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
+    wxFileDialog dialog(this, title, "", default_path, "*[!'.txt',!'.pp3']", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
     if (dialog.ShowModal() == wxID_OK) {
         wxArrayString paths;
         dialog.GetPaths(paths);
@@ -995,7 +995,8 @@ void MyFrame::on_open_darks(wxCommandEvent& event)    {
 }
 
 void MyFrame::on_save_stacked(wxCommandEvent& event) {
-    wxFileDialog dialog(this, "Save stacked file", "", "", "*['.tif']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
+    wxFileDialog dialog(this, "Save stacked file", "", default_path, "*['.tif']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (dialog.ShowModal() == wxID_OK) {
         std::string file_address = dialog.GetPath().ToStdString();
 
