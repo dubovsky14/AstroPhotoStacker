@@ -55,9 +55,16 @@ void StackerBase::save_stacked_photo(const std::string &file_address, const std:
     std::vector<std::vector<double> > data_for_plotting = stacked_image;
 
     const unsigned int max_value_output = pow(2, get_output_bit_depth(image_options)) -1;
+    double max_value_input = 0;
     for (unsigned int color = 0; color < stacked_image.size(); color++) {
-        const double max_value_input = *max_element(data_for_plotting[color].begin(), data_for_plotting[color].end());
-        const double scale_factor = max_value_output / max_value_input;
+        const double max_value_color = *max_element(data_for_plotting[color].begin(), data_for_plotting[color].end());
+        if (max_value_color > max_value_input) {
+            max_value_input = max_value_color;
+        }
+    }
+
+    const double scale_factor = max_value_output / max_value_input;
+    for (unsigned int color = 0; color < stacked_image.size(); color++) {
         for (int index = 0; index < width*height; index++) {
             data_for_plotting[color][index] *= scale_factor;
         }

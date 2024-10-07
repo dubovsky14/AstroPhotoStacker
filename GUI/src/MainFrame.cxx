@@ -968,7 +968,7 @@ void MyFrame::update_histogram()    {
 
 void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title)    {
     const std::string default_path = m_recent_paths_handler->get_recent_file_path(type, "");
-    wxFileDialog dialog(this, title, "", default_path, "*[!'.txt',!'.pp3']", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
+    wxFileDialog dialog(this, title, "", default_path, "*[!'.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
     if (dialog.ShowModal() == wxID_OK) {
         wxArrayString paths;
         dialog.GetPaths(paths);
@@ -1018,7 +1018,7 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
                                             CV_16UC3);
         }
         else    {
-            const bool apply_green_correction = false;
+            const bool apply_green_correction = m_stacker->contains_only_rgb_raw_files();
             cout << "apply green correction: " << apply_green_correction << endl;
             m_stacker->save_stacked_photo(file_address, apply_green_correction, CV_16UC3);
         }
