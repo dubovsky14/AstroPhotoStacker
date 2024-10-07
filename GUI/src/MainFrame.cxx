@@ -968,7 +968,13 @@ void MyFrame::update_histogram()    {
 
 void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title)    {
     const std::string default_path = m_recent_paths_handler->get_recent_file_path(type, "");
-    wxFileDialog dialog(this, title, "", default_path, "*[!'.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
+    const std::vector<string> allowed_extensions = {"cr2", "cr3", "jpg", "jpeg", "png", "fit", "tif", "tiff"};
+    string wildcard_string = "Image files |";
+    for (const string &extension : allowed_extensions) {
+        wildcard_string += "*." + extension + ";" + "*." + AstroPhotoStacker::to_upper_copy(extension) + ";";
+    }
+
+    wxFileDialog dialog(this, title, "", default_path, wildcard_string, wxFD_OPEN | wxFD_FILE_MUST_EXIST | wxFD_MULTIPLE);
     if (dialog.ShowModal() == wxID_OK) {
         wxArrayString paths;
         dialog.GetPaths(paths);
