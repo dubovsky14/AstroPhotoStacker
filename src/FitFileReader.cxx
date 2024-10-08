@@ -78,6 +78,7 @@ void FitFileReader::parse_header(const std::string &header)    {
                 value += header[i];
             }
             else {
+                strip_string(&value, "\'\"");
                 m_metadata[key] = value;
                 key = "";
                 value = "";
@@ -108,6 +109,17 @@ void FitFileReader::fill_metadata()    {
 
     // get zero point
     m_zero_point = std::stoi(get_with_default<string,string>(m_metadata, "BZERO", "0"));
+
+    // just for output metadata struct:
+    m_metadata_struct.aperture = std::stof(get_with_default<string,string>(m_metadata, "APERTURE", "0"));
+    m_metadata_struct.exposure_time = m_exposure_time;
+    m_metadata_struct.iso = std::stoi(get_with_default<string,string>(m_metadata, "ISO", "0"));
+    if (m_metadata_struct.iso == 0) {
+        m_metadata_struct.iso = std::stoi(get_with_default<string,string>(m_metadata, "GAIN", "0"));
+    }
+
+    m_metadata_struct.focal_length = std::stof(get_with_default<string,string>(m_metadata, "FOCALLEN", "0"));
+    m_metadata_struct.date_time = get_with_default<string,string>(m_metadata, "DATE-OBS", "");
 };
 
 void FitFileReader::read_data(std::ifstream &file) {
@@ -173,7 +185,6 @@ void FitFileReader::apply_green_correction()   {
         return;
     }
     const int max_value = (2 << (m_bit_depth - 1)) - 1;
-    cout << "Max value: " << max_value << endl;
 
     for (int i_y = 0; i_y < m_height; i_y++) {
         for (int i_x = 0; i_x < m_width; i_x++) {

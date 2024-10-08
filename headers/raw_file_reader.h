@@ -2,6 +2,11 @@
 
 #include "../headers/Metadata.h"
 
+#include "../headers/DSLR_and_SLR_raw_file_reader.h"
+#include "../headers/FitFileReader.h"
+
+#include "../headers/Common.h"
+
 #include <memory>
 #include <string>
 #include <libraw/libraw.h>
@@ -11,6 +16,8 @@
 #include <tuple>
 
 namespace AstroPhotoStacker   {
+    bool is_fit_file(const std::string &file_address);
+
     /**
      * @brief Read metadata from the raw file
      *
@@ -40,69 +47,17 @@ namespace AstroPhotoStacker   {
     */
     template<typename ValueType = unsigned short>
     std::vector<ValueType> read_raw_file(const std::string &raw_file_address, int *width, int *height, std::vector<char> *colors = nullptr)   {
-        // create a LibRaw object
-        LibRaw raw_processor;
-
-        // open the file
-        if (raw_processor.open_file(raw_file_address.c_str()) != LIBRAW_SUCCESS) {
-            throw std::runtime_error("Cannot open raw file " + raw_file_address);
-        }
-
-        // unpack the raw data
-        if (raw_processor.unpack() != LIBRAW_SUCCESS) {
-            throw std::runtime_error("Cannot unpack raw data from file " + raw_file_address);
-        }
-
-        raw_processor.raw2image();
-        raw_processor.subtract_black();
-
-        int col, bps;
-        raw_processor.get_mem_image_format(width, height, &col, &bps);
-
-        if (*width < *height)   {
-            std::swap(*width, *height);
-        }
-
-        std::vector<ValueType> brightness(*width*(*height));
-        if (colors != nullptr)   {
-            colors->resize((*width)*(*height));
-        }
-        const unsigned short int (*image_data)[4] = raw_processor.imgdata.image;
-
-        if (colors != nullptr)   {
-            for (int row = 0; row < *height; ++row) {
-                for (int col = 0; col < *width; ++col) {
-                    const unsigned int index = row * (*width) + col;
-                    brightness[index] = image_data[index][raw_processor.COLOR(row,col)];
-                    (*colors)[index] = raw_processor.COLOR(row,col);
-                    if ((*colors)[index] == 3)    {
-                        (*colors)[index] = 1;
-                    }
-                }
+        if (is_fit_file(raw_file_address))    {
+            FitFileReader fit_files_reader(raw_file_address);
+            if (colors != nullptr)   {
+                *colors = fit_files_reader.get_colors();
             }
+            return fit_files_reader.get_data_templated<ValueType>();
         }
-        else    {
-            for (int row = 0; row < *height; ++row) {
-                for (int col = 0; col < *width; ++col) {
-                    const unsigned int index = row * (*width) + col;
-                    brightness[index] = image_data[index][raw_processor.COLOR(row,col)];
-                }
-            }
+        else   {
+            return read_raw_file_dslr_slr<ValueType>(raw_file_address, width, height, colors);
         }
-
-        // close the file
-        raw_processor.recycle();
-
-        return brightness;
     };
-
-    /**
-     * @brief Get the color information as a vector of characters (R - red, G - green, B - blue)
-     *
-     * @param raw_file - path to the raw file
-     * @return std::vector<char> - vector of characters containing the color information for given index of the color (R = red, G = green, B = blue)
-    */
-    std::vector<char> get_color_info_as_char_vector(const std::string &raw_file);
 
     /**
      * @brief Get the color information as a vector of numbers (0 - red, 1 - green, 2 - blue)
@@ -120,4 +75,5 @@ namespace AstroPhotoStacker   {
      * @param height - pointer to the variable where the height of the photo will be stored
     */
     bool get_photo_resolution_raw_file(const std::string &raw_file, int *width, int *height);
+
 }

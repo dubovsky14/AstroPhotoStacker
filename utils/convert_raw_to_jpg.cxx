@@ -71,8 +71,7 @@ int main(int argc, char **argv) {
         const string output_file = output_address + "/" + raw_file_wo_extension + ".jpg";
 
         int width, height;
-        const bool is_fit_file = !is_raw_file(input_file);
-        if (is_fit_file)    {
+        if (is_fit_file(input_file))    {
             FitFileReader fit_file_reader(input_file);
             width = fit_file_reader.get_width();
             height = fit_file_reader.get_height();

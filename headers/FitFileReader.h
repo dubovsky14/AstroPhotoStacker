@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../headers/Metadata.h"
 
 #include <string>
 #include <fstream>
@@ -12,10 +13,6 @@ namespace AstroPhotoStacker {
     class FitFileReader {
         public:
             FitFileReader(const std::string &input_file);
-
-            const std::map<std::string, std::string> &get_metadata() const {
-                return m_metadata;
-            }
 
             int get_width() const {
                 return m_width;
@@ -41,7 +38,20 @@ namespace AstroPhotoStacker {
                 return m_data;
             }
 
+            template<class ValueType>
+            std::vector<ValueType> get_data_templated() const {
+                std::vector<ValueType> brightness(m_width * m_height);
+                for (unsigned int pixel : m_data) {
+                    brightness[pixel] = pixel;
+                }
+                return brightness;
+            }
+
             std::vector<char> get_colors() const;
+
+            const Metadata& get_metadata() const {
+                return m_metadata_struct;
+            };
 
         private:
             void read_header(std::ifstream &file);
@@ -57,6 +67,8 @@ namespace AstroPhotoStacker {
             std::map<std::string, std::string> m_metadata;
 
             std::array<char, 4> m_bayer_matrix = {0,1,1,2}; // RGGB
+
+            Metadata m_metadata_struct;
 
             int m_width;
             int m_height;
