@@ -71,25 +71,28 @@ int main(int argc, char **argv) {
         const string output_file = output_address + "/" + raw_file_wo_extension + ".jpg";
 
         int width, height;
-        vector<char> colors;
-        vector<unsigned short> brightness;
         const bool is_fit_file = !is_raw_file(input_file);
         if (is_fit_file)    {
             FitFileReader fit_file_reader(input_file);
             width = fit_file_reader.get_width();
             height = fit_file_reader.get_height();
-            rgb_image = fit_file_reader.get_data();
+            vector<unsigned short> brightness = fit_file_reader.get_data();
             if (!fit_file_reader.is_rgb())   {
-                rgb_image.push_back(rgb_image[0]);
-                rgb_image.push_back(rgb_image[0]);
+                rgb_image.push_back(brightness);
+                rgb_image.push_back(brightness);
+                rgb_image.push_back(brightness);
+            }
+            else {
+
+                const vector<char> colors = fit_file_reader.get_colors();
+                rgb_image = convert_raw_data_to_rgb_image(brightness.data(), colors.data(), width, height);
             }
 
-            decrease_image_bit_depth(rgb_image.at(0).data(), width*height, 8);
-            decrease_image_bit_depth(rgb_image.at(1).data(), width*height, 8);
-            decrease_image_bit_depth(rgb_image.at(2).data(), width*height, 8);
+            scale_to_8_bits(&rgb_image, width, height);
         }
         else    {
-            brightness = read_raw_file<unsigned short>(input_file, &width, &height, &colors);
+            vector<char> colors;
+            vector<unsigned short> brightness = read_raw_file<unsigned short>(input_file, &width, &height, &colors);
             rgb_image = convert_raw_data_to_rgb_image(brightness.data(), colors.data(), width, height);
             scale_to_8_bits(&rgb_image, width, height);
         }

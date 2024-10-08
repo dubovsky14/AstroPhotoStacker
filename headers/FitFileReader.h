@@ -6,6 +6,7 @@
 #include <memory>
 #include <map>
 #include <vector>
+#include <array>
 
 namespace AstroPhotoStacker {
     class FitFileReader {
@@ -33,12 +34,14 @@ namespace AstroPhotoStacker {
             }
 
             bool is_rgb() const {
-                return m_n_colors == 3;
+                return m_is_rgb;
             };
 
-            const std::vector<std::vector<unsigned short int>> &get_data() const {
+            const std::vector<unsigned short int> &get_data() const {
                 return m_data;
             }
+
+            std::vector<char> get_colors() const;
 
         private:
             void read_header(std::ifstream &file);
@@ -53,14 +56,23 @@ namespace AstroPhotoStacker {
 
             std::map<std::string, std::string> m_metadata;
 
+            std::array<char, 4> m_bayer_matrix = {0,1,1,2}; // RGGB
+
             int m_width;
             int m_height;
-            int m_n_colors = 1;
+            bool m_is_rgb = false;
             int m_bit_depth;
             unsigned int m_zero_point;
             float m_exposure_time;
 
-            std::vector<std::vector<unsigned short int>> m_data;
+            std::vector<unsigned short int> m_data;
 
+            void process_bayer_matrix(const std::string &bayer_matrix);
+
+            inline char get_color(int x, int y) const {
+                return m_bayer_matrix[(x%2) + 2*(y%2)];
+            }
+
+            void apply_green_correction();
     };
 }
