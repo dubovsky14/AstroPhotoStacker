@@ -113,6 +113,30 @@ bool AlignmentPointBox::good_match(float chi2) const   {
     return chi2 < m_max_acceptable_chi2;
 };
 
+float AlignmentPointBox::get_sharpness_factor(const MonochromeImageData &image_data, int x_center, int y_center, int box_size)  {
+    if (box_size % 2 == 0) {
+        box_size += 1;
+    }
+    const int y_min = y_center - box_size/2;
+    const int y_max = y_center + box_size/2;
+    const int x_min = x_center - box_size/2;
+    const int x_max = x_center + box_size/2;
+
+    if (y_min < 0 || y_max >= image_data.height || x_min < 0 || x_max >= image_data.width) {
+        return 0;
+    }
+
+    float sum = 0;
+    for (int y = y_min; y < y_max; y++) {
+        for (int x = x_min; x < x_max; x++) {
+            const float sharpness_x = image_data.brightness[y*image_data.width + x + 1] - image_data.brightness[y*image_data.width + x];
+            const float sharpness_y = image_data.brightness[(y+1)*image_data.width + x] - image_data.brightness[y*image_data.width + x];
+            sum += sharpness_x*sharpness_x + sharpness_y*sharpness_y;
+        }
+    }
+    return sum/((box_size-1)*(box_size-1));
+};
+
 float AlignmentPointBox::calculate_acceptable_chi2(const MonochromeImageData &image_data) const {
     const int max_shift = 2;
     float result = 0;

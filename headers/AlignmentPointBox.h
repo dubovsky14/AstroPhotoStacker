@@ -29,6 +29,8 @@ namespace AstroPhotoStacker {
 
             bool good_match(float chi2) const;
 
+            static float get_sharpness_factor(const MonochromeImageData &image_data, int x_center, int y_center, int box_size);
+
         private:
             std::vector<unsigned short> m_brightness;
             int m_x_center;

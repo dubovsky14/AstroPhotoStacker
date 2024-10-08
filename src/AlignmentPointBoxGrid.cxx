@@ -115,7 +115,7 @@ std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const Monochrome
         local_shift.dx = good_match ?  best_x - original_x : 0;
         local_shift.dy = good_match ?  best_y - original_y : 0;
         local_shift.valid_ap = good_match;
-        local_shift.score = -best_chi2;
+        local_shift.score = AlignmentPointBox::get_sharpness_factor(calibrated_image, best_x, best_y, apb.get_box_size());
 
         shifts.push_back(local_shift);
     }

@@ -8,6 +8,7 @@
 #include "../headers/StackerCutOffAverage.h"
 #include "../headers/StackerMaximum.h"
 #include "../headers/StackerMinimum.h"
+#include "../headers/StackerWeightedBestScore.h"
 
 #include <string>
 #include <memory>
@@ -30,6 +31,9 @@ namespace AstroPhotoStacker {
         }
         else if (stacker_type == "minimum") {
             return std::make_unique<StackerMinimum>(number_of_colors, width, height, interpolate_colors);
+        }
+        else if (stacker_type == "best_score") {
+            return std::make_unique<StackerWeightedBestScore>(number_of_colors, width, height, interpolate_colors);
         }
         else {
             throw std::runtime_error("Unknown stacker type: " + stacker_type);

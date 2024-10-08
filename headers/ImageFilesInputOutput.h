@@ -176,7 +176,8 @@ namespace AstroPhotoStacker {
 
         for (int y = 0; y < height-1; y++)  {
             for (int x = 0; x < width-1; x++)   {
-                pixel_values_type this_pixel_rgb[3] = {0, 0, 0};
+                int this_pixel_rgb[3] = {0, 0, 0};
+                int n_pixels[3] = {0, 0, 0};
 
                 // average out 2x2 pixels
                 for (int y2 = 0; y2 < 2; y2++)  {
@@ -184,15 +185,17 @@ namespace AstroPhotoStacker {
                         const unsigned int index = (y+y2)*width + (x+x2);
                         const unsigned int color = colors[index] != 3 ? colors[index] : 1;
                         this_pixel_rgb[color] += arr[index];
+                        n_pixels[color]++;
                     }
                 }
 
-                // usually there are 2 green pixels
-                this_pixel_rgb[1] /= 2;
-
                 // save the result
                 for (int color = 0; color < 3; color++) {
-                    result[color][y*width + x] = this_pixel_rgb[color];
+                    if (n_pixels[color] == 0)   {
+                        result[color][y*width + x] = 0;
+                        continue;
+                    }
+                    result[color][y*width + x] = this_pixel_rgb[color]/n_pixels[color];
                 }
             }
         }

@@ -72,6 +72,6 @@ class StackSettings {
 
         std::string m_alignment_method = "stars";
 
-        const std::vector<std::string> m_stacking_algorithms = {"kappa-sigma median", "kappa-sigma mean", "average", "median", "cut-off average", "maximum", "minimum"};
+        const std::vector<std::string> m_stacking_algorithms = {"kappa-sigma median", "kappa-sigma mean", "average", "median", "cut-off average", "maximum", "minimum", "best score"};
 
 };

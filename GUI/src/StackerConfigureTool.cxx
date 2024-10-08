@@ -79,6 +79,9 @@ std::string get_stacker_type_for_factory(const std::string &stacking_algorithm_a
     else if (stacking_algorithm_app_name == "minimum") {
         return "minimum";
     }
+    else if (stacking_algorithm_app_name == "best score") {
+        return "best_score";
+    }
     else {
         throw std::runtime_error("Unknown stacker type: " + stacking_algorithm_app_name);
     }
