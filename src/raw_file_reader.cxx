@@ -28,8 +28,7 @@ bool AstroPhotoStacker::is_raw_file(const std::string &file_address)   {
 
 std::vector<char> AstroPhotoStacker::get_color_info_as_number(const std::string &raw_file)   {
     if (is_fit_file(raw_file)) {
-        FitFileReader fit_reader(raw_file);
-        return fit_reader.get_colors();
+        return {0,1,2,3};
     }
     return get_color_info_as_number_dslr_slr(raw_file);
 };

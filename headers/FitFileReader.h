@@ -8,6 +8,8 @@
 #include <map>
 #include <vector>
 #include <array>
+#include <iostream>
+#include <limits>
 
 namespace AstroPhotoStacker {
     class FitFileReader {
@@ -41,8 +43,13 @@ namespace AstroPhotoStacker {
             template<class ValueType>
             std::vector<ValueType> get_data_templated() const {
                 std::vector<ValueType> brightness(m_width * m_height);
-                for (unsigned int pixel : m_data) {
-                    brightness[pixel] = pixel;
+                for (unsigned int i_pixel = 0; i_pixel < m_data.size(); i_pixel++) {
+                    const unsigned short int pixel = m_data[i_pixel];
+                    brightness[i_pixel] = pixel;
+                    if (pixel > std::numeric_limits<ValueType>::max()) {
+                        std::cout << ("Value too large for the output type\n");
+                        std::abort();
+                    }
                 }
                 return brightness;
             }
@@ -86,5 +93,7 @@ namespace AstroPhotoStacker {
             }
 
             void apply_green_correction();
+
+            void shrink_to_15_bits();
     };
 }

@@ -148,6 +148,17 @@ void FitFileReader::read_data(std::ifstream &file) {
         apply_green_correction();
     }
 
+    // why the fuck do some FIT files come with 16 bit precision? This is absurd, it's just a noise causing problems ...
+    shrink_to_15_bits();
+};
+
+void FitFileReader::shrink_to_15_bits()    {
+    if (m_bit_depth == 16) {
+        for (unsigned int i = 0; i < m_data.size(); i++) {
+            m_data[i] = m_data[i] >> 1;
+        }
+    }
+    m_bit_depth = 15;
 };
 
 void FitFileReader::process_bayer_matrix(const std::string &bayer_matrix)  {
@@ -197,4 +208,5 @@ void FitFileReader::apply_green_correction()   {
             }
         }
     }
+
 };

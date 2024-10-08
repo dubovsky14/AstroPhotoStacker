@@ -52,6 +52,8 @@ namespace AstroPhotoStacker   {
             if (colors != nullptr)   {
                 *colors = fit_files_reader.get_colors();
             }
+            *width = fit_files_reader.get_width();
+            *height = fit_files_reader.get_height();
             return fit_files_reader.get_data_templated<ValueType>();
         }
         else   {
@@ -60,7 +62,7 @@ namespace AstroPhotoStacker   {
     };
 
     /**
-     * @brief Get the color information as a vector of numbers (0 - red, 1 - green, 2 - blue)
+     * @brief This is a vector with the same number of elemetns as possible color codes (most ofthen 3 or 4)
      *
      * @param raw_file - path to the raw file
      * @return std::vector<char> - vector of numbers containing the color information for given index of the color (0 = red, 1 = green, 2 = blue)

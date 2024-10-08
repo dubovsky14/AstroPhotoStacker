@@ -72,18 +72,14 @@ int main(int argc, char **argv) {
 
         int width, height;
         if (is_fit_file(input_file))    {
-            FitFileReader fit_file_reader(input_file);
-            width = fit_file_reader.get_width();
-            height = fit_file_reader.get_height();
-            vector<unsigned short> brightness = fit_file_reader.get_data();
-            if (!fit_file_reader.is_rgb())   {
+            vector<char> colors;
+            vector<unsigned short> brightness = read_raw_file<unsigned short>(input_file, &width, &height, &colors);
+            if (colors.size() == 0) {
                 rgb_image.push_back(brightness);
                 rgb_image.push_back(brightness);
                 rgb_image.push_back(brightness);
             }
             else {
-
-                const vector<char> colors = fit_file_reader.get_colors();
                 rgb_image = convert_raw_data_to_rgb_image(brightness.data(), colors.data(), width, height);
             }
 
