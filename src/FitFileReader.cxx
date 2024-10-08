@@ -120,6 +120,7 @@ void FitFileReader::fill_metadata()    {
 
     m_metadata_struct.focal_length = std::stof(get_with_default<string,string>(m_metadata, "FOCALLEN", "0"));
     m_metadata_struct.date_time = get_with_default<string,string>(m_metadata, "DATE-OBS", "");
+    m_metadata_struct.monochrome = bayer_matrix == "";
 };
 
 void FitFileReader::read_data(std::ifstream &file) {

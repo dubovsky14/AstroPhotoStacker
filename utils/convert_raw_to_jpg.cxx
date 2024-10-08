@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
     const std::string input_address = argv[1];
     const std::string output_address = argv[2];
     std::vector<std::string> file_paths = get_file_paths(argv[1]);
-    vector<vector<unsigned short>>  rgb_image;
     for (const string &input_file : file_paths)  {
+        vector<vector<unsigned short>>  rgb_image;
         // get file name
         const string raw_file = input_file.substr(input_file.find_last_of("/\\") + 1);
 
@@ -74,7 +74,8 @@ int main(int argc, char **argv) {
         if (is_fit_file(input_file))    {
             vector<char> colors;
             vector<unsigned short> brightness = read_raw_file<unsigned short>(input_file, &width, &height, &colors);
-            if (colors.size() == 0) {
+            const Metadata metadata = read_metadata_from_raw_file(input_file);
+            if (metadata.monochrome) {
                 rgb_image.push_back(brightness);
                 rgb_image.push_back(brightness);
                 rgb_image.push_back(brightness);
@@ -83,7 +84,7 @@ int main(int argc, char **argv) {
                 rgb_image = convert_raw_data_to_rgb_image(brightness.data(), colors.data(), width, height);
             }
 
-            scale_to_8_bits(&rgb_image, width, height);
+            scale_to_8_bits(&rgb_image, width, height, !metadata.monochrome);
         }
         else    {
             vector<char> colors;
