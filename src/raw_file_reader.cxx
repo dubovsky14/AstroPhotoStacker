@@ -1,5 +1,7 @@
 #include "../headers/raw_file_reader.h"
 
+#include "../headers/FitFileMetadataReader.h"
+
 #include <libraw/libraw.h>
 #include <iomanip>
 #include <sstream>
@@ -13,8 +15,8 @@ bool AstroPhotoStacker::is_fit_file(const std::string &file_address)   {
 
 Metadata AstroPhotoStacker::read_metadata_from_raw_file(const std::string &raw_file_address) {
     if (is_fit_file(raw_file_address)) {
-        FitFileReader fit_reader(raw_file_address);
-        return fit_reader.get_metadata();
+        FitFileMetadataReader fit_file_metadata_reader(raw_file_address);
+        return fit_file_metadata_reader.get_metadata();
     }
     return read_metadata_from_raw_file_dslr_slr(raw_file_address);
 };
@@ -36,9 +38,9 @@ std::vector<char> AstroPhotoStacker::get_color_info_as_number(const std::string 
 
 bool AstroPhotoStacker::get_photo_resolution_raw_file(const std::string &raw_file, int *width, int *height) {
     if (is_fit_file(raw_file)) {
-        FitFileReader fit_reader(raw_file);
-        *width = fit_reader.get_width();
-        *height = fit_reader.get_height();
+        FitFileMetadataReader fit_file_metadata_reader(raw_file);
+        *width = fit_file_metadata_reader.get_width();
+        *height = fit_file_metadata_reader.get_height();
         return true;
     }
     return get_photo_resolution_raw_file_dslr_slr(raw_file, width, height);
