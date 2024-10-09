@@ -142,16 +142,29 @@ void ImagePreview::update_preview_bitmap(bool apply_green_correction)   const  {
     m_preview_bitmap->SetBitmap(bitmap);
 };
 
-void ImagePreview::zoom_in(float mouse_position_relative_x, float mouse_position_relative_y)    {
-    m_zoom_factor = min<double>(m_zoom_factor*pow(2,1./3), m_max_zoom_factor);
+void ImagePreview::zoom(float mouse_position_relative_x, float mouse_position_relative_y, float zoom_step)  {
+    const double old_zoom_factor = m_zoom_factor;
+    m_zoom_factor = min<double>(m_zoom_factor*pow(2,zoom_step), m_max_zoom_factor);
     m_image_resize_tool.set_zoom_factor(m_zoom_factor);
+
+    const double zoom_factor_ratio = old_zoom_factor/m_zoom_factor;
+    if (zoom_factor_ratio == 1) {
+        return;
+    }
+
+    // make sure the mouse position stays in the same place
+    //double mouse_position_relative_x_new = force_range<double>(0.5+(mouse_position_relative_x-0.5)*zoom_factor_ratio, 0, 1);
+    //double mouse_position_relative_y_new = force_range<double>(0.5+(mouse_position_relative_y-0.5)*zoom_factor_ratio, 0, 1);
+
     update_preview_data(mouse_position_relative_x, mouse_position_relative_y);
 };
 
+void ImagePreview::zoom_in(float mouse_position_relative_x, float mouse_position_relative_y)    {
+    zoom(mouse_position_relative_x, mouse_position_relative_y, 1./3);
+};
+
 void ImagePreview::zoom_out(float mouse_position_relative_x, float mouse_position_relative_y)   {
-    m_zoom_factor = max<double>(m_zoom_factor*pow(2,-1./3), m_min_zoom_factor);
-    m_image_resize_tool.set_zoom_factor(m_zoom_factor);
-    update_preview_data(mouse_position_relative_x, mouse_position_relative_y);
+    zoom(mouse_position_relative_x, mouse_position_relative_y, -1./3);
 };
 
 

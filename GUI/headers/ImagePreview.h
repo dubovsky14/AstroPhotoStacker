@@ -101,6 +101,15 @@ class ImagePreview {
          *
          * @param mouse_position_relative_x relative x position of the mouse
          * @param mouse_position_relative_y relative y position of the mouse
+         * @param zoom_step zoom step
+        */
+        void zoom(float mouse_position_relative_x, float mouse_position_relative_y, float zoom_step);
+
+        /**
+         * @brief Zoom in the preview at a given position
+         *
+         * @param mouse_position_relative_x relative x position of the mouse
+         * @param mouse_position_relative_y relative y position of the mouse
         */
         void zoom_in(float mouse_position_relative_x, float mouse_position_relative_y);
 
