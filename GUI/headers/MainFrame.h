@@ -123,6 +123,7 @@ class MyFrame : public wxFrame  {
         // upper part: stack settings, image preview and image settings
         wxBoxSizer  *m_sizer_top_left   = nullptr;
         wxBoxSizer  *m_sizer_top_center = nullptr;
+        wxBoxSizer  *m_image_preview_size = nullptr;
         wxBoxSizer  *m_sizer_top_right  = nullptr;
 
 

@@ -137,6 +137,16 @@ void ImagePreviewCropTool::bind_crop_events() {
 
             m_crop_width = m_image_resize_tool.get_original_coordinate_x(relative_x) - m_crop_top_left_x;
             m_crop_height = m_image_resize_tool.get_original_coordinate_y(relative_y) - m_crop_top_left_y;
+
+            if (m_crop_width < 0) {
+                m_crop_top_left_x += m_crop_width;
+                m_crop_width = -m_crop_width;
+            }
+
+            if (m_crop_height < 0) {
+                m_crop_top_left_y += m_crop_height;
+                m_crop_height = -m_crop_height;
+            }
         }
 
         update_preview_bitmap();

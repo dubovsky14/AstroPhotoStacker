@@ -747,7 +747,10 @@ void MyFrame::add_upper_middle_panel()   {
 
 void MyFrame::add_image_preview()    {
     // Add the wxStaticBitmap to a sizer
-    m_sizer_top_center->Add(m_current_preview->get_image_preview_bitmap(), 1, wxCENTER, 0);
+    m_image_preview_size = new wxBoxSizer(wxHORIZONTAL);
+    m_sizer_top_center->Add(m_image_preview_size, 1, wxEXPAND | wxALL, 5);
+
+    m_image_preview_size->Add(m_current_preview->get_image_preview_bitmap(), 1, wxTOP, 0);
 };
 
 void MyFrame::update_image_preview_file(const std::string& file_address)  {
