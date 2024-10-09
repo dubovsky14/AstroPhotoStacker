@@ -73,6 +73,7 @@ void ImagePreview::read_preview_from_file(const std::string &path)  {
             }
         }
     }
+    m_max_zoom_factor = std::min<double>(m_image_resize_tool.get_height_original()/m_height, m_image_resize_tool.get_width_original()/m_width);
     m_image_resize_tool.set_default_resized_area();
     update_max_values_original();
     update_preview_data();
