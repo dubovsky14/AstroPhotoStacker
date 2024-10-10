@@ -4,9 +4,9 @@ using namespace std;
 
 ImagePreviewCropTool::ImagePreviewCropTool(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation) :
     ImagePreview(parent, width, height, max_value, use_color_interpolation) {
-
+    //m_preview_offset_zoom = wxPoint(0.368*m_width, 0.155*m_height);   // shift the position to the center of the image - wxStaticBitmap is buggy ...
+    m_preview_offset_shift = wxPoint(0.368*m_width, 0.155*m_height);   // shift the position to the center of the image - wxStaticBitmap is buggy ...
     bind_crop_events();
-
 };
 
 void ImagePreviewCropTool::update_preview_bitmap(bool apply_green_correction) const   {
@@ -89,18 +89,14 @@ void ImagePreviewCropTool::drop_crop()    {
 };
 
 void ImagePreviewCropTool::bind_crop_events() {
-
-    const wxPoint magic_point = wxPoint(0.368*m_width, 0.155*m_height);   // shift the position to the center of the image - wxStaticBitmap is buggy ...
-
-    m_preview_bitmap->Bind(wxEVT_RIGHT_DOWN, [this, magic_point](wxMouseEvent &event) {
+    m_preview_bitmap->Bind(wxEVT_RIGHT_DOWN, [this](wxMouseEvent &event) {
         if (!image_loaded()) {
             return;
         }
 
-
         // Get the mouse position in screen coordinates
         wxPoint screen_pos = event.GetPosition();
-        screen_pos += magic_point;   // shift the position to the center of the image - wxStaticBitmap is buggy ...
+        screen_pos += m_preview_offset_shift;   // shift the position to the center of the image - wxStaticBitmap is buggy ...
 
         // Convert the mouse position to client coordinates relative to the wxStaticBitmap
         wxPoint client_position = m_preview_bitmap->ScreenToClient(screen_pos);
@@ -117,13 +113,13 @@ void ImagePreviewCropTool::bind_crop_events() {
         }
     });
 
-    m_preview_bitmap->Bind(wxEVT_RIGHT_UP, [this, magic_point](wxMouseEvent &event) {
+    m_preview_bitmap->Bind(wxEVT_RIGHT_UP, [this](wxMouseEvent &event) {
         if (!image_loaded()) {
             return;
         }
         // Get the mouse position in screen coordinates
         wxPoint screen_pos = event.GetPosition();
-        screen_pos += magic_point;   // shift the position to the center of the image - wxStaticBitmap is buggy ...
+        screen_pos += m_preview_offset_shift;   // shift the position to the center of the image - wxStaticBitmap is buggy ...
 
         // Convert the mouse position to client coordinates relative to the wxStaticBitmap
         wxPoint client_position = m_preview_bitmap->ScreenToClient(screen_pos);

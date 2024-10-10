@@ -152,10 +152,13 @@ class ImagePreview {
         wxStaticBitmap                  *m_preview_bitmap       = nullptr;
         ImageResizeTool m_image_resize_tool;
 
+        wxPoint m_preview_offset_zoom  = wxPoint(0, 0.155*m_height);
+        wxPoint m_preview_offset_shift = wxPoint(m_width, 0.155*m_height);
+
         std::vector<std::vector<short int>> m_original_image; // 3 color channels, each with width*height pixels
 
-        int m_width;
-        int m_height;
+        int m_width = 0;
+        int m_height =0;
         std::vector<std::vector<int>> m_preview_data; // 3 color channels, each with width*height pixels
         float m_exposure_correction;
         int m_max_value;

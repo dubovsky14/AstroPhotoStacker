@@ -34,6 +34,7 @@ class AlignedImagesProducerGUI : public wxFrame  {
     private:
         MyFrame *m_parent = nullptr;
         wxBoxSizer *m_main_vertical_sizer = nullptr;
+        wxBoxSizer *m_image_preview_sizer = nullptr;
 
 
         std::unique_ptr<AstroPhotoStacker::AlignedImagesProducer> m_aligned_images_producer = nullptr;

@@ -40,7 +40,12 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
         m_image_preview_crop_tool->read_preview_from_file(reference_file);
         m_image_preview_crop_tool->update_preview_bitmap();
     }
-    m_main_vertical_sizer->Add(m_image_preview_crop_tool->get_image_preview_bitmap(), 1, wxCENTER, 0);
+
+
+    m_image_preview_sizer = new wxBoxSizer(wxHORIZONTAL);
+    m_main_vertical_sizer->Add(m_image_preview_sizer, 1, wxCENTER, 5);
+
+    m_image_preview_sizer->Add(m_image_preview_crop_tool->get_image_preview_bitmap(), 1, wxCENTER, 0);
     add_exposure_correction_spin_ctrl();
 
     add_checkboxes();
