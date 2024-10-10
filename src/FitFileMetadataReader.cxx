@@ -16,6 +16,23 @@ FitFileMetadataReader::FitFileMetadataReader(const std::string &input_file)    {
     read_header(*m_input_stream);
 };
 
+int FitFileMetadataReader::get_unix_timestamp(const std::string &time_string)   {
+    struct tm tm;
+    string time_string_adjusted = time_string;
+    for (unsigned int i = 0; i < time_string_adjusted.size(); i++) {
+        if (time_string_adjusted[i] == 'T') {
+            time_string_adjusted[i] = ' ';
+        }
+        if (time_string_adjusted[i] == '.') {
+            time_string_adjusted = time_string_adjusted.substr(0, i);
+            break;
+        }
+    }
+
+    strptime(time_string.c_str(), "%Y-%m-%d %H:%M:%S", &tm);
+    return mktime(&tm);
+};
+
 std::vector<char> FitFileMetadataReader::get_colors() const    {
     vector<char> result(m_width*m_height);
     for (int i_y = 0; i_y < m_height; i_y++) {
@@ -118,6 +135,7 @@ void FitFileMetadataReader::fill_metadata()    {
 
     m_metadata_struct.focal_length = std::stof(get_with_default<string,string>(m_metadata, "FOCALLEN", "0"));
     m_metadata_struct.date_time = get_with_default<string,string>(m_metadata, "DATE-OBS", "");
+    m_metadata_struct.timestamp = FitFileMetadataReader::get_unix_timestamp(m_metadata_struct.date_time);
     m_metadata_struct.monochrome = bayer_matrix == "";
 };
 

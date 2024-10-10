@@ -9,4 +9,6 @@ namespace AstroPhotoStacker {
     Metadata read_metadata_rgb_image(const std::string &input_file);
 
     Metadata read_metadata(const std::string &input_file);
+
+    int get_unix_timestamp(const std::string &time_string);
 }

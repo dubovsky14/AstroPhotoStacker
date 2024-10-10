@@ -53,6 +53,7 @@ Metadata AstroPhotoStacker::read_metadata_rgb_image(const std::string &input_fil
         const auto dateTime = exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal"));
         if (dateTime != exifData.end()) {
             metadata.date_time = dateTime->toString();
+            metadata.timestamp = get_unix_timestamp(metadata.date_time);
         }
 
         // Max Value
@@ -75,4 +76,11 @@ Metadata AstroPhotoStacker::read_metadata(const std::string &input_file)    {
     else    {
         return read_metadata_rgb_image(input_file);
     }
+};
+
+
+int AstroPhotoStacker::get_unix_timestamp(const std::string &time_string)  {
+    struct tm tm;
+    strptime(time_string.c_str(), "%Y:%m:%d %H:%M:%S", &tm);
+    return mktime(&tm);
 };

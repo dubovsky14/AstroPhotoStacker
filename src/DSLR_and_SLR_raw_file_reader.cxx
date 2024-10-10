@@ -30,6 +30,7 @@ Metadata AstroPhotoStacker::read_metadata_from_raw_file_dslr_slr(const std::stri
     std::stringstream ss; // or if you're going to print, just input directly into the output stream
     ss << std::put_time(t, "%Y-%m-%d %I:%M:%S %p");
     result.date_time     = ss.str();
+    result.timestamp     = raw_processor.imgdata.other.timestamp;
 
     // close the file
     raw_processor.recycle();

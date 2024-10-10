@@ -45,6 +45,8 @@ namespace AstroPhotoStacker {
             };
 
         protected:
+            static int get_unix_timestamp(const std::string &time_string);
+
             void read_header(std::ifstream &file);
 
             std::string get_header_string(std::ifstream &file);
