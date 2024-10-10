@@ -78,11 +78,12 @@ FilelistHandler FilelistHandler::get_filelist_with_checked_files() const {
     return filelist_with_checked_files;
 };
 
-void FilelistHandler::add_file(const std::string& path, FileTypes type, bool checked, const AlignmentFileInfo& alignment_info)  {
+void FilelistHandler::add_file(const std::string& path, FileTypes type, bool checked, const AlignmentFileInfo& alignment_info, const Metadata &metadata) {
     m_filelist[type].push_back(path);
     m_filelist_checked[type].push_back(checked);
     if (type == FileTypes::LIGHT)   {
         m_filelist_alignment_info.push_back(alignment_info);
+        m_filelist_metadata.push_back(metadata);
     }
 };
 
@@ -98,6 +99,7 @@ void FilelistHandler::remove_file(const std::string& path, FileTypes type)  {
             files_checked.erase(files_checked.begin() + i);
             if (type == FileTypes::LIGHT)   {
                 m_filelist_alignment_info.erase(m_filelist_alignment_info.begin() + i);
+                m_filelist_metadata.erase(m_filelist_metadata.begin() + i);
             }
         }
     }
@@ -112,6 +114,7 @@ void FilelistHandler::remove_file(int file_index)   {
             m_filelist_checked[type].erase(m_filelist_checked[type].begin() + file_index - files_previous);
             if (type == FileTypes::LIGHT)   {
                 m_filelist_alignment_info.erase(m_filelist_alignment_info.begin() + file_index - files_previous);
+                m_filelist_metadata.erase(m_filelist_metadata.begin() + file_index - files_previous);
             }
             return;
         }
@@ -195,8 +198,12 @@ void FilelistHandler::set_checked_status_for_all_files(bool checked)   {
     }
 };
 
-const std::vector<AlignmentFileInfo>& FilelistHandler::get_alignment_info(FileTypes type)   const    {
+const std::vector<AlignmentFileInfo>& FilelistHandler::get_alignment_info()   const    {
     return m_filelist_alignment_info;
+};
+
+const std::vector<Metadata>& FilelistHandler::get_metadata()   const   {
+    return m_filelist_metadata;
 };
 
 void FilelistHandler::set_alignment_info(int file_index, const AlignmentFileInfo& alignment_info)    {
@@ -238,7 +245,7 @@ void FilelistHandler::get_alignment_info_tabular_data(std::vector<std::vector<st
 };
 
 void FilelistHandler::save_alignment_to_file(const std::string &output_address)  {
-    const std::vector<AlignmentFileInfo> &alignment_info = get_alignment_info(FileTypes::LIGHT);
+    const std::vector<AlignmentFileInfo> &alignment_info = get_alignment_info();
     const std::vector<std::string> &light_files = get_files(FileTypes::LIGHT);
     std::ofstream output_file(output_address);
     for (unsigned int i_file = 0; i_file < alignment_info.size(); ++i_file)   {
@@ -308,6 +315,7 @@ void FilelistHandler::sort_by_alignment_ranking(bool ascending)   {
     rearange_vector(&m_filelist.at(FileTypes::LIGHT), indices.data());
     rearange_vector(&m_filelist_checked.at(FileTypes::LIGHT), indices.data());
     rearange_vector(&m_filelist_alignment_info, indices.data());
+    rearange_vector(&m_filelist_metadata, indices.data());
 };
 
 void FilelistHandler::sort_by_filename(bool ascending)    {
@@ -331,6 +339,7 @@ void FilelistHandler::sort_by_filename(bool ascending)    {
     rearange_vector(&m_filelist.at(FileTypes::LIGHT), indices.data());
     rearange_vector(&m_filelist_checked.at(FileTypes::LIGHT), indices.data());
     rearange_vector(&m_filelist_alignment_info, indices.data());
+    rearange_vector(&m_filelist_metadata, indices.data());
 };
 
 void FilelistHandler::remove_all_files_of_selected_type(FileTypes type)  {
@@ -367,10 +376,12 @@ void FilelistHandler::keep_best_n_files(unsigned int n)   {
     rearange_vector(&m_filelist.at(FileTypes::LIGHT), indices.data());
     rearange_vector(&m_filelist_checked.at(FileTypes::LIGHT), indices.data());
     rearange_vector(&m_filelist_alignment_info, indices.data());
+    rearange_vector(&m_filelist_metadata, indices.data());
 
     m_filelist.at(FileTypes::LIGHT).resize(n);
     m_filelist_checked.at(FileTypes::LIGHT).resize(n);
     m_filelist_alignment_info.resize(n);
+    m_filelist_metadata.resize(n);
 };
 
 void FilelistHandler::set_local_shifts(int i_file, const std::vector<LocalShift> &shifts)   {

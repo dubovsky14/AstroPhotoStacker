@@ -6,6 +6,7 @@
 #include "../headers/AlignedImagesProducerGUI.h"
 #include "../headers/ProgressBarWindow.h"
 
+
 #include "../headers/IndividualColorStretchingBlackMidtoneWhite.h"
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 
@@ -330,8 +331,8 @@ void MyFrame::update_files_to_stack_checkbox()   {
             // aperture, exposure time, ISO, and focal length
             std::string metadata_string = "";
             if (type == FileTypes::LIGHT)   {
-                const AstroPhotoStacker::Metadata metadata = AstroPhotoStacker::read_metadata(file);
-                const AlignmentFileInfo alignment_info = m_filelist_handler.get_alignment_info(FileTypes::LIGHT)[i_file];
+                const AstroPhotoStacker::Metadata metadata = m_filelist_handler.get_metadata()[i_file];
+                const AlignmentFileInfo alignment_info = m_filelist_handler.get_alignment_info()[i_file];
                 const float alignment_score = alignment_info.ranking;
                 metadata_string =   "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture) +
                                     "\t\t" + AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s"
@@ -982,7 +983,8 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
         wxArrayString paths;
         dialog.GetPaths(paths);
         for (auto path : paths) {
-            m_filelist_handler.add_file(path.ToStdString(), type);
+            const AstroPhotoStacker::Metadata metadata = AstroPhotoStacker::read_metadata(path.ToStdString());
+            m_filelist_handler.add_file(path.ToStdString(), type, false, AlignmentFileInfo(), metadata);
             m_recent_paths_handler->set_recent_file_path_from_file(type, path.ToStdString());
         }
     }

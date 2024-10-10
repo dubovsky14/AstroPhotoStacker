@@ -115,7 +115,7 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
     // Light frames
     const vector<string>    &light_frames = filelist_handler->get_files(FileTypes::LIGHT);
     const vector<bool>      &files_are_checked = filelist_handler->get_files_checked(FileTypes::LIGHT);
-    const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler->get_alignment_info(FileTypes::LIGHT);
+    const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler->get_alignment_info();
     for (size_t i_file = 0; i_file < light_frames.size(); ++i_file) {
         if (files_are_checked[i_file]) {
             const string &file = light_frames[i_file];
@@ -160,7 +160,7 @@ std::string AlignedImagesProducerGUI::get_reference_file_address() const  {
     // Light frames
     const vector<string>    &light_frames = filelist_handler->get_files(FileTypes::LIGHT);
     const vector<bool>      &files_are_checked = filelist_handler->get_files_checked(FileTypes::LIGHT);
-    const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler->get_alignment_info(FileTypes::LIGHT);
+    const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler->get_alignment_info();
     for (size_t i_file = 0; i_file < light_frames.size(); ++i_file) {
         if (files_are_checked[i_file]) {
             const string &file = light_frames[i_file];

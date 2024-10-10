@@ -25,7 +25,7 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
     );
     configure_stacker(stacker.get(), stack_settings);
     const vector<string>            &light_frames       = filelist_handler_only_checked.get_files(FileTypes::LIGHT);
-    const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler_only_checked.get_alignment_info(FileTypes::LIGHT);
+    const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler_only_checked.get_alignment_info();
     for (unsigned int i = 0; i < light_frames.size(); ++i) {
         const std::string &file = light_frames[i];
         const AlignmentFileInfo &alignment_info = alignment_info_vec[i];

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../headers/LocalShiftsHandler.h"
+#include "../../headers/Metadata.h"
 
 #include <string>
 #include <map>
@@ -96,7 +97,7 @@ class FilelistHandler   {
          * @param checked whether the file is checked
          * @param alignment_info alignment information for the file
         */
-        void add_file(const std::string& path, FileTypes type, bool checked = false, const AlignmentFileInfo& alignment_info = AlignmentFileInfo());
+        void add_file(const std::string& path, FileTypes type, bool checked = false, const AlignmentFileInfo& alignment_info = AlignmentFileInfo(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
 
         /**
          * @brief Remove file from the list
@@ -190,7 +191,15 @@ class FilelistHandler   {
          * @param type - type of the files
          * @return const std::vector<AlignmentFileInfo>& vector of the alignment information for all files of a given type
         */
-        const std::vector<AlignmentFileInfo>& get_alignment_info(FileTypes type)   const;
+        const std::vector<AlignmentFileInfo>& get_alignment_info()   const;
+
+        /**
+         * @brief Get the metadata for all files of a given type
+         *
+         * @param type - type of the files
+         * @return const std::vector<Metadata>& vector of the metadata for all files of a given type
+        */
+        const std::vector<AstroPhotoStacker::Metadata>& get_metadata()   const;
 
         /**
          * @brief Get the alignment info for a single file
@@ -263,6 +272,9 @@ class FilelistHandler   {
     private:
         std::map<FileTypes, std::vector<std::string>>       m_filelist;
         std::map<FileTypes, std::vector<bool>>              m_filelist_checked;
+
+        // #TODO: clean up this mess
         std::vector<AlignmentFileInfo>                      m_filelist_alignment_info;  // This is only used for light frames
+        std::vector<AstroPhotoStacker::Metadata>            m_filelist_metadata;        // This is only used for light frames
 
 };
