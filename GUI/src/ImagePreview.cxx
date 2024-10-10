@@ -27,6 +27,7 @@ ImagePreview::ImagePreview(wxFrame *parent, int width, int height, int max_value
     m_exposure_correction = 0;
     m_use_color_interpolation = use_color_interpolation;
     initialize_bitmap();
+    bind_shift_events();
 };
 
 void ImagePreview::initialize_bitmap()    {
@@ -249,4 +250,66 @@ void ImagePreview::on_mouse_wheel(wxMouseEvent& event) {
             this->update_preview_bitmap();
         }
     }
+};
+
+void ImagePreview::bind_shift_events()    {
+
+    const wxPoint magic_point = wxPoint(m_width, 0.155*m_height);   // shift the position to the center of the image - wxStaticBitmap is buggy ...
+
+    static std::pair<float, float> position_mouse_click = {-1, -1};
+
+    m_preview_bitmap->Bind(wxEVT_LEFT_DOWN, [this, magic_point](wxMouseEvent &event) {
+        if (!image_loaded()) {
+            return;
+        }
+
+        // Get the mouse position in screen coordinates
+        wxPoint screen_pos = event.GetPosition();
+        screen_pos += magic_point;   // shift the position to the center of the image - wxStaticBitmap is buggy ...
+
+        // Convert the mouse position to client coordinates relative to the wxStaticBitmap
+        wxPoint client_position = m_preview_bitmap->ScreenToClient(screen_pos);
+
+        // Check if the mouse is over the wxStaticBitmap
+        if (wxRect(m_preview_bitmap->GetSize()).Contains(client_position)) {
+            // Calculate the relative position of the mouse within the wxStaticBitmap
+            wxSize bitmapSize = m_preview_bitmap->GetSize();
+            float relative_x = static_cast<float>(client_position.x) / bitmapSize.GetWidth();
+            float relative_y = static_cast<float>(client_position.y) / bitmapSize.GetHeight();
+
+            position_mouse_click = {relative_x, relative_y};
+        }
+    });
+
+    m_preview_bitmap->Bind(wxEVT_LEFT_UP, [this, magic_point](wxMouseEvent &event) {
+        if (!image_loaded()) {
+            return;
+        }
+
+        if (position_mouse_click.first < 0 || position_mouse_click.second < 0) {
+            return;
+        }
+
+        // Get the mouse position in screen coordinates
+        wxPoint screen_pos = event.GetPosition();
+        screen_pos += magic_point;   // shift the position to the center of the image - wxStaticBitmap is buggy ...
+
+        // Convert the mouse position to client coordinates relative to the wxStaticBitmap
+        wxPoint client_position = m_preview_bitmap->ScreenToClient(screen_pos);
+
+        // Check if the mouse is over the wxStaticBitmap
+        if (wxRect(m_preview_bitmap->GetSize()).Contains(client_position)) {
+            // Calculate the relative position of the mouse within the wxStaticBitmap
+            wxSize bitmapSize = m_preview_bitmap->GetSize();
+            float relative_x = static_cast<float>(client_position.x) / bitmapSize.GetWidth();
+            float relative_y = static_cast<float>(client_position.y) / bitmapSize.GetHeight();
+
+            const float dx = relative_x - position_mouse_click.first;
+            const float dy = relative_y - position_mouse_click.second;
+
+            update_preview_data(0.5-dx, 0.5-dy);
+        }
+
+        update_preview_bitmap();
+    });
 };

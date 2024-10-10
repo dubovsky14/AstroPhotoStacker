@@ -178,4 +178,6 @@ class ImagePreview {
         void on_mouse_wheel(wxMouseEvent& event);
 
         wxImage get_updated_wximage(bool apply_green_correction) const;
+
+        void bind_shift_events();
 };

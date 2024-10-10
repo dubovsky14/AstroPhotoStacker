@@ -92,7 +92,7 @@ void ImagePreviewCropTool::bind_crop_events() {
 
     const wxPoint magic_point = wxPoint(0.368*m_width, 0.155*m_height);   // shift the position to the center of the image - wxStaticBitmap is buggy ...
 
-    m_preview_bitmap->Bind(wxEVT_LEFT_DOWN, [this, magic_point](wxMouseEvent &event) {
+    m_preview_bitmap->Bind(wxEVT_RIGHT_DOWN, [this, magic_point](wxMouseEvent &event) {
         if (!image_loaded()) {
             return;
         }
@@ -117,7 +117,7 @@ void ImagePreviewCropTool::bind_crop_events() {
         }
     });
 
-    m_preview_bitmap->Bind(wxEVT_LEFT_UP, [this, magic_point](wxMouseEvent &event) {
+    m_preview_bitmap->Bind(wxEVT_RIGHT_UP, [this, magic_point](wxMouseEvent &event) {
         if (!image_loaded()) {
             return;
         }
