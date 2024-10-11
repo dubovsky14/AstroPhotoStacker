@@ -48,12 +48,21 @@ void PhotoGroupingTool::run_grouping()  {
             photos_not_grouped.erase(photos_not_grouped.begin() + index_max_photos);
         }
 
-        // now let's sort the group by score
-        std::sort(current_group.begin(), current_group.end(), [this](size_t a, size_t b) {
+        if (current_group.size() > 0) {
+            m_groups.push_back(current_group);
+        }
+    }
+
+    // sort groups by time of the first frame
+    std::sort(m_groups.begin(), m_groups.end(), [this](const vector<size_t> &a, const vector<size_t> &b) {
+        return m_photos[a[0]].unix_timestamp < m_photos[b[0]].unix_timestamp;
+    });
+
+    // not sort photos in each group by score
+    for (vector<size_t> &group : m_groups) {
+        std::sort(group.begin(), group.end(), [this](size_t a, size_t b) {
             return m_photos[a].score < m_photos[b].score;
         });
-
-        m_groups.push_back(current_group);
     }
 };
 
