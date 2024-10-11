@@ -42,9 +42,9 @@ void PhotoGroupingTool::run_grouping()  {
         // find the photo resulting in the largest group, and group the photos and remove them from the list
         const unsigned int index_max_photos = std::distance(number_of_photos_in_group.begin(), std::max_element(number_of_photos_in_group.begin(), number_of_photos_in_group.end()));
         const unsigned int photos_in_group = number_of_photos_in_group.at(index_max_photos);
-        vector<size_t> current_group;
+        vector<PhotoInfo> current_group;
         for (unsigned int i_photo_in_group = 0; i_photo_in_group < photos_in_group; i_photo_in_group++) {
-            current_group.push_back(index_max_photos+i_photo_in_group);
+            current_group.push_back(photos_not_grouped.at(index_max_photos));
             photos_not_grouped.erase(photos_not_grouped.begin() + index_max_photos);
         }
 
@@ -54,24 +54,24 @@ void PhotoGroupingTool::run_grouping()  {
     }
 
     // sort groups by time of the first frame
-    std::sort(m_groups.begin(), m_groups.end(), [this](const vector<size_t> &a, const vector<size_t> &b) {
-        return m_photos[a[0]].unix_timestamp < m_photos[b[0]].unix_timestamp;
+    std::sort(m_groups.begin(), m_groups.end(), [this](const vector<PhotoInfo> &a, const vector<PhotoInfo> &b) {
+        return a.at(0).unix_timestamp < b.at(0).unix_timestamp;
     });
 
     // not sort photos in each group by score
-    for (vector<size_t> &group : m_groups) {
-        std::sort(group.begin(), group.end(), [this](size_t a, size_t b) {
-            return m_photos[a].score < m_photos[b].score;
+    for (vector<PhotoInfo> &group : m_groups) {
+        std::sort(group.begin(), group.end(), [this](const PhotoInfo &a, const PhotoInfo &b) {
+            return a.score < b.score;
         });
     }
 };
 
 std::vector<std::vector<std::string>> PhotoGroupingTool::get_groups() const {
     std::vector<std::vector<std::string>> result;
-    for (const vector<size_t> &group : m_groups) {
+    for (const vector<PhotoInfo> &group : m_groups) {
         std::vector<std::string> current_group;
-        for (size_t i : group) {
-            current_group.push_back(m_photos[i].file_address);
+        for (const PhotoInfo &photo : group) {
+            current_group.push_back(photo.file_address);
         }
         result.push_back(current_group);
     }

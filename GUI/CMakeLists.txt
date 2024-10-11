@@ -18,5 +18,7 @@ set(LINKER_FLAGS "-lexiv2 -lraw")
 file(GLOB SOURCES "src/*.cxx")
 
 add_executable(AstroPhotoStackerGUI ${SOURCES} "utils/main.cxx")
+add_executable(tests ${SOURCES} "utils/tests.cxx")
 
 target_link_libraries(AstroPhotoStackerGUI  ${wxWidgets_LIBRARIES} ${OpenCV_LIBS}  ${CMAKE_CURRENT_SOURCE_DIR}/../bin/libAstroPhotoStackerLib.so ${LINKER_FLAGS})
+target_link_libraries(tests  ${wxWidgets_LIBRARIES} ${OpenCV_LIBS}  ${CMAKE_CURRENT_SOURCE_DIR}/../bin/libAstroPhotoStackerLib.so ${LINKER_FLAGS})

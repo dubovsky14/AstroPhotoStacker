@@ -36,5 +36,5 @@ class  PhotoGroupingTool {
     private:
         std::vector<PhotoInfo> m_photos;
         int m_time_interval = 0;
-        std::vector<std::vector<size_t>> m_groups;
+        std::vector<std::vector<PhotoInfo>> m_groups;
 };
