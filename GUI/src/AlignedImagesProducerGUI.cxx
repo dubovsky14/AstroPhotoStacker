@@ -1,5 +1,7 @@
 #include "../headers/AlignedImagesProducerGUI.h"
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
+#include "../headers/Common.h"
+#include "../headers/PhotoGroupingTool.h"
 
 #include "../headers/StackSettings.h"
 
@@ -8,6 +10,7 @@
 #include "../../headers/DarkFrameHandler.h"
 #include "../../headers/FlatFrameHandler.h"
 #include "../../headers/thread_pool.h"
+
 
 #include "../headers/MainFrame.h"
 #include "../headers/ProgressBarWindow.h"
@@ -103,6 +106,8 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
     bottom_horizontal_sizer->Add(button_produce_images, 1, wxALL, 5);
 
 
+    add_advanced_settings();
+
     SetSizer(m_main_vertical_sizer);
 };
 
@@ -116,21 +121,48 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
     const vector<string>    &light_frames = filelist_handler->get_files(FileTypes::LIGHT);
     const vector<bool>      &files_are_checked = filelist_handler->get_files_checked(FileTypes::LIGHT);
     const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler->get_alignment_info();
-    for (size_t i_file = 0; i_file < light_frames.size(); ++i_file) {
-        if (files_are_checked[i_file]) {
+    const vector<Metadata> &metadata_vec = filelist_handler->get_metadata();
+
+    auto add_file_to_aligned_images_produced = [this, &light_frames, &files_are_checked, &alignment_info_vec, &metadata_vec](size_t i_file) {
+        const string &file = light_frames[i_file];
+        const AlignmentFileInfo &alignment_info_gui = alignment_info_vec[i_file];
+
+        FileAlignmentInformation alignment_info;
+        alignment_info.shift_x = alignment_info_gui.shift_x;
+        alignment_info.shift_y = alignment_info_gui.shift_y;
+        alignment_info.rotation_center_x = alignment_info_gui.rotation_center_x;
+        alignment_info.rotation_center_y = alignment_info_gui.rotation_center_y;
+        alignment_info.rotation = alignment_info_gui.rotation;
+        alignment_info.ranking = alignment_info_gui.ranking;
+        alignment_info.local_shifts_handler = alignment_info_gui.local_shifts_handler;
+
+        m_aligned_images_producer->add_image(file, alignment_info);
+    };
+
+    if (m_use_grouping) {
+        PhotoGroupingTool photo_grouping_tool;
+        for (size_t i_file = 0; i_file < light_frames.size(); ++i_file) {
             const string &file = light_frames[i_file];
             const AlignmentFileInfo &alignment_info_gui = alignment_info_vec[i_file];
-
-            FileAlignmentInformation alignment_info;
-            alignment_info.shift_x = alignment_info_gui.shift_x;
-            alignment_info.shift_y = alignment_info_gui.shift_y;
-            alignment_info.rotation_center_x = alignment_info_gui.rotation_center_x;
-            alignment_info.rotation_center_y = alignment_info_gui.rotation_center_y;
-            alignment_info.rotation = alignment_info_gui.rotation;
-            alignment_info.ranking = alignment_info_gui.ranking;
-            alignment_info.local_shifts_handler = alignment_info_gui.local_shifts_handler;
-
-            m_aligned_images_producer->add_image(file, alignment_info);
+            const Metadata &metadata = metadata_vec[i_file];
+            if (files_are_checked[i_file]) {
+                photo_grouping_tool.add_file(file, metadata.timestamp, alignment_info_gui.ranking);
+            }
+        }
+        photo_grouping_tool.define_maximum_time_difference_in_group(m_grouping_time_interval);
+        photo_grouping_tool.run_grouping();
+        const vector<vector<size_t>> &groups = photo_grouping_tool.get_groups_indices();
+        for (const vector<size_t> &group : groups) {
+            if (group.size() > 0) {
+                add_file_to_aligned_images_produced(group[0]);
+            }
+        }
+    }
+    else {
+        for (size_t i_file = 0; i_file < light_frames.size(); ++i_file) {
+            if (files_are_checked[i_file]) {
+                add_file_to_aligned_images_produced(i_file);
+            }
         }
     }
 
@@ -220,4 +252,34 @@ void AlignedImagesProducerGUI::add_checkboxes()   {
         m_apply_color_stretcher = is_checked;
     });
     m_main_vertical_sizer->Add(apply_color_stretcher, 0, wxEXPAND, 5);
+};
+
+void AlignedImagesProducerGUI::add_advanced_settings()    {
+    wxSizer *advanced_settings_sizer = new wxBoxSizer(wxVERTICAL);
+    m_main_vertical_sizer->Add(advanced_settings_sizer, 0, wxEXPAND, 5);
+
+    wxStaticText* advanced_settings_text = new wxStaticText(this, wxID_ANY, "Advanced settings:");
+    set_text_size(advanced_settings_text, 20);
+    advanced_settings_sizer->Add(advanced_settings_text, 0, wxCENTER, 5);
+
+
+    wxCheckBox* use_grouping_checkbox = new wxCheckBox(this, wxID_ANY, "Use grouping");
+    use_grouping_checkbox->SetValue(m_use_grouping);
+    use_grouping_checkbox->SetToolTip("If checked, the photos will be grouped based on their time stamps and only one photo (or stack) from each group will be produced.");
+    use_grouping_checkbox->Bind(wxEVT_CHECKBOX, [use_grouping_checkbox, this](wxCommandEvent&){
+        const bool is_checked = use_grouping_checkbox->GetValue();
+        m_use_grouping = is_checked;
+    });
+
+    advanced_settings_sizer->Add(use_grouping_checkbox, 0, wxEXPAND, 5);
+
+    wxStaticText* grouping_time_text = new wxStaticText(this, wxID_ANY, "Grouping time interval [s]:");
+    advanced_settings_sizer->Add(grouping_time_text, 0, wxEXPAND, 5);
+
+    wxSpinCtrl* spin_ctrl_grouping_time = new wxSpinCtrl(this, wxID_ANY, "0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 180, 0);
+    spin_ctrl_grouping_time->Bind(wxEVT_SPINCTRL, [spin_ctrl_grouping_time, this](wxCommandEvent&){
+        int current_value = spin_ctrl_grouping_time->GetValue();
+        m_grouping_time_interval = current_value;
+    });
+    advanced_settings_sizer->Add(spin_ctrl_grouping_time, 0, wxEXPAND, 5);
 };

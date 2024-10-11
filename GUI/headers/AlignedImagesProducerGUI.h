@@ -50,6 +50,12 @@ class AlignedImagesProducerGUI : public wxFrame  {
         void add_exposure_correction_spin_ctrl();
 
         void add_checkboxes();
+
+        void add_advanced_settings();
+
         bool m_add_datetime = false;
         bool m_apply_color_stretcher = false;
+
+        bool m_use_grouping = false;
+        int  m_grouping_time_interval = 0;
 };

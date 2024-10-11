@@ -33,8 +33,10 @@ class  PhotoGroupingTool {
 
         std::vector<std::vector<std::string>> get_groups() const;
 
+        const std::vector<std::vector<size_t>>& get_groups_indices() const;
+
     private:
         std::vector<PhotoInfo> m_photos;
         int m_time_interval = 0;
-        std::vector<std::vector<PhotoInfo>> m_groups;
+        std::vector<std::vector<size_t>> m_groups;
 };
