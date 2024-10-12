@@ -52,7 +52,9 @@ bool ReferencePhotoHandlerPlanetary::calculate_alignment(const std::string &file
     *rotation = std::asin(sin_angle);
 
     if (ranking != nullptr) {
-        *ranking = 100./get_sharpness_for_file(file_address, window_coordinates);
+        // #TODO: Use already loaded data
+        const double sharpness = get_sharpness_factor(brightness.data(), width, height, window_coordinates)/(width*height);
+        *ranking = 100./sharpness;
     }
 
     return true;
