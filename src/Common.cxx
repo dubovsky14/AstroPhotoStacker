@@ -142,3 +142,11 @@ std::string AstroPhotoStacker::round_and_convert_to_string(double x, int digits_
     string_rounded = string_rounded + to_string(rounded_fraction);
     return string_rounded;
 };
+
+std::string AstroPhotoStacker::unix_time_to_string(int unix_time)  {
+    time_t t = unix_time;
+    struct tm *tm = localtime(&t);
+    char buffer[100];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", tm);
+    return buffer;
+};

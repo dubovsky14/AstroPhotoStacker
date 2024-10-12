@@ -3,6 +3,7 @@
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/MetadataReader.h"
 #include "../headers/raw_file_reader.h"
+#include "../headers/Common.h"
 
 #include "../headers/thread_pool.h"
 
@@ -43,6 +44,9 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
 
     const int n_files = m_files_to_align.size();
     const int n_cpu = min(m_n_cpu, n_files);
+
+    cout << "Going to produce aligned images\n";
+    cout << "Timestamp offset: " << m_timestamp_offset << endl;
 
     m_n_tasks_processed = 0;
     thread_pool pool(n_cpu);
@@ -143,7 +147,8 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
     }
     else {
         const Metadata metadata = read_metadata(input_file_address);
-        const string datetime = metadata.date_time;
+        const int unix_time = metadata.timestamp + m_timestamp_offset;
+        const string datetime = unix_time_to_string(unix_time);
 
         cv::Mat opencv_image = get_opencv_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height);
 

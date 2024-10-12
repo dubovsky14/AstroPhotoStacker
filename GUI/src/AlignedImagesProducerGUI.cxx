@@ -116,6 +116,7 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
     const FilelistHandler *filelist_handler = &m_parent->get_filelist_handler();
     m_aligned_images_producer = make_unique<AlignedImagesProducer>(stack_settings->get_n_cpus());
     m_aligned_images_producer->set_add_datetime(m_add_datetime);
+    m_aligned_images_producer->set_timestamp_offset(m_timestamp_offset);
 
     // Light frames
     const vector<string>    &light_frames = filelist_handler->get_files(FileTypes::LIGHT);
@@ -282,4 +283,14 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
         m_grouping_time_interval = current_value;
     });
     advanced_settings_sizer->Add(spin_ctrl_grouping_time, 0, wxEXPAND, 5);
+
+    wxStaticText *timestemp_offset_text = new wxStaticText(this, wxID_ANY, "Timestamp offset [s]:");
+    advanced_settings_sizer->Add(timestemp_offset_text, 0, wxEXPAND, 5);
+
+    wxSpinCtrl* spin_ctrl_timestamp_offset = new wxSpinCtrl(this, wxID_ANY, "0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -24*3600, 24*3600, 0);
+    spin_ctrl_timestamp_offset->Bind(wxEVT_SPINCTRL, [spin_ctrl_timestamp_offset, this](wxCommandEvent&){
+        int current_value = spin_ctrl_timestamp_offset->GetValue();
+        m_timestamp_offset = current_value;
+    });
+    advanced_settings_sizer->Add(spin_ctrl_timestamp_offset, 0, wxEXPAND, 5);
 };

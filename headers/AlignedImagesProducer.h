@@ -40,6 +40,15 @@ namespace AstroPhotoStacker {
             void set_image_stretching_function(std::function<void(std::vector<std::vector<unsigned short>>*, unsigned short max_value)> image_stretching_function) {
                 m_image_stretching_function = image_stretching_function;
             };
+
+            void set_timestamp_offset(int timestamp_offset) {
+                m_timestamp_offset = timestamp_offset;
+            };
+
+            int get_timestamp_offset() const {
+                return m_timestamp_offset;
+            };
+
         private:
             int m_top_left_corner_x = 0;
             int m_top_left_corner_y = 0;
@@ -51,6 +60,8 @@ namespace AstroPhotoStacker {
             bool m_add_datetime     = false;
             float m_datetime_pos_frac_x   = 0.6;
             float m_datetime_pos_frac_y   = 0.9;
+
+            int m_timestamp_offset = 0;
 
             std::function<void(std::vector<std::vector<unsigned short>>*, unsigned short max_value)> m_image_stretching_function = nullptr;
 

@@ -24,13 +24,13 @@ Metadata AstroPhotoStacker::read_metadata_from_raw_file_dslr_slr(const std::stri
     result.iso           = raw_processor.imgdata.other.iso_speed;
     result.focal_length  = raw_processor.imgdata.other.focal_len;
     result.max_value     = raw_processor.imgdata.color.maximum;
+    result.timestamp     = raw_processor.imgdata.other.timestamp;
 
     // it's a bit tricky with timestamp
     std::tm* t = std::gmtime(&raw_processor.imgdata.other.timestamp);
     std::stringstream ss; // or if you're going to print, just input directly into the output stream
     ss << std::put_time(t, "%Y-%m-%d %I:%M:%S %p");
     result.date_time     = ss.str();
-    result.timestamp     = raw_processor.imgdata.other.timestamp;
 
     // close the file
     raw_processor.recycle();

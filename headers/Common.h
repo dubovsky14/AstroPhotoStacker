@@ -312,4 +312,6 @@ namespace AstroPhotoStacker {
         }
         return result;
     }
+
+    std::string unix_time_to_string(int unix_time);
 }

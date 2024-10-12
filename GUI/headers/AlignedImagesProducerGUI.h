@@ -58,4 +58,5 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
         bool m_use_grouping = false;
         int  m_grouping_time_interval = 0;
+        int  m_timestamp_offset = 0;
 };
