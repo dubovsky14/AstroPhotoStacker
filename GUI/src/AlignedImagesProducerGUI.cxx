@@ -287,6 +287,7 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
     advanced_settings_sizer->Add(grouping_time_text, 0, wxEXPAND, 5);
 
     wxSpinCtrl* spin_ctrl_grouping_time = new wxSpinCtrl(this, wxID_ANY, "0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 180, 0);
+    spin_ctrl_grouping_time->SetToolTip("Maximum time difference between photos in a group.");
     spin_ctrl_grouping_time->Bind(wxEVT_SPINCTRL, [spin_ctrl_grouping_time, this](wxCommandEvent&){
         int current_value = spin_ctrl_grouping_time->GetValue();
         m_grouping_time_interval = current_value;
@@ -297,6 +298,7 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
     advanced_settings_sizer->Add(timestemp_offset_text, 0, wxEXPAND, 5);
 
     wxSpinCtrl* spin_ctrl_timestamp_offset = new wxSpinCtrl(this, wxID_ANY, "0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -24*3600, 24*3600, 0);
+    spin_ctrl_timestamp_offset->SetToolTip("If datetime in metadata is wrong, you can set an offset to correct it (it will be added to time from metadata). ");
     spin_ctrl_timestamp_offset->Bind(wxEVT_SPINCTRL, [spin_ctrl_timestamp_offset, this](wxCommandEvent&){
         int current_value = spin_ctrl_timestamp_offset->GetValue();
         m_timestamp_offset = current_value;
@@ -306,7 +308,6 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
 
 
     // Stacking options
-
     wxStaticText* stack_settings_text = new wxStaticText(this, wxID_ANY, "Stack settings:");
     set_text_size(stack_settings_text, 20);
     advanced_settings_sizer->Add(stack_settings_text, 0, wxCENTER, 5);
@@ -324,6 +325,7 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
     advanced_settings_sizer->Add(fraction_to_stack_text, 0, wxEXPAND, 5);
 
     wxSlider* slider_stack_fraction = new wxSlider(this, wxID_ANY, m_fraction_to_stack*100, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+    slider_stack_fraction->SetToolTip("Fraction of images from each group which will be stacked.");
     slider_stack_fraction->Bind(wxEVT_SLIDER, [fraction_to_stack_text, slider_stack_fraction, this](wxCommandEvent&){
         const float fraction_to_stack = slider_stack_fraction->GetValue()/100.;
         const std::string new_label = "Fraction of images to stack: " + to_string(fraction_to_stack+0.00001).substr(0,4);
