@@ -293,4 +293,33 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
         m_timestamp_offset = current_value;
     });
     advanced_settings_sizer->Add(spin_ctrl_timestamp_offset, 0, wxEXPAND, 5);
+
+
+
+    // Stacking options
+
+    wxStaticText* stack_settings_text = new wxStaticText(this, wxID_ANY, "Stack settings:");
+    set_text_size(stack_settings_text, 20);
+    advanced_settings_sizer->Add(stack_settings_text, 0, wxCENTER, 5);
+
+    wxCheckBox* stack_images_checkbox = new wxCheckBox(this, wxID_ANY, "Stack images");
+    stack_images_checkbox->SetValue(m_stack_images);
+    stack_images_checkbox->SetToolTip("If checked, the images will be stacked before producing the output image.");
+    stack_images_checkbox->Bind(wxEVT_CHECKBOX, [stack_images_checkbox, this](wxCommandEvent&){
+        const bool is_checked = stack_images_checkbox->GetValue();
+        m_stack_images = is_checked;
+    });
+    advanced_settings_sizer->Add(stack_images_checkbox, 0, wxEXPAND, 5);
+
+    wxStaticText* fraction_to_stack_text = new wxStaticText(this, wxID_ANY, "Fraction of images to stack: " + to_string(m_fraction_to_stack+0.00001).substr(0,4));
+    advanced_settings_sizer->Add(fraction_to_stack_text, 0, wxEXPAND, 5);
+
+    wxSlider* slider_stack_fraction = new wxSlider(this, wxID_ANY, m_fraction_to_stack*100, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+    slider_stack_fraction->Bind(wxEVT_SLIDER, [fraction_to_stack_text, slider_stack_fraction, this](wxCommandEvent&){
+        const float fraction_to_stack = slider_stack_fraction->GetValue()/100.;
+        const std::string new_label = "Fraction of images to stack: " + to_string(fraction_to_stack+0.00001).substr(0,4);
+        fraction_to_stack_text->SetLabel(new_label);
+        m_fraction_to_stack = fraction_to_stack;
+    });
+    advanced_settings_sizer->Add(slider_stack_fraction, 0, wxEXPAND, 5);
 };
