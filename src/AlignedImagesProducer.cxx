@@ -165,7 +165,7 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
 
 void AlignedImagesProducer::scale_down_image(   std::vector<std::vector<unsigned short>> *image,
                                                 unsigned int origianal_max,
-                                                unsigned int new_max) const {
+                                                unsigned int new_max)  {
 
     for (int color = 0; color < 3; color++) {
         for (unsigned int i = 0; i < image->at(color).size(); i++) {
@@ -174,7 +174,7 @@ void AlignedImagesProducer::scale_down_image(   std::vector<std::vector<unsigned
     }
 };
 
-void AlignedImagesProducer::apply_green_correction(std::vector<std::vector<unsigned short>> *image, unsigned short max_value) const    {
+void AlignedImagesProducer::apply_green_correction(std::vector<std::vector<unsigned short>> *image, unsigned short max_value)    {
     // scale down green (we have 2 green channels)
     std::transform(image->at(1).begin(), image->at(1).end(), image->at(1).begin(), [](unsigned short value) { return value; });
 

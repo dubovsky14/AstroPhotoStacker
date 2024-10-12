@@ -49,6 +49,17 @@ namespace AstroPhotoStacker {
                 return m_timestamp_offset;
             };
 
+            std::pair<float,float> get_position_of_datetime() const {
+                return {m_datetime_pos_frac_x, m_datetime_pos_frac_y};
+            };
+
+
+            static std::string get_output_file_name(const std::string &input_file_address);
+
+            static void scale_down_image(std::vector<std::vector<unsigned short>> *image, unsigned int origianal_max, unsigned int new_max);
+
+            static void apply_green_correction(std::vector<std::vector<unsigned short>> *image, unsigned short max_value);
+
         private:
             int m_top_left_corner_x = 0;
             int m_top_left_corner_y = 0;
@@ -70,7 +81,6 @@ namespace AstroPhotoStacker {
 
             std::vector<std::shared_ptr<const CalibrationFrameBase> > m_calibration_frame_handlers;
 
-            static std::string get_output_file_name(const std::string &input_file_address);
 
             void produce_aligned_image( const std::string &input_file_address,
                                         const std::string &output_file_address,
@@ -78,9 +88,5 @@ namespace AstroPhotoStacker {
 
 
             mutable std::atomic<int> m_n_tasks_processed = 0;
-
-            void scale_down_image(std::vector<std::vector<unsigned short>> *image, unsigned int origianal_max, unsigned int new_max) const;
-
-            void apply_green_correction(std::vector<std::vector<unsigned short>> *image, unsigned short max_value) const;
     };
 }

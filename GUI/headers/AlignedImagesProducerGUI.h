@@ -53,6 +53,8 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
         void add_advanced_settings();
 
+        void stack_images_in_groups()   const;
+
         bool m_add_datetime = false;
         bool m_apply_color_stretcher = false;
 
@@ -62,4 +64,6 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
         bool  m_stack_images = false;
         float m_fraction_to_stack = 0.5;
+
+        void process_and_save_stacked_image(const std::vector<std::vector<double>> &stacked_image, const std::string &output_file_address, int unix_time, bool use_green_correction, int original_width, int original_height)   const;
 };

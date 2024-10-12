@@ -13,6 +13,14 @@ StackerBase::StackerBase(int number_of_colors, int width, int height, bool inter
     m_interpolate_colors = interpolate_colors;
 };
 
+void StackerBase::set_top_left_corner(int top_left_corner_x, int top_left_corner_y)  {
+    m_top_left_corner_x = top_left_corner_x;
+    m_top_left_corner_y = top_left_corner_y;
+};
+
+std::pair<int, int> StackerBase::get_top_left_corner() const {
+    return {m_top_left_corner_x, m_top_left_corner_y};
+};
 
 void StackerBase::set_memory_usage_limit(int memory_usage_limit_in_mb)  {
     m_memory_usage_limit_in_mb = memory_usage_limit_in_mb;

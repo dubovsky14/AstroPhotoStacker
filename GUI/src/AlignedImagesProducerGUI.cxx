@@ -2,6 +2,8 @@
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 #include "../headers/Common.h"
 #include "../headers/PhotoGroupingTool.h"
+#include "../headers/FilelistHandler.h"
+#include "../headers/StackerConfigureTool.h"
 
 #include "../headers/StackSettings.h"
 
@@ -10,6 +12,7 @@
 #include "../../headers/DarkFrameHandler.h"
 #include "../../headers/FlatFrameHandler.h"
 #include "../../headers/thread_pool.h"
+#include "../../headers/ImageFilesInputOutput.h"
 
 
 #include "../headers/MainFrame.h"
@@ -79,6 +82,11 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
         if (m_output_folder_address == "") {
             wxMessageBox("Please select the output folder first.", "Error", wxICON_ERROR);
             return;
+        }
+
+        if (m_stack_images) {
+            m_use_grouping = true;
+            stack_images_in_groups();
         }
 
 
@@ -323,3 +331,124 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
     });
     advanced_settings_sizer->Add(slider_stack_fraction, 0, wxEXPAND, 5);
 };
+
+void AlignedImagesProducerGUI::stack_images_in_groups() const   {
+    // TODO: Add calibration frames
+
+    const FilelistHandler *filelist_handler = &m_parent->get_filelist_handler();
+
+    // Light frames
+    const vector<string>    &light_frames = filelist_handler->get_files(FileTypes::LIGHT);
+    const vector<bool>      &files_are_checked = filelist_handler->get_files_checked(FileTypes::LIGHT);
+    const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler->get_alignment_info();
+    const vector<Metadata> &metadata_vec = filelist_handler->get_metadata();
+
+    PhotoGroupingTool photo_grouping_tool;
+    for (size_t i_file = 0; i_file < light_frames.size(); ++i_file) {
+        const string &file = light_frames[i_file];
+        const AlignmentFileInfo &alignment_info_gui = alignment_info_vec[i_file];
+        const Metadata &metadata = metadata_vec[i_file];
+        if (files_are_checked[i_file]) {
+            photo_grouping_tool.add_file(file, metadata.timestamp, alignment_info_gui.ranking);
+        }
+    }
+    photo_grouping_tool.define_maximum_time_difference_in_group(m_grouping_time_interval);
+    photo_grouping_tool.run_grouping();
+    const vector<vector<size_t>> &groups = photo_grouping_tool.get_groups_indices();
+
+    const int tasks_total = groups.size();
+    std::atomic<int> tasks_processed = 0;
+
+    auto stack_lambda = [this, &light_frames, &files_are_checked, &alignment_info_vec, &metadata_vec, &groups, &tasks_processed](){
+
+        for (const vector<size_t> &group : groups) {
+            if (group.size() == 0) {
+                continue;
+            }
+
+            FilelistHandler filelist_handler_group;
+            const unsigned int n_selected_files = std::max<unsigned int>(1,group.size()*m_fraction_to_stack);
+            bool contains_raw_files = false;
+            for (unsigned int i_file = 0; i_file < n_selected_files; ++i_file) {
+                const size_t i_file_group = group[i_file];
+                const string &file = light_frames[i_file_group];
+                const AlignmentFileInfo &alignment_info_gui = alignment_info_vec[i_file_group];
+
+                if (!contains_raw_files) {
+                    if (is_raw_file(file))  {
+                        contains_raw_files = true;
+                    }
+                }
+
+                filelist_handler_group.add_file(file, FileTypes::LIGHT, true, alignment_info_gui);
+            }
+
+            const StackSettings *stack_settings = m_parent->get_stack_settings();
+            std::unique_ptr<StackerBase> stacker = get_configured_stacker(*stack_settings, filelist_handler_group);
+            stacker->calculate_stacked_photo();
+
+            const vector<vector<double>> &stacked_image_double = stacker->get_stacked_image();
+
+            const string output_file_address = m_output_folder_address + "/" + AlignedImagesProducer::get_output_file_name(light_frames.at(group[0]));
+            const int unix_time = metadata_vec.at(group[0]).timestamp;
+            const bool use_green_correction = contains_raw_files;
+            process_and_save_stacked_image(stacked_image_double, output_file_address, unix_time, use_green_correction, stacker->get_width(), stacker->get_height());
+            cout << "Finished processing and saving stacked image for group: " << group[0] << endl;
+            tasks_processed++;
+        }
+    };
+
+    run_task_with_progress_dialog("Creating stacked aligned images", "Finished", "", tasks_processed, tasks_total, stack_lambda);
+};
+
+
+void AlignedImagesProducerGUI::process_and_save_stacked_image(  const std::vector<std::vector<double>> &stacked_image,
+                                                                const std::string &output_file_address, int unix_time, bool use_green_correction, int original_width, int original_height)  const   {
+
+        vector<vector<unsigned short>> cropped_image_ushort(stacked_image.size());
+        int crop_top_left_x, crop_top_left_y, crop_width, crop_height;
+        m_image_preview_crop_tool->get_crop_coordinates(&crop_top_left_x, &crop_top_left_y, &crop_width, &crop_height);
+        unsigned short max_value = 0;
+        for (unsigned int i_color = 0; i_color < stacked_image.size(); i_color++)   {
+            const vector<double> &color_channel = stacked_image[i_color];
+
+            for (int y = crop_top_left_y; y < crop_top_left_y + crop_height; y++) {
+                for (int x = crop_top_left_x; x < crop_top_left_x + crop_width; x++) {
+                    const unsigned int index_original = x + original_width*y;
+                    cropped_image_ushort[i_color].push_back(color_channel[index_original]);
+                    max_value = max<unsigned short>(max_value, color_channel[index_original]);
+                }
+            }
+        }
+        if (m_apply_color_stretcher) {
+            m_color_stretcher.stretch_image(&cropped_image_ushort, max_value, true);
+        }
+
+        if (max_value > 255) {
+            AlignedImagesProducer::scale_down_image(&cropped_image_ushort, max_value, 255);
+        }
+
+        if (use_green_correction) {
+            AlignedImagesProducer::apply_green_correction(&cropped_image_ushort, 255);
+        }
+
+        if (!m_add_datetime) {
+            crate_color_image(&cropped_image_ushort[0][0], &cropped_image_ushort[1][0], &cropped_image_ushort[2][0], crop_width, crop_height, output_file_address);
+        }
+        else {
+
+            const string datetime = unix_time_to_string(unix_time);
+
+            cv::Mat opencv_image = get_opencv_color_image(&cropped_image_ushort[0][0], &cropped_image_ushort[1][0], &cropped_image_ushort[2][0], crop_width, crop_height);
+            cout << "Line 432\n";
+            const float font_size = crop_width/1200.0;
+            const float font_width = font_size*2;
+
+            std::pair<float,float> datetime_position = m_aligned_images_producer ? m_aligned_images_producer->get_position_of_datetime() : std::pair<float,float>({0.6, 0.9});
+            cv::putText(opencv_image, datetime, cv::Point(datetime_position.first* crop_width, datetime_position.second* crop_height), cv::FONT_HERSHEY_SIMPLEX, font_size, CV_RGB(255, 0, 0), font_width);
+
+            cv::imwrite(output_file_address, opencv_image);
+        }
+
+};
+
