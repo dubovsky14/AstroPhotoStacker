@@ -21,7 +21,7 @@ namespace AstroPhotoStacker {
                 // right
                 if (x < width - 1)  {
                     const double diff = fabs(image_data[y * width + x] - image_data[y * width + x + 1]);
-                    const double weight = std::max(image_data[y * width + x], image_data[y * width + x + 1])*std::max(image_data[y * width + x], image_data[y * width + x + 1]);
+                    const double weight = std::max(image_data[y * width + x], image_data[y * width + x + 1]);
                     sum_diff2_weighted += diff * diff * weight;
                     sum_weights += weight;
                 }
