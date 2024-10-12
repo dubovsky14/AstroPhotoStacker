@@ -87,6 +87,7 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
         if (m_stack_images) {
             m_use_grouping = true;
             stack_images_in_groups();
+            return;
         }
 
 
