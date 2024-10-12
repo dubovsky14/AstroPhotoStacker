@@ -49,7 +49,7 @@ void PhotoGroupingTool::run_grouping()  {
         const unsigned int photos_in_group = number_of_photos_in_group.at(index_max_photos);
         vector<size_t> current_group;
         for (unsigned int i_photo_in_group = 0; i_photo_in_group < photos_in_group; i_photo_in_group++) {
-            current_group.push_back(index_max_photos+i_photo_in_group);
+            current_group.push_back(photos_not_grouped.at(index_max_photos));
             photos_not_grouped.erase(photos_not_grouped.begin() + index_max_photos);
         }
 
