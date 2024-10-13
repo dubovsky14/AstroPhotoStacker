@@ -2,6 +2,8 @@
 
 #include "../headers/ImagePreview.h"
 
+#include "../../headers/Metadata.h"
+
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
 
@@ -34,6 +36,10 @@ class ImageViewerFrame : public wxFrame  {
     private:
         void add_menu_bar();
 
+        void add_metadata_panel();
+
+        void add_bottom_panel();
+
         void on_open_file(wxCommandEvent& event);
 
         wxPanel* m_main_panel = nullptr;
@@ -43,8 +49,10 @@ class ImageViewerFrame : public wxFrame  {
 
 
         wxBoxSizer *m_sizer_main_frame = nullptr;
+        wxBoxSizer *m_preview_and_metadata_sizer = nullptr;
 
         std::string m_file_address = "";
+        std::string m_current_folder = ".";
 
         inline int unique_counter()    {
             static int counter = 1000;
@@ -58,4 +66,15 @@ class ImageViewerFrame : public wxFrame  {
         void bind_key_events();
 
         void load_consecutive_file(int direction);
+
+        void update_metadata(const AstroPhotoStacker::Metadata &metadata);
+
+        // metadata text fields
+        wxStaticText *m_metadata_text_exposure = nullptr;
+        wxStaticText *m_metadata_text_iso = nullptr;
+        wxStaticText *m_metadata_text_f_number = nullptr;
+        wxStaticText *m_metadata_text_focal_length = nullptr;
+        wxStaticText *m_metadata_text_date_time = nullptr;
+
+        wxStaticText *m_file_address_text = nullptr;
 };
