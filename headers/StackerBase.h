@@ -35,21 +35,6 @@ namespace AstroPhotoStacker {
             StackerBase(int number_of_colors, int width, int height, bool interpolate_colors);
 
             /**
-             * @brief Set the top left corner of the output image - this can be used to crop the image
-             *
-             * @param top_left_corner_x - x-coordinate of the top left corner
-             * @param top_left_corner_y - y-coordinate of the top left corner
-            */
-            void set_top_left_corner(int top_left_corner_x, int top_left_corner_y);
-
-            /**
-             * @brief Get the top left corner of the output image
-             *
-             * @return std::pair<int, int> - pair of the x and y coordinates of the top left corner
-            */
-            std::pair<int, int> get_top_left_corner() const;
-
-            /**
              * @brief Set the memory usage limit
              * @param memory_usage_limit_in_mb - memory usage limit in MB
             */

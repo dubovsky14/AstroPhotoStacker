@@ -443,7 +443,6 @@ void AlignedImagesProducerGUI::process_and_save_stacked_image(  const std::vecto
             const string datetime = unix_time_to_string(unix_time);
 
             cv::Mat opencv_image = get_opencv_color_image(&cropped_image_ushort[0][0], &cropped_image_ushort[1][0], &cropped_image_ushort[2][0], crop_width, crop_height);
-            cout << "Line 432\n";
             const float font_size = crop_width/1200.0;
             const float font_width = font_size*2;
 
