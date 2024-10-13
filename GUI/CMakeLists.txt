@@ -19,6 +19,8 @@ file(GLOB SOURCES "src/*.cxx")
 
 add_executable(AstroPhotoStackerGUI ${SOURCES} "utils/main.cxx")
 add_executable(tests ${SOURCES} "utils/tests.cxx")
+add_executable(image_viewer ${SOURCES} "utils/image_viewer.cxx")
 
 target_link_libraries(AstroPhotoStackerGUI  ${wxWidgets_LIBRARIES} ${OpenCV_LIBS}  ${CMAKE_CURRENT_SOURCE_DIR}/../bin/libAstroPhotoStackerLib.so ${LINKER_FLAGS})
 target_link_libraries(tests  ${wxWidgets_LIBRARIES} ${OpenCV_LIBS}  ${CMAKE_CURRENT_SOURCE_DIR}/../bin/libAstroPhotoStackerLib.so ${LINKER_FLAGS})
+target_link_libraries(image_viewer  ${wxWidgets_LIBRARIES} ${OpenCV_LIBS}  ${CMAKE_CURRENT_SOURCE_DIR}/../bin/libAstroPhotoStackerLib.so ${LINKER_FLAGS})
