@@ -36,19 +36,26 @@ class ImageViewerFrame : public wxFrame  {
 
         void on_open_file(wxCommandEvent& event);
 
+        wxPanel* m_main_panel = nullptr;
+
         std::unique_ptr<ImagePreview> m_image_preview = nullptr;
+        std::vector<std::string> m_allowed_extensions = {"cr2", "cr3", "jpg", "jpeg", "png", "fit", "tif", "tiff", ".png"};
+
 
         wxBoxSizer *m_sizer_main_frame = nullptr;
 
         std::string m_file_address = "";
-        std::string m_current_folder = "";
 
+        inline int unique_counter()    {
+            static int counter = 1000;
+            return ++counter;
+        };
 
-    inline int unique_counter()    {
-        static int counter = 1000;
-        return ++counter;
-    };
+        void on_exit(wxCommandEvent& event);
 
-    void on_exit(wxCommandEvent& event);
+        void open_file(const std::string &file_address);
 
+        void bind_key_events();
+
+        void load_consecutive_file(int direction);
 };
