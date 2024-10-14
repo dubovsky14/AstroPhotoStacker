@@ -182,3 +182,31 @@ void AlignedImagesProducer::apply_green_correction(std::vector<std::vector<unsig
     std::transform(image->at(0).begin(), image->at(0).end(), image->at(0).begin(), [max_value](unsigned short value) { return std::min<unsigned short>(value*2, max_value); });
     std::transform(image->at(2).begin(), image->at(2).end(), image->at(2).begin(), [max_value](unsigned short value) { return std::min<unsigned short>(value*2, max_value); });
 };
+
+void AlignedImagesProducer::produce_video(const std::string &output_video_address, const std::string &aligned_images_folder) const {
+    // #TODO: Put this into a separate class
+
+    if (m_files_to_align.size() == 0) {
+        return;
+    }
+
+    const cv::Size frame_size = cv::imread(aligned_images_folder + "/" + get_output_file_name(m_files_to_align[0])).size();
+
+    int frames_per_second = 25;
+    cv::VideoWriter oVideoWriter(output_video_address, cv::VideoWriter::fourcc('X', 'V', 'I', 'D'), frames_per_second, frame_size);
+
+    vector<tuple<int, string>> files_with_timestamps;
+    for (const string &file : m_files_to_align) {
+        const Metadata metadata = read_metadata(file);
+        files_with_timestamps.push_back({metadata.timestamp, file});
+    }
+    sort(files_with_timestamps.begin(), files_with_timestamps.end());
+
+    for (const auto &[timestamp, file] : files_with_timestamps) {
+        const std::string aligned_file  = aligned_images_folder + "/" + get_output_file_name(file);
+        cv::Mat image = cv::imread(aligned_file);
+        oVideoWriter.write(image);
+    }
+
+    oVideoWriter.release();
+};

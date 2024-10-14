@@ -60,6 +60,8 @@ namespace AstroPhotoStacker {
 
             static void apply_green_correction(std::vector<std::vector<unsigned short>> *image, unsigned short max_value);
 
+            void produce_video(const std::string &output_video_address, const std::string &aligned_images_folder)   const;
+
         private:
             int m_top_left_corner_x = 0;
             int m_top_left_corner_y = 0;

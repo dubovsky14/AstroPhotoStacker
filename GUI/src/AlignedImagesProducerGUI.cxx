@@ -110,6 +110,7 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
                 });
             }
             m_aligned_images_producer->produce_aligned_images(m_output_folder_address);
+            m_aligned_images_producer->produce_video(m_output_folder_address + "/video_test1.avi", m_output_folder_address);
         });
     });
     bottom_horizontal_sizer->Add(button_produce_images, 1, wxALL, 5);

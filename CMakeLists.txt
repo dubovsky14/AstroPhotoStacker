@@ -40,6 +40,7 @@ add_dependencies(create_synthetic_flat AstroPhotoStackerLib)
 add_dependencies(calculate_noise AstroPhotoStackerLib)
 
 # link the libraw library
+target_link_libraries(AstroPhotoStackerLib PUBLIC ${LINKER_FLAGS} ${OpenCV_LIBS})
 target_link_libraries(AstroPhotoStacker AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
 target_link_libraries(produce_alignment_file AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
 target_link_libraries(convert_raw_to_jpg AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
