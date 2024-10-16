@@ -4,6 +4,7 @@
 #include "../headers/MetadataReader.h"
 #include "../headers/raw_file_reader.h"
 #include "../headers/Common.h"
+#include "../headers/TimeLapseVideoCreator.h"
 
 #include "../headers/thread_pool.h"
 
@@ -185,6 +186,21 @@ void AlignedImagesProducer::apply_green_correction(std::vector<std::vector<unsig
 
 void AlignedImagesProducer::produce_video(const std::string &output_video_address, const std::string &aligned_images_folder) const {
     // #TODO: Put this into a separate class
+    if (m_files_to_align.size() == 0) {
+        return;
+    }
+
+    TimeLapseVideoCreator timelapse_creator;
+    for (const string &file : m_files_to_align) {
+        const Metadata metadata = read_metadata(file);
+        const string aligned_file = aligned_images_folder + "/" + get_output_file_name(file);
+        timelapse_creator.add_image(aligned_file, metadata.timestamp);
+    }
+    timelapse_creator.set_fps(25); // #TODO: set this from GUI
+    timelapse_creator.set_n_repeat(5); // #TODO: set this from GUI
+    timelapse_creator.create_video(output_video_address);
+
+    return;
 
     if (m_files_to_align.size() == 0) {
         return;
@@ -193,7 +209,8 @@ void AlignedImagesProducer::produce_video(const std::string &output_video_addres
     const cv::Size frame_size = cv::imread(aligned_images_folder + "/" + get_output_file_name(m_files_to_align[0])).size();
 
     int frames_per_second = 25;
-    cv::VideoWriter oVideoWriter(output_video_address, cv::VideoWriter::fourcc('X', 'V', 'I', 'D'), frames_per_second, frame_size);
+    cv::VideoWriter oVideoWriter;
+    oVideoWriter.open(output_video_address, cv::VideoWriter::fourcc('X', 'V', 'I', 'D'), frames_per_second, frame_size);
 
     vector<tuple<int, string>> files_with_timestamps;
     for (const string &file : m_files_to_align) {
@@ -209,4 +226,21 @@ void AlignedImagesProducer::produce_video(const std::string &output_video_addres
     }
 
     oVideoWriter.release();
+/*
+    return;
+
+    if (m_files_to_align.size() == 0) {
+        return;
+    }
+
+    TimeLapseVideoCreator timelapse_creator;
+    for (const string &file : m_files_to_align) {
+        const Metadata metadata = read_metadata(file);
+        const string aligned_file = aligned_images_folder + "/" + get_output_file_name(file);
+        timelapse_creator.add_image(aligned_file, metadata.timestamp);
+    }
+    timelapse_creator.set_fps(25); // #TODO: set this from GUI
+    timelapse_creator.set_n_repeat(5); // #TODO: set this from GUI
+    timelapse_creator.create_video(output_video_address);
+*/
 };
