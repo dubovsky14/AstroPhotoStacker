@@ -144,7 +144,7 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
     }
 
     if (!m_add_datetime) {
-        crate_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height, output_file_address);
+        create_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height, output_file_address);
     }
     else {
         const Metadata metadata = read_metadata(input_file_address);

@@ -153,7 +153,7 @@ namespace AstroPhotoStacker {
      * @param image_settings The settings of the image
     */
     template <typename pixel_values_type>
-    void crate_color_image( const pixel_values_type* arr_red, const pixel_values_type* arr_green, const pixel_values_type* arr_blue,
+    void create_color_image( const pixel_values_type* arr_red, const pixel_values_type* arr_green, const pixel_values_type* arr_blue,
                             int width, int height, const std::string& filename, int image_settings = CV_8UC3) {
 
         cv::Mat image = get_opencv_color_image(arr_red, arr_green, arr_blue, width, height, image_settings);

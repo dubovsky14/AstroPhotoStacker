@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
             scale_to_8_bits(&rgb_image, width, height);
         }
 
-        crate_color_image(&rgb_image[0][0],&rgb_image[1][0], &rgb_image[2][0], width, height, output_file);
+        create_color_image(&rgb_image[0][0],&rgb_image[1][0], &rgb_image[2][0], width, height, output_file);
     }
 
     return 0;

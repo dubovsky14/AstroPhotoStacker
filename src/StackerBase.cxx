@@ -83,7 +83,7 @@ void StackerBase::save_stacked_photo(const std::string &file_address, const std:
         }
 
         if (color_image_target) {
-            crate_color_image(&data_for_plotting.at(0)[0], &data_for_plotting.at(1)[0], &data_for_plotting.at(2)[0] , width, height, file_address, image_options);
+            create_color_image(&data_for_plotting.at(0)[0], &data_for_plotting.at(1)[0], &data_for_plotting.at(2)[0] , width, height, file_address, image_options);
         }
         else {
             std::vector<double> data_for_plotting_merged(width*height, 0.);

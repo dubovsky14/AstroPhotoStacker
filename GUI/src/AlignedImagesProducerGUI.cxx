@@ -441,7 +441,7 @@ void AlignedImagesProducerGUI::process_and_save_stacked_image(  const std::vecto
         }
 
         if (!m_add_datetime) {
-            crate_color_image(&cropped_image_ushort[0][0], &cropped_image_ushort[1][0], &cropped_image_ushort[2][0], crop_width, crop_height, output_file_address);
+            create_color_image(&cropped_image_ushort[0][0], &cropped_image_ushort[1][0], &cropped_image_ushort[2][0], crop_width, crop_height, output_file_address);
         }
         else {
 

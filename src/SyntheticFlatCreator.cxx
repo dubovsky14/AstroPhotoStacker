@@ -290,7 +290,7 @@ void SyntheticFlatCreator::save_flat(const std::string &output_file)    {
     //    cout << flat_data[m_height/2*m_width + x] << endl;
     //}
 
-    //crate_color_image(flat_data.data(), flat_data.data(), flat_data.data(), m_width, m_height, output_file, CV_16UC3);
+    //create_color_image(flat_data.data(), flat_data.data(), flat_data.data(), m_width, m_height, output_file, CV_16UC3);
     create_gray_scale_image(flat_data.data(), m_width, m_height, output_file, CV_16UC1);
 };
 
