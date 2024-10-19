@@ -53,7 +53,7 @@ bool ReferencePhotoHandlerPlanetary::calculate_alignment(const std::string &file
 
     if (ranking != nullptr) {
         // #TODO: Use already loaded data
-        const double sharpness = get_sharpness_factor(brightness.data(), width, height, window_coordinates)/(width*height);
+        const double sharpness = get_sharpness_factor(brightness.data(), width, height, window_coordinates);
         *ranking = 100./sharpness;
     }
 

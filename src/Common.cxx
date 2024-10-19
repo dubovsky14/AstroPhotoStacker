@@ -130,10 +130,10 @@ std::vector<std::string> AstroPhotoStacker::get_raw_files_in_folder(const std::s
 
 std::string AstroPhotoStacker::round_and_convert_to_string(double x, int digits_after_decimal_point) {
     const double factor = pow(10, digits_after_decimal_point);
-    const int y = round(factor*x);
+    const long int y = round(factor*x);
 
-    const int rounded_int = y / factor;
-    const int rounded_fraction = abs(y % int(factor));
+    const long int rounded_int = y / factor;
+    const long int rounded_fraction = abs(y % int(factor));
     int zeros_to_add = digits_after_decimal_point - to_string(rounded_fraction).length();
     string string_rounded = to_string(rounded_int) + ".";
     for (int i = 0; i < zeros_to_add; i++) {
