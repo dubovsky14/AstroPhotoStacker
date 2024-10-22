@@ -143,23 +143,36 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
         local_shifts_handler.draw_ap_boxes_into_image(&output_image, width, height, 50, {0, 255, 0}, {255, 0, 0}, m_top_left_corner_x, m_top_left_corner_y);
     }
 
-    if (!m_add_datetime) {
-        create_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height, output_file_address);
+
+    cv::Mat opencv_image = get_opencv_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height);
+
+    // rescale image if it exceeds maximal size
+    if (m_max_width != -1 && m_max_height != -1) {
+        if (width > m_max_width || height > m_max_height) {
+            const float scale_factor_width = m_max_width/static_cast<float>(width);
+            const float scale_factor_height = m_max_height/static_cast<float>(height);
+
+            const float scale_factor = min(scale_factor_width, scale_factor_height);
+            cv::resize(opencv_image, opencv_image, cv::Size(), scale_factor, scale_factor);
+        }
     }
-    else {
+
+    if (m_add_datetime) {
         const Metadata metadata = read_metadata(input_file_address);
         const int unix_time = metadata.timestamp + m_timestamp_offset;
         const string datetime = unix_time_to_string(unix_time);
 
-        cv::Mat opencv_image = get_opencv_color_image(&output_image[0][0], &output_image[1][0], &output_image[2][0], width, height);
+        const int current_width = opencv_image.cols;
+        const int current_height = opencv_image.rows;
 
-        const float font_size = width/1200.0;
+        const float font_size = current_width/1200.0;
         const float font_width = font_size*2;
 
-        cv::putText(opencv_image, datetime, cv::Point(m_datetime_pos_frac_x*width, m_datetime_pos_frac_y*height), cv::FONT_HERSHEY_SIMPLEX, font_size, CV_RGB(255, 0, 0), font_width);
-
-        cv::imwrite(output_file_address, opencv_image);
+        cv::putText(opencv_image, datetime, cv::Point(m_datetime_pos_frac_x*current_width, m_datetime_pos_frac_y*current_height), cv::FONT_HERSHEY_SIMPLEX, font_size, CV_RGB(255, 0, 0), font_width);
     }
+
+    cv::imwrite(output_file_address, opencv_image);
+
     m_n_tasks_processed++;
 };
 
@@ -201,46 +214,4 @@ void AlignedImagesProducer::produce_video(const std::string &output_video_addres
     timelapse_creator.create_video(output_video_address);
 
     return;
-
-    if (m_files_to_align.size() == 0) {
-        return;
-    }
-
-    const cv::Size frame_size = cv::imread(aligned_images_folder + "/" + get_output_file_name(m_files_to_align[0])).size();
-
-    int frames_per_second = 25;
-    cv::VideoWriter oVideoWriter;
-    oVideoWriter.open(output_video_address, cv::VideoWriter::fourcc('X', 'V', 'I', 'D'), frames_per_second, frame_size);
-
-    vector<tuple<int, string>> files_with_timestamps;
-    for (const string &file : m_files_to_align) {
-        const Metadata metadata = read_metadata(file);
-        files_with_timestamps.push_back({metadata.timestamp, file});
-    }
-    sort(files_with_timestamps.begin(), files_with_timestamps.end());
-
-    for (const auto &[timestamp, file] : files_with_timestamps) {
-        const std::string aligned_file  = aligned_images_folder + "/" + get_output_file_name(file);
-        cv::Mat image = cv::imread(aligned_file);
-        oVideoWriter.write(image);
-    }
-
-    oVideoWriter.release();
-/*
-    return;
-
-    if (m_files_to_align.size() == 0) {
-        return;
-    }
-
-    TimeLapseVideoCreator timelapse_creator;
-    for (const string &file : m_files_to_align) {
-        const Metadata metadata = read_metadata(file);
-        const string aligned_file = aligned_images_folder + "/" + get_output_file_name(file);
-        timelapse_creator.add_image(aligned_file, metadata.timestamp);
-    }
-    timelapse_creator.set_fps(25); // #TODO: set this from GUI
-    timelapse_creator.set_n_repeat(5); // #TODO: set this from GUI
-    timelapse_creator.create_video(output_video_address);
-*/
 };

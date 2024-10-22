@@ -102,6 +102,7 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
         if (crop_width > 0 && crop_height > 0) {
             m_aligned_images_producer->limit_output_image_size(crop_top_left_x, crop_top_left_y, crop_width, crop_height);
         }
+        m_aligned_images_producer->set_maximal_output_image_size(1920, 1080);
 
         run_task_with_progress_dialog("Producing aligned images", "Finished", "", tasks_processed, tasks_total, [this](){
             if (m_apply_color_stretcher) {
@@ -151,7 +152,9 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
         alignment_info.ranking = alignment_info_gui.ranking;
         alignment_info.local_shifts_handler = alignment_info_gui.local_shifts_handler;
 
-        m_aligned_images_producer->add_image(file, alignment_info);
+        if (has_valid_alignment(alignment_info_gui)) {
+            m_aligned_images_producer->add_image(file, alignment_info);
+        }
     };
 
     if (m_use_grouping) {
@@ -161,7 +164,9 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
             const AlignmentFileInfo &alignment_info_gui = alignment_info_vec[i_file];
             const Metadata &metadata = metadata_vec[i_file];
             if (files_are_checked[i_file]) {
-                photo_grouping_tool.add_file(file, metadata.timestamp, alignment_info_gui.ranking);
+                if (has_valid_alignment(alignment_info_gui)) {
+                    photo_grouping_tool.add_file(file, metadata.timestamp, alignment_info_gui.ranking);
+                }
             }
         }
         photo_grouping_tool.define_maximum_time_difference_in_group(m_grouping_time_interval);
@@ -440,6 +445,7 @@ void AlignedImagesProducerGUI::process_and_save_stacked_image(  const std::vecto
             AlignedImagesProducer::apply_green_correction(&cropped_image_ushort, 255);
         }
 
+
         if (!m_add_datetime) {
             create_color_image(&cropped_image_ushort[0][0], &cropped_image_ushort[1][0], &cropped_image_ushort[2][0], crop_width, crop_height, output_file_address);
         }
@@ -459,3 +465,7 @@ void AlignedImagesProducerGUI::process_and_save_stacked_image(  const std::vecto
 
 };
 
+
+bool AlignedImagesProducerGUI::has_valid_alignment(const AlignmentFileInfo &alignment_info) const  {
+    return fabs(alignment_info.ranking) > 0.001;
+};

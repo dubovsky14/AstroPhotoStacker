@@ -53,6 +53,11 @@ namespace AstroPhotoStacker {
                 return {m_datetime_pos_frac_x, m_datetime_pos_frac_y};
             };
 
+            void set_maximal_output_image_size(int width, int height) {
+                m_max_width = width;
+                m_max_height = height;
+            };
+
 
             static std::string get_output_file_name(const std::string &input_file_address);
 
@@ -67,6 +72,9 @@ namespace AstroPhotoStacker {
             int m_top_left_corner_y = 0;
             int m_width             = -1;
             int m_height            = -1;
+
+            int m_max_width         = -1;
+            int m_max_height        = -1;
 
             int m_n_cpu             = 1;
 

@@ -68,4 +68,6 @@ class AlignedImagesProducerGUI : public wxFrame  {
         bool  m_produce_timelapse_video = true;
 
         void process_and_save_stacked_image(const std::vector<std::vector<double>> &stacked_image, const std::string &output_file_address, int unix_time, bool use_green_correction, int original_width, int original_height)   const;
+
+        bool has_valid_alignment(const AlignmentFileInfo &alignment_info) const;
 };

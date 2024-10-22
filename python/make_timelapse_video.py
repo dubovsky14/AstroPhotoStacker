@@ -16,4 +16,4 @@ def make_timelapse_video(folder : str, output_name : str, fps : int = 25, repeat
     video.release()
 
 if __name__ == '__main__':
-    make_timelapse_video(argv[1], argv[2], 20, 10)
+    make_timelapse_video(argv[1], argv[2], 20, 3)
