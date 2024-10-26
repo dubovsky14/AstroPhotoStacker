@@ -3,6 +3,7 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/CalibrationFrameBase.h"
 #include "../headers/HotPixelIdentifier.h"
+#include "../headers/TimeLapseVideoSettings.h"
 
 #include <functional>
 #include <string>
@@ -72,6 +73,8 @@ namespace AstroPhotoStacker {
 
             void produce_video(const std::string &output_video_address, const std::string &aligned_images_folder)   const;
 
+            TimeLapseVideoSettings *get_timelapse_video_settings();
+
         private:
             int m_top_left_corner_x = 0;
             int m_top_left_corner_y = 0;
@@ -96,6 +99,7 @@ namespace AstroPhotoStacker {
 
             std::vector<std::shared_ptr<const CalibrationFrameBase> > m_calibration_frame_handlers;
             const HotPixelIdentifier *m_hot_pixel_identifier = nullptr;
+            TimeLapseVideoSettings m_timelapse_video_settings;
 
 
             void produce_aligned_image( const std::string &input_file_address,

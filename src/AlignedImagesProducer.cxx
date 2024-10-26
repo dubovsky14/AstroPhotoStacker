@@ -201,20 +201,20 @@ void AlignedImagesProducer::apply_green_correction(std::vector<std::vector<unsig
 };
 
 void AlignedImagesProducer::produce_video(const std::string &output_video_address, const std::string &aligned_images_folder) const {
-    // #TODO: Put this into a separate class
     if (m_files_to_align.size() == 0) {
         return;
     }
 
     TimeLapseVideoCreator timelapse_creator;
+    m_timelapse_video_settings.configure_timelapse_video_creator(&timelapse_creator);
     for (const string &file : m_files_to_align) {
         const Metadata metadata = read_metadata(file);
         const string aligned_file = aligned_images_folder + "/" + get_output_file_name(file);
         timelapse_creator.add_image(aligned_file, metadata.timestamp);
     }
-    timelapse_creator.set_fps(25); // #TODO: set this from GUI
-    timelapse_creator.set_n_repeat(5); // #TODO: set this from GUI
     timelapse_creator.create_video(output_video_address);
+};
 
-    return;
+TimeLapseVideoSettings* AlignedImagesProducer::get_timelapse_video_settings() {
+    return &m_timelapse_video_settings;
 };

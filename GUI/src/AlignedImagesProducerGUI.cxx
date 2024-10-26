@@ -31,7 +31,7 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
-        wxFrame(parent, wxID_ANY, "Produce aligned images", wxDefaultPosition, wxSize(1000, 800)),
+        wxFrame(parent, wxID_ANY, "Produce aligned images", wxDefaultPosition, wxSize(1000, 1000)),
         m_parent(parent)    {
 
     m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackCorrectionWhite>());
@@ -49,11 +49,14 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
 
 
     m_image_preview_sizer = new wxBoxSizer(wxHORIZONTAL);
-    m_main_vertical_sizer->Add(m_image_preview_sizer, 1, wxCENTER, 5);
+    m_main_vertical_sizer->Add(m_image_preview_sizer, 2, wxCENTER, 5);
 
     m_image_preview_sizer->Add(m_image_preview_crop_tool->get_image_preview_bitmap(), 1, wxCENTER, 0);
-    add_exposure_correction_spin_ctrl();
 
+
+    m_basic_settings_sizer = new wxBoxSizer(wxVERTICAL);
+    m_main_vertical_sizer->Add(m_basic_settings_sizer, 1, wxEXPAND | wxALL, 5);
+    add_exposure_correction_spin_ctrl();
     add_checkboxes();
 
     wxBoxSizer *bottom_horizontal_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -122,6 +125,7 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
 
 
     add_advanced_settings();
+    add_video_settings();
 
     SetSizer(m_main_vertical_sizer);
 };
@@ -132,6 +136,7 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
     m_aligned_images_producer = make_unique<AlignedImagesProducer>(stack_settings->get_n_cpus());
     m_aligned_images_producer->set_add_datetime(m_add_datetime);
     m_aligned_images_producer->set_timestamp_offset(m_timestamp_offset);
+    *m_aligned_images_producer->get_timelapse_video_settings() = m_timelapse_video_settings;
 
     // Light frames
     const vector<string>    &light_frames = filelist_handler->get_files(FileTypes::LIGHT);
@@ -253,8 +258,8 @@ void AlignedImagesProducerGUI::add_exposure_correction_spin_ctrl()   {
 
     // Add the controls to a sizer
     //wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-    m_main_vertical_sizer->Add(exposure_correction_text, 0,   wxEXPAND, 5);
-    m_main_vertical_sizer->Add(slider_exposure, 0,  wxEXPAND, 5);
+    m_basic_settings_sizer->Add(exposure_correction_text, 0,   wxEXPAND, 5);
+    m_basic_settings_sizer->Add(slider_exposure, 0,  wxEXPAND, 5);
 
 };
 
@@ -348,6 +353,35 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
         m_fraction_to_stack = fraction_to_stack;
     });
     advanced_settings_sizer->Add(slider_stack_fraction, 0, wxEXPAND, 5);
+};
+
+void AlignedImagesProducerGUI::add_video_settings()   {
+    wxSizer *video_settings_sizer = new wxBoxSizer(wxVERTICAL);
+    m_main_vertical_sizer->Add(video_settings_sizer, 0, wxEXPAND, 5);
+
+    wxStaticText* video_settings_text = new wxStaticText(this, wxID_ANY, "Video settings:");
+    set_text_size(video_settings_text, 20);
+    video_settings_sizer->Add(video_settings_text, 0, wxCENTER, 5);
+
+    // fps
+    wxStaticText *fps_text = new wxStaticText(this, wxID_ANY, "Frame rate per second (fps):");
+    video_settings_sizer->Add(fps_text, 0, wxEXPAND, 5);
+    wxSpinCtrl* spin_fps = new wxSpinCtrl(this, wxID_ANY, "25", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 60, 25);
+    spin_fps->Bind(wxEVT_SPINCTRL, [spin_fps, this](wxCommandEvent&){
+        int current_value = spin_fps->GetValue();
+        m_timelapse_video_settings.set_fps(current_value);
+    });
+    video_settings_sizer->Add(spin_fps, 0, wxEXPAND, 5);
+
+    // n_repeat
+    wxStaticText *n_repeat_text = new wxStaticText(this, wxID_ANY, "Number of repeats:");
+    video_settings_sizer->Add(n_repeat_text, 0, wxEXPAND, 5);
+    wxSpinCtrl* spin_n_repeat = new wxSpinCtrl(this, wxID_ANY, "3", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 50, 3);
+    spin_n_repeat->Bind(wxEVT_SPINCTRL, [spin_n_repeat, this](wxCommandEvent&){
+        int current_value = spin_n_repeat->GetValue();
+        m_timelapse_video_settings.set_n_repeat(current_value);
+    });
+    video_settings_sizer->Add(spin_n_repeat, 0, wxEXPAND, 5);
 };
 
 void AlignedImagesProducerGUI::stack_images_in_groups() const   {

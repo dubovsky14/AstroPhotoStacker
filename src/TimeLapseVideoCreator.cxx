@@ -12,11 +12,15 @@ void TimeLapseVideoCreator::add_image(const std::string &file_address, int unix_
     m_input_files.push_back({file_address, unix_time});
 };
 
-void TimeLapseVideoCreator::set_fps(int fps)    {
+void TimeLapseVideoCreator::clear() {
+    m_input_files.clear();
+};
+
+void TimeLapseVideoCreator::set_fps(float fps)    {
     m_fps = fps;
 };
 
-int TimeLapseVideoCreator::get_fps()   const    {
+float TimeLapseVideoCreator::get_fps()   const    {
     return m_fps;
 };
 
@@ -26,6 +30,16 @@ void TimeLapseVideoCreator::set_n_repeat(int n_repeat)  {
 
 int TimeLapseVideoCreator::get_n_repeat()  const    {
     return m_n_repeat;
+};
+
+void TimeLapseVideoCreator::set_codec(const char codec[4]) {
+    for (int i = 0; i < 4; i++) {
+        m_codec[i] = codec[i];
+    }
+};
+
+const char* TimeLapseVideoCreator::get_codec() const {
+    return m_codec;
 };
 
 void TimeLapseVideoCreator::create_video(const std::string &video_address, bool sort_by_time) const  {

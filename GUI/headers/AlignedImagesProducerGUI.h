@@ -4,6 +4,7 @@
 #include "../headers/StackSettings.h"
 #include "../headers/ImagePreviewCropTool.h"
 #include "../headers/CombinedColorStrecherTool.h"
+#include "../headers/TimeLapseVideoSettings.h"
 
 #include "../../headers/AlignedImagesProducer.h"
 
@@ -34,6 +35,7 @@ class AlignedImagesProducerGUI : public wxFrame  {
     private:
         MyFrame *m_parent = nullptr;
         wxBoxSizer *m_main_vertical_sizer = nullptr;
+        wxBoxSizer *m_basic_settings_sizer = nullptr;
         wxBoxSizer *m_image_preview_sizer = nullptr;
 
 
@@ -53,6 +55,8 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
         void add_advanced_settings();
 
+        void add_video_settings();
+
         void stack_images_in_groups()   const;
 
         bool m_add_datetime = false;
@@ -66,6 +70,8 @@ class AlignedImagesProducerGUI : public wxFrame  {
         float m_fraction_to_stack = 0.5;
 
         bool  m_produce_timelapse_video = true;
+
+        AstroPhotoStacker::TimeLapseVideoSettings m_timelapse_video_settings;
 
         void process_and_save_stacked_image(const std::vector<std::vector<double>> &stacked_image, const std::string &output_file_address, int unix_time, bool use_green_correction, int original_width, int original_height)   const;
 
