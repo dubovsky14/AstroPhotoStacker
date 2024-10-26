@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../headers/TimeLapseVideoCreator.h"
-
 #include <string>
+#include <array>
 
 namespace AstroPhotoStacker {
     class TimeLapseVideoSettings    {
@@ -23,11 +22,9 @@ namespace AstroPhotoStacker {
 
             const char* get_codec() const;
 
-            void configure_timelapse_video_creator(TimeLapseVideoCreator *settings) const;
-
         private:
             float m_fps = 25;
             int m_n_repeat = 1;
-            char m_codec[4] = {'M', 'J', 'P', 'G'};
+            std::array<char, 4> m_codec = {'M', 'J', 'P', 'G'};
     };
 }

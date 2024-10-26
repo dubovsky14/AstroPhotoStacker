@@ -1,7 +1,7 @@
-#include "../headers/TimeLapseVideoSettings.h"
-
 #include <string>
 #include <stdexcept>
+
+#include "../headers/TimeLapseVideoSettings.h"
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -38,11 +38,5 @@ void TimeLapseVideoSettings::set_codec(const std::string &codec)    {
 };
 
 const char* TimeLapseVideoSettings::get_codec() const   {
-    return m_codec;
-};
-
-void TimeLapseVideoSettings::configure_timelapse_video_creator(TimeLapseVideoCreator *settings) const {
-    settings->set_fps(m_fps);
-    settings->set_n_repeat(m_n_repeat);
-    settings->set_codec(m_codec);
+    return m_codec.data();
 };

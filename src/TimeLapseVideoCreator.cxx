@@ -16,32 +16,6 @@ void TimeLapseVideoCreator::clear() {
     m_input_files.clear();
 };
 
-void TimeLapseVideoCreator::set_fps(float fps)    {
-    m_fps = fps;
-};
-
-float TimeLapseVideoCreator::get_fps()   const    {
-    return m_fps;
-};
-
-void TimeLapseVideoCreator::set_n_repeat(int n_repeat)  {
-    m_n_repeat = n_repeat;
-};
-
-int TimeLapseVideoCreator::get_n_repeat()  const    {
-    return m_n_repeat;
-};
-
-void TimeLapseVideoCreator::set_codec(const char codec[4]) {
-    for (int i = 0; i < 4; i++) {
-        m_codec[i] = codec[i];
-    }
-};
-
-const char* TimeLapseVideoCreator::get_codec() const {
-    return m_codec;
-};
-
 void TimeLapseVideoCreator::create_video(const std::string &video_address, bool sort_by_time) const  {
     vector<tuple<string,int>> input_files = m_input_files;
     if (sort_by_time)   {
@@ -62,15 +36,18 @@ void TimeLapseVideoCreator::create_video(const std::string &video_address, bool 
     const cv::Size frame_size = first_image.size();
 
     //cv::VideoWriter video_writer(video_address, 0, 1, frame_size);
-    cv::VideoWriter video_writer(video_address, cv::CAP_ANY,  cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), m_fps, frame_size);
+    const float fps = m_settings.get_fps();
+    const int n_repeat = m_settings.get_n_repeat();
+
+    cv::VideoWriter video_writer(video_address, cv::CAP_ANY,  cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), fps, frame_size);
     if (!video_writer.isOpened())   {
         cout << "Could not open video writer" << endl;
         cout << "Video address: " << video_address << endl;
         cout << "Frame size: " << frame_size << endl;
-        cout << "FPS: " << m_fps << endl;
+        cout << "FPS: " << fps << endl;
         return;
     }
-    for (int i_repeat = 0; i_repeat < m_n_repeat; i_repeat++)   {
+    for (int i_repeat = 0; i_repeat < n_repeat; i_repeat++)   {
         for (const auto &[file, unixtime] : input_files) {
             cv::Mat image = cv::imread(file);
             if (image.empty())  {

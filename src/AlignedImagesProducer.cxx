@@ -205,8 +205,7 @@ void AlignedImagesProducer::produce_video(const std::string &output_video_addres
         return;
     }
 
-    TimeLapseVideoCreator timelapse_creator;
-    m_timelapse_video_settings.configure_timelapse_video_creator(&timelapse_creator);
+    TimeLapseVideoCreator timelapse_creator(m_timelapse_video_settings);
     for (const string &file : m_files_to_align) {
         const Metadata metadata = read_metadata(file);
         const string aligned_file = aligned_images_folder + "/" + get_output_file_name(file);
