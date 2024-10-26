@@ -2,6 +2,7 @@
 
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/CalibrationFrameBase.h"
+#include "../headers/HotPixelIdentifier.h"
 
 #include <functional>
 #include <string>
@@ -49,6 +50,10 @@ namespace AstroPhotoStacker {
                 return m_timestamp_offset;
             };
 
+            void set_hot_pixel_identifier(const HotPixelIdentifier *hot_pixel_identifier) {
+                m_hot_pixel_identifier = hot_pixel_identifier;
+            };
+
             std::pair<float,float> get_position_of_datetime() const {
                 return {m_datetime_pos_frac_x, m_datetime_pos_frac_y};
             };
@@ -90,6 +95,7 @@ namespace AstroPhotoStacker {
             std::vector<FileAlignmentInformation>   m_alignment_info;
 
             std::vector<std::shared_ptr<const CalibrationFrameBase> > m_calibration_frame_handlers;
+            const HotPixelIdentifier *m_hot_pixel_identifier = nullptr;
 
 
             void produce_aligned_image( const std::string &input_file_address,

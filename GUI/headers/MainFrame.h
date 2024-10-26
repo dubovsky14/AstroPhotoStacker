@@ -55,6 +55,13 @@ class MyFrame : public wxFrame  {
 
         void stack_calibration_frames();
 
+        const AstroPhotoStacker::HotPixelIdentifier *get_hot_pixel_identifier() const {
+            if (m_hot_pixel_identifier == nullptr) {
+                return nullptr;
+            }
+            return m_hot_pixel_identifier.get();
+        };
+
     private:
 
         void add_file_menu();

@@ -204,6 +204,11 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
             m_aligned_images_producer->add_calibration_frame_handler(calibration_frame_handler);
         }
     }
+
+    // Hot pixel identifier
+    if (m_parent->get_hot_pixel_identifier()) {
+        m_aligned_images_producer->set_hot_pixel_identifier(m_parent->get_hot_pixel_identifier());
+    }
 };
 
 std::string AlignedImagesProducerGUI::get_reference_file_address() const  {
@@ -361,7 +366,7 @@ void AlignedImagesProducerGUI::stack_images_in_groups() const   {
         const string &file = light_frames[i_file];
         const AlignmentFileInfo &alignment_info_gui = alignment_info_vec[i_file];
         const Metadata &metadata = metadata_vec[i_file];
-        if (files_are_checked[i_file]) {
+        if (files_are_checked[i_file] && has_valid_alignment(alignment_info_gui)) {
             photo_grouping_tool.add_file(file, metadata.timestamp, alignment_info_gui.ranking);
         }
     }

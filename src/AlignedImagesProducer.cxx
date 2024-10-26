@@ -94,6 +94,9 @@ void AlignedImagesProducer::produce_aligned_image( const std::string &input_file
     for (const auto &calibration_frame_handler : m_calibration_frame_handlers) {
         photo_handler.register_calibration_frame(calibration_frame_handler);
     }
+    if (m_hot_pixel_identifier) {
+        photo_handler.register_hot_pixel_identifier(m_hot_pixel_identifier);
+    }
     photo_handler.calibrate();
 
     const int width_original = photo_handler.get_width();
