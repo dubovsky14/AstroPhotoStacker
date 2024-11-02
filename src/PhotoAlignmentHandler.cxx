@@ -33,11 +33,18 @@ void PhotoAlignmentHandler::read_from_text_file(const std::string &alignment_fil
             continue;
         }
 
-        if (elements.size() != 7) {
+        if (elements.size() != 8) {
             throw runtime_error("Invalid alignment file. Could not read line: " + line);
         }
 
-        if (!string_is_float(elements[1]) || !string_is_float(elements[2]) || !string_is_float(elements[3]) || !string_is_float(elements[4]) || !string_is_float(elements[5])) {
+        if (!string_is_float(elements[1]) || // frame number
+            !string_is_int  (elements[2]) || // shift_x
+            !string_is_float(elements[3]) || // shift_y
+            !string_is_float(elements[4]) || // rotation_center_x
+            !string_is_float(elements[5]) || // rotation_center_y
+            !string_is_float(elements[6]) || // rotation
+            !string_is_float(elements[7])    // ranking
+            ) {
             throw runtime_error("Invalid alignment file. Could not read line: " + line);
         }
 
