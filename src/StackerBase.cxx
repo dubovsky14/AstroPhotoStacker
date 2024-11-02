@@ -30,11 +30,11 @@ void StackerBase::add_alignment_info(const std::string &file_address, float x_sh
     m_photo_alignment_handler->add_alignment_info(file_address, x_shift, y_shift, rotation_center_x, rotation_center_y, rotation, ranking, local_shifts_handler);
 };
 
-void StackerBase::add_photo(const string &file_address, bool apply_alignment) {
-    m_files_to_stack.push_back(file_address);
+void StackerBase::add_photo(const InputFrame &input_frame, bool apply_alignment) {
+    m_frames_to_stack.push_back(input_frame);
     m_apply_alignment.push_back(apply_alignment);
 
-    m_contain_only_rgb_raw_files = m_contain_only_rgb_raw_files && is_raw_file(file_address);
+    m_contain_only_rgb_raw_files = m_contain_only_rgb_raw_files && is_raw_file(input_frame.get_file_address()) && input_frame.is_still_image();
 };
 
 void StackerBase::add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler) {
@@ -175,16 +175,16 @@ const std::vector<std::vector<double> >& StackerBase::get_stacked_image() const 
 };
 
 CalibratedPhotoHandler StackerBase::get_calibrated_photo(unsigned int i_file, int y_min, int y_max) const    {
-    const string file_address = m_files_to_stack[i_file];
+    const InputFrame &input_frame = m_frames_to_stack[i_file];
     const bool apply_alignment = m_apply_alignment[i_file];
-    const FileAlignmentInformation alignment_info = apply_alignment ? m_photo_alignment_handler->get_alignment_parameters(file_address) : FileAlignmentInformation();
+    const FileAlignmentInformation alignment_info = apply_alignment ? m_photo_alignment_handler->get_alignment_parameters(input_frame.get_file_address()) : FileAlignmentInformation();
     const float shift_x         = alignment_info.shift_x;
     const float shift_y         = alignment_info.shift_y;
     const float rot_center_x    = alignment_info.rotation_center_x;
     const float rot_center_y    = alignment_info.rotation_center_y;
     const float rotation        = alignment_info.rotation;
 
-    CalibratedPhotoHandler calibrated_photo(file_address, m_interpolate_colors);
+    CalibratedPhotoHandler calibrated_photo(input_frame, m_interpolate_colors);
     calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
     calibrated_photo.define_local_shifts(alignment_info.local_shifts_handler);
     calibrated_photo.limit_y_range(y_min, y_max);

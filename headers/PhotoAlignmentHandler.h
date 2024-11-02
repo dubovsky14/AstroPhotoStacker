@@ -3,6 +3,7 @@
 #include "../headers/ReferencePhotoHandlerBase.h"
 #include "../headers/LocalShiftsHandler.h"
 #include "../headers/LocalShift.h"
+#include "../headers/InputFrame.h"
 
 #include <memory>
 #include <string>
@@ -13,7 +14,7 @@
 
 namespace   AstroPhotoStacker   {
     struct FileAlignmentInformation    {
-        std::string file_address = "";
+        InputFrame input_frame;
         float shift_x            = 0;
         float shift_y            = 0;
         float rotation_center_x  = 0;
@@ -39,7 +40,7 @@ namespace   AstroPhotoStacker   {
 
             /**
              * @brief Adds alignment information for a file.
-             * @param file_address The address of the raw file.
+             * @param input_fame Information about input frame (either still image or video frame)
              * @param x_shift The horizontal shift.
              * @param y_shift The vertical shift.
              * @param rotation_center_x The x-coordinate of the rotation center.
@@ -47,7 +48,7 @@ namespace   AstroPhotoStacker   {
              * @param rotation The rotation angle.
              * @param ranking The ranking of the alignment.
              */
-            void add_alignment_info(const std::string& file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler = LocalShiftsHandler());
+            void add_alignment_info(const InputFrame &input_frame, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler = LocalShiftsHandler());
 
             /**
              * @brief Reads alignment information from a text file.
@@ -91,7 +92,7 @@ namespace   AstroPhotoStacker   {
              * @param file_address The address of the file.
              * @return The alignment parameters for the file.
              */
-            FileAlignmentInformation get_alignment_parameters(const std::string& file_address) const;
+            FileAlignmentInformation get_alignment_parameters(const InputFrame &input_frame) const;
 
             /**
              * @brief Gets the vector of alignment parameters for all files.
@@ -135,7 +136,7 @@ namespace   AstroPhotoStacker   {
              */
             const std::string& get_alignment_method() const {return m_alignment_method;};
 
-            std::vector<LocalShift> get_local_shifts(const std::string& file_address) const;
+            std::vector<LocalShift> get_local_shifts(const InputFrame &input_frame) const;
 
             const std::vector<std::vector<LocalShift>>& get_local_shifts_vector() const {return m_local_shifts_vector;};
 

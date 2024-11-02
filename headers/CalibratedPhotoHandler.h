@@ -5,6 +5,7 @@
 #include "../headers/HotPixelIdentifier.h"
 #include "../headers/LocalShiftsHandler.h"
 #include "../headers/CalibratedPhotoScoreHandler.h"
+#include "../headers/InputFrame.h"
 
 #include <string>
 #include <memory>
@@ -30,10 +31,10 @@ namespace AstroPhotoStacker {
 
             /**
              * @brief Constructor that initializes the CalibratedPhotoHandler object.
-             * @param raw_file_address The address of the raw file to be calibrated.
+             * @param input_frame Information about the input frame - address of the file in case of still image, address of the video and frame number in case of video frame.
              * @param use_color_interpolation Whether to use color interpolation.
             */
-            CalibratedPhotoHandler(const std::string &raw_file_address, bool use_color_interpolation = false);
+            CalibratedPhotoHandler(const InputFrame &input_frame, bool use_color_interpolation = false);
 
             /**
              * @brief Add alignment data to the CalibratedPhotoHandler object.

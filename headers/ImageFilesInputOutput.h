@@ -3,6 +3,7 @@
 #include "../headers/Metadata.h"
 #include "../headers/Common.h"
 #include "../headers/raw_file_reader.h"
+#include "../headers/InputFrame.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -204,7 +205,30 @@ namespace AstroPhotoStacker {
     }
 
     template<class ValueType>
-    std::vector<std::vector<ValueType> > read_rgb_image(const std::string &input_file, int *width, int *height) {
+    std::vector<std::vector<ValueType> > read_video_frame(const std::string &video_address, int frame_id, int *width, int *height) {
+        cv::VideoCapture video(video_address);
+        if (!video.isOpened()) {
+            throw std::runtime_error("Unable to open video file: " + video_address);
+        }
+        video.set(cv::CAP_PROP_POS_FRAMES, frame_id);
+        cv::Mat frame;
+        video.read(frame);
+        *width = frame.cols;
+        *height = frame.rows;
+        std::vector<std::vector<ValueType>> result(3, std::vector<ValueType>(*width*(*height)));
+
+        for (int y = 0; y < *height; y++) {
+            for (int x = 0; x < *width; x++) {
+                for (int color = 0; color < 3; color++) {
+                    result[color][y*(*width) + x] = frame.at<cv::Vec3b>(y, x)[color];
+                }
+            }
+        }
+        return result;
+    };
+
+    template<class ValueType>
+    std::vector<std::vector<ValueType> > read_still_rgb_image(const std::string &input_file, int *width, int *height) {
         cv::Mat image = cv::imread(input_file, cv::IMREAD_COLOR);
         *width = image.cols;
         *height = image.rows;
@@ -218,6 +242,16 @@ namespace AstroPhotoStacker {
             }
         }
         return result;
+    };
+
+    template<class ValueType>
+    std::vector<std::vector<ValueType> > read_rgb_image(const InputFrame &input_frame, int *width, int *height) {
+        if (input_frame.is_still_image()) {
+            return read_still_rgb_image<ValueType>(input_frame.get_file_address(), width, height);
+        }
+        else {
+            return read_video_frame<ValueType>(input_frame.get_file_address(), input_frame.get_frame_number(), width, height);
+        }
     };
 
     template<class ValueType>

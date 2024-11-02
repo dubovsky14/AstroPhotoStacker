@@ -28,13 +28,13 @@ void StackerSimpleBase::calculate_stacked_photo()  {
 
         const int y_max = min(y_min + height_range, m_height);
         if (m_n_cpu == 1)   {
-            for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
+            for (unsigned int i_file = 0; i_file < m_frames_to_stack.size(); i_file++) {
                 add_photo_to_stack(i_file, y_min, y_max);
             }
         }
         else    {
             thread_pool pool(m_n_cpu);
-            for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
+            for (unsigned int i_file = 0; i_file < m_frames_to_stack.size(); i_file++) {
                 pool.submit([this, i_file, y_min, y_max]() {
                     add_photo_to_stack(i_file, y_min, y_max);
                 });
@@ -55,7 +55,7 @@ void StackerSimpleBase::set_number_of_cpu_threads(unsigned int n_cpu) {
 
 
 void StackerSimpleBase::add_photo_to_stack(unsigned int i_file, int y_min, int y_max)  {
-    cout << "Adding " + m_files_to_stack[i_file] + " to stack\n";
+    cout << "Adding " + m_frames_to_stack[i_file].to_string() + " to stack\n";
     CalibratedPhotoHandler calibrated_photo = get_calibrated_photo(i_file, y_min, y_max);
 
     const int pixel_shift = y_min*m_width;
@@ -102,7 +102,7 @@ int StackerSimpleBase::get_height_range_limit() const  {
 };
 
 int StackerSimpleBase::get_tasks_total() const  {
-    const long long int n_files = m_files_to_stack.size();
+    const long long int n_files = m_frames_to_stack.size();
     const int height_range = get_height_range_limit();
     int n_slices = m_height/height_range + (m_height % height_range > 0);
 

@@ -7,6 +7,8 @@
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/LocalShiftsHandler.h"
 
+#include "../headers/InputFrame.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -63,10 +65,10 @@ namespace AstroPhotoStacker {
             /**
              * @brief Add a photo to the stack
              *
-             * @param file_address - path to the file
+             * @param input_frame - data about the input frame (either a photo or a frame from a video)
              * @param apply_alignment - if true, the alignment will be applied - switching it off is usefull for calibration frames
             */
-            virtual void add_photo(const std::string &file_address, bool apply_alignment = true);
+            virtual void add_photo(const InputFrame &input_frame, bool apply_alignment = true);
 
             /**
              * @brief Add calibration frame handler
@@ -210,7 +212,7 @@ namespace AstroPhotoStacker {
 
             std::string m_alignment_file_address;
 
-            std::vector<std::string>    m_files_to_stack;
+            std::vector<InputFrame>     m_frames_to_stack;
             std::vector<bool>           m_apply_alignment; // for calibration frames we just stack them
             std::vector<std::vector<double> > m_stacked_image;
             std::unique_ptr<PhotoAlignmentHandler> m_photo_alignment_handler    = nullptr;

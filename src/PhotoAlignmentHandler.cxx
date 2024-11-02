@@ -42,13 +42,13 @@ void PhotoAlignmentHandler::read_from_text_file(const std::string &alignment_fil
         }
 
         FileAlignmentInformation alignment_info;
-        alignment_info.file_address = elements[0];
-        alignment_info.shift_x = stof(elements[1]);
-        alignment_info.shift_y = stof(elements[2]);
-        alignment_info.rotation_center_x = stof(elements[3]);
-        alignment_info.rotation_center_y = stof(elements[4]);
-        alignment_info.rotation = stof(elements[5]);
-        alignment_info.ranking = stof(elements[6]);
+        alignment_info.input_frame = InputFrame(elements[0], stoi(elements[1]));
+        alignment_info.shift_x = stof(elements[2]);
+        alignment_info.shift_y = stof(elements[3]);
+        alignment_info.rotation_center_x = stof(elements[4]);
+        alignment_info.rotation_center_y = stof(elements[5]);
+        alignment_info.rotation = stof(elements[6]);
+        alignment_info.ranking = stof(elements[7]);
 
         m_alignment_information_vector.push_back(alignment_info);
 
@@ -56,9 +56,9 @@ void PhotoAlignmentHandler::read_from_text_file(const std::string &alignment_fil
     alignment_file.close();
 }
 
-void PhotoAlignmentHandler::add_alignment_info(const std::string &file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler) {
+void PhotoAlignmentHandler::add_alignment_info(const InputFrame &input_frame, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler) {
     FileAlignmentInformation alignment_info;
-    alignment_info.file_address = file_address;
+    alignment_info.input_frame = input_frame;
     alignment_info.shift_x = x_shift;
     alignment_info.shift_y = y_shift;
     alignment_info.rotation_center_x = rotation_center_x;
@@ -76,12 +76,13 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
     });
     ofstream alignment_file(alignment_file_address);
     alignment_file << c_reference_file_header << " | " << m_reference_file_address << endl;
-    alignment_file << "# File address | shift_x | shift_y | rotation_center_x | rotation_center_y | rotation | ranking" << endl;
+    alignment_file << "# File address | frame_number | shift_x | shift_y | rotation_center_x | rotation_center_y | rotation | ranking" << endl;
     for (const FileAlignmentInformation &alignment_info : m_alignment_information_vector) {
-        if (alignment_info.file_address == "")  {   // plate-solving failed
+        if (alignment_info.input_frame.get_file_address() == "")  {   // plate-solving failed
             continue;
         }
-        alignment_file  <<          alignment_info.file_address
+        alignment_file  <<          alignment_info.input_frame.get_file_address()
+                        << " | " << alignment_info.input_frame.get_frame_number()
                         << " | " << alignment_info.shift_x
                         << " | " << alignment_info.shift_y
                         << " | " << alignment_info.rotation_center_x
@@ -103,7 +104,7 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
         float shift_x, shift_y, rot_center_x, rot_center_y, rotation, ranking;
         if (m_reference_photo_handler->calculate_alignment(file_name, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation, &ranking)) {
             FileAlignmentInformation &alignment_info = m_alignment_information_vector[file_index];
-            alignment_info.file_address = file_name;
+            alignment_info.input_frame = file_name;
             alignment_info.shift_x = shift_x;
             alignment_info.shift_y = shift_y;
             alignment_info.rotation_center_x = rot_center_x;
@@ -148,13 +149,14 @@ void PhotoAlignmentHandler::reset() {
     m_reference_photo_handler = nullptr;
 }
 
-FileAlignmentInformation PhotoAlignmentHandler::get_alignment_parameters(const std::string &file_address) const    {
+FileAlignmentInformation PhotoAlignmentHandler::get_alignment_parameters(const InputFrame &input_frame) const    {
+    // #TODO: Use map
     for (const FileAlignmentInformation &alignment_info :  m_alignment_information_vector) {
-        if (alignment_info.file_address == file_address) {
+        if (alignment_info.input_frame == input_frame) {
             return alignment_info;
         }
     }
-    throw runtime_error("File not found in alignment file: " + file_address);
+    throw runtime_error("Frame not found in alignment file: " + input_frame.to_string());
 }
 
 const std::vector<FileAlignmentInformation>& PhotoAlignmentHandler::get_alignment_parameters_vector() const    {
@@ -164,7 +166,7 @@ const std::vector<FileAlignmentInformation>& PhotoAlignmentHandler::get_alignmen
 std::vector<std::string> PhotoAlignmentHandler::get_file_addresses() const  {
     vector<string> file_addresses;
     for (const FileAlignmentInformation &alignment_info : m_alignment_information_vector) {
-        file_addresses.push_back(alignment_info.file_address);
+        file_addresses.push_back(alignment_info.input_frame.get_file_address());
     }
     return file_addresses;
 };
@@ -197,13 +199,13 @@ const std::atomic<int>& PhotoAlignmentHandler::get_number_of_aligned_files() con
     return m_n_files_aligned;
 };
 
-std::vector<LocalShift> PhotoAlignmentHandler::get_local_shifts(const std::string& file_address) const   {
+std::vector<LocalShift> PhotoAlignmentHandler::get_local_shifts(const InputFrame& input_frame) const   {
     for (unsigned int i_file = 0; i_file < m_alignment_information_vector.size(); i_file++) {
-        if (m_alignment_information_vector[i_file].file_address == file_address) {
+        if (m_alignment_information_vector[i_file].input_frame == input_frame) {
             return m_local_shifts_vector[i_file];
         }
     }
-    throw runtime_error("File not found in alignment file: " + file_address);
+    throw runtime_error("Frame not found in alignment file: "s + input_frame.to_string());
 };
 
 unique_ptr<ReferencePhotoHandlerBase> PhotoAlignmentHandler::reference_photo_handler_factory(const std::string& raw_file_address)   const  {

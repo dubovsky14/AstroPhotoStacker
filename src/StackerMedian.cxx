@@ -14,7 +14,7 @@ StackerMedian::StackerMedian(int number_of_colors, int width, int height, bool i
 };
 
 void StackerMedian::calculate_stacked_photo()  {
-    const long long int n_files = m_files_to_stack.size();
+    const long long int n_files = m_frames_to_stack.size();
     const int height_range = get_height_range_limit();
 
     if (height_range == 0) {
@@ -34,13 +34,13 @@ void StackerMedian::calculate_stacked_photo()  {
         cout << "Stacking slice " << i_slice << " of " << n_slices << endl;
 
         auto submit_photo_stack = [this, y_min, y_max](unsigned int file_index) {
-            cout << string("Adding ") + m_files_to_stack[file_index] + string(" to stack\n");
+            cout << string("Adding ") + m_frames_to_stack[file_index].to_string() + string(" to stack\n");
             add_photo_to_stack(file_index, y_min, y_max);
             m_n_tasks_processed++;
         };
 
         thread_pool pool(m_n_cpu);
-        for (unsigned int i_file = 0; i_file < m_files_to_stack.size(); i_file++) {
+        for (unsigned int i_file = 0; i_file < m_frames_to_stack.size(); i_file++) {
             if (m_n_cpu > 1) {
                 pool.submit(submit_photo_stack, i_file);
             }
@@ -80,7 +80,7 @@ void StackerMedian::calculate_stacked_photo()  {
 };
 
 void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y_max)  {
-    const unsigned long long int n_files = m_files_to_stack.size();
+    const unsigned long long int n_files = m_frames_to_stack.size();
 
     CalibratedPhotoHandler calibrated_photo = get_calibrated_photo(file_index, y_min, y_max);
 
@@ -114,7 +114,7 @@ void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y
 
 int StackerMedian::get_height_range_limit() const {
     int height_range = m_height;
-    const long long int n_files = m_files_to_stack.size();
+    const long long int n_files = m_frames_to_stack.size();
     if (m_memory_usage_limit_in_mb > 0) {
         const unsigned long long int memory_needed_for_stacked_image = 3*sizeof(double)*m_width*m_height;
         const unsigned long long int memory_needed_for_calibrated_photos = m_n_cpu*3*sizeof(unsigned short)*m_width*m_height;
@@ -127,7 +127,7 @@ int StackerMedian::get_height_range_limit() const {
 
 
 void StackerMedian::process_line(int y_index_final_array, int y_index_values_to_stack_array, int i_color)    {
-    const long long int n_files = m_files_to_stack.size();
+    const long long int n_files = m_frames_to_stack.size();
     for (int i_width = 0; i_width < m_width; i_width++) {
         const unsigned long long int pixel_index = m_width*y_index_final_array + i_width;
         const unsigned long long int pixel_index_stacking_array = m_width*y_index_values_to_stack_array*n_files + i_width*n_files;
@@ -163,7 +163,7 @@ double StackerMedian::get_stacked_value_from_pixel_array(short int *ordered_arra
 };
 
 int StackerMedian::get_tasks_total() const  {
-    const long long int n_files = m_files_to_stack.size();
+    const long long int n_files = m_frames_to_stack.size();
     const int height_range = get_height_range_limit();
     int n_slices = m_height/height_range + (m_height % height_range > 0);
 
