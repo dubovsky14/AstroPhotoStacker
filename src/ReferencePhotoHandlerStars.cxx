@@ -13,9 +13,9 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 
-ReferencePhotoHandlerStars::ReferencePhotoHandlerStars(const std::string &raw_file_address, float threshold_fraction) :
-    ReferencePhotoHandlerBase(raw_file_address, threshold_fraction) {
-    const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(raw_file_address, &m_width, &m_height);
+ReferencePhotoHandlerStars::ReferencePhotoHandlerStars(const InputFrame &input_frame, float threshold_fraction) :
+    ReferencePhotoHandlerBase(input_frame, threshold_fraction) {
+    const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(input_frame, &m_width, &m_height);
     initialize(brightness.data(), m_width, m_height, threshold_fraction);
 };
 
@@ -36,12 +36,12 @@ void ReferencePhotoHandlerStars::initialize(const std::vector<std::tuple<float, 
     m_plate_solver = make_unique<PlateSolver>(m_kd_tree.get(), &m_stars, m_width, m_height);
 };
 
-bool ReferencePhotoHandlerStars::calculate_alignment(const std::string &file_address,
+bool ReferencePhotoHandlerStars::calculate_alignment(const InputFrame &input_frame,
                                         float *shift_x, float *shift_y,
                                         float *rot_center_x, float *rot_center_y, float *rotation, float *ranking) const    {
     try {
         int width, height;
-        const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(file_address, &width, &height);
+        const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(input_frame, &width, &height);
         const unsigned short threshold = get_threshold_value<unsigned short>(brightness.data(), width*height, 0.0005);
 
 
@@ -51,7 +51,7 @@ bool ReferencePhotoHandlerStars::calculate_alignment(const std::string &file_add
         stars.resize(min<int>(stars.size(), 20));
 
         if (ranking != nullptr) {
-            *ranking = PhotoRanker::calculate_file_ranking(file_address);
+            *ranking = PhotoRanker::calculate_frame_ranking(input_frame);
         }
 
         return plate_solve(stars, shift_x, shift_y, rot_center_x, rot_center_y, rotation);

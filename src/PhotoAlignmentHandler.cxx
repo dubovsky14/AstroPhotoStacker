@@ -26,10 +26,13 @@ void PhotoAlignmentHandler::read_from_text_file(const std::string &alignment_fil
 
         vector<string> elements = split_and_strip_string(line, "|");
         if (starts_with(line, c_reference_file_header)) {
-            if (elements.size() != 2) {
+            if (elements.size() != 3) {
                 throw runtime_error("Invalid reference file header.");
             }
-            m_reference_file_address = elements[1];
+            if (!string_is_int(elements[2])) {
+                throw runtime_error("Invalid reference file header.");
+            }
+            m_reference_frame = InputFrame(elements[1], stoi(elements[2]));
             continue;
         }
 
@@ -82,7 +85,7 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
         return a.ranking < b.ranking;
     });
     ofstream alignment_file(alignment_file_address);
-    alignment_file << c_reference_file_header << " | " << m_reference_file_address << endl;
+    alignment_file << c_reference_file_header << " | " << m_reference_frame.to_string() << endl;
     alignment_file << "# File address | frame_number | shift_x | shift_y | rotation_center_x | rotation_center_y | rotation | ranking" << endl;
     for (const FileAlignmentInformation &alignment_info : m_alignment_information_vector) {
         if (alignment_info.input_frame.get_file_address() == "")  {   // plate-solving failed
@@ -100,9 +103,9 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
     alignment_file.close();
 };
 
-void PhotoAlignmentHandler::align_files(const std::string &reference_file_address, const std::vector<std::string> &files) {
-    m_reference_photo_handler = reference_photo_handler_factory(reference_file_address);
-    m_reference_file_address = reference_file_address;
+void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const std::vector<std::string> &files) {
+    m_reference_photo_handler = reference_photo_handler_factory(reference_frame);
+    m_reference_frame = reference_frame;
 
     const unsigned int n_files = files.size();
     m_alignment_information_vector.resize(n_files);
@@ -146,9 +149,9 @@ void PhotoAlignmentHandler::align_files(const std::string &reference_file_addres
     pool.wait_for_tasks();
 };
 
-void PhotoAlignmentHandler::align_all_files_in_folder(const std::string &reference_file_address, const std::string &raw_files_folder) {
+void PhotoAlignmentHandler::align_all_files_in_folder(const InputFrame &reference_frame, const std::string &raw_files_folder) {
     const vector<string> files = get_raw_files_in_folder(raw_files_folder);
-    align_files(reference_file_address, files);
+    align_files(reference_frame, files);
 }
 
 void PhotoAlignmentHandler::reset() {
@@ -215,18 +218,18 @@ std::vector<LocalShift> PhotoAlignmentHandler::get_local_shifts(const InputFrame
     throw runtime_error("Frame not found in alignment file: "s + input_frame.to_string());
 };
 
-unique_ptr<ReferencePhotoHandlerBase> PhotoAlignmentHandler::reference_photo_handler_factory(const std::string& raw_file_address)   const  {
+unique_ptr<ReferencePhotoHandlerBase> PhotoAlignmentHandler::reference_photo_handler_factory(const InputFrame& input_frame)   const  {
     if (m_alignment_method == "stars") {
-        return make_unique<ReferencePhotoHandlerStars>(raw_file_address);
+        return make_unique<ReferencePhotoHandlerStars>(input_frame);
     }
     else if (m_alignment_method == "planetary") {
-        return make_unique<ReferencePhotoHandlerPlanetary>(raw_file_address, 0.05);
+        return make_unique<ReferencePhotoHandlerPlanetary>(input_frame, 0.05);
     }
     else if (m_alignment_method == "planetary without rotation")    {
-        return make_unique<ReferencePhotoHandlerPlanetaryZeroRotation>(raw_file_address, 0.05);
+        return make_unique<ReferencePhotoHandlerPlanetaryZeroRotation>(input_frame, 0.05);
     }
     else if (m_alignment_method == "surface") {
-        return make_unique<ReferencePhotoHandlerSurface>(raw_file_address, 0.05);
+        return make_unique<ReferencePhotoHandlerSurface>(input_frame, 0.05);
     }
     else {
         throw runtime_error("Invalid alignment method: " + m_alignment_method);

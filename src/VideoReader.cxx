@@ -19,3 +19,8 @@ std::vector<InputFrame> AstroPhotoStacker::get_video_frames(const std::string &v
     }
     return result;
 }
+
+bool AstroPhotoStacker::is_valid_video_file(const std::string &video_address)   {
+    cv::VideoCapture video(video_address);
+    return video.isOpened();
+};

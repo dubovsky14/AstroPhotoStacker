@@ -23,10 +23,10 @@ namespace AstroPhotoStacker   {
             /**
              * @brief Construct a new Reference Photo Handler object
              *
-             * @param raw_file_address - path to the raw file
+             * @param input_frame - input frame data
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerSurface(const std::string &raw_file_address, float threshold_fraction);
+            ReferencePhotoHandlerSurface(const InputFrame &input_frame, float threshold_fraction);
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -38,12 +38,12 @@ namespace AstroPhotoStacker   {
             */
             ReferencePhotoHandlerSurface(const unsigned short *brightness, int width, int height, float threshold_fraction);
 
-            std::vector<LocalShift> get_local_shifts( const std::string &file_address,
-                                                                            float shift_x,
-                                                                            float shift_y,
-                                                                            float rotation_center_x,
-                                                                            float rotation_center_y,
-                                                                            float rotation) const;
+            std::vector<LocalShift> get_local_shifts(   const InputFrame &input_frame,
+                                                        float shift_x,
+                                                        float shift_y,
+                                                        float rotation_center_x,
+                                                        float rotation_center_y,
+                                                        float rotation) const;
 
         protected:
 

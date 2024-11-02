@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../headers/CalibratedPhotoHandler.h"
+#include "../headers/InputFrame.h"
+
 
 #include <tuple>
 
@@ -39,6 +41,6 @@ namespace AstroPhotoStacker {
     };
 
 
-    float get_sharpness_for_file(const std::string &input_file, const std::tuple<int,int,int,int> &alignment_window = {-1,-1,-1,-1});
+    float get_sharpness_for_file(const InputFrame &input_frame, const std::tuple<int,int,int,int> &alignment_window = {-1,-1,-1,-1});
 
 }

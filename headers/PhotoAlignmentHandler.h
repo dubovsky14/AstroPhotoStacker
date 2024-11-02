@@ -64,17 +64,17 @@ namespace   AstroPhotoStacker   {
 
             /**
              * @brief Aligns files based on a reference file.
-             * @param reference_file_address The address of the reference file.
+             * @param reference_frame The address of the reference file.
              * @param files The vector of file addresses to align.
              */
-            void align_files(const std::string& reference_file_address, const std::vector<std::string>& files);
+            void align_files(const InputFrame& reference_frame, const std::vector<std::string>& files);
 
             /**
              * @brief Aligns all files in a folder based on a reference file.
-             * @param reference_file_address The address of the reference file.
+             * @param reference_frame The address of the reference file.
              * @param raw_files_folder The address of the folder containing the raw files.
              */
-            void align_all_files_in_folder(const std::string& reference_file_address, const std::string& raw_files_folder);
+            void align_all_files_in_folder(const InputFrame& reference_frame, const std::string& raw_files_folder);
 
             /**
              * @brief Resets the alignment parameters.
@@ -141,7 +141,7 @@ namespace   AstroPhotoStacker   {
             const std::vector<std::vector<LocalShift>>& get_local_shifts_vector() const {return m_local_shifts_vector;};
 
         private:
-            std::string m_reference_file_address = "";
+            InputFrame m_reference_frame;
             std::vector<FileAlignmentInformation> m_alignment_information_vector;
             std::vector<std::vector<LocalShift>> m_local_shifts_vector;
             std::atomic<int> m_n_files_aligned = 0;
@@ -151,6 +151,6 @@ namespace   AstroPhotoStacker   {
 
             std::string m_alignment_method = "stars";
 
-            std::unique_ptr<ReferencePhotoHandlerBase> reference_photo_handler_factory(const std::string& alignment_method) const;
+            std::unique_ptr<ReferencePhotoHandlerBase> reference_photo_handler_factory(const InputFrame &input_frame) const;
     };
 }

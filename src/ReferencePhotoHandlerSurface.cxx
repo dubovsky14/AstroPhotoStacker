@@ -8,9 +8,9 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 
-ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const std::string &raw_file_address, float threshold_fraction) : ReferencePhotoHandlerPlanetary(raw_file_address, threshold_fraction) {
+ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &input_frame, float threshold_fraction) : ReferencePhotoHandlerPlanetary(input_frame, threshold_fraction) {
     m_threshold_fraction = threshold_fraction;
-    CalibratedPhotoHandler calibrated_photo_handler(raw_file_address, true);
+    CalibratedPhotoHandler calibrated_photo_handler(input_frame, true);
     calibrated_photo_handler.define_alignment(0,0,0,0,0);
     calibrated_photo_handler.calibrate();
 
@@ -62,14 +62,14 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
     cout << "Alignment grid initialized, number of boxes: " << m_alignment_point_box_grid->get_alignment_boxes().size() << endl;
 };
 
-std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const std::string &file_address,
+std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const InputFrame &input_frame,
                                                                         float shift_x,
                                                                         float shift_y,
                                                                         float rotation_center_x,
                                                                         float rotation_center_y,
                                                                         float rotation) const   {
 
-    CalibratedPhotoHandler calibrated_photo_handler(file_address, true);
+    CalibratedPhotoHandler calibrated_photo_handler(input_frame, true);
     calibrated_photo_handler.define_alignment(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation);
     calibrated_photo_handler.calibrate();
 

@@ -22,10 +22,10 @@ namespace AstroPhotoStacker   {
             /**
              * @brief Construct a new Reference Photo Handler object
              *
-             * @param raw_file_address - path to the raw file
+             * @param input_frame - info about the light frame
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetaryZeroRotation(const std::string &raw_file_address, float threshold_fraction);
+            ReferencePhotoHandlerPlanetaryZeroRotation(const InputFrame &input_frame, float threshold_fraction);
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -50,6 +50,6 @@ namespace AstroPhotoStacker   {
              *
              * @return bool - was plate solving successful?
             */
-            virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking = nullptr) const override;
+            virtual bool calculate_alignment(const InputFrame &input_frame, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking = nullptr) const override;
     };
 }

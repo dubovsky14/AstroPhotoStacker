@@ -52,7 +52,7 @@ namespace AstroPhotoStacker {
             /**
              * @brief Add alignment information for a file
              *
-             * @param file_address - path to the file
+             * @param input frame - input frame data
              * @param x_shift - horizontal shift
              * @param y_shift - vertical shift
              * @param rotation_center_x - x-coordinate of the rotation center
@@ -60,7 +60,7 @@ namespace AstroPhotoStacker {
              * @param rotation - rotation angle
              * @param ranking - ranking of the alignment
             */
-            void add_alignment_info(const std::string &file_address, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler = LocalShiftsHandler());
+            void add_alignment_info(const InputFrame &input_frame, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler = LocalShiftsHandler());
 
             /**
              * @brief Add a photo to the stack

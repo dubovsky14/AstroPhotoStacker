@@ -22,21 +22,21 @@ PhotoRanker::PhotoRanker(const std::string& path_to_lights_folder)  {
 
 void PhotoRanker::rank_all_files()    {
     for (const auto &file : m_input_files) {
-        const float ranking = calculate_file_ranking(file);
+        const float ranking = calculate_frame_ranking(file);
         m_ranking.push_back(ranking);
     }
 };
 
-float PhotoRanker::calculate_file_ranking(const std::string &file_address)  {
+float PhotoRanker::calculate_frame_ranking(const InputFrame &input_frame)  {
     int width, height;
 
-    const bool raw_file = is_raw_file(file_address);
+    const bool raw_file = is_raw_file(input_frame.get_file_address());
     std::vector<unsigned short> brightness;
     if (raw_file) {
-        brightness = read_raw_file<unsigned short>(file_address, &width, &height);
+        brightness = read_raw_file<unsigned short>(input_frame.get_file_address(), &width, &height);
     }
     else {
-        brightness = read_rgb_image_as_gray_scale<unsigned short>(file_address, &width, &height);
+        brightness = read_rgb_image_as_gray_scale<unsigned short>(input_frame, &width, &height);
     }
     const float threshold_value = get_threshold_value(brightness.data(), width*height, 0.002);
     std::vector<std::vector<std::tuple<int,int>>> clusters = get_clusters(brightness.data(), width, height, threshold_value);
@@ -48,7 +48,7 @@ float PhotoRanker::calculate_file_ranking(const std::string &file_address)  {
     }
 
     if (cluster_excentricities.size() == 0) {
-        throw std::runtime_error("No clusters found in file " + file_address);
+        throw std::runtime_error("No clusters found in frame: " + input_frame.to_string());
     }
 
     sort(cluster_excentricities.begin(), cluster_excentricities.end());

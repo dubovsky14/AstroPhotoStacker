@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../headers/InputFrame.h"
+
 #include <string>
 #include <vector>
 
@@ -34,15 +36,15 @@ namespace AstroPhotoStacker     {
             /**
              * @brief Run the ranking for a single file
              *
-             * @param file_address - path to the file to be ranked
+             * @param input_frame - input frame data
              * @return float - the ranking of the file
             */
-            static float calculate_file_ranking(const std::string &file_address);
+            static float calculate_frame_ranking(const InputFrame &input_frame);
 
             /**
              * @brief Calculate excentricity of a cluster, defined as distance between 2 most distant points minus diameter of a circle with the same area
              *
-             * @param file_address - path to the file to be ranked
+             * @param clusters - stars
              * @return float - excentricity
             */
             static float get_cluster_excentricity(const std::vector<std::tuple<int,int>> &cluster);

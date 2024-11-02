@@ -15,11 +15,11 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
-ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const std::string &raw_file_address, float threshold_fraction)   :
-    ReferencePhotoHandlerBase(raw_file_address, threshold_fraction) {
+ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const InputFrame &input_frame, float threshold_fraction)   :
+    ReferencePhotoHandlerBase(input_frame, threshold_fraction) {
 
     m_threshold_fraction = threshold_fraction;
-    const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(raw_file_address, &m_width, &m_height);
+    const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(input_frame, &m_width, &m_height);
     initialize(brightness.data(), m_width, m_height, threshold_fraction);
 };
 
@@ -29,9 +29,9 @@ ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const unsigned sh
     initialize(brightness, width, height, threshold_fraction);
 };
 
-bool ReferencePhotoHandlerPlanetary::calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking) const{
+bool ReferencePhotoHandlerPlanetary::calculate_alignment(const InputFrame &input_frame, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking) const{
     int width, height;
-    const vector<unsigned short int> brightness = read_image_monochrome<unsigned short>(file_address, &width, &height);
+    const vector<unsigned short int> brightness = read_image_monochrome<unsigned short>(input_frame, &width, &height);
 
     MonochromeImageData image_data;
     image_data.brightness = brightness.data();

@@ -4,6 +4,7 @@
 #include "../headers/KDTree.h"
 #include "../headers/PlateSolver.h"
 #include "../headers/MonochromeImageData.h"
+#include "../headers/InputFrame.h"
 
 
 #include <memory>
@@ -24,10 +25,10 @@ namespace AstroPhotoStacker   {
             /**
              * @brief Construct a new Reference Photo Handler object
              *
-             * @param raw_file_address - path to the raw file
+             * @param input_frame - input frame data
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerBase(const std::string &raw_file_address, float threshold_fraction = 0.0005)   {};
+            ReferencePhotoHandlerBase(const InputFrame& input_frame, float threshold_fraction = 0.0005)   {};
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -68,7 +69,7 @@ namespace AstroPhotoStacker   {
              *
              * @return bool - was plate solving successful?
             */
-            virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking = nullptr) const = 0;
+            virtual bool calculate_alignment(const InputFrame &input_frame, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking = nullptr) const = 0;
 
         protected:
             ReferencePhotoHandlerBase() {};

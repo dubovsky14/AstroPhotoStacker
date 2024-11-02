@@ -22,10 +22,10 @@ namespace AstroPhotoStacker   {
             /**
              * @brief Construct a new Reference Photo Handler object
              *
-             * @param raw_file_address - path to the raw file
+             * @param input_frame - path to the raw file
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetary(const std::string &raw_file_address, float threshold_fraction);
+            ReferencePhotoHandlerPlanetary(const InputFrame &input_frame, float threshold_fraction);
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -40,7 +40,7 @@ namespace AstroPhotoStacker   {
             /**
              * @brief Plate-solve a photo - calculate how it should be rotated and shifted to match the reference photo
              *
-             * @param file_address - path to the file to be plate-solved
+             * @param input_frame - information about the light frame to be plate-solved
              * @param shift_x - pointer to the variable where the horizontal shift will be stored
              * @param shift_y - pointer to the variable where the vertical shift will be stored
              * @param rot_center_x - pointer to the variable where the x coordinate of the rotation center will be stored
@@ -50,7 +50,7 @@ namespace AstroPhotoStacker   {
              *
              * @return bool - was plate solving successful?
             */
-            virtual bool calculate_alignment(const std::string &file_address, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking = nullptr) const override;
+            virtual bool calculate_alignment(const InputFrame &input_frame, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking = nullptr) const override;
 
         protected:
             ReferencePhotoHandlerPlanetary() : ReferencePhotoHandlerBase() {};

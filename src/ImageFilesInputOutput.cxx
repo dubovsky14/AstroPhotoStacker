@@ -7,15 +7,14 @@
 
 
 
-bool AstroPhotoStacker::get_photo_resolution(const std::string &input_file, int *width, int *height) {
-    const bool raw_file = is_raw_file(input_file);
+bool AstroPhotoStacker::get_photo_resolution(const InputFrame &input_frame, int *width, int *height) {
+    const bool raw_file = is_raw_file(input_frame.get_file_address());
     if (raw_file) {
-        return get_photo_resolution_raw_file(input_file, width, height);
+        return get_photo_resolution_raw_file(input_frame.get_file_address(), width, height);
     }
     else {
-        cv::Mat image = cv::imread(input_file, -1);
-        *width = image.cols;
-        *height = image.rows;
+        read_rgb_image<unsigned short>(input_frame, width, height);
         return true;
     }
+    return false;
 };
