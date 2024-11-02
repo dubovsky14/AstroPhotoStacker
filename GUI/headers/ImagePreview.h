@@ -3,6 +3,8 @@
 #include "../headers/CombinedColorStrecherTool.h"
 #include "../headers/ImageResizeTool.h"
 
+#include "../../headers/InputFrame.h"
+
 #include <vector>
 #include <string>
 
@@ -57,6 +59,11 @@ class ImagePreview {
          * @brief Load an image data from a file in a disk
         */
         void read_preview_from_file(const std::string &path);
+
+        /**
+         * @brief Load an image data from a file in a disk
+        */
+        void read_preview_from_frame(const AstroPhotoStacker::InputFrame &input_frame);
 
         /**
          * @brief Load preview from a stacked image

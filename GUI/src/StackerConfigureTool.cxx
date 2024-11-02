@@ -13,9 +13,9 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const StackSettings& stack_settings, const FilelistHandler& filelist_handler)    {
-    FilelistHandler filelist_handler_only_checked = filelist_handler.get_filelist_with_checked_files();
+    FilelistHandler filelist_handler_only_checked = filelist_handler.get_filelist_with_checked_frames();
     int width, height;
-    get_photo_resolution(filelist_handler_only_checked.get_files(FileTypes::LIGHT)[0], &width, &height);
+    get_photo_resolution(filelist_handler_only_checked.get_frames(FileTypes::LIGHT)[0], &width, &height);
     std::unique_ptr<AstroPhotoStacker::StackerBase> stacker = AstroPhotoStacker::create_stacker(
         get_stacker_type_for_factory(stack_settings.get_stacking_algorithm()),
         3,
@@ -24,13 +24,13 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
         stack_settings.use_color_interpolation()
     );
     configure_stacker(stacker.get(), stack_settings);
-    const vector<string>            &light_frames       = filelist_handler_only_checked.get_files(FileTypes::LIGHT);
+    const vector<InputFrame>        &light_frames       = filelist_handler_only_checked.get_frames(FileTypes::LIGHT);
     const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler_only_checked.get_alignment_info();
     for (unsigned int i = 0; i < light_frames.size(); ++i) {
-        const std::string &file = light_frames[i];
+        const InputFrame &frame = light_frames[i];
         const AlignmentFileInfo &alignment_info = alignment_info_vec[i];
-        stacker->add_photo(file);
-        stacker->add_alignment_info(    file,
+        stacker->add_photo(frame);
+        stacker->add_alignment_info(    frame,
                                         alignment_info.shift_x,
                                         alignment_info.shift_y,
                                         alignment_info.rotation_center_x,
@@ -40,17 +40,25 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
                                         alignment_info.local_shifts_handler);
     }
 
-    const vector<string> &dark_frames = filelist_handler_only_checked.get_files(FileTypes::DARK);
+    const vector<InputFrame> &dark_frames = filelist_handler_only_checked.get_frames(FileTypes::DARK);
     if (dark_frames.size() > 0) {
-        std::shared_ptr<const CalibrationFrameBase> dark_frames_handler = std::make_shared<DarkFrameHandler>(dark_frames[0]);
-        cout << "Adding dark frame: " << dark_frames[0] << endl;
+        const InputFrame &dark_frame = dark_frames[0];
+        if (!dark_frame.is_still_image()) {
+            throw std::runtime_error("Dark frame must be a still image");
+        }
+        std::shared_ptr<const CalibrationFrameBase> dark_frames_handler = std::make_shared<DarkFrameHandler>(dark_frame.get_file_address());
+        cout << "Adding dark frame: " << dark_frame.to_string() << endl;
         stacker->add_calibration_frame_handler(dark_frames_handler);
     }
 
-    const vector<string> &flat_frames = filelist_handler_only_checked.get_files(FileTypes::FLAT);
+    const vector<InputFrame> &flat_frames = filelist_handler_only_checked.get_frames(FileTypes::FLAT);
     if (flat_frames.size() > 0) {
-        std::shared_ptr<const CalibrationFrameBase> flat_frames_handler = std::make_shared<FlatFrameHandler>(flat_frames[0]);
-        cout << "Adding flat frame: " << flat_frames[0] << endl;
+        const InputFrame &flat_frame = flat_frames[0];
+        if (!flat_frame.is_still_image()) {
+            throw std::runtime_error("Flat frame must be a still image");
+        }
+        std::shared_ptr<const CalibrationFrameBase> flat_frames_handler = std::make_shared<FlatFrameHandler>(flat_frame.get_file_address());
+        cout << "Adding flat frame: " << flat_frame.to_string() << endl;
         stacker->add_calibration_frame_handler(flat_frames_handler);
     }
 

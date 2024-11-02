@@ -20,9 +20,9 @@ namespace AstroPhotoStacker {
             /**
              * @brief Construct a new FlatFrameHandler object
              *
-             * @param input_file The file to read the flat frame data from
+             * @param input_frame The file to read the flat frame data from
             */
-            FlatFrameHandler(const std::string &input_file);
+            FlatFrameHandler(const InputFrame &input_frame);
 
             /**
              * @brief Construct a new FlatFrameHandler object from staker frame data

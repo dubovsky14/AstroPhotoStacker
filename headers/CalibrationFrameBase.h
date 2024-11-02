@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../headers/InputFrame.h"
+
 #include <string>
 #include <vector>
 #include <memory>
@@ -17,9 +19,9 @@ namespace AstroPhotoStacker {
             /**
              * @brief Constructor that initializes the CalibrationFrameBase object.
              *
-             * @param input_file The address of the calibration frame file.
+             * @param input_frame Data about the input frame.
             */
-            CalibrationFrameBase(const std::string &input_file);
+            CalibrationFrameBase(const InputFrame &input_frame);
 
             /**
              * @brief Copy constructor

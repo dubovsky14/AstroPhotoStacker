@@ -8,7 +8,7 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-FlatFrameHandler::FlatFrameHandler(const std::string &input_file) : CalibrationFrameBase(input_file) {
+FlatFrameHandler::FlatFrameHandler(const InputFrame &input_frame) : CalibrationFrameBase(input_frame) {
     calibrate();
 };
 

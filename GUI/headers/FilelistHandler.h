@@ -2,6 +2,7 @@
 
 #include "../../headers/LocalShiftsHandler.h"
 #include "../../headers/Metadata.h"
+#include "../../headers/InputFrame.h"
 
 #include <string>
 #include <map>
@@ -87,7 +88,17 @@ class FilelistHandler   {
          *
          * @return FilelistHandler filelist with checked files
         */
-        FilelistHandler get_filelist_with_checked_files() const;
+        FilelistHandler get_filelist_with_checked_frames() const;
+
+        /**
+         * @brief Add file to the list
+         *
+         * @param input_frame - input frame data
+         * @param type type of the file
+         * @param checked whether the file is checked
+         * @param alignment_info alignment information for the file
+        */
+        void add_frame(const AstroPhotoStacker::InputFrame &input_frame, FileTypes type, bool checked = false, const AlignmentFileInfo& alignment_info = AlignmentFileInfo(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
 
         /**
          * @brief Add file to the list
@@ -97,7 +108,7 @@ class FilelistHandler   {
          * @param checked whether the file is checked
          * @param alignment_info alignment information for the file
         */
-        void add_file(const std::string& path, FileTypes type, bool checked = false, const AlignmentFileInfo& alignment_info = AlignmentFileInfo(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
+        void add_file(const std::string &file, FileTypes type, bool checked = false, const AlignmentFileInfo& alignment_info = AlignmentFileInfo(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
 
         /**
          * @brief Remove file from the list
@@ -105,112 +116,112 @@ class FilelistHandler   {
          * @param path path to the file
          * @param type type of the file
         */
-        void remove_file(const std::string& path, FileTypes type);
+        void remove_frame(const AstroPhotoStacker::InputFrame &input_frame, FileTypes type);
 
         /**
          * @brief Remove file from the list
          *
          * @param file_index total index of the file - it is affected also by the ordering of the file types
         */
-        void remove_file(int file_index);
+        void remove_frame(int file_index);
 
         /**
-         * @brief Get the files
+         * @brief Get the frames
          *
-         * @param type type of the files
-         * @return const std::vector<std::string>& vector of the file paths
+         * @param type type of the frames
+         * @return const std::vector<AstroPhotoStacker::InputFrame>& vector of the file paths
         */
-        const std::vector<std::string>& get_files(FileTypes type)   const;
+        const std::vector<AstroPhotoStacker::InputFrame>& get_frames(FileTypes type)   const;
 
         /**
-         * @brief Get the files checked
+         * @brief Get the checked frames
          *
-         * @param type type of the files
+         * @param type type of the frames
          * @return const std::vector<bool>& is the file with the given index checked?
         */
-        const std::vector<bool>&        get_files_checked(FileTypes type)   const;
+        const std::vector<bool>&        get_frames_checked(FileTypes type)   const;
 
         /**
-         * @brief Get the checked files
+         * @brief Get the checked frames
          *
-         * @param type type of the files
-         * @return std::vector<std::string> vector of the file paths
+         * @param type type of the frames
+         * @return std::vector<AstroPhotoStacker::InputFrame> vector of the file paths
          */
-        std::vector<std::string> get_checked_files(FileTypes type) const;
+        std::vector<AstroPhotoStacker::InputFrame> get_checked_frames(FileTypes type) const;
 
         /**
-         * @brief Get the number of checked files of a given type
+         * @brief Get the number of checked frames of a given type
          *
-         * @param type type of the files
-         * @return int number of checked files
+         * @param type type of the frames
+         * @return int number of checked frames
         */
-        int get_number_of_checked_files(FileTypes type) const;
+        int get_number_of_checked_frames(FileTypes type) const;
 
         /**
-         * @brief Get the number of all files
+         * @brief Get the number of all frames
          *
-         * @return int number of all files
+         * @return int number of all frames
         */
-        int get_number_of_all_files() const;
+        int get_number_of_all_frames() const;
 
         /**
          * @brief Is file with a given index checked?
          *
-         * @param file_index index of the file
+         * @param frame_index index of the file
          * @return true if the file is checked
         */
-        bool file_is_checked(int file_index) const;
+        bool frame_is_checked(int frame_index) const;
 
         /**
          * @brief Set if the file checked or not
          *
-         * @param file_index index of the file
+         * @param frame_index index of the file
          * @param checked is the file checked?
          * @param type type of the file
         */
-        void set_file_checked(int file_index, bool checked, FileTypes type);
+        void set_frame_checked(int frame_index, bool checked, FileTypes type);
 
         /**
          * @brief Set if the file checked or not
          *
-         * @param file_index - total index of the file
+         * @param frame_index - total index of the file
          * @param checked is the file checked?
         */
-        void set_file_checked(int file_index, bool checked);
+        void set_frame_checked(int frame_index, bool checked);
 
         /**
-         * @brief Set checked status for all files
+         * @brief Set checked status for all frames
          *
-         * @param checked should all files be checked?
+         * @param checked should all frames be checked?
         */
-        void set_checked_status_for_all_files(bool checked);
+        void set_checked_status_for_all_frames(bool checked);
 
         /**
-         * @brief Get the alignment info for all files of a given type
+         * @brief Get the alignment info for all frames of a given type
          *
-         * @param type - type of the files
-         * @return const std::vector<AlignmentFileInfo>& vector of the alignment information for all files of a given type
+         * @param type - type of the frames
+         * @return const std::vector<AlignmentFileInfo>& vector of the alignment information for all frames of a given type
         */
         const std::vector<AlignmentFileInfo>& get_alignment_info()   const;
 
         /**
-         * @brief Get the metadata for all files of a given type
+         * @brief Get the metadata for all frames of a given type
          *
-         * @param type - type of the files
-         * @return const std::vector<Metadata>& vector of the metadata for all files of a given type
+         * @param type - type of the frames
+         * @return const std::vector<Metadata>& vector of the metadata for all frames of a given type
         */
         const std::vector<AstroPhotoStacker::Metadata>& get_metadata()   const;
 
         /**
-         * @brief Get the alignment info for a single file
+         * @brief Get the alignment info for a single frame
          *
-         * @param file_index total index of the file
-         * @return const AlignmentFileInfo& alignment information for the file
+         * @param file_index total index of the frame
+         * @return const AlignmentFileInfo& alignment information for the frame
         */
-        void set_alignment_info(int file_index, const AlignmentFileInfo& alignment_info);
+        void set_alignment_info(int frame_index, const AlignmentFileInfo& alignment_info);
 
         /**
-         * @brief Order the files according to the file types ordering - which type of frames should be first, second etc.
+         * @brief Order the frames according to the file types ordering - which type of frames should be first, second etc.
         */
         static const std::vector<FileTypes>  s_file_types_ordering;
 
@@ -219,7 +230,7 @@ class FilelistHandler   {
          *
          * @return bool are all checked light frames aligned?
         */
-        bool all_checked_files_are_aligned() const;
+        bool all_checked_frames_are_aligned() const;
 
         /**
          * @brief Get the alignment info as a tabular data for GUI
@@ -260,18 +271,18 @@ class FilelistHandler   {
         /**
          * @brief Remove all files of a given type
         */
-        void remove_all_files_of_selected_type(FileTypes type);
+        void remove_all_frames_of_selected_type(FileTypes type);
 
         /**
          * @brief: Keep only best N files
          */
-        void keep_best_n_files(unsigned int n);
+        void keep_best_n_frames(unsigned int n);
 
         void set_local_shifts(int i_file, const std::vector<AstroPhotoStacker::LocalShift> &shifts);
 
     private:
-        std::map<FileTypes, std::vector<std::string>>       m_filelist;
-        std::map<FileTypes, std::vector<bool>>              m_filelist_checked;
+        std::map<FileTypes, std::vector<AstroPhotoStacker::InputFrame>>     m_filelist;
+        std::map<FileTypes, std::vector<bool>>                              m_filelist_checked;
 
         // #TODO: clean up this mess
         std::vector<AlignmentFileInfo>                      m_filelist_alignment_info;  // This is only used for light frames

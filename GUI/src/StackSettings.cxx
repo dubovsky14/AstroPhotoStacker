@@ -5,12 +5,12 @@
 #include <stdexcept>
 #include <algorithm>
 
-void StackSettings::set_alignment_file(const std::string& alignment_file)       {
-    m_alignment_file = alignment_file;
+void StackSettings::set_alignment_frame(const AstroPhotoStacker::InputFrame& alignment_frame)       {
+    m_alignment_frame = alignment_frame;
 };
 
-const std::string& StackSettings::get_alignment_file() const  {
-    return m_alignment_file;
+const AstroPhotoStacker::InputFrame& StackSettings::get_alignment_frame() const  {
+    return m_alignment_frame;
 };
 
 

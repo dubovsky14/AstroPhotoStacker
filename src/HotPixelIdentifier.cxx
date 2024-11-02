@@ -14,19 +14,27 @@ using namespace AstroPhotoStacker;
 
 
 
-void HotPixelIdentifier::add_photos(const std::vector<std::string> &photo_addresses)    {
+void HotPixelIdentifier::add_photos(const std::vector<InputFrame> &input_frames)    {
     thread_pool pool(m_n_cpu);
-    for (const auto &photo_address : photo_addresses) {
-        pool.submit([this, photo_address]() {
-            add_photo(photo_address);
+    for (const auto &input_frame : input_frames) {
+        pool.submit([this, input_frame]() {
+            add_photo(input_frame);
         });
     }
     pool.wait_for_tasks();
 };
 
-void HotPixelIdentifier::add_photo(const std::string &photo_address)    {
+void HotPixelIdentifier::add_photo(const InputFrame &input_frame)    {
+    if (input_frame.is_video_frame()) {
+        throw runtime_error("HotPixelIdentifier::add_photo: video frames are not supported");
+    }
+    const std::string file_address = input_frame.get_file_address();
+    if (!is_raw_file(file_address)) {
+        throw runtime_error("HotPixelIdentifier::add_photo: file is not a raw file");
+    }
+
     int width,height;
-    vector<unsigned short int> pixel_values = read_raw_file<unsigned short int>(photo_address, &width, &height);
+    vector<unsigned short int> pixel_values = read_raw_file<unsigned short int>(input_frame.get_file_address(), &width, &height);
     add_photo(pixel_values.data(), width, height);
 };
 

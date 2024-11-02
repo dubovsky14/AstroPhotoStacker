@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../headers/InputFrame.h"
+
 #include <string>
 #include <thread>
 #include <vector>
@@ -12,8 +14,8 @@ class StackSettings {
         StackSettings() = default;
         ~StackSettings() = default;
 
-        void set_alignment_file(const std::string& alignment_file);
-        const std::string& get_alignment_file() const;
+        void set_alignment_frame(const AstroPhotoStacker::InputFrame& alignment_frame);
+        const AstroPhotoStacker::InputFrame& get_alignment_frame() const;
 
         // alignment method
         void set_alignment_method(const std::string& alignment_method);
@@ -58,7 +60,7 @@ class StackSettings {
         bool apply_color_stretching() const;
 
     private:
-        std::string m_alignment_file;
+        AstroPhotoStacker::InputFrame m_alignment_frame;
         std::string m_stacking_algorithm = "kappa-sigma mean";
         int m_n_cpus = get_max_threads();
         int m_max_memory = 8000;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../headers/InputFrame.h"
+
 #include <string>
 #include <vector>
 
@@ -10,7 +12,7 @@
 class  PhotoGroupingTool {
 
     struct PhotoInfo {
-        std::string file_address;
+        AstroPhotoStacker::InputFrame input_frame;
         int unix_timestamp;
         float score;
     };
@@ -21,17 +23,17 @@ class  PhotoGroupingTool {
         /**
          * @brief Add a file to the list of photos, which will be later grouped
          *
-         * @param file_address address of the file
+         * @param input_frame information about the input frame
          * @param unix_timestamp unix timestamp of the photo
          * @param score score of the photo (e.g. alignment score)
          */
-        void add_file(const std::string &file_address, int unix_timestamp, float score);
+        void add_file(const AstroPhotoStacker::InputFrame &input_frame, int unix_timestamp, float score);
 
         void define_maximum_time_difference_in_group(int time_interval);
 
         void run_grouping();
 
-        std::vector<std::vector<std::string>> get_groups() const;
+        std::vector<std::vector<AstroPhotoStacker::InputFrame>> get_groups() const;
 
         const std::vector<std::vector<size_t>>& get_groups_indices() const;
 

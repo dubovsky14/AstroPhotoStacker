@@ -3,10 +3,11 @@
 #include <algorithm>
 
 using namespace std;
+using namespace AstroPhotoStacker;
 
-void PhotoGroupingTool::add_file(const std::string &file_address, int unix_timestamp, float score)  {
+void PhotoGroupingTool::add_file(const InputFrame &input_frame, int unix_timestamp, float score)  {
     PhotoInfo new_photo;
-    new_photo.file_address = file_address;
+    new_photo.input_frame = input_frame;
     new_photo.unix_timestamp = unix_timestamp;
     new_photo.score = score;
     m_photos.push_back(new_photo);
@@ -71,12 +72,12 @@ void PhotoGroupingTool::run_grouping()  {
     }
 };
 
-std::vector<std::vector<std::string>> PhotoGroupingTool::get_groups() const {
-    std::vector<std::vector<std::string>> result;
+std::vector<std::vector<InputFrame>> PhotoGroupingTool::get_groups() const {
+    std::vector<std::vector<InputFrame>> result;
     for (const vector<size_t> &group : m_groups) {
-        std::vector<std::string> current_group;
+        std::vector<InputFrame> current_group;
         for (size_t i : group) {
-            current_group.push_back(m_photos[i].file_address);
+            current_group.push_back(m_photos[i].input_frame);
         }
         result.push_back(current_group);
     }

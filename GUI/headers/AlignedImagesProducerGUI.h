@@ -7,6 +7,7 @@
 #include "../headers/TimeLapseVideoSettings.h"
 
 #include "../../headers/AlignedImagesProducer.h"
+#include "../../headers/InputFrame.h"
 
 #include "../headers/MainFrame.h"
 
@@ -47,7 +48,7 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
         void initialize_aligned_images_producer();
 
-        std::string get_reference_file_address() const;
+        AstroPhotoStacker::InputFrame get_reference_frame() const;
 
         void add_exposure_correction_spin_ctrl();
 

@@ -9,14 +9,20 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 
-CalibrationFrameBase::CalibrationFrameBase(const std::string &input_file) {
+CalibrationFrameBase::CalibrationFrameBase(const InputFrame &input_frame) {
+    const std::string input_file = input_frame.get_file_address();
+
+    if (input_frame.is_video_frame()) {
+        throw runtime_error("CalibrationFrameBase::CalibrationFrameBase: video frames are not supported");
+    }
+
     try    {
         // raw file
         m_data_original = read_raw_file<unsigned short int>(input_file, &m_width, &m_height, &m_colors);
     }
     catch(const std::exception& e)    {
         try        {
-            m_data_original = read_rgb_image_as_gray_scale<unsigned short int>(input_file, &m_width, &m_height);
+            m_data_original = read_rgb_image_as_gray_scale<unsigned short int>(input_frame, &m_width, &m_height);
             m_colors = vector<char>(m_width*m_height, 0);
         }
         catch(const std::exception& e)        {

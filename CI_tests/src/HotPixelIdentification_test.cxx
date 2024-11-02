@@ -18,9 +18,14 @@ void AstroPhotoStacker::produce_hot_pixel_file(const std::string &raw_files_fold
         raw_files.push_back(entry.path());
     }
 
+    vector<InputFrame> input_frames;
+    for (const string &raw_file : raw_files) {
+        input_frames.push_back(InputFrame(raw_file));
+    }
+
     HotPixelIdentifier hot_pixel_identifier;
     hot_pixel_identifier.set_n_cpu(1);
-    hot_pixel_identifier.add_photos(raw_files);
+    hot_pixel_identifier.add_photos(input_frames);
     hot_pixel_identifier.compute_hot_pixels();
     hot_pixel_identifier.save_hot_pixels_to_file(output_file);
 };

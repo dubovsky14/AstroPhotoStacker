@@ -52,34 +52,26 @@ void ImagePreview::initialize_bitmap()    {
     m_parent->Bind(wxEVT_MOUSEWHEEL, &ImagePreview::on_mouse_wheel, this);
 };
 
-void ImagePreview::read_preview_from_file(const std::string &path)  {
-    m_current_preview_is_raw_file = is_raw_file(path);
+void ImagePreview::read_preview_from_frame(const InputFrame &input_frame)  {
+    m_current_preview_is_raw_file = is_raw_file(input_frame.get_file_address());
     if (m_current_preview_is_raw_file)  {
         int width_original, height_original;
-        m_original_image = ColorInterpolationTool::get_interpolated_rgb_image(path, &width_original, &height_original);
+        m_original_image = ColorInterpolationTool::get_interpolated_rgb_image(input_frame.get_file_address(), &width_original, &height_original);
         m_image_resize_tool.set_original_size(width_original, height_original);
     }
     else {
-        // picture file
-        cv::Mat image = cv::imread(path, 1);
-        m_image_resize_tool.set_original_size(image.cols, image.rows);
-        m_original_image = std::vector<std::vector<short int>>(3, std::vector<short int>(
-            m_image_resize_tool.get_width_original()* m_image_resize_tool.get_height_original(),0)
-        );
-
-        for (int y = 0; y < m_image_resize_tool.get_height_original(); y++) {
-            for (int x = 0; x < m_image_resize_tool.get_width_original(); x++) {
-                cv::Vec3b pixel = image.at<cv::Vec3b>(y,x);
-                m_original_image[0][y*m_image_resize_tool.get_width_original() + x] = pixel[2];
-                m_original_image[1][y*m_image_resize_tool.get_width_original() + x] = 2*pixel[1];
-                m_original_image[2][y*m_image_resize_tool.get_width_original() + x] = pixel[0];
-            }
-        }
+        int width_original, height_original;
+        m_original_image = read_rgb_image<short>(input_frame, &width_original, &height_original);
+        m_image_resize_tool.set_original_size(width_original, height_original);
     }
     m_max_zoom_factor = std::min<double>(m_image_resize_tool.get_height_original()/m_height, m_image_resize_tool.get_width_original()/m_width);
     m_image_resize_tool.set_default_resized_area();
     update_max_values_original();
     update_preview_data();
+};
+
+void ImagePreview::read_preview_from_file(const std::string &path)  {
+    read_preview_from_frame(InputFrame(path));
 };
 
 void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {

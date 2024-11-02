@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../headers/InputFrame.h"
+
 #include <vector>
 #include <map>
 #include <string>
@@ -23,16 +25,16 @@ namespace AstroPhotoStacker {
         /**
          * @brief Adds multiple photos to the hot pixel identifier.
          *
-         * @param photo_addresses The addresses of the photos to add.
+         * @param input_frames The addresses of the photos to add.
          */
-        void add_photos(const std::vector<std::string> &photo_addresses);
+        void add_photos(const std::vector<InputFrame> &input_frames);
 
         /**
          * @brief Adds a single photo to the hot pixel identifier.
          *
-         * @param photo_address The address of the photo to add.
+         * @param input_frame The address of the photo to add.
          */
-        void add_photo(const std::string &photo_address);
+        void add_photo(const InputFrame &input_frame);
 
         /**
          * @brief Adds a photo using a pixel value array.

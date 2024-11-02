@@ -20,9 +20,9 @@ namespace AstroPhotoStacker {
             /**
              * @brief Construct a new DarkFrameHandler object
              *
-             * @param input_file The file to read the dark frame data from
+             * @param input_frame The file to read the dark frame data from
             */
-            DarkFrameHandler(const std::string &input_file);
+            DarkFrameHandler(const InputFrame &input_frame);
 
             /**
              * @brief Construct a new DarkFrameHandler object from staker frame data
