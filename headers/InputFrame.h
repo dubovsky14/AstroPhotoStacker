@@ -52,6 +52,10 @@ namespace AstroPhotoStacker {
                 return m_file_address == other.m_file_address && m_frame_number == other.m_frame_number;
             };
 
+            bool operator!=(const InputFrame &other) const {
+                return !(*this == other);
+            };
+
         private:
             std::string m_file_address = "";
             int         m_frame_number = -1;

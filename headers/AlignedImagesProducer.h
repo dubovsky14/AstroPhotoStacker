@@ -4,6 +4,7 @@
 #include "../headers/CalibrationFrameBase.h"
 #include "../headers/HotPixelIdentifier.h"
 #include "../headers/TimeLapseVideoSettings.h"
+#include "../headers/InputFrame.h"
 
 #include <functional>
 #include <string>
@@ -21,7 +22,7 @@ namespace AstroPhotoStacker {
 
             void add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler);
 
-            void add_image(const std::string &file_address, const FileAlignmentInformation &alignment_info = FileAlignmentInformation());
+            void add_image(const InputFrame &input_frame, const FileAlignmentInformation &alignment_info = FileAlignmentInformation());
 
             void set_add_datetime(bool add_datetime)    {
                 m_add_datetime = add_datetime;
@@ -65,7 +66,7 @@ namespace AstroPhotoStacker {
             };
 
 
-            static std::string get_output_file_name(const std::string &input_file_address);
+            static std::string get_output_file_name(const InputFrame &input_frame);
 
             static void scale_down_image(std::vector<std::vector<unsigned short>> *image, unsigned int origianal_max, unsigned int new_max);
 
@@ -94,7 +95,7 @@ namespace AstroPhotoStacker {
 
             std::function<void(std::vector<std::vector<unsigned short>>*, unsigned short max_value)> m_image_stretching_function = nullptr;
 
-            std::vector<std::string>                m_files_to_align;
+            std::vector<InputFrame>                 m_frames_to_align;
             std::vector<FileAlignmentInformation>   m_alignment_info;
 
             std::vector<std::shared_ptr<const CalibrationFrameBase> > m_calibration_frame_handlers;
@@ -102,7 +103,7 @@ namespace AstroPhotoStacker {
             TimeLapseVideoSettings m_timelapse_video_settings;
 
 
-            void produce_aligned_image( const std::string &input_file_address,
+            void produce_aligned_image( const InputFrame &input_frame,
                                         const std::string &output_file_address,
                                         const FileAlignmentInformation &alignment_info) const;
 

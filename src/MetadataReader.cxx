@@ -68,7 +68,12 @@ Metadata AstroPhotoStacker::read_metadata_rgb_image(const std::string &input_fil
     return metadata;
 };
 
-Metadata AstroPhotoStacker::read_metadata(const std::string &input_file)    {
+Metadata AstroPhotoStacker::read_metadata(const InputFrame &input_frame)    {
+    if (input_frame.is_video_frame()) {
+        // #TODO: Implement reading metadata for video files
+        throw std::runtime_error("Reading metadata for video files is not yet implemented");
+    }
+    const std::string input_file = input_frame.get_file_address();
     const bool raw_file = is_raw_file(input_file);
     if (raw_file)    {
         return read_metadata_from_raw_file(input_file);
