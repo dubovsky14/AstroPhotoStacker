@@ -17,7 +17,7 @@ PhotoRanker::PhotoRanker(const std::vector<std::string> &path_to_input_files)   
 };
 
 PhotoRanker::PhotoRanker(const std::string& path_to_lights_folder)  {
-    m_input_files = get_raw_files_in_folder(path_to_lights_folder);
+    m_input_files = get_frame_files_in_folder(path_to_lights_folder);
 };
 
 void PhotoRanker::rank_all_files()    {

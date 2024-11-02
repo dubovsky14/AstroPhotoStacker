@@ -21,7 +21,7 @@ int main(int argc, const char **argv) {
         const unsigned int number_of_available_CPUs = thread::hardware_concurrency()/2 != 0 ? thread::hardware_concurrency()/2 : 1;
         const unsigned int n_cpu                = input_arguments_parser.get_optional_argument<unsigned int>("n_cpu", number_of_available_CPUs);
 
-        const vector<string> raw_files = get_raw_files_in_folder(directory_with_raw_files);
+        const vector<string> raw_files = get_frame_files_in_folder(directory_with_raw_files);
 
         HotPixelIdentifier hot_pixel_identifier;
         hot_pixel_identifier.set_n_cpu(n_cpu);

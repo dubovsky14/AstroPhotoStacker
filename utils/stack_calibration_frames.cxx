@@ -33,7 +33,7 @@ int main(int argc, const char **argv) {
         cout << "Output file: " << output_file << "\n";
         cout << "Stacking algorithm: " << stacker_type << "\n";
 
-        const vector<string> input_files = get_raw_files_in_folder(input_folder);
+        const vector<string> input_files = get_frame_files_in_folder(input_folder);
 
         // photo resolution
         int width, height;

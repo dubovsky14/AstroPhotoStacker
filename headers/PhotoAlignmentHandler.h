@@ -67,7 +67,7 @@ namespace   AstroPhotoStacker   {
              * @param reference_frame The address of the reference file.
              * @param files The vector of file addresses to align.
              */
-            void align_files(const InputFrame& reference_frame, const std::vector<std::string>& files);
+            void align_files(const InputFrame& reference_frame, const std::vector<InputFrame>& files);
 
             /**
              * @brief Aligns all files in a folder based on a reference file.

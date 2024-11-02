@@ -1,4 +1,5 @@
 #include "../headers/VideoReader.h"
+#include "../headers/Common.h"
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -21,6 +22,20 @@ std::vector<InputFrame> AstroPhotoStacker::get_video_frames(const std::string &v
 }
 
 bool AstroPhotoStacker::is_valid_video_file(const std::string &video_address)   {
+    const string extension = video_address.substr(video_address.find_last_of(".") + 1);
+    vector<string> supported_extensions = {"avi", "mp4", "mov"};
+    bool supported_extension = false;
+    for (string supported_extension : supported_extensions) {
+        if (compare_case_insensitive(supported_extension, extension)) {
+            supported_extension = true;
+            break;
+        }
+    }
+    if (!supported_extension) {
+        return false;
+    }
+
+    // for some reason only this is not enough - isOpened returns true even for canon raw files ...
     cv::VideoCapture video(video_address);
     return video.isOpened();
 };

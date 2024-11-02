@@ -7,6 +7,7 @@
 #include "../headers/PhotoRanker.h"
 #include "../headers/SharpnessRanker.h"
 #include "../headers/thread_pool.h"
+#include "../headers/VideoReader.h"
 
 #include <fstream>
 
@@ -103,18 +104,18 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
     alignment_file.close();
 };
 
-void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const std::vector<std::string> &files) {
+void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const std::vector<InputFrame> &files) {
     m_reference_photo_handler = reference_photo_handler_factory(reference_frame);
     m_reference_frame = reference_frame;
 
     const unsigned int n_files = files.size();
     m_alignment_information_vector.resize(n_files);
     m_local_shifts_vector.resize(n_files);
-    auto align_file_multicore = [this](const std::string &file_name, unsigned int file_index) {
+    auto align_file_multicore = [this](const InputFrame &input_frame, unsigned int file_index) {
         float shift_x, shift_y, rot_center_x, rot_center_y, rotation, ranking;
-        if (m_reference_photo_handler->calculate_alignment(file_name, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation, &ranking)) {
+        if (m_reference_photo_handler->calculate_alignment(input_frame, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation, &ranking)) {
             FileAlignmentInformation &alignment_info = m_alignment_information_vector[file_index];
-            alignment_info.input_frame = file_name;
+            alignment_info.input_frame = input_frame;
             alignment_info.shift_x = shift_x;
             alignment_info.shift_y = shift_y;
             alignment_info.rotation_center_x = rot_center_x;
@@ -124,13 +125,13 @@ void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const
 
             const ReferencePhotoHandlerSurface *surface_handler = dynamic_cast<const ReferencePhotoHandlerSurface*>(m_reference_photo_handler.get());
             if (surface_handler != nullptr) {
-                vector<LocalShift> local_shifts = surface_handler->get_local_shifts(file_name, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+                vector<LocalShift> local_shifts = surface_handler->get_local_shifts(input_frame, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
                 m_local_shifts_vector[file_index] = local_shifts;
                 alignment_info.local_shifts_handler = LocalShiftsHandler(local_shifts);
             }
         }
         else {
-            cout << "Plate solving failed for file: " + file_name + "\n";
+            cout << "Plate solving failed for frame: " + input_frame.to_string() + "\n";
         }
 
         m_n_files_aligned += 1;
@@ -150,8 +151,19 @@ void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const
 };
 
 void PhotoAlignmentHandler::align_all_files_in_folder(const InputFrame &reference_frame, const std::string &raw_files_folder) {
-    const vector<string> files = get_raw_files_in_folder(raw_files_folder);
-    align_files(reference_frame, files);
+    const vector<string> files = get_frame_files_in_folder(raw_files_folder);
+    vector<InputFrame> input_frames;
+    for (const string &file : files) {
+        if (is_valid_video_file(file)) {
+            vector<InputFrame> video_frames = get_video_frames(file);
+            input_frames.insert(input_frames.end(), video_frames.begin(), video_frames.end());
+            cout << "Video file: " << file << " - " << video_frames.size() << " frames\n";
+        }
+        else {
+            input_frames.push_back(InputFrame(file));
+        }
+    }
+    align_files(reference_frame, input_frames);
 }
 
 void PhotoAlignmentHandler::reset() {

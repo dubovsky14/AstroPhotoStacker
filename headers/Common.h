@@ -263,7 +263,7 @@ namespace AstroPhotoStacker {
      * @param folder_address The address of the folder
      * @return std::vector<std::string> The vector of raw file names in the folder
     */
-    std::vector<std::string> get_raw_files_in_folder(const std::string &folder_address);
+    std::vector<std::string> get_frame_files_in_folder(const std::string &folder_address);
 
     /**
      * @brief Round a number and convert it to a string

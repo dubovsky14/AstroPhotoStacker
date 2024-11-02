@@ -113,7 +113,7 @@ bool AstroPhotoStacker::compare_case_insensitive(const std::string &x, const std
     return x_upper == y_upper;
 };
 
-std::vector<std::string> AstroPhotoStacker::get_raw_files_in_folder(const std::string &folder_address)  {
+std::vector<std::string> AstroPhotoStacker::get_frame_files_in_folder(const std::string &folder_address)  {
     vector<string> result;
     for (const auto &entry : filesystem::directory_iterator(folder_address)) {
         if (entry.path().extension() == ".txt") {
