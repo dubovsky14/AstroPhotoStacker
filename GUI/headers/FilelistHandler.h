@@ -280,6 +280,8 @@ class FilelistHandler   {
 
         void set_local_shifts(int i_file, const std::vector<AstroPhotoStacker::LocalShift> &shifts);
 
+        AstroPhotoStacker::InputFrame get_input_frame_by_gui_string(const std::string &file_description) const;
+
     private:
         std::map<FileTypes, std::vector<AstroPhotoStacker::InputFrame>>     m_filelist;
         std::map<FileTypes, std::vector<bool>>                              m_filelist_checked;

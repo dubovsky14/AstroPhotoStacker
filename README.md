@@ -28,7 +28,7 @@ sudo apt-get install libraw-dev
 and ```OpenCV```:
 
 ```
-sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
+sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y libopencv-dev
 ```
 
 and ```exiv2```:

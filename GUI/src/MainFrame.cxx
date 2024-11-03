@@ -311,14 +311,12 @@ void MyFrame::add_files_to_stack_checkbox()  {
 
     m_files_to_stack_checkbox->Bind(wxEVT_LISTBOX, [this](wxCommandEvent &event){
         int index = event.GetSelection();
-        string text = m_files_to_stack_checkbox->GetString(index).ToStdString();
-        const std::vector<std::string> elements = AstroPhotoStacker::split_and_strip_string(text, "\t\t");
-        const std::string file = elements[1];
+        const string text = m_files_to_stack_checkbox->GetString(index).ToStdString();
         const bool update_needed = update_checked_files_in_filelist();
 
         // Do not update the preview if the files was just checked/unchecked - it is slow
         if (!update_needed) {
-            update_image_preview_file(file);
+            update_image_preview_file(text);
         }
     });
 };
@@ -755,8 +753,9 @@ void MyFrame::add_image_preview()    {
     m_image_preview_size->Add(m_current_preview->get_image_preview_bitmap(), 1, wxTOP, 0);
 };
 
-void MyFrame::update_image_preview_file(const std::string& file_address)  {
-    m_current_preview->read_preview_from_file(file_address);
+void MyFrame::update_image_preview_file(const std::string& file_description)  {
+    InputFrame frame = m_filelist_handler.get_input_frame_by_gui_string(file_description);
+    m_current_preview->read_preview_from_frame(frame);
     update_image_preview();
     update_alignment_status();
 };
@@ -973,7 +972,13 @@ void MyFrame::update_histogram()    {
 
 void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title)    {
     const std::string default_path = m_recent_paths_handler->get_recent_file_path(type, "");
-    const std::vector<string> allowed_extensions = {"cr2", "cr3", "jpg", "jpeg", "png", "fit", "tif", "tiff"};
+    std::vector<string> allowed_extensions = {"cr2", "cr3", "jpg", "jpeg", "png", "fit", "tif", "tiff"};
+    if (type == FileTypes::LIGHT) {
+        allowed_extensions.push_back("avi");
+        allowed_extensions.push_back("mov");
+        allowed_extensions.push_back("mp4");
+    }
+
     string wildcard_string = "Image files |";
     for (const string &extension : allowed_extensions) {
         wildcard_string += "*." + extension + ";" + "*." + AstroPhotoStacker::to_upper_copy(extension) + ";";

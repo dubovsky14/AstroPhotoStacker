@@ -406,3 +406,16 @@ void FilelistHandler::keep_best_n_frames(unsigned int n)   {
 void FilelistHandler::set_local_shifts(int i_file, const std::vector<LocalShift> &shifts)   {
     m_filelist_alignment_info[i_file].local_shifts_handler = LocalShiftsHandler(shifts);
 };
+
+InputFrame FilelistHandler::get_input_frame_by_gui_string(const std::string &gui_string) const  {
+    const vector<string> elements = split_string(gui_string, "\t\t");
+    const string file_description = elements[1];
+    const FileTypes type = string_to_filetype(elements[0]);
+    const vector<InputFrame> &frames = m_filelist.at(type);
+    for (const InputFrame &frame : frames)   {
+        if (frame.to_string() == file_description)   {
+            return frame;
+        }
+    }
+    throw runtime_error("FilelistHandler::get_input_frame_by_gui_string: file not found");
+};

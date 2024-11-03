@@ -90,7 +90,7 @@ void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector
 };
 
 void ImagePreview::update_preview_bitmap()  const  {
-    const bool apply_green_correction = (m_current_preview_is_raw_file || m_use_color_interpolation);
+    const bool apply_green_correction = m_current_preview_is_raw_file;
     update_preview_bitmap(apply_green_correction);
 };
 

@@ -1,6 +1,8 @@
 #include "../headers/VideoReader.h"
 #include "../headers/Common.h"
 
+#include <opencv2/opencv.hpp>
+
 using namespace std;
 using namespace AstroPhotoStacker;
 
@@ -22,16 +24,16 @@ std::vector<InputFrame> AstroPhotoStacker::get_video_frames(const std::string &v
 }
 
 bool AstroPhotoStacker::is_valid_video_file(const std::string &video_address)   {
-    const string extension = video_address.substr(video_address.find_last_of(".") + 1);
-    vector<string> supported_extensions = {"avi", "mp4", "mov"};
-    bool supported_extension = false;
-    for (string supported_extension : supported_extensions) {
-        if (compare_case_insensitive(supported_extension, extension)) {
-            supported_extension = true;
+    const string extension = to_upper_copy(video_address.substr(video_address.find_last_of(".") + 1));
+    const vector<string> supported_extensions = {"AVI", "MP4", "MOV"};
+    bool is_supported_extension = false;
+    for (const string &supported_extension : supported_extensions) {
+        if (extension == supported_extension) {
+            is_supported_extension = true;
             break;
         }
     }
-    if (!supported_extension) {
+    if (!is_supported_extension) {
         return false;
     }
 
