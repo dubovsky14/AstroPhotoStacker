@@ -17,9 +17,9 @@ namespace AstroPhotoStacker     {
             /**
              * @brief Construct a new Photo Ranker object
              *
-             * @param path_to_input_files - vector of strings containing the path to the input files
+             * @param input_frames - vector of strings containing the path to the input files
             */
-            PhotoRanker(const std::vector<std::string> &path_to_input_files);
+            PhotoRanker(const std::vector<InputFrame> &input_frames);
 
             /**
              * @brief Construct a new Photo Ranker object
@@ -50,15 +50,15 @@ namespace AstroPhotoStacker     {
             static float get_cluster_excentricity(const std::vector<std::tuple<int,int>> &cluster);
 
             /**
-             * @brief Get the ranking of all files
+             * @brief Get the ranking of all frames
              *
              * @return std::vector<std::tuple<std::string,float>> - vector of tuples containing the file path and the ranking, ordered by ranking
             */
-            std::vector<std::tuple<std::string,float>> get_ranking() const;
+            std::vector<std::tuple<InputFrame,float>> get_ranking() const;
 
 
         private:
-            std::vector<std::string>    m_input_files;
+            std::vector<InputFrame>     m_input_frames;
             std::vector<float>          m_ranking;
 
 

@@ -4,6 +4,7 @@
 #include "../../headers/Common.h"
 #include "../../headers/raw_file_reader.h"
 #include "../../headers/MetadataReader.h"
+#include "../../headers/InputFrame.h"
 
 #include <iostream>
 #include <filesystem>
@@ -131,7 +132,7 @@ void ImageViewerFrame::open_file(const std::string &file_address)   {
     m_file_address_text->SetLabel(file_address);
 
     try {
-        const Metadata metadata = read_metadata(file_address);
+        const Metadata metadata = read_metadata(InputFrame(file_address));
         update_metadata(metadata);
     }
     catch (const std::exception &e) {

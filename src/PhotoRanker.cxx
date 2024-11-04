@@ -3,6 +3,7 @@
 #include "../headers/raw_file_reader.h"
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/Common.h"
+#include "../headers/VideoReader.h"
 
 #include <filesystem>
 #include <algorithm>
@@ -12,17 +13,29 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 
-PhotoRanker::PhotoRanker(const std::vector<std::string> &path_to_input_files)   {
-    m_input_files = path_to_input_files;
+PhotoRanker::PhotoRanker(const std::vector<InputFrame> &input_frames)   {
+    m_input_frames = input_frames;
 };
 
 PhotoRanker::PhotoRanker(const std::string& path_to_lights_folder)  {
-    m_input_files = get_frame_files_in_folder(path_to_lights_folder);
+    const vector<string> files = get_frame_files_in_folder(path_to_lights_folder);
+    for (const string &file : files) {
+        if (is_valid_video_file(file))  {
+            const int number_of_frames = get_number_of_frames_in_video(file);
+            for (int i = 0; i < number_of_frames; i++) {
+                m_input_frames.push_back(InputFrame(file, i));
+            }
+            continue;
+        }
+        else {
+            m_input_frames.push_back(InputFrame(file));
+        }
+    }
 };
 
 void PhotoRanker::rank_all_files()    {
-    for (const auto &file : m_input_files) {
-        const float ranking = calculate_frame_ranking(file);
+    for (const InputFrame &frame : m_input_frames) {
+        const float ranking = calculate_frame_ranking(frame);
         m_ranking.push_back(ranking);
     }
 };
@@ -71,12 +84,12 @@ float PhotoRanker::get_cluster_excentricity(const std::vector<std::tuple<int,int
 };
 
 
-std::vector<std::tuple<std::string,float>> PhotoRanker::get_ranking() const {
-    std::vector<std::tuple<std::string,float>> result;
-    for (unsigned int i = 0; i < m_input_files.size(); i++) {
-        result.push_back(std::make_tuple(m_input_files[i], m_ranking[i]));
+std::vector<std::tuple<InputFrame,float>> PhotoRanker::get_ranking() const {
+    std::vector<std::tuple<InputFrame,float>> result;
+    for (unsigned int i = 0; i < m_input_frames.size(); i++) {
+        result.push_back(std::make_tuple(m_input_frames[i], m_ranking[i]));
     }
-    sort(result.begin(), result.end(), [](const std::tuple<std::string,float> &a, const std::tuple<std::string,float> &b) {
+    sort(result.begin(), result.end(), [](const std::tuple<InputFrame,float> &a, const std::tuple<InputFrame,float> &b) {
         return std::get<1>(a) < std::get<1>(b);
     });
 

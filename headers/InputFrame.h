@@ -11,7 +11,7 @@ namespace AstroPhotoStacker {
         public:
             InputFrame() = default;
 
-            InputFrame(const std::string &file_address) {
+            explicit InputFrame(const std::string &file_address) {
                 m_file_address = file_address;
             };
 
@@ -38,6 +38,16 @@ namespace AstroPhotoStacker {
 
             std::string to_string() const {
                 return m_file_address + "|" + std::to_string(m_frame_number);
+            };
+
+            static InputFrame build_from_gui_string(const std::string &input_string) {
+                const size_t separator_position = input_string.find("|");
+                if (separator_position == std::string::npos) {
+                    return InputFrame(input_string);
+                }
+                const std::string file_address = input_string.substr(0, separator_position);
+                const int frame_number = std::stoi(input_string.substr(separator_position + 1));
+                return InputFrame(file_address, frame_number);
             };
 
             // needed to use InputFrame as a key in a map

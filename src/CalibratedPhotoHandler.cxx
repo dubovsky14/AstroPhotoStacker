@@ -16,7 +16,7 @@ CalibratedPhotoHandler::CalibratedPhotoHandler(const InputFrame &input_frame, bo
             m_input_file_type = InputFileType::RAW_RGB;
         }
         else {
-            m_data_original_color_interpolation = read_rgb_image<short>(file_address, &m_width, &m_height);
+            m_data_original_color_interpolation = read_rgb_image<short>(input_frame, &m_width, &m_height);
             m_input_file_type = InputFileType::IMAGE_RGB;
         }
     }

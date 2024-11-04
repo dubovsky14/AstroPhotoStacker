@@ -24,7 +24,7 @@ int main(int argc, const char **argv)   {
     // is file?
     const bool is_file = std::filesystem::is_regular_file(input_file);
     if (is_file)    {
-        const float sharpness = get_sharpness_for_file(input_file);
+        const float sharpness = get_sharpness_for_file(InputFrame(input_file));
         std::cout << sharpness << std::endl;
     }
     else {
@@ -37,7 +37,7 @@ int main(int argc, const char **argv)   {
             if (!is_jpg) {
                 continue;
             }
-            const float sharpness = get_sharpness_for_file(file);
+            const float sharpness = get_sharpness_for_file(InputFrame(file));
             sharpness_values.push_back({file, sharpness});
         }
         sort(sharpness_values.begin(), sharpness_values.end(), [](const tuple<string, float> &a, const tuple<string, float> &b) {

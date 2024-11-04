@@ -2,6 +2,7 @@
 
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/thread_pool.h"
+#include "../../headers/InputFrame.h"
 
 #include <vector>
 #include <iostream>
@@ -40,7 +41,8 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
     stack_settings->set_alignment_frame(frames_to_align[0]);
     choice_box_alignment_frame->Bind(wxEVT_CHOICE, [choice_box_alignment_frame, stack_settings](wxCommandEvent&){
         int current_selection = choice_box_alignment_frame->GetSelection();
-        std::string alignment_frame = choice_box_alignment_frame->GetString(current_selection).ToStdString();
+        std::string alignment_frame_gui_string = choice_box_alignment_frame->GetString(current_selection).ToStdString();
+        const InputFrame alignment_frame = InputFrame::build_from_gui_string(alignment_frame_gui_string);
         stack_settings->set_alignment_frame(alignment_frame);
     });
 

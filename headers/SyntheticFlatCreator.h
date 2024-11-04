@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../headers/InputFrame.h"
 
 #include <vector>
 #include <string>
@@ -11,12 +12,12 @@
 namespace AstroPhotoStacker {
     class SyntheticFlatCreator {
         public:
-            SyntheticFlatCreator(const std::string &input_file);
+            SyntheticFlatCreator(const InputFrame &input_frame);
 
             void create_and_save_synthetic_flat(const std::string &output_file);
 
         private:
-            void load_data(const std::string &input_file);
+            void load_data(const InputFrame &input_frame);
 
             void calculate_threshold();
 

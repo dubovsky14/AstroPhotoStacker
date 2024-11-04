@@ -16,6 +16,7 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
     FilelistHandler filelist_handler_only_checked = filelist_handler.get_filelist_with_checked_frames();
     int width, height;
     get_photo_resolution(filelist_handler_only_checked.get_frames(FileTypes::LIGHT)[0], &width, &height);
+    cout << "Resolution: " << width << "x" << height << endl;
     std::unique_ptr<AstroPhotoStacker::StackerBase> stacker = AstroPhotoStacker::create_stacker(
         get_stacker_type_for_factory(stack_settings.get_stacking_algorithm()),
         3,
@@ -46,7 +47,7 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
         if (!dark_frame.is_still_image()) {
             throw std::runtime_error("Dark frame must be a still image");
         }
-        std::shared_ptr<const CalibrationFrameBase> dark_frames_handler = std::make_shared<DarkFrameHandler>(dark_frame.get_file_address());
+        std::shared_ptr<const CalibrationFrameBase> dark_frames_handler = std::make_shared<DarkFrameHandler>(dark_frame);
         cout << "Adding dark frame: " << dark_frame.to_string() << endl;
         stacker->add_calibration_frame_handler(dark_frames_handler);
     }
@@ -57,7 +58,7 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
         if (!flat_frame.is_still_image()) {
             throw std::runtime_error("Flat frame must be a still image");
         }
-        std::shared_ptr<const CalibrationFrameBase> flat_frames_handler = std::make_shared<FlatFrameHandler>(flat_frame.get_file_address());
+        std::shared_ptr<const CalibrationFrameBase> flat_frames_handler = std::make_shared<FlatFrameHandler>(flat_frame);
         cout << "Adding flat frame: " << flat_frame.to_string() << endl;
         stacker->add_calibration_frame_handler(flat_frames_handler);
     }

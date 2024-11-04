@@ -50,7 +50,7 @@ int main(int argc, const char **argv) {
 
         // photo resolution
         int width, height;
-        get_photo_resolution(input_files[0], &width, &height);
+        get_photo_resolution(InputFrame(input_files[0]), &width, &height);
         cout << "Photo resolution: " << width << "x" << height << "\n";
 
         // getting correct stacker instance and configuring it
@@ -60,7 +60,7 @@ int main(int argc, const char **argv) {
 
         // adding files to stacker and stacking them
         for (const string &file : input_files) {
-            stacker->add_photo(file);
+            stacker->add_photo(InputFrame(file));
         }
         stacker->calculate_stacked_photo();
         stacker->save_stacked_photo(output_file, CV_16UC3);
@@ -80,7 +80,7 @@ void configure_stacker_with_optional_arguments(StackerBase *stacker, const Input
     // flat frame
     const string flat_frame_file    = input_parser.get_optional_argument<string>("flat_frame", "");
     if (flat_frame_file != "")  {
-        std::shared_ptr<const CalibrationFrameBase> flat_frame_handler = make_shared<FlatFrameHandler>(flat_frame_file);
+        std::shared_ptr<const CalibrationFrameBase> flat_frame_handler = make_shared<FlatFrameHandler>(InputFrame(flat_frame_file));
         stacker->add_calibration_frame_handler(flat_frame_handler);
         if (print_info) cout << "Flat frame file: " << flat_frame_file << "\n";
     }

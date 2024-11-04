@@ -15,6 +15,7 @@
 #include "../../headers/MetadataReader.h"
 #include "../../headers/thread_pool.h"
 #include "../../headers/StackerBase.h"
+#include "../../headers/VideoReader.h"
 
 #include <wx/spinctrl.h>
 #include <wx/progdlg.h>
@@ -989,7 +990,12 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
         wxArrayString paths;
         dialog.GetPaths(paths);
         for (auto path : paths) {
-            const AstroPhotoStacker::Metadata metadata = AstroPhotoStacker::read_metadata(path.ToStdString());
+            const bool is_video = AstroPhotoStacker::is_valid_video_file(path.ToStdString());
+            if (is_video) {
+                // #TODO
+                cout << "Metadata for video files are not implemented yet." << endl;
+            }
+            const AstroPhotoStacker::Metadata metadata = is_video ? AstroPhotoStacker::Metadata() : AstroPhotoStacker::read_metadata(InputFrame(path.ToStdString()));
             const string str_path = path.ToStdString();
             m_filelist_handler.add_file(path.ToStdString(), type, false, AlignmentFileInfo(), metadata);
             m_recent_paths_handler->set_recent_file_path_from_file(type, path.ToStdString());

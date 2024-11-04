@@ -177,7 +177,7 @@ const std::vector<std::vector<double> >& StackerBase::get_stacked_image() const 
 CalibratedPhotoHandler StackerBase::get_calibrated_photo(unsigned int i_file, int y_min, int y_max) const    {
     const InputFrame &input_frame = m_frames_to_stack[i_file];
     const bool apply_alignment = m_apply_alignment[i_file];
-    const FileAlignmentInformation alignment_info = apply_alignment ? m_photo_alignment_handler->get_alignment_parameters(input_frame.get_file_address()) : FileAlignmentInformation();
+    const FileAlignmentInformation alignment_info = apply_alignment ? m_photo_alignment_handler->get_alignment_parameters(input_frame) : FileAlignmentInformation();
     const float shift_x         = alignment_info.shift_x;
     const float shift_y         = alignment_info.shift_y;
     const float rot_center_x    = alignment_info.rotation_center_x;
