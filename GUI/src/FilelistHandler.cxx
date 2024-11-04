@@ -285,7 +285,7 @@ void FilelistHandler::load_alignment_from_file(const std::string &input_address)
     std::string line;
     while (std::getline(input_file, line))   {
         vector<string> elements = split_string(line, " | ");
-        if (elements.size() != 7)   {
+        if (elements.size() != 8)   {
             continue;
         }
         const std::string file_address = elements[0];
