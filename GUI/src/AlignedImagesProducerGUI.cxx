@@ -506,5 +506,5 @@ void AlignedImagesProducerGUI::process_and_save_stacked_image(  const std::vecto
 
 
 bool AlignedImagesProducerGUI::has_valid_alignment(const AlignmentFileInfo &alignment_info) const  {
-    return fabs(alignment_info.ranking) > 0.00001;
+    return fabs(alignment_info.ranking) > 0.001;
 };

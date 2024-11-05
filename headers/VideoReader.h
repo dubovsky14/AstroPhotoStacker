@@ -50,7 +50,7 @@ namespace AstroPhotoStacker {
         std::vector<ValueType> result(std::vector<ValueType>(*width*(*height)));
         for (int y = 0; y < *height; y++) {
             for (int x = 0; x < *width; x++) {
-                result[y*(*width) + x] = gray_frame.at<ValueType>(y, x);
+                result[y*(*width) + x] = gray_frame.at<unsigned char>(y, x);
             }
         }
         return result;
