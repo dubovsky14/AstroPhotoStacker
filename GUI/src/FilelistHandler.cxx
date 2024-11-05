@@ -413,7 +413,7 @@ InputFrame FilelistHandler::get_input_frame_by_gui_string(const std::string &gui
     const FileTypes type = string_to_filetype(elements[0]);
     const vector<InputFrame> &frames = m_filelist.at(type);
     for (const InputFrame &frame : frames)   {
-        if (frame.to_string() == file_description)   {
+        if (frame.to_gui_string() == file_description)   {
             return frame;
         }
     }

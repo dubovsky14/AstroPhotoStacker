@@ -327,7 +327,7 @@ void MyFrame::update_files_to_stack_checkbox()   {
     for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
         const vector<InputFrame> &frames = m_filelist_handler.get_frames(type);
         for (unsigned int i_file = 0; i_file < frames.size(); i_file++) {
-            const string frame_description = frames[i_file].to_string();
+            const string frame_description = frames[i_file].to_gui_string();
             // aperture, exposure time, ISO, and focal length
             std::string metadata_string = "";
             if (type == FileTypes::LIGHT)   {

@@ -31,7 +31,7 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
     std::vector<wxString> available_light_frames;
     for (unsigned int i = 0; i < all_light_frames_addresses.size(); ++i) {
         if (light_frames_is_checked[i]) {
-            available_light_frames.push_back(all_light_frames_addresses[i].to_string());
+            available_light_frames.push_back(all_light_frames_addresses[i].to_gui_string());
             indices_frames_to_align.push_back(i);
             frames_to_align.push_back(all_light_frames_addresses[i]);
         }
