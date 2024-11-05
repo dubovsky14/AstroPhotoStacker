@@ -21,11 +21,22 @@ namespace AstroPhotoStacker {
         *width = frame.cols;
         *height = frame.rows;
         std::vector<std::vector<ValueType>> result(3, std::vector<ValueType>(*width*(*height)));
-
+        int bit_depth = frame.depth();
         for (int y = 0; y < *height; y++) {
             for (int x = 0; x < *width; x++) {
                 for (int color = 0; color < 3; color++) {
-                    result[color][y*(*width) + x] = frame.at<cv::Vec3b>(y, x)[color];
+                    if (bit_depth == CV_8U) {
+                        result[color][y*(*width) + x] = frame.at<cv::Vec3b>(y, x)[color];
+                    }
+                    else if (bit_depth == CV_16U) {
+                        result[color][y*(*width) + x] = frame.at<cv::Vec3w>(y, x)[color];
+                    }
+                    else if (bit_depth == CV_16S) {
+                        result[color][y*(*width) + x] = frame.at<cv::Vec3s>(y, x)[color];
+                    }
+                    else {
+                        throw std::runtime_error("Unsupported bit depth");
+                    }
                 }
             }
         }
@@ -47,9 +58,22 @@ namespace AstroPhotoStacker {
         cv::Mat gray_frame;
         cv::cvtColor(frame, gray_frame, cv::COLOR_BGR2GRAY);
 
+        int bit_depth = gray_frame.depth();
         std::vector<ValueType> result(std::vector<ValueType>(*width*(*height)));
         for (int y = 0; y < *height; y++) {
             for (int x = 0; x < *width; x++) {
+                if (bit_depth == CV_8U) {
+                    result[y*(*width) + x] = gray_frame.at<unsigned char>(y, x);
+                }
+                else if (bit_depth == CV_16U) {
+                    result[y*(*width) + x] = gray_frame.at<unsigned short>(y, x);
+                }
+                else if (bit_depth == CV_16S) {
+                    result[y*(*width) + x] = gray_frame.at<short>(y, x);
+                }
+                else {
+                    throw std::runtime_error("Unsupported bit depth");
+                }
                 result[y*(*width) + x] = gray_frame.at<unsigned char>(y, x);
             }
         }
