@@ -768,12 +768,8 @@ void MyFrame::update_image_preview_with_stacked_image()  {
     m_current_preview->read_preview_from_stacked_image(stacked_image, width, height);
 
     const bool rgb_raw_files_only = m_stacker->contains_only_rgb_raw_files();
-    if (rgb_raw_files_only) {
-        m_current_preview->update_preview_bitmap();
-    }
-    else {
-        m_current_preview->update_preview_bitmap(false);
-    }
+    m_current_preview->update_preview_bitmap(rgb_raw_files_only);
+
     update_histogram();
     update_color_channels_mean_and_median_values_text();
 };

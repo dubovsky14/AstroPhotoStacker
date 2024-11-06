@@ -14,11 +14,11 @@ class ImagePreviewCropTool : public ImagePreview {
         */
         ImagePreviewCropTool(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation);
 
-        virtual void update_preview_bitmap() const override {
+        virtual void update_preview_bitmap() override {
             ImagePreview::update_preview_bitmap();
         };
 
-        virtual void update_preview_bitmap(bool apply_green_correction) const override;
+        virtual void update_preview_bitmap(bool apply_green_correction) override;
 
         void get_crop_coordinates(int *top_left_x, int *top_left_y, int *width, int *height) const;
 

@@ -25,7 +25,6 @@ ImagePreview::ImagePreview(wxFrame *parent, int width, int height, int max_value
     m_max_value = max_value;
     m_preview_data = std::vector<std::vector<int>>(3, std::vector<int>(m_width*m_height, 0));
     m_exposure_correction = 0;
-    m_use_color_interpolation = use_color_interpolation;
     m_preview_offset_zoom = wxPoint(0, 0.155*m_height);
     m_preview_offset_shift = wxPoint(m_width, 0.155*m_height);
     initialize_bitmap();
@@ -89,7 +88,7 @@ void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector
     update_preview_data();
 };
 
-void ImagePreview::update_preview_bitmap()  const  {
+void ImagePreview::update_preview_bitmap()   {
     const bool apply_green_correction = m_current_preview_is_raw_file;
     update_preview_bitmap(apply_green_correction);
 };
@@ -129,8 +128,9 @@ wxImage ImagePreview::get_updated_wximage(bool apply_green_correction)  const  {
     return image_wx;
 };
 
-void ImagePreview::update_preview_bitmap(bool apply_green_correction)   const  {
+void ImagePreview::update_preview_bitmap(bool apply_green_correction)   {
     wxImage image_wx = get_updated_wximage(apply_green_correction);
+    m_current_preview_is_raw_file = apply_green_correction;
 
     // Convert the wxImage to a wxBitmap
     wxBitmap bitmap(image_wx);
