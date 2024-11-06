@@ -212,11 +212,22 @@ namespace AstroPhotoStacker {
         *width = image.cols;
         *height = image.rows;
         std::vector<std::vector<ValueType>> result(3, std::vector<ValueType>(*width*(*height)));
-
+        const int bit_depth = image.depth();
         for (int y = 0; y < *height; y++) {
             for (int x = 0; x < *width; x++) {
                 for (int color = 0; color < 3; color++) {
-                    result[color][y*(*width) + x] = image.at<cv::Vec3b>(y, x)[color];
+                    if (bit_depth == CV_8U) {
+                        result[color][y*(*width) + x] = image.at<cv::Vec3b>(y, x)[color];
+                    }
+                    else if (bit_depth == CV_16U) {
+                        result[color][y*(*width) + x] = image.at<cv::Vec3w>(y, x)[color];
+                    }
+                    else if (bit_depth == CV_16S) {
+                        result[color][y*(*width) + x] = image.at<cv::Vec3s>(y, x)[color];
+                    }
+                    else {
+                        throw std::runtime_error("Unsupported bit depth");
+                    }
                 }
             }
         }
@@ -238,10 +249,22 @@ namespace AstroPhotoStacker {
         cv::Mat image = cv::imread(input_file, cv::IMREAD_ANYDEPTH);
         *width = image.cols;
         *height = image.rows;
+        const int bit_depth = image.depth();
         std::vector<ValueType> result((*width)*(*height),0);
         for (int y = 0; y < (*height); y++) {
             for (int x = 0; x < (*width); x++) {
-                result[y*(*width) + x] = image.at<ValueType>(y, x);
+                if (bit_depth == CV_8U) {
+                    result[y*(*width) + x] = image.at<unsigned char>(y, x);
+                }
+                else if (bit_depth == CV_16U) {
+                    result[y*(*width) + x] = image.at<ushort>(y, x);
+                }
+                else if (bit_depth == CV_16S) {
+                    result[y*(*width) + x] = image.at<short>(y, x);
+                }
+                else {
+                    throw std::runtime_error("Unsupported bit depth");
+                }
             }
         }
         return result;
