@@ -39,19 +39,15 @@ void TimeLapseVideoCreator::create_video(const std::string &video_address, bool 
     const float fps = m_settings.get_fps();
     const int n_repeat = m_settings.get_n_repeat();
 
-    cv::VideoWriter video_writer(video_address, cv::CAP_ANY,  cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), fps, frame_size);
+    cv::VideoWriter video_writer(video_address, cv::CAP_ANY,  cv::VideoWriter::fourcc('X', 'V', 'I', 'D'), fps, frame_size);
     if (!video_writer.isOpened())   {
-        cout << "Could not open video writer" << endl;
-        cout << "Video address: " << video_address << endl;
-        cout << "Frame size: " << frame_size << endl;
-        cout << "FPS: " << fps << endl;
+        cerr << "Could not open video writer" << endl;
         return;
     }
     for (int i_repeat = 0; i_repeat < n_repeat; i_repeat++)   {
         for (const auto &[file, unixtime] : input_files) {
             cv::Mat image = cv::imread(file);
             if (image.empty())  {
-                cout << "Image is empty: " << file << endl;
                 continue;
             }
             video_writer.write(image);
