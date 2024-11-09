@@ -1,5 +1,6 @@
 #include "../headers/ImageViewerApp.h"
 #include "../headers/Common.h"
+#include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 
 #include "../../headers/Common.h"
 #include "../../headers/raw_file_reader.h"
@@ -36,8 +37,14 @@ ImageViewerFrame::ImageViewerFrame()
 
     m_image_preview = make_unique<ImagePreview>(this, 1080, 720, 255, true);
     m_image_preview->set_exposure_correction(1);
+    m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackCorrectionWhite>());
+    m_image_preview->set_stretcher(&m_color_stretcher);
 
-    m_preview_and_metadata_sizer->Add(m_image_preview->get_image_preview_bitmap(), 7, wxEXPAND | wxALL, 5);
+    m_preview_panel_sizer = new wxBoxSizer(wxVERTICAL);
+    m_preview_and_metadata_sizer->Add(m_preview_panel_sizer, 7, wxEXPAND | wxALL, 5);
+    m_preview_panel_sizer->Add(m_image_preview->get_image_preview_bitmap(), 1, wxALIGN_CENTER_HORIZONTAL, 0);
+
+    add_exposure_correction_spin_ctrl();
 
     add_metadata_panel();
 
@@ -48,6 +55,33 @@ ImageViewerFrame::ImageViewerFrame()
     CreateStatusBar();
     SetSizer(m_sizer_main_frame);
     SetStatusText("Author: Michal Dubovsky");
+
+};
+
+void ImageViewerFrame::add_exposure_correction_spin_ctrl()   {
+    // Create a wxStaticText to display the current value
+    wxStaticText* exposure_correction_text = new wxStaticText(this, wxID_ANY, "Exposure correction: 0.0");
+
+    // Create the wxSlider
+    wxSlider* slider_exposure = new wxSlider(this, wxID_ANY, 0, -70, 70, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+
+    // Bind the slider's wxEVT_SLIDER event to a lambda function that updates the value text
+    slider_exposure->Bind(wxEVT_SLIDER, [exposure_correction_text, slider_exposure, this](wxCommandEvent&){
+        const float exposure_correction = slider_exposure->GetValue()/10.;
+        //m_current_preview->set_exposure_correction( exposure_correction );
+
+        IndividualColorStretchingToolBase &luminance_stretcher = m_color_stretcher.get_luminance_stretcher(0);
+        (dynamic_cast<IndividualColorStretchingBlackCorrectionWhite&>(luminance_stretcher)).set_stretching_parameters(0,exposure_correction,1);
+
+        m_image_preview->update_preview_bitmap();
+        const std::string new_label = "Exposure correction: " + to_string(exposure_correction+0.0001).substr(0,4);
+        exposure_correction_text->SetLabel(new_label);
+    });
+
+    // Add the controls to a sizer
+    //wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
+    m_preview_panel_sizer->Add(exposure_correction_text, 0,   wxEXPAND, 5);
+    m_preview_panel_sizer->Add(slider_exposure, 0,  wxEXPAND, 5);
 
 };
 

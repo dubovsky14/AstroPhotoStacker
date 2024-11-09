@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../headers/ImagePreview.h"
+#include "../headers/CombinedColorStrecherTool.h"
 
 #include "../../headers/Metadata.h"
 
@@ -34,6 +35,8 @@ class ImageViewerFrame : public wxFrame  {
         ImageViewerFrame();
 
     private:
+        void  add_exposure_correction_spin_ctrl();
+
         void add_menu_bar();
 
         void add_metadata_panel();
@@ -45,11 +48,14 @@ class ImageViewerFrame : public wxFrame  {
         wxPanel* m_main_panel = nullptr;
 
         std::unique_ptr<ImagePreview> m_image_preview = nullptr;
+        CombinedColorStrecherTool m_color_stretcher;
         std::vector<std::string> m_allowed_extensions = {"cr2", "cr3", "jpg", "jpeg", "png", "fit", "tif", "tiff", ".png"};
 
 
         wxBoxSizer *m_sizer_main_frame = nullptr;
         wxBoxSizer *m_preview_and_metadata_sizer = nullptr;
+        wxBoxSizer *m_preview_panel_sizer = nullptr;
+
 
         std::string m_file_address = "";
         std::string m_current_folder = ".";
