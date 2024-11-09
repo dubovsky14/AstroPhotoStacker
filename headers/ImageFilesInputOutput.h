@@ -217,13 +217,13 @@ namespace AstroPhotoStacker {
             for (int x = 0; x < *width; x++) {
                 for (int color = 0; color < 3; color++) {
                     if (bit_depth == CV_8U) {
-                        result[color][y*(*width) + x] = image.at<cv::Vec3b>(y, x)[color];
+                        result[color][y*(*width) + x] = image.at<cv::Vec3b>(y, x)[2-color];
                     }
                     else if (bit_depth == CV_16U) {
-                        result[color][y*(*width) + x] = image.at<cv::Vec3w>(y, x)[color];
+                        result[color][y*(*width) + x] = image.at<cv::Vec3w>(y, x)[2-color];
                     }
                     else if (bit_depth == CV_16S) {
-                        result[color][y*(*width) + x] = image.at<cv::Vec3s>(y, x)[color];
+                        result[color][y*(*width) + x] = image.at<cv::Vec3s>(y, x)[2-color];
                     }
                     else {
                         throw std::runtime_error("Unsupported bit depth");
