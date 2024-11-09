@@ -25,8 +25,6 @@ ImagePreview::ImagePreview(wxFrame *parent, int width, int height, int max_value
     m_max_value = max_value;
     m_preview_data = std::vector<std::vector<int>>(3, std::vector<int>(m_width*m_height, 0));
     m_exposure_correction = 0;
-    m_preview_offset_zoom = wxPoint(0, 0.155*m_height);
-    m_preview_offset_shift = wxPoint(m_width, 0.155*m_height);
     initialize_bitmap();
     bind_shift_events();
 };
@@ -45,8 +43,8 @@ void ImagePreview::initialize_bitmap()    {
     // Convert the wxImage to a wxBitmap
     wxBitmap bitmap(image);
 
-    // Create a wxStaticBitmap to display the image
-    m_preview_bitmap = new wxStaticBitmap(m_parent, wxID_ANY, bitmap);
+    // Create a wxGenericStaticBitmap to display the image
+    m_preview_bitmap = new wxGenericStaticBitmap(m_parent, wxID_ANY, bitmap);
 
     m_parent->Bind(wxEVT_MOUSEWHEEL, &ImagePreview::on_mouse_wheel, this);
 };
@@ -220,20 +218,16 @@ void ImagePreview::on_mouse_wheel(wxMouseEvent& event) {
     }
     // Get the mouse position in screen coordinates
     wxPoint screen_pos = event.GetPosition();
-    screen_pos += m_preview_offset_zoom;   // shift the position to the center of the image - wxStaticBitmap is buggy ...
 
-    // Convert the mouse position to client coordinates relative to the wxStaticBitmap
-    wxPoint client_position = m_preview_bitmap->ScreenToClient(screen_pos);
-
-    // Check if the mouse is over the wxStaticBitmap
-    if (wxRect(m_preview_bitmap->GetSize()).Contains(client_position)) {
+    // Check if the mouse is over the wxGenericStaticBitmap
+    if (wxRect(m_preview_bitmap->GetSize()).Contains(screen_pos)) {
         // Get the amount of rotation
         int rotation = event.GetWheelRotation();
 
-        // Calculate the relative position of the mouse within the wxStaticBitmap
+        // Calculate the relative position of the mouse within the wxGenericStaticBitmap
         wxSize bitmapSize = m_preview_bitmap->GetSize();
-        float relative_x = static_cast<float>(client_position.x) / bitmapSize.GetWidth();
-        float relative_y = static_cast<float>(client_position.y) / bitmapSize.GetHeight();
+        float relative_x = static_cast<float>(screen_pos.x) / bitmapSize.GetWidth();
+        float relative_y = static_cast<float>(screen_pos.y) / bitmapSize.GetHeight();
 
         // Check the direction of the rotation
         if (rotation > 0) {
@@ -256,17 +250,13 @@ void ImagePreview::bind_shift_events()    {
 
         // Get the mouse position in screen coordinates
         wxPoint screen_pos = event.GetPosition();
-        screen_pos += m_preview_offset_shift;   // shift the position to the center of the image - wxStaticBitmap is buggy ...
 
-        // Convert the mouse position to client coordinates relative to the wxStaticBitmap
-        wxPoint client_position = m_preview_bitmap->ScreenToClient(screen_pos);
-
-        // Check if the mouse is over the wxStaticBitmap
-        if (wxRect(m_preview_bitmap->GetSize()).Contains(client_position)) {
-            // Calculate the relative position of the mouse within the wxStaticBitmap
+        // Check if the mouse is over the wxGenericStaticBitmap
+        if (wxRect(m_preview_bitmap->GetSize()).Contains(screen_pos)) {
+            // Calculate the relative position of the mouse within the wxGenericStaticBitmap
             wxSize bitmapSize = m_preview_bitmap->GetSize();
-            float relative_x = static_cast<float>(client_position.x) / bitmapSize.GetWidth();
-            float relative_y = static_cast<float>(client_position.y) / bitmapSize.GetHeight();
+            float relative_x = static_cast<float>(screen_pos.x) / bitmapSize.GetWidth();
+            float relative_y = static_cast<float>(screen_pos.y) / bitmapSize.GetHeight();
 
             position_mouse_click = {relative_x, relative_y};
         }
@@ -283,17 +273,13 @@ void ImagePreview::bind_shift_events()    {
 
         // Get the mouse position in screen coordinates
         wxPoint screen_pos = event.GetPosition();
-        screen_pos += m_preview_offset_shift;   // shift the position to the center of the image - wxStaticBitmap is buggy ...
 
-        // Convert the mouse position to client coordinates relative to the wxStaticBitmap
-        wxPoint client_position = m_preview_bitmap->ScreenToClient(screen_pos);
-
-        // Check if the mouse is over the wxStaticBitmap
-        if (wxRect(m_preview_bitmap->GetSize()).Contains(client_position)) {
-            // Calculate the relative position of the mouse within the wxStaticBitmap
+        // Check if the mouse is over the wxGenericStaticBitmap
+        if (wxRect(m_preview_bitmap->GetSize()).Contains(screen_pos)) {
+            // Calculate the relative position of the mouse within the wxGenericStaticBitmap
             wxSize bitmapSize = m_preview_bitmap->GetSize();
-            float relative_x = static_cast<float>(client_position.x) / bitmapSize.GetWidth();
-            float relative_y = static_cast<float>(client_position.y) / bitmapSize.GetHeight();
+            float relative_x = static_cast<float>(screen_pos.x) / bitmapSize.GetWidth();
+            float relative_y = static_cast<float>(screen_pos.y) / bitmapSize.GetHeight();
 
             const float dx = relative_x - position_mouse_click.first;
             const float dy = relative_y - position_mouse_click.second;

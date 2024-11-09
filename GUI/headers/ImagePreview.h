@@ -9,6 +9,7 @@
 #include <string>
 
 #include <wx/wx.h>
+#include <wx/generic/statbmpg.h>
 
 /**
  * @brief Class responsible for image preview. It can read preview from a file or from a stacked image and apply exposure correction, color stretching and zooming.
@@ -152,15 +153,13 @@ class ImagePreview {
         /**
          * @brief Image preview bitmap (for sizer)
         */
-       wxStaticBitmap *get_image_preview_bitmap()   const   {return m_preview_bitmap;};
+       wxGenericStaticBitmap *get_image_preview_bitmap()   const   {return m_preview_bitmap;};
 
     protected:
         wxFrame *m_parent = nullptr;
-        wxStaticBitmap                  *m_preview_bitmap       = nullptr;
+        wxGenericStaticBitmap                  *m_preview_bitmap       = nullptr;
         ImageResizeTool m_image_resize_tool;
 
-        wxPoint m_preview_offset_zoom  = wxPoint(0, 0.155*m_height);
-        wxPoint m_preview_offset_shift = wxPoint(m_width, 0.155*m_height);
 
         std::vector<std::vector<short int>> m_original_image; // 3 color channels, each with width*height pixels
 

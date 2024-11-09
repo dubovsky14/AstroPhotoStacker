@@ -747,11 +747,11 @@ void MyFrame::add_upper_middle_panel()   {
 
 
 void MyFrame::add_image_preview()    {
-    // Add the wxStaticBitmap to a sizer
-    m_image_preview_size = new wxBoxSizer(wxHORIZONTAL);
+    // Add the wxGenericStaticBitmap to a sizer
+    m_image_preview_size = new wxBoxSizer(wxVERTICAL);
     m_sizer_top_center->Add(m_image_preview_size, 1, wxEXPAND | wxALL, 5);
 
-    m_image_preview_size->Add(m_current_preview->get_image_preview_bitmap(), 1, wxTOP, 0);
+    m_image_preview_size->Add(m_current_preview->get_image_preview_bitmap(), 1, wxCENTER, 0);
 };
 
 void MyFrame::update_image_preview_file(const std::string& file_description)  {
@@ -783,12 +783,12 @@ void MyFrame::update_image_preview()  {
 void MyFrame::add_step_control_part()    {
     wxGridSizer *grid_sizer = new wxGridSizer(2,3, 0, 0);
 
-    auto add_button_and_checkmark = [this](auto on_button_function, const std::string &description_text, const std::string &button_text, wxStaticBitmap **status_icon, wxGridSizer *grid_sizer){
+    auto add_button_and_checkmark = [this](auto on_button_function, const std::string &description_text, const std::string &button_text, wxGenericStaticBitmap **status_icon, wxGridSizer *grid_sizer){
         wxStaticText* text_aligned = new wxStaticText(this, wxID_ANY, description_text);
         wxFont font = text_aligned->GetFont();
         font.SetPointSize(14);
         text_aligned->SetFont(font);
-        *status_icon = new wxStaticBitmap(this, wxID_ANY, wxBitmap(s_gui_folder_path + "data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
+        *status_icon = new wxGenericStaticBitmap(this, wxID_ANY, wxBitmap(s_gui_folder_path + "data/png/checkmarks/20px/red_cross.png", wxBITMAP_TYPE_PNG));
 
         wxButton *button = new wxButton(this, wxID_ANY, button_text);
         button->Bind(wxEVT_BUTTON, on_button_function);
@@ -1045,7 +1045,7 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
     }
 };
 
-void MyFrame::update_status_icon(wxStaticBitmap *status_icon, bool is_ok)   {
+void MyFrame::update_status_icon(wxGenericStaticBitmap *status_icon, bool is_ok)   {
     const std::string file_checkmark    = s_gui_folder_path + "data/png/checkmarks/20px/checkmark.png";
     const std::string file_cross        = s_gui_folder_path + "data/png/checkmarks/20px/red_cross.png";
     if (is_ok)  {

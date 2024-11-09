@@ -17,6 +17,7 @@
 
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
+#include <wx/generic/statbmpg.h>
 
 #include <memory>
 
@@ -96,9 +97,9 @@ class MyFrame : public wxFrame  {
         */
         void add_step_control_part();
 
-        wxStaticBitmap *m_alignment_status_icon = nullptr;
-        wxStaticBitmap *m_hot_pixel_status_icon = nullptr;
-        wxStaticBitmap *m_stacked_status_icon   = nullptr;
+        wxGenericStaticBitmap *m_alignment_status_icon = nullptr;
+        wxGenericStaticBitmap *m_hot_pixel_status_icon = nullptr;
+        wxGenericStaticBitmap *m_stacked_status_icon   = nullptr;
 
         void add_n_cpu_slider();
         void add_max_memory_spin_ctrl();
@@ -170,7 +171,7 @@ class MyFrame : public wxFrame  {
 
         std::vector<std::shared_ptr<wxSizer>> m_sizers;  // this is such a mess ...
 
-        static void update_status_icon(wxStaticBitmap *status_icon, bool is_ok);
+        static void update_status_icon(wxGenericStaticBitmap *status_icon, bool is_ok);
 
         // luminance streching slider:
         ThreePointSlider *m_luminance_stretching_slider = nullptr;
