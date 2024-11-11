@@ -501,23 +501,31 @@ void AlignedImagesProducerGUI::process_and_save_stacked_image(  const std::vecto
             AlignedImagesProducer::apply_green_correction(&cropped_image_ushort, 255);
         }
 
+        cv::Mat opencv_image = get_opencv_color_image(&cropped_image_ushort[0][0], &cropped_image_ushort[1][0], &cropped_image_ushort[2][0], crop_width, crop_height);
+        const int max_height = 1080;
+        const int max_width = 1920;
+        // rescale image if it exceeds maximal size
+        if (crop_width > max_width || crop_height > max_height) {
+            const float scale_factor_width = max_width/static_cast<float>(crop_width);
+            const float scale_factor_height = max_height/static_cast<float>(crop_height);
 
-        if (!m_add_datetime) {
-            create_color_image(&cropped_image_ushort[0][0], &cropped_image_ushort[1][0], &cropped_image_ushort[2][0], crop_width, crop_height, output_file_address);
+            const float scale_factor = min(scale_factor_width, scale_factor_height);
+            cv::resize(opencv_image, opencv_image, cv::Size(), scale_factor, scale_factor);
         }
-        else {
 
+        if (m_add_datetime) {
             const string datetime = unix_time_to_string(unix_time);
 
-            cv::Mat opencv_image = get_opencv_color_image(&cropped_image_ushort[0][0], &cropped_image_ushort[1][0], &cropped_image_ushort[2][0], crop_width, crop_height);
-            const float font_size = crop_width/1200.0;
+            const int current_width = opencv_image.cols;
+            const int current_height = opencv_image.rows;
+
+            const float font_size = current_width/1200.0;
             const float font_width = font_size*2;
 
-            std::pair<float,float> datetime_position = m_aligned_images_producer ? m_aligned_images_producer->get_position_of_datetime() : std::pair<float,float>({0.6, 0.9});
-            cv::putText(opencv_image, datetime, cv::Point(datetime_position.first* crop_width, datetime_position.second* crop_height), cv::FONT_HERSHEY_SIMPLEX, font_size, CV_RGB(255, 0, 0), font_width);
+            cv::putText(opencv_image, datetime, cv::Point(0.6*current_width, 0.9*current_height), cv::FONT_HERSHEY_SIMPLEX, font_size, CV_RGB(255, 0, 0), font_width);
 
-            cv::imwrite(output_file_address, opencv_image);
         }
+        cv::imwrite(output_file_address, opencv_image);
 
 };
 
