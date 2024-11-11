@@ -8,6 +8,40 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
+
+Metadata AstroPhotoStacker::read_metadata_video(const std::string &input_file) {
+    Metadata metadata;
+    try {
+        Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(input_file);
+        if (image.get() == 0) {
+            throw std::runtime_error("Failed to open the file " + input_file);
+        }
+        image->readMetadata();
+
+        Exiv2::ExifData &exifData = image->exifData();
+        if (exifData.empty()) {
+            std::string error(input_file);
+            error += ": No EXIF data found in the file";
+            throw Exiv2::Error(Exiv2::kerErrorMessage, error);
+        }
+
+        // Date and Time
+        const auto dateTime = exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal"));
+        if (dateTime != exifData.end()) {
+            metadata.date_time = dateTime->toString();
+            metadata.timestamp = get_unix_timestamp(metadata.date_time);
+            cout << "Timestamp: "s + to_string(metadata.timestamp) + "\n"s;
+        } else {
+            std::cerr << "DateTimeOriginal not found in the metadata." << std::endl;
+        }
+
+    } catch (Exiv2::AnyError& e) {
+        std::cerr << "Error reading file " << input_file << ": " << e.what() << std::endl;
+    }
+    return metadata;
+}
+
+
 Metadata AstroPhotoStacker::read_metadata_rgb_image(const std::string &input_file)   {
     Metadata metadata;
     try {
@@ -69,11 +103,10 @@ Metadata AstroPhotoStacker::read_metadata_rgb_image(const std::string &input_fil
 };
 
 Metadata AstroPhotoStacker::read_metadata(const InputFrame &input_frame)    {
-    if (input_frame.is_video_frame()) {
-        // #TODO: Implement reading metadata for video files
-        throw std::runtime_error("Reading metadata for video files is not yet implemented");
-    }
     const std::string input_file = input_frame.get_file_address();
+    if (input_frame.is_video_frame()) {
+        return read_metadata_video(input_file);
+    }
     const bool raw_file = is_raw_file(input_file);
     if (raw_file)    {
         return read_metadata_from_raw_file(input_file);

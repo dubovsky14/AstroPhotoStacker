@@ -13,6 +13,7 @@
 #include "../../headers/FlatFrameHandler.h"
 #include "../../headers/thread_pool.h"
 #include "../../headers/ImageFilesInputOutput.h"
+#include "../../headers/TimeLapseVideoCreator.h"
 
 
 #include "../headers/MainFrame.h"
@@ -410,15 +411,17 @@ void AlignedImagesProducerGUI::stack_images_in_groups() const   {
     photo_grouping_tool.run_grouping();
     const vector<vector<size_t>> &groups = photo_grouping_tool.get_groups_indices();
 
+    vector<string> output_file_addresses;
+    for (const vector<size_t> &group : groups)  {
+        output_file_addresses.push_back(m_output_folder_address + "/" + AlignedImagesProducer::get_output_file_name(light_frames.at(group[0])));
+    }
+
     const int tasks_total = groups.size();
     std::atomic<int> tasks_processed = 0;
 
-    auto stack_lambda = [this, &light_frames, &files_are_checked, &alignment_info_vec, &metadata_vec, &groups, &tasks_processed](){
-
-        for (const vector<size_t> &group : groups) {
-            if (group.size() == 0) {
-                continue;
-            }
+    auto stack_lambda = [this, &light_frames, &files_are_checked, &alignment_info_vec, &metadata_vec, &groups, &tasks_processed, &output_file_addresses](){
+        for (unsigned int i_group = 0; i_group < groups.size(); ++i_group) {
+            const vector<size_t> &group = groups[i_group];
 
             FilelistHandler filelist_handler_group;
             const unsigned int n_selected_files = std::max<unsigned int>(1,group.size()*m_fraction_to_stack);
@@ -443,16 +446,28 @@ void AlignedImagesProducerGUI::stack_images_in_groups() const   {
 
             const vector<vector<double>> &stacked_image_double = stacker->get_stacked_image();
 
-            const string output_file_address = m_output_folder_address + "/" + AlignedImagesProducer::get_output_file_name(light_frames.at(group[0]));
+            const string output_file_address = output_file_addresses[i_group];
             const int unix_time = metadata_vec.at(group[0]).timestamp;
             const bool use_green_correction = contains_raw_files;
             process_and_save_stacked_image(stacked_image_double, output_file_address, unix_time, use_green_correction, stacker->get_width(), stacker->get_height());
             cout << "Finished processing and saving stacked image for group: " << group[0] << endl;
             tasks_processed++;
         }
+
+        if (m_produce_timelapse_video) {
+            TimeLapseVideoCreator video_creator(m_timelapse_video_settings);
+            for (unsigned int i_group = 0; i_group < groups.size(); ++i_group) {
+                const vector<size_t> &group = groups[i_group];
+                const string output_file_address = output_file_addresses[i_group];
+                const int unix_time = metadata_vec.at(group[0]).timestamp;
+                video_creator.add_image(output_file_address, unix_time);
+            }
+
+            video_creator.create_video(m_output_folder_address + "/video.avi");
+        }
     };
 
-    run_task_with_progress_dialog("Creating stacked aligned images", "Finished", "", tasks_processed, tasks_total, stack_lambda);
+    run_task_with_progress_dialog("Creating stacked aligned images", "Finished", "", tasks_processed, tasks_total, stack_lambda, "Creating video");
 };
 
 
