@@ -14,6 +14,7 @@
 #include "../../headers/thread_pool.h"
 #include "../../headers/ImageFilesInputOutput.h"
 #include "../../headers/TimeLapseVideoCreator.h"
+#include "../../headers/PhotoAlignmentHandler.h"
 
 
 #include "../headers/MainFrame.h"
@@ -88,13 +89,6 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
             return;
         }
 
-        if (m_stack_images) {
-            m_use_grouping = true;
-            stack_images_in_groups();
-            return;
-        }
-
-
         this->initialize_aligned_images_producer();
 
         const int tasks_total = m_aligned_images_producer->get_tasks_total();
@@ -115,10 +109,6 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
                 });
             }
             m_aligned_images_producer->produce_aligned_images(m_output_folder_address);
-
-            if (m_produce_timelapse_video)  {
-                m_aligned_images_producer->produce_video(m_output_folder_address + "/video.avi", m_output_folder_address);
-            }
 
         }, "Producing video");
     });
@@ -180,7 +170,13 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
         const vector<vector<size_t>> &groups = photo_grouping_tool.get_groups_indices();
         for (const vector<size_t> &group : groups) {
             if (group.size() > 0) {
-                add_file_to_aligned_images_produced(group[0]);
+                if (!m_stack_images) {
+                    add_file_to_aligned_images_produced(group[0]);
+                }
+                else {
+                    add_group_to_stack(group);
+                    cout << "Group size: " << group.size() << endl;
+                }
             }
         }
     }
@@ -387,87 +383,45 @@ void AlignedImagesProducerGUI::add_video_settings()   {
     video_settings_sizer->Add(spin_n_repeat, 0, wxEXPAND, 5);
 };
 
-void AlignedImagesProducerGUI::stack_images_in_groups() const   {
+void AlignedImagesProducerGUI::add_group_to_stack(const vector<size_t> &group) const   {
     // TODO: Add calibration frames
 
     const FilelistHandler *filelist_handler = &m_parent->get_filelist_handler();
 
     // Light frames
     const vector<InputFrame>    &light_frames = filelist_handler->get_frames(FileTypes::LIGHT);
-    const vector<bool>          &files_are_checked = filelist_handler->get_frames_checked(FileTypes::LIGHT);
     const vector<AlignmentFileInfo> &alignment_info_vec = filelist_handler->get_alignment_info();
-    const vector<Metadata> &metadata_vec = filelist_handler->get_metadata();
 
-    PhotoGroupingTool photo_grouping_tool;
-    for (size_t i_file = 0; i_file < light_frames.size(); ++i_file) {
-        const InputFrame frame = light_frames[i_file];
-        const AlignmentFileInfo &alignment_info_gui = alignment_info_vec[i_file];
-        const Metadata &metadata = metadata_vec[i_file];
-        if (files_are_checked[i_file] && has_valid_alignment(alignment_info_gui)) {
-            photo_grouping_tool.add_file(frame, metadata.timestamp, alignment_info_gui.ranking);
-        }
-    }
-    photo_grouping_tool.define_maximum_time_difference_in_group(m_grouping_time_interval);
-    photo_grouping_tool.run_grouping();
-    const vector<vector<size_t>> &groups = photo_grouping_tool.get_groups_indices();
+    const unsigned int n_selected_files = std::max<unsigned int>(1,group.size()*m_fraction_to_stack);
+    bool contains_raw_files = false;
+    vector<InputFrame> selected_frames;
+    vector<FileAlignmentInformation> selected_alignment_info;
+    for (unsigned int i_file = 0; i_file < n_selected_files; ++i_file) {
+        const size_t i_file_group = group[i_file];
+        const InputFrame frame = light_frames[i_file_group];
+        const AlignmentFileInfo &alignment_info_gui = alignment_info_vec[i_file_group];
 
-    vector<string> output_file_addresses;
-    for (const vector<size_t> &group : groups)  {
-        output_file_addresses.push_back(m_output_folder_address + "/" + AlignedImagesProducer::get_output_file_name(light_frames.at(group[0])));
-    }
+        FileAlignmentInformation alignment_info;
+        alignment_info.shift_x = alignment_info_gui.shift_x;
+        alignment_info.shift_y = alignment_info_gui.shift_y;
+        alignment_info.rotation_center_x = alignment_info_gui.rotation_center_x;
+        alignment_info.rotation_center_y = alignment_info_gui.rotation_center_y;
+        alignment_info.rotation = alignment_info_gui.rotation;
+        alignment_info.input_frame = frame;
 
-    const int tasks_total = groups.size();
-    std::atomic<int> tasks_processed = 0;
-
-    auto stack_lambda = [this, &light_frames, &files_are_checked, &alignment_info_vec, &metadata_vec, &groups, &tasks_processed, &output_file_addresses](){
-        for (unsigned int i_group = 0; i_group < groups.size(); ++i_group) {
-            const vector<size_t> &group = groups[i_group];
-
-            FilelistHandler filelist_handler_group;
-            const unsigned int n_selected_files = std::max<unsigned int>(1,group.size()*m_fraction_to_stack);
-            bool contains_raw_files = false;
-            for (unsigned int i_file = 0; i_file < n_selected_files; ++i_file) {
-                const size_t i_file_group = group[i_file];
-                const InputFrame frame = light_frames[i_file_group];
-                const AlignmentFileInfo &alignment_info_gui = alignment_info_vec[i_file_group];
-
-                if (!contains_raw_files) {
-                    if (is_raw_file(frame.get_file_address())) {
-                        contains_raw_files = true;
-                    }
-                }
-
-                filelist_handler_group.add_frame(frame, FileTypes::LIGHT, true, alignment_info_gui);
+        if (!contains_raw_files) {
+            if (is_raw_file(frame.get_file_address())) {
+                contains_raw_files = true;
             }
-
-            const StackSettings *stack_settings = m_parent->get_stack_settings();
-            std::unique_ptr<StackerBase> stacker = get_configured_stacker(*stack_settings, filelist_handler_group);
-            stacker->calculate_stacked_photo();
-
-            const vector<vector<double>> &stacked_image_double = stacker->get_stacked_image();
-
-            const string output_file_address = output_file_addresses[i_group];
-            const int unix_time = metadata_vec.at(group[0]).timestamp;
-            const bool use_green_correction = contains_raw_files;
-            process_and_save_stacked_image(stacked_image_double, output_file_address, unix_time, use_green_correction, stacker->get_width(), stacker->get_height());
-            cout << "Finished processing and saving stacked image for group: " << group[0] << endl;
-            tasks_processed++;
         }
 
-        if (m_produce_timelapse_video) {
-            TimeLapseVideoCreator video_creator(m_timelapse_video_settings);
-            for (unsigned int i_group = 0; i_group < groups.size(); ++i_group) {
-                const vector<size_t> &group = groups[i_group];
-                const string output_file_address = output_file_addresses[i_group];
-                const int unix_time = metadata_vec.at(group[0]).timestamp;
-                video_creator.add_image(output_file_address, unix_time);
-            }
+        selected_frames.push_back(frame);
+        selected_alignment_info.push_back(alignment_info);
+    }
 
-            video_creator.create_video(m_output_folder_address + "/video.avi");
-        }
-    };
+    const StackSettings *stack_settings = m_parent->get_stack_settings();
 
-    run_task_with_progress_dialog("Creating stacked aligned images", "Finished", "", tasks_processed, tasks_total, stack_lambda, "Creating video");
+    m_aligned_images_producer->add_image_group_to_stack(selected_frames, selected_alignment_info, *stack_settings);
 };
 
 

@@ -1,5 +1,7 @@
 #include "../headers/raw_file_reader.h"
 #include "../headers/StackerFactory.h"
+#include "../headers/StackerMeanValue.h"
+#include "../headers/StackerKappaSigmaBase.h"
 #include "../headers/InputArgumentsParser.h"
 #include "../headers/Common.h"
 #include "../headers/FlatFrameHandler.h"

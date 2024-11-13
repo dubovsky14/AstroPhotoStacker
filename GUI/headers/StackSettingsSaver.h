@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/StackSettings.h"
+#include "../../headers/StackSettings.h"
 
 #include <string>
 #include <map>
@@ -9,7 +9,7 @@
 /**
  * @brief Class responsible for saving and loading settings, so that they are persistent between sessions.
 */
-class StackSettingsSaver : public StackSettings  {
+class StackSettingsSaver : public AstroPhotoStacker::StackSettings {
     public:
         StackSettingsSaver() = delete;
 

@@ -58,7 +58,7 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
         void add_video_settings();
 
-        void stack_images_in_groups()   const;
+        void add_group_to_stack(const std::vector<std::size_t> &group)    const;
 
         bool m_add_datetime = false;
         bool m_apply_color_stretcher = false;
@@ -69,8 +69,6 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
         bool  m_stack_images = false;
         float m_fraction_to_stack = 0.5;
-
-        bool  m_produce_timelapse_video = true;
 
         AstroPhotoStacker::TimeLapseVideoSettings m_timelapse_video_settings;
 

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "../headers/FilelistHandler.h"
-#include "../headers/StackSettings.h"
-
 #include "../headers/MainFrame.h"
+
+#include "../../headers/StackSettings.h"
 
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
@@ -25,9 +25,9 @@ class AlignmentFrame : public wxFrame  {
          * @param filelist_handler pointer to the filelist handler object
          * @param stack_settings pointer to the stack settings object
          */
-        AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handler, StackSettings *stack_settings);
+        AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handler, AstroPhotoStacker::StackSettings *stack_settings);
 
     private:
-        StackSettings *m_stack_settings = nullptr;
+        AstroPhotoStacker::StackSettings *m_stack_settings = nullptr;
         FilelistHandler *m_filelist_handler = nullptr;
 };

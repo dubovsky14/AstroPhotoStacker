@@ -6,7 +6,7 @@
 
 using namespace std;
 
-StackSettingsSaver::StackSettingsSaver(const std::string &filename) : StackSettings() {
+StackSettingsSaver::StackSettingsSaver(const std::string &filename) : AstroPhotoStacker::StackSettings() {
     m_filename = filename;
     load();
 };

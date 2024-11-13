@@ -2,6 +2,8 @@
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/StackerFactory.h"
+#include "../headers/StackerKappaSigmaBase.h"
+#include "../headers/StackerMeanValue.h"
 #include "../headers/InputArgumentsParser.h"
 #include "../headers/PhotoRanker.h"
 #include "../headers/FlatFrameHandler.h"

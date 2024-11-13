@@ -1,9 +1,12 @@
 #include "../headers/StackSettings.h"
 
-#include "../../headers/StackerFactory.h"
-
 #include <stdexcept>
 #include <algorithm>
+
+using namespace AstroPhotoStacker;
+
+
+const std::vector<std::string> StackSettings::m_stacking_algorithms({"kappa-sigma median", "kappa-sigma mean", "average", "median", "cut-off average", "maximum", "minimum", "best score"});
 
 void StackSettings::set_alignment_frame(const AstroPhotoStacker::InputFrame& alignment_frame)       {
     m_alignment_frame = alignment_frame;

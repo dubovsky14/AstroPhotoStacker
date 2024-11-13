@@ -5,6 +5,8 @@
 #include "../headers/HotPixelIdentifier.h"
 #include "../headers/TimeLapseVideoSettings.h"
 #include "../headers/InputFrame.h"
+#include "../headers/StackerBase.h"
+#include "../headers/StackSettings.h"
 
 #include <functional>
 #include <string>
@@ -13,7 +15,11 @@
 
 
 namespace AstroPhotoStacker {
-
+    struct GroupToStack {
+        std::vector<InputFrame>                 input_frames;
+        std::vector<FileAlignmentInformation>   alignment_info;
+        StackSettings                           stack_settings;
+    };
     class AlignedImagesProducer {
         public:
             AlignedImagesProducer(int n_cpu = 1);
@@ -23,6 +29,8 @@ namespace AstroPhotoStacker {
             void add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler);
 
             void add_image(const InputFrame &input_frame, const FileAlignmentInformation &alignment_info = FileAlignmentInformation());
+
+            void add_image_group_to_stack(const std::vector<InputFrame> &input_frames, const std::vector<FileAlignmentInformation> &alignment_info, const StackSettings &stack_settings);
 
             void set_add_datetime(bool add_datetime)    {
                 m_add_datetime = add_datetime;
@@ -34,7 +42,7 @@ namespace AstroPhotoStacker {
 
             void set_datetime_position(float x_frac, float y_frac);
 
-            void produce_aligned_images(const std::string &output_folder_address) const;
+            void produce_aligned_images(const std::string &output_folder_address);
 
             const std::atomic<int>& get_tasks_processed() const;
 
@@ -102,12 +110,22 @@ namespace AstroPhotoStacker {
             const HotPixelIdentifier *m_hot_pixel_identifier = nullptr;
             TimeLapseVideoSettings m_timelapse_video_settings;
 
-
             void produce_aligned_image( const InputFrame &input_frame,
                                         const std::string &output_file_address,
                                         const FileAlignmentInformation &alignment_info) const;
 
+            void produce_aligned_image( const GroupToStack &group_to_stack, const std::string &output_file_address);
+
+            void process_and_save_image(std::vector<std::vector<unsigned short>> *stacked_image,
+                                        int width,
+                                        int height,
+                                        const std::string &output_file_address,
+                                        int unix_time,
+                                        bool use_green_correction) const;
 
             mutable std::atomic<int> m_n_tasks_processed = 0;
+
+            std::vector<GroupToStack> m_groups_to_stack;
+
     };
 }

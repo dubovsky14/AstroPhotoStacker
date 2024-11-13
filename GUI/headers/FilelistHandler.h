@@ -52,6 +52,8 @@ struct AlignmentFileInfo {
     AstroPhotoStacker::LocalShiftsHandler local_shifts_handler;
 };
 
+
+
 std::ostream& operator<<(std::ostream& os, const AlignmentFileInfo& alignment_info);
 
 /**
