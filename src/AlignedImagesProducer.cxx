@@ -62,6 +62,7 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
     cout << "Timestamp offset: " << m_timestamp_offset << endl;
 
     m_n_tasks_processed = 0;
+    m_output_adresses_and_unix_times.clear();
     thread_pool pool(n_cpu);
 
     // add individual frames
@@ -81,8 +82,8 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
         produce_aligned_image(group_to_stack, output_file_address);
     }
 
-    produce_video(output_folder_address + "/video.avi", output_folder_address);
     pool.wait_for_tasks();
+    produce_video(output_folder_address + "/video.avi");
 };
 
 const std::atomic<int>& AlignedImagesProducer::get_tasks_processed() const {
@@ -174,12 +175,14 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
     const bool use_green_correction = stacker->contains_only_rgb_raw_files();
 
     process_and_save_image(&output_image, width, height, output_file_address, unix_time, use_green_correction);
+
+    std::scoped_lock lock(m_output_adresses_and_unix_times_mutex);
+    m_output_adresses_and_unix_times.push_back({output_file_address, unix_time});
+
     m_n_tasks_processed++;
 };
 
-void AlignedImagesProducer::produce_aligned_image( const InputFrame &input_frame,
-                            const std::string &output_file_address,
-                            const FileAlignmentInformation &alignment_info) const {
+void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_frame,  const std::string &output_file_address, const FileAlignmentInformation &alignment_info)  {
 
     CalibratedPhotoHandler photo_handler(input_frame, true);
     photo_handler.define_alignment(alignment_info.shift_x, alignment_info.shift_y, alignment_info.rotation_center_x, alignment_info.rotation_center_y, alignment_info.rotation);
@@ -225,6 +228,9 @@ void AlignedImagesProducer::produce_aligned_image( const InputFrame &input_frame
     const bool use_green_correction = is_raw_file(input_frame.get_file_address());
 
     process_and_save_image(&output_image, width, height, output_file_address, unix_time, use_green_correction);
+
+    std::scoped_lock lock(m_output_adresses_and_unix_times_mutex);
+    m_output_adresses_and_unix_times.push_back({output_file_address, unix_time});
 
     m_n_tasks_processed++;
 };
@@ -310,16 +316,16 @@ void AlignedImagesProducer::apply_green_correction(std::vector<std::vector<unsig
     std::transform(image->at(2).begin(), image->at(2).end(), image->at(2).begin(), [max_value](unsigned short value) { return std::min<unsigned short>(value*2, max_value); });
 };
 
-void AlignedImagesProducer::produce_video(const std::string &output_video_address, const std::string &aligned_images_folder) const {
-    if (m_frames_to_align.size() == 0) {
+void AlignedImagesProducer::produce_video(const std::string &output_video_address) const {
+    cout << "Going to produce video with " << m_output_adresses_and_unix_times.size() << " frames\n";
+
+    if (m_output_adresses_and_unix_times.size() == 0) {
         return;
     }
 
     TimeLapseVideoCreator timelapse_creator(m_timelapse_video_settings);
-    for (const InputFrame &input_frame : m_frames_to_align) {
-        const Metadata metadata = read_metadata(input_frame);
-        const string aligned_file = aligned_images_folder + "/" + get_output_file_name(input_frame);
-        timelapse_creator.add_image(aligned_file, metadata.timestamp);
+    for (const auto &[output_file, unix_time] : m_output_adresses_and_unix_times) {
+        timelapse_creator.add_image(output_file, unix_time);
     }
     timelapse_creator.create_video(output_video_address);
 };
