@@ -9,7 +9,6 @@ StackerBase::StackerBase(int number_of_colors, int width, int height, bool inter
     m_number_of_colors = number_of_colors;
     m_width = width;
     m_height = height;
-    m_stacked_image = vector<vector<double> >(m_number_of_colors, vector<double>(m_width*m_height, c_empty_pixel_value));
     m_interpolate_colors = interpolate_colors;
 };
 
@@ -100,6 +99,11 @@ void StackerBase::save_stacked_photo(const std::string &file_address, const std:
 
 void StackerBase::set_number_of_cpu_threads(unsigned int n_cpu) {
     m_n_cpu = n_cpu;
+};
+
+void StackerBase::calculate_stacked_photo()  {
+    m_stacked_image = vector<vector<double> >(m_number_of_colors, vector<double>(m_width*m_height, c_empty_pixel_value));
+    calculate_stacked_photo_internal();
 };
 
 void StackerBase::fix_empty_pixels()    {

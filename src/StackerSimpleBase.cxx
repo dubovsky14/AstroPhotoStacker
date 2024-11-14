@@ -14,7 +14,7 @@ StackerSimpleBase::StackerSimpleBase(int number_of_colors, int width, int height
     m_number_of_stacked_pixels(number_of_colors, vector<unsigned short>(width*height, 0))   {
 };
 
-void StackerSimpleBase::calculate_stacked_photo()  {
+void StackerSimpleBase::calculate_stacked_photo_internal()  {
     m_mutexes = vector<mutex>(m_n_cpu);
 
     const int height_range = get_height_range_limit();

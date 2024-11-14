@@ -15,11 +15,6 @@ namespace AstroPhotoStacker {
             StackerMedian(int number_of_colors, int width, int height, bool interpolate_colors);
 
             /**
-             * Calculate the stacked photo from the photos added to the stack
-            */
-            virtual void calculate_stacked_photo() override;
-
-            /**
              * @brief Get the number of tasks to be done by the stacker
              *
              * @return int - number of tasks
@@ -27,6 +22,11 @@ namespace AstroPhotoStacker {
             virtual int get_tasks_total() const override;
 
         protected:
+            /**
+             * Calculate the stacked photo from the photos added to the stack
+            */
+            virtual void calculate_stacked_photo_internal() override;
+
             std::vector<std::vector<short int>> m_values_to_stack;
 
             virtual void add_photo_to_stack(unsigned int file_index, int y_min, int y_max) override;

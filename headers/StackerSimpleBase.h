@@ -23,11 +23,6 @@ namespace AstroPhotoStacker {
             StackerSimpleBase(int number_of_colors, int width, int height, bool interpolate_colors);
 
             /**
-             * @brief Calculate the stacked photo
-            */
-            virtual void calculate_stacked_photo() override;
-
-            /**
              * @brief Set the number of CPU threads to be used for stacking
              *
              * @param n_cpu - number of CPU threads
@@ -42,6 +37,12 @@ namespace AstroPhotoStacker {
             virtual int get_tasks_total() const override;
 
         protected:
+            /**
+             * Calculate the stacked photo from the photos added to the stack
+            */
+            virtual void calculate_stacked_photo_internal() override;
+
+
             std::vector<std::vector<unsigned short>> m_number_of_stacked_pixels;
 
             std::vector<std::mutex> m_mutexes;

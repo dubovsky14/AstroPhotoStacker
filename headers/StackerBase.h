@@ -111,9 +111,9 @@ namespace AstroPhotoStacker {
             virtual void set_number_of_cpu_threads(unsigned int n_cpu);
 
             /**
-             * @brief The method that calculates the stacked photo - pure virtual method in the base class
+             * @brief The method that alocates resources and calculates the stacked photo - should be implemented in the derived classes
             */
-            virtual void calculate_stacked_photo() = 0;
+            void calculate_stacked_photo();
 
             /**
              * @brief Fix empty pixels (pixels without any value) in the stacked photo
@@ -178,6 +178,11 @@ namespace AstroPhotoStacker {
             bool contains_only_rgb_raw_files() const { return m_contain_only_rgb_raw_files; };
 
         protected:
+            /**
+             * @brief Actual stacking method - should be implemented in the derived classes
+            */
+            virtual void calculate_stacked_photo_internal() = 0;
+
             virtual void add_photo_to_stack(unsigned int file_index, int y_min, int y_max) = 0;
 
             /**

@@ -15,7 +15,7 @@ StackerWeightedMedian::StackerWeightedMedian(int number_of_colors, int width, in
     StackerBase(number_of_colors, width, height, interpolate_colors)   {
 };
 
-void StackerWeightedMedian::calculate_stacked_photo()  {
+void StackerWeightedMedian::calculate_stacked_photo_internal()  {
     const long long int n_files = m_frames_to_stack.size();
     const int height_range = get_height_range_limit();
 
