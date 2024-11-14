@@ -125,7 +125,7 @@ and these arguments are optional:
 
 ```n_cpu``` -> number of CPUs to run on
 
-```stacker_type``` -> stacking algorithm to be used. The list of available algorithms can be found in ```headers/StackerFactory.h``` header file. Default is ```kappa_sigma_clipping```
+```stacker_type``` -> stacking algorithm to be used. The list of available algorithms can be found in ```headers/StackerFactory.h``` header file. Default is ```kappa-sigma clipping```
 
 ```hot_pixels_file``` -> text file with hot pixels coordinates (described in ```Hot pixel identification``` part)
 

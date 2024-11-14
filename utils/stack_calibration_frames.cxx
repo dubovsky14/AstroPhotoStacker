@@ -29,7 +29,7 @@ int main(int argc, const char **argv) {
 
         const string input_folder       = input_arguments_parser.get_argument<string>("raw_files_dir");
         const string output_file        = input_arguments_parser.get_argument<string>("output");
-        const string stacker_type       = input_arguments_parser.get_optional_argument<string>("stacker_type", "kappa_sigma_median");
+        const string stacker_type       = input_arguments_parser.get_optional_argument<string>("stacker_type", "kappa-sigma median");
 
         cout << "\n";
         cout << "Raw files directory: " << input_folder << "\n";
