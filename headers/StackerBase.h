@@ -177,6 +177,13 @@ namespace AstroPhotoStacker {
              */
             bool contains_only_rgb_raw_files() const { return m_contain_only_rgb_raw_files; };
 
+            /**
+             * @brief Get maximal memory usage, considering the number of frames and their resolution
+             *
+             * @return unsigned long long - maximal memory usage
+            */
+            virtual unsigned long long get_maximal_memory_usage(int number_of_frames) const = 0;
+
         protected:
             /**
              * @brief Actual stacking method - should be implemented in the derived classes

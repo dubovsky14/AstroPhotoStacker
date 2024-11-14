@@ -42,5 +42,12 @@ namespace AstroPhotoStacker {
              * @param number_of_stacked_pixels  - number of pixels to stack
              */
             virtual double get_stacked_value_from_pixel_array(short int *ordered_array_begin, unsigned int number_of_stacked_pixels);
+
+            /**
+             * @brief Get maximal memory usage, considering the number of frames and their resolution
+             *
+             * @return unsigned long long - maximal memory usage
+            */
+            virtual unsigned long long get_maximal_memory_usage(int number_of_frames) const override;
     };
 }

@@ -89,5 +89,14 @@ namespace AstroPhotoStacker {
              * @param i_thread - thread index
             */
             virtual void process_pixel(int i_color, int i_pixel, int value, int i_thread) = 0;
+
+
+            /**
+             * @brief Get maximal memory usage, considering the number of frames and their resolution
+             *
+             * @return unsigned long long - maximal memory usage
+            */
+            virtual unsigned long long get_maximal_memory_usage(int number_of_frames) const override;
+
     };
 }

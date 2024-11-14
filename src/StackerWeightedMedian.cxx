@@ -192,3 +192,13 @@ int StackerWeightedMedian::get_tasks_total() const  {
 
     return n_slices*n_files;
 };
+
+unsigned long long StackerWeightedMedian::get_maximal_memory_usage(int number_of_frames) const {
+    const unsigned long long resolution = m_width*m_height;
+    const unsigned long long stacked_image_size = m_number_of_colors*sizeof(double)*resolution;
+    const unsigned long long stacking_array = resolution*m_number_of_colors*number_of_frames*(sizeof(unsigned short) + sizeof(ScoreType));
+
+    const unsigned long long memory_usage_total = stacked_image_size + stacking_array;
+
+    return std::min<unsigned long long>(memory_usage_total, m_memory_usage_limit_in_mb*1024ULL*1024ULL);
+};

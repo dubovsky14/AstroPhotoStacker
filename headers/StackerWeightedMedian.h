@@ -48,5 +48,12 @@ namespace AstroPhotoStacker {
             virtual double get_stacked_value_from_pixel_array(std::tuple<short,ScoreType> *ordered_array_begin, unsigned int number_of_stacked_pixels);
 
             static const ScoreType c_default_score;
+
+            /**
+             * @brief Get maximal memory usage, considering the number of frames and their resolution
+             *
+             * @return unsigned long long - maximal memory usage
+            */
+            virtual unsigned long long get_maximal_memory_usage(int number_of_frames) const override;
     };
 }

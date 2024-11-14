@@ -108,3 +108,10 @@ int StackerSimpleBase::get_tasks_total() const  {
 
     return n_slices*n_files;
 };
+
+unsigned long long StackerSimpleBase::get_maximal_memory_usage(int number_of_frames) const {
+    const unsigned long long resolution = m_width*m_height;
+    const unsigned long long stacked_image_size = m_number_of_colors*sizeof(double)*resolution;
+
+    return stacked_image_size;
+};
