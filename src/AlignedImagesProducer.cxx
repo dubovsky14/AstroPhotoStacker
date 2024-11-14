@@ -6,6 +6,7 @@
 #include "../headers/Common.h"
 #include "../headers/TimeLapseVideoCreator.h"
 #include "../headers/StackerFactory.h"
+#include "../headers/TaskScheduler.hxx"
 
 #include "../headers/thread_pool.h"
 
@@ -58,9 +59,6 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
     const int n_frames = m_frames_to_align.size();
     const int n_cpu = min(m_n_cpu, n_frames);
 
-    cout << "Going to produce aligned images\n";
-    cout << "Timestamp offset: " << m_timestamp_offset << endl;
-
     m_n_tasks_processed = 0;
     m_output_adresses_and_unix_times.clear();
     thread_pool pool(n_cpu);
@@ -75,12 +73,18 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
         pool.submit(submit_alignment);
     }
 
+    TaskScheduler task_scheduler({size_t(m_n_cpu)});
     // add groups
     for (GroupToStack &group_to_stack : m_groups_to_stack) {
         const string output_file_address = output_folder_address + "/" + get_output_file_name(group_to_stack.input_frames[0]);
+        const int cpus_needed = min<int>(group_to_stack.stack_settings.get_n_cpus(), group_to_stack.input_frames.size());
 
-        produce_aligned_image(group_to_stack, output_file_address);
+        task_scheduler.submit([this, &group_to_stack, output_file_address]() {
+            cout << "Task is running\n";
+            produce_aligned_image(group_to_stack, output_file_address);
+        }, {size_t(cpus_needed)});
     }
+    task_scheduler.wait_for_tasks();
 
     pool.wait_for_tasks();
     produce_video(output_folder_address + "/video.avi");

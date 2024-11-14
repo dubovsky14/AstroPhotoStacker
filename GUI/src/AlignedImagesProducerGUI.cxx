@@ -96,7 +96,6 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
 
         int crop_top_left_x, crop_top_left_y, crop_width, crop_height;
         m_image_preview_crop_tool->get_crop_coordinates(&crop_top_left_x, &crop_top_left_y, &crop_width, &crop_height);
-        cout << "Crop params: " << crop_top_left_x << " " << crop_top_left_y << " " << crop_width << " " << crop_height << endl;
         if (crop_width > 0 && crop_height > 0) {
             m_aligned_images_producer->limit_output_image_size(crop_top_left_x, crop_top_left_y, crop_width, crop_height);
         }
@@ -175,7 +174,6 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
                 }
                 else {
                     add_group_to_stack(group);
-                    cout << "Group size: " << group.size() << endl;
                 }
             }
         }
