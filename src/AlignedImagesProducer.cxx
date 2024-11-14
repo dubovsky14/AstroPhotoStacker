@@ -72,21 +72,21 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
         };
         pool.submit(submit_alignment);
     }
+    pool.wait_for_tasks();
 
     TaskScheduler task_scheduler({size_t(m_n_cpu)});
     // add groups
     for (GroupToStack &group_to_stack : m_groups_to_stack) {
         const string output_file_address = output_folder_address + "/" + get_output_file_name(group_to_stack.input_frames[0]);
         const int cpus_needed = min<int>(group_to_stack.stack_settings.get_n_cpus(), group_to_stack.input_frames.size());
+        group_to_stack.stack_settings.set_n_cpus(cpus_needed); // during the final step of median-based algorithms, all CPUs would be used even if there are less frames
 
         task_scheduler.submit([this, &group_to_stack, output_file_address]() {
-            cout << "Task is running\n";
             produce_aligned_image(group_to_stack, output_file_address);
         }, {size_t(cpus_needed)});
     }
     task_scheduler.wait_for_tasks();
 
-    pool.wait_for_tasks();
     produce_video(output_folder_address + "/video.avi");
 };
 
@@ -321,8 +321,6 @@ void AlignedImagesProducer::apply_green_correction(std::vector<std::vector<unsig
 };
 
 void AlignedImagesProducer::produce_video(const std::string &output_video_address) const {
-    cout << "Going to produce video with " << m_output_adresses_and_unix_times.size() << " frames\n";
-
     if (m_output_adresses_and_unix_times.size() == 0) {
         return;
     }
