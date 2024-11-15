@@ -52,9 +52,9 @@ namespace AstroPhotoStacker {
 
             };
 
-            void wait_for_tasks()   {
+            void wait_for_tasks(int sleep_time = 100) {
                 while (true)   {
-                    std::this_thread::sleep_for(std::chrono::microseconds(m_sleep_time));
+                    std::this_thread::sleep_for(std::chrono::microseconds(sleep_time));
 
                     std::scoped_lock lock(m_mutex);
 
@@ -70,10 +70,7 @@ namespace AstroPhotoStacker {
             std::vector<size_t> m_resource_usage;
             std::map<size_t, std::pair<std::future<void>, std::vector<size_t>>>                 m_futures_and_requirements;
             std::unordered_map<size_t, std::pair<std::function<void()>, std::vector<size_t>>>   m_remaining_tasks_and_requirements;
-            std::atomic<bool>   m_running = true;
-            int m_sleep_time = 100;
-            std::future<void>   m_maintain_tasks_future;
-            std::atomic<size_t> m_last_task_id = 0;
+            size_t m_last_task_id = 0;
 
             void submit_task_from_buffer() {
                 // check if any task can be executed now
