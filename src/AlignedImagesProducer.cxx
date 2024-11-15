@@ -16,8 +16,9 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-AlignedImagesProducer::AlignedImagesProducer(int n_cpu) :
-    m_n_cpu(n_cpu)  {
+AlignedImagesProducer::AlignedImagesProducer(int n_cpu, int memory_usage_limit_in_mb) :
+    m_n_cpu(n_cpu),
+    m_memory_usage_limit_in_mb(memory_usage_limit_in_mb)  {
 };
 
 void AlignedImagesProducer::limit_output_image_size(int top_left_corner_x, int top_left_corner_y, int width, int height) {
@@ -74,16 +75,17 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
     }
     pool.wait_for_tasks();
 
-    TaskScheduler task_scheduler({size_t(m_n_cpu)});
+    TaskScheduler task_scheduler({size_t(m_n_cpu), 1024ULL*1024ULL*m_memory_usage_limit_in_mb});
     // add groups
     for (GroupToStack &group_to_stack : m_groups_to_stack) {
         const string output_file_address = output_folder_address + "/" + get_output_file_name(group_to_stack.input_frames[0]);
-        const int cpus_needed = min<int>(group_to_stack.stack_settings.get_n_cpus(), group_to_stack.input_frames.size());
+        const size_t cpus_needed = min<int>(group_to_stack.stack_settings.get_n_cpus(), group_to_stack.input_frames.size());
+        const size_t memory_usage_limit =  min<int>(group_to_stack.stack_settings.get_max_memory(), 1024ULL*1024ULL*m_memory_usage_limit_in_mb);
         group_to_stack.stack_settings.set_n_cpus(cpus_needed); // during the final step of median-based algorithms, all CPUs would be used even if there are less frames
 
         task_scheduler.submit([this, &group_to_stack, output_file_address]() {
             produce_aligned_image(group_to_stack, output_file_address);
-        }, {size_t(cpus_needed)});
+        }, {cpus_needed, memory_usage_limit});
     }
     task_scheduler.wait_for_tasks();
 

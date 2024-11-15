@@ -123,7 +123,7 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
 void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
     const StackSettings *stack_settings = m_parent->get_stack_settings();
     const FilelistHandler *filelist_handler = &m_parent->get_filelist_handler();
-    m_aligned_images_producer = make_unique<AlignedImagesProducer>(stack_settings->get_n_cpus());
+    m_aligned_images_producer = make_unique<AlignedImagesProducer>(stack_settings->get_n_cpus(), stack_settings->get_max_memory());
     m_aligned_images_producer->set_add_datetime(m_add_datetime);
     m_aligned_images_producer->set_timestamp_offset(m_timestamp_offset);
     *m_aligned_images_producer->get_timelapse_video_settings() = m_timelapse_video_settings;

@@ -23,7 +23,7 @@ namespace AstroPhotoStacker {
     };
     class AlignedImagesProducer {
         public:
-            AlignedImagesProducer(int n_cpu = 1);
+            AlignedImagesProducer(int n_cpu = 1, int memory_usage_limit_in_mb = 8192);
 
             void limit_output_image_size(int top_left_corner_x, int top_left_corner_y, int width, int height);
 
@@ -95,6 +95,7 @@ namespace AstroPhotoStacker {
             int m_max_height        = -1;
 
             int m_n_cpu             = 1;
+            int m_memory_usage_limit_in_mb = 8192;
 
             bool m_add_datetime     = false;
             float m_datetime_pos_frac_x   = 0.6;
