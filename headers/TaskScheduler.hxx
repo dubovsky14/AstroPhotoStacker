@@ -16,39 +16,50 @@ namespace AstroPhotoStacker {
             TaskScheduler(const std::vector<size_t> &resource_limits)   :
                 m_resource_limits(resource_limits),
                 m_resource_usage(resource_limits.size(), 0)   {
-
-                    m_maintain_tasks_future = std::async(std::launch::async, [this] {
-                        maintain_tasks();
-                    });
             };
 
             TaskScheduler()                     = delete;
             TaskScheduler(const TaskScheduler&) = delete;
 
             void submit(const std::function<void()> &task, const std::vector<size_t> &resource_requirements)    {
-                check_resources_limit_correctness(resource_requirements);
-
                 std::scoped_lock lock(m_mutex);
+
+                const size_t this_task_id = m_last_task_id++;
+                check_resources_limit_correctness(resource_requirements);
+                std::function<void()> task_wrapped = [this, task, resource_requirements, this_task_id]() {
+                    try {
+                        task();
+                        std::scoped_lock lock(m_mutex);
+                        release_resources(resource_requirements);
+                        submit_task_from_buffer();
+                    }
+                    catch(...) {
+                        std::scoped_lock lock(m_mutex);
+                        release_resources(resource_requirements);
+                        submit_task_from_buffer();
+                        throw;
+                    }
+                };
 
                 const bool resources_available = enough_resources(resource_requirements);
                 if (resources_available) {
                     allocate_resources(resource_requirements);
-                    m_futures_and_requirements.push_back({std::async(std::launch::async, task), resource_requirements});
+                    m_futures_and_requirements[this_task_id] = {std::async(std::launch::async, task_wrapped), resource_requirements};
                 }
                 else {
-                    m_remaining_tasks_and_requirements.push_back({task, resource_requirements});
+                    m_remaining_tasks_and_requirements[this_task_id] = {task_wrapped, resource_requirements};
                 }
 
             };
 
             void wait_for_tasks()   {
-                while (m_running)   {
+                while (true)   {
                     std::this_thread::sleep_for(std::chrono::microseconds(m_sleep_time));
 
                     std::scoped_lock lock(m_mutex);
 
-                    if (m_futures_and_requirements.empty() && m_remaining_tasks_and_requirements.empty()) {
-                        m_running = false;
+                    if (m_remaining_tasks_and_requirements.empty()) {
+                        break;
                     }
                 }
             };
@@ -57,40 +68,30 @@ namespace AstroPhotoStacker {
             std::mutex m_mutex;
             std::vector<size_t> m_resource_limits;
             std::vector<size_t> m_resource_usage;
-            std::vector<std::pair<std::future<void>, std::vector<size_t>>>      m_futures_and_requirements;
-            std::vector<std::pair<std::function<void()>, std::vector<size_t>>>  m_remaining_tasks_and_requirements;
+            std::map<size_t, std::pair<std::future<void>, std::vector<size_t>>>                 m_futures_and_requirements;
+            std::unordered_map<size_t, std::pair<std::function<void()>, std::vector<size_t>>>   m_remaining_tasks_and_requirements;
             std::atomic<bool>   m_running = true;
             int m_sleep_time = 100;
             std::future<void>   m_maintain_tasks_future;
+            std::atomic<size_t> m_last_task_id = 0;
 
+            void submit_task_from_buffer() {
+                // check if any task can be executed now
+                std::vector<size_t> tasks_to_remove;
+                for (const auto &[i_task, task_and_resource_requirements] : m_remaining_tasks_and_requirements) {
 
-            void maintain_tasks() {
-                while (m_running)   {
-                    std::this_thread::sleep_for(std::chrono::microseconds(m_sleep_time));
+                    const std::function<void()> &task                   = task_and_resource_requirements.first;
+                    const std::vector<size_t> &resource_requirements    = task_and_resource_requirements.second;
 
-                    std::scoped_lock lock(m_mutex);
-
-                    // check if any task finished
-                    for (size_t i_task = 0; i_task < m_futures_and_requirements.size(); i_task++) {
-                        if (m_futures_and_requirements[i_task].first.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-                            release_resources(m_futures_and_requirements[i_task].second);
-                            m_futures_and_requirements.erase(m_futures_and_requirements.begin() + i_task);
-                            i_task--;
-                        }
+                    if (enough_resources(resource_requirements)) {
+                        allocate_resources(resource_requirements);
+                        m_futures_and_requirements[i_task] = {std::async(std::launch::async, task), resource_requirements};
+                        tasks_to_remove.push_back(i_task);
                     }
+                }
 
-                    // check if any task can be executed now
-                    for (size_t i_task = 0; i_task < m_remaining_tasks_and_requirements.size(); i_task++) {
-                        auto &task = m_remaining_tasks_and_requirements[i_task].first;
-                        auto &resource_requirements = m_remaining_tasks_and_requirements[i_task].second;
-                        if (enough_resources(resource_requirements)) {
-                            allocate_resources(resource_requirements);
-                            m_futures_and_requirements.push_back({std::async(std::launch::async, task), resource_requirements});
-                            m_remaining_tasks_and_requirements.erase(m_remaining_tasks_and_requirements.begin() + i_task);
-                            i_task--;
-                        }
-                    }
-
+                for (size_t i_task : tasks_to_remove) {
+                    m_remaining_tasks_and_requirements.erase(i_task);
                 }
             };
 
