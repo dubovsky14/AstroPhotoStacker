@@ -29,9 +29,10 @@ namespace AstroPhotoStacker {
 
 
         private:
-            static std::tuple<int,int> get_interpolated_shift(const std::vector<LocalShift> &local_shifts, int x, int y);
+            std::tuple<int,int> get_interpolated_shift(const std::vector<LocalShift> &local_shifts, int x, int y)   const;
 
             std::vector<std::tuple<int,int,AlignmentPointBox>> m_boxes; // x, y, box
+            AlignmentWindow m_alignment_window;
 
     };
 }

@@ -16,6 +16,7 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
 
     const unsigned short max_value = *std::max_element(image_data.brightness, image_data.brightness + image_data.width*image_data.height);
     const int step_size = box_size + box_spacing;
+    m_alignment_window = alignment_window;
     for (int y = alignment_window.y_min; y < alignment_window.y_max; y += step_size) {
         for (int x = alignment_window.x_min; x < alignment_window.x_max; x += step_size) {
             if (AlignmentPointBox::is_valid_ap(image_data, x, y, box_size, max_value)) {
@@ -120,11 +121,16 @@ std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const Monochrome
     return shifts;
 };
 
-std::tuple<int,int> AlignmentPointBoxGrid::get_interpolated_shift(const vector<LocalShift> &local_shifts, int x, int y)   {
+std::tuple<int,int> AlignmentPointBoxGrid::get_interpolated_shift(const vector<LocalShift> &local_shifts, int x, int y) const  {
     vector<std::tuple<int,int,float>> shifts_distances;
     if (local_shifts.size() == 0) {
         return std::make_tuple(0, 0);
     }
+
+    if (x < m_alignment_window.x_min || x >= m_alignment_window.x_max || y < m_alignment_window.y_min || y >= m_alignment_window.y_max) {
+        return std::make_tuple(0, 0);
+    }
+
     const int n_points = 4;
     for (const auto &shift : local_shifts) {
         if (shift.valid_ap == false) {
