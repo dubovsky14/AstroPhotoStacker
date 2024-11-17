@@ -21,14 +21,16 @@ namespace AstroPhotoStacker {
             TaskScheduler()                     = delete;
             TaskScheduler(const TaskScheduler&) = delete;
 
-            void submit(const std::function<void()> &task, const std::vector<size_t> &resource_requirements)    {
+            template<typename FunctionType, typename... Args>
+            void submit(const FunctionType &task, const std::vector<size_t> &resource_requirements, const Args &...args)   {
+
                 std::scoped_lock lock(m_mutex);
 
                 const size_t this_task_id = m_last_task_id++;
                 check_resources_limit_correctness(resource_requirements);
-                std::function<void()> task_wrapped = [this, task, resource_requirements, this_task_id]() {
+                std::function<void()> task_wrapped = [this, task, resource_requirements, this_task_id, args...]() {
                     try {
-                        task();
+                        task(args...);
                         std::scoped_lock lock(m_mutex);
                         release_resources(resource_requirements);
                         submit_task_from_buffer();
