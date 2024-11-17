@@ -74,7 +74,7 @@ void ImagePreviewCropTool::plot_full_rectangle(wxImage *wx_image, int x1, int y1
                 continue;
             }
 
-            wx_image->SetRGB(x, y, m_max_value, 0, 0);
+            wx_image->SetRGB(x, y, 255, 0, 0);
         }
     }
 };
