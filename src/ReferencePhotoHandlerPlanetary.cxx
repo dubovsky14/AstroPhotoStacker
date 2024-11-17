@@ -38,8 +38,8 @@ bool ReferencePhotoHandlerPlanetary::calculate_alignment(const InputFrame &input
     image_data.width = width;
     image_data.height = height;
 
-    std::tuple<int,int,int,int> window_coordinates;
-    const auto [center_of_mass_x, center_of_mass_y, eigenvec, eigenval] = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, m_threshold_fraction, &window_coordinates);
+    AlignmentWindow alignment_window;
+    const auto [center_of_mass_x, center_of_mass_y, eigenvec, eigenval] = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, m_threshold_fraction, &alignment_window);
 
     *shift_x = m_center_of_mass_x - center_of_mass_x;
     *shift_y = m_center_of_mass_y - center_of_mass_y;
@@ -52,15 +52,14 @@ bool ReferencePhotoHandlerPlanetary::calculate_alignment(const InputFrame &input
     *rotation = std::asin(sin_angle);
 
     if (ranking != nullptr) {
-        // #TODO: Use already loaded data
-        const double sharpness = get_sharpness_factor(brightness.data(), width, height, window_coordinates);
+        const double sharpness = get_sharpness_factor(brightness.data(), width, height, alignment_window);
         *ranking = 100./sharpness;
     }
 
     return true;
 };
 
-std::tuple<int,int,int,int> ReferencePhotoHandlerPlanetary::get_alignment_window(   const MonochromeImageData &image_data,
+AlignmentWindow ReferencePhotoHandlerPlanetary::get_alignment_window(   const MonochromeImageData &image_data,
                                                                                     unsigned short threshold) const    {
 
     const unsigned short *brightness = image_data.brightness;
@@ -93,26 +92,27 @@ std::tuple<int,int,int,int> ReferencePhotoHandlerPlanetary::get_alignment_window
     }
 
     const int border_size = 10;
-    window_x_min = max(0, window_x_min - border_size);
-    window_x_max = min(width, window_x_max + border_size);
-    window_y_min = max(0, window_y_min - border_size);
-    window_y_max = min(height, window_y_max + border_size);
+    AlignmentWindow alignment_window;
+    alignment_window.x_min = max(0, window_x_min - border_size);
+    alignment_window.x_max = min(width, window_x_max + border_size);
+    alignment_window.y_min = max(0, window_y_min - border_size);
+    alignment_window.y_max = min(height, window_y_max + border_size);
 
-    return make_tuple(window_x_min, window_y_min, window_x_max, window_y_max);
+    return alignment_window;
 };
 
 std::tuple<double,double> ReferencePhotoHandlerPlanetary::get_center_of_mass(   const MonochromeImageData &image_data,
                                                                                 unsigned short threshold,
-                                                                                const std::tuple<int,int,int,int> &window_coordinates) const    {
-    const auto [window_x_min, window_y_min, window_x_max, window_y_max] = window_coordinates;
+                                                                                const AlignmentWindow &window_coordinates) const    {
+
     const unsigned short *brightness = image_data.brightness;
     const int width = image_data.width;
 
     double center_of_mass_x = 0;
     double center_of_mass_y = 0;
     double sum_weights = 0;
-    for (int y = window_y_min; y < window_y_max; y++) {
-        for (int x = window_x_min; x < window_x_max; x++) {
+    for (int y = window_coordinates.y_min; y < window_coordinates.y_max; y++) {
+        for (int x = window_coordinates.x_min; x < window_coordinates.x_max; x++) {
             const float weight = brightness[y*width + x];
             if (weight < threshold) {
                 continue;
@@ -130,7 +130,7 @@ std::tuple<double,double> ReferencePhotoHandlerPlanetary::get_center_of_mass(   
 std::vector<std::vector<double>> ReferencePhotoHandlerPlanetary::get_covariance_matrix( const MonochromeImageData &image_data,
                                                                                         const tuple<double,double> &center_of_mass,
                                                                                         unsigned short threshold,
-                                                                                        const std::tuple<int,int,int,int> &window_coordinates) const  {
+                                                                                        const AlignmentWindow &window_coordinates) const  {
 
     const unsigned short *brightness = image_data.brightness;
     const int width = image_data.width;
@@ -139,9 +139,8 @@ std::vector<std::vector<double>> ReferencePhotoHandlerPlanetary::get_covariance_
     double y2 = 0;
     double xy = 0;
     double sum_weights = 0;
-    const auto [window_x_min, window_y_min, window_x_max, window_y_max] = window_coordinates;
-    for (int y = window_y_min; y < window_y_max; y++) {
-        for (int x = window_x_min; x < window_x_max; x++) {
+    for (int y = window_coordinates.y_min; y < window_coordinates.y_max; y++) {
+        for (int x = window_coordinates.x_min; x < window_coordinates.x_max; x++) {
             const float weight = brightness[y*width + x];
             if (weight < threshold) {
                 continue;
@@ -165,7 +164,7 @@ std::vector<std::vector<double>> ReferencePhotoHandlerPlanetary::get_covariance_
 };
 
 
-std::tuple<float,float,vector<vector<double>>,vector<double>> ReferencePhotoHandlerPlanetary::get_center_of_mass_eigenvectors_and_eigenvalues(const MonochromeImageData &image_data, float threshold_fraction, std::tuple<int,int,int,int> *window_coordinates) const    {
+std::tuple<float,float,vector<vector<double>>,vector<double>> ReferencePhotoHandlerPlanetary::get_center_of_mass_eigenvectors_and_eigenvalues(const MonochromeImageData &image_data, float threshold_fraction, AlignmentWindow *window_coordinates) const    {
     const unsigned short *brightness = image_data.brightness;
     const int width = image_data.width;
     const int height = image_data.height;
@@ -175,7 +174,7 @@ std::tuple<float,float,vector<vector<double>>,vector<double>> ReferencePhotoHand
 
     const unsigned short threshold = min_value + threshold_fraction * (max_value - min_value);
 
-    const tuple<int,int,int,int> alignment_window = get_alignment_window(image_data, threshold);
+    const AlignmentWindow alignment_window = get_alignment_window(image_data, threshold);
     if (window_coordinates != nullptr) {
         *window_coordinates = alignment_window;
     }

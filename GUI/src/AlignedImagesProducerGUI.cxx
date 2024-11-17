@@ -228,6 +228,25 @@ InputFrame AlignedImagesProducerGUI::get_reference_frame() const  {
             }
         }
     }
+
+    double min_distance = 1000000;
+    size_t i_min_distance = 0;
+    for (size_t i_file = 0; i_file < light_frames.size(); ++i_file) {
+        if (files_are_checked[i_file]) {
+            const InputFrame frame = light_frames[i_file];
+            const AlignmentFileInfo &alignment_info_gui = alignment_info_vec[i_file];
+
+            const double distance = alignment_info_gui.shift_x*alignment_info_gui.shift_x + alignment_info_gui.shift_y*alignment_info_gui.shift_y;
+            if (distance < min_distance) {
+                min_distance = distance;
+                i_min_distance = i_file;
+            }
+        }
+    }
+    if (min_distance < 1000000) {
+        return light_frames[i_min_distance];
+    }
+
     return InputFrame();
 };
 

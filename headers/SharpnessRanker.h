@@ -2,21 +2,21 @@
 
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/InputFrame.h"
-
+#include "../headers/AlignmentWindow.h"
 
 #include <tuple>
 
 namespace AstroPhotoStacker {
     template<class ValueType>
-    float get_sharpness_factor(const ValueType *image_data, unsigned int width, unsigned int height, const std::tuple<int,int,int,int> &alignment_window = {-1,-1,-1,-1})    {
+    float get_sharpness_factor(const ValueType *image_data, unsigned int width, unsigned int height, const AlignmentWindow &alignment_window = {-1,-1,-1,-1})    {
         double sum_weights          = 0;
         double sum_diff2_weighted   = 0;
 
-        const bool use_alignment_window = std::get<0>(alignment_window) >= 0 && std::get<1>(alignment_window) >= 0 && std::get<2>(alignment_window) >= 0 && std::get<3>(alignment_window) >= 0;
-        const unsigned int x0 = use_alignment_window ? std::get<0>(alignment_window) : 0;
-        const unsigned int y0 = use_alignment_window ? std::get<1>(alignment_window) : 0;
-        const unsigned int x1 = use_alignment_window ? std::get<2>(alignment_window) : width;
-        const unsigned int y1 = use_alignment_window ? std::get<3>(alignment_window) : height;
+        const bool use_alignment_window = alignment_window.x_min >= 0 && alignment_window.x_max >= 0 && alignment_window.y_min >= 0 && alignment_window.y_max >= 0;
+        const unsigned int x0 = use_alignment_window ? alignment_window.x_min : 0;
+        const unsigned int y0 = use_alignment_window ? alignment_window.y_min : 0;
+        const unsigned int x1 = use_alignment_window ? alignment_window.x_max : width;
+        const unsigned int y1 = use_alignment_window ? alignment_window.y_max : height;
 
         for (unsigned int y = y0; y < y1; y++)    {
             for (unsigned int x = x0; x < x1; x++)    {
@@ -41,6 +41,6 @@ namespace AstroPhotoStacker {
     };
 
 
-    float get_sharpness_for_file(const InputFrame &input_frame, const std::tuple<int,int,int,int> &alignment_window = {-1,-1,-1,-1});
+    float get_sharpness_for_file(const InputFrame &input_frame, const AlignmentWindow &alignment_window = {-1,-1,-1,-1});
 
 }

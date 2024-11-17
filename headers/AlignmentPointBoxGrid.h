@@ -3,6 +3,7 @@
 #include "../headers/AlignmentPointBox.h"
 #include "../headers/MonochromeImageData.h"
 #include "../headers/LocalShift.h"
+#include "../headers/AlignmentWindow.h"
 
 #include <tuple>
 #include <vector>
@@ -13,7 +14,7 @@ namespace AstroPhotoStacker {
             AlignmentPointBoxGrid() = delete;
 
             AlignmentPointBoxGrid(  const MonochromeImageData &image_data,
-                                    const std::tuple<int,int,int,int> &alignment_window,
+                                    const AlignmentWindow &alignment_window,
                                     unsigned int box_size, unsigned int box_spacing, int center_x, int center_y);
 
             /**

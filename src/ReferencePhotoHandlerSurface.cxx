@@ -54,8 +54,15 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
     blurred_image_data.width = m_width;
     blurred_image_data.height = m_height;
 
-    const int box_size = 50;
+
+    const int alignment_window_width = m_alignment_window.x_max - m_alignment_window.x_min;
+    const int alignment_window_height = m_alignment_window.y_max - m_alignment_window.y_min;
+    const int average_window_size = (alignment_window_width + alignment_window_height)/2;
+
+    const int box_size = max(20, average_window_size/40);
     const int box_spacing = 5;
+
+
 
     m_alignment_point_box_grid = make_unique<AlignmentPointBoxGrid>(blurred_image_data, m_alignment_window, box_size, box_spacing, m_center_of_mass_x, m_center_of_mass_y);
 

@@ -3,7 +3,7 @@
 using namespace AstroPhotoStacker;
 
 
-float AstroPhotoStacker::get_sharpness_for_file(const InputFrame &input_frame, const std::tuple<int,int,int,int> &alignment_window)    {
+float AstroPhotoStacker::get_sharpness_for_file(const InputFrame &input_frame, const AlignmentWindow &alignment_window)    {
     CalibratedPhotoHandler calibrated_photo_handler(input_frame, true);
     calibrated_photo_handler.define_alignment(0, 0, 0, 0, 0);
     calibrated_photo_handler.calibrate();
