@@ -67,26 +67,36 @@ std::tuple<int,int,int,int> ReferencePhotoHandlerPlanetary::get_alignment_window
     const int width = image_data.width;
     const int height = image_data.height;
 
-    std::vector<std::tuple<float, float, int> > clusters = get_stars(brightness, width, height, threshold);
-    keep_only_stars_above_size(&clusters, 9);
-    sort_stars_by_size(&clusters);
+    std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters_non_recursive(brightness, width, height, threshold);
 
     if (clusters.size() == 0) {
         throw runtime_error("No clusters found in the reference photo");
     }
+    if (clusters.at(0).size()  < 10) {
+        throw runtime_error("No clusters found in the reference photo");
+    }
 
-    const float leading_cluster_radius = sqrt(get<2>(clusters[0]))/3.14;
-    const float leading_cluster_x = get<0>(clusters[0]);
-    const float leading_cluster_y = get<1>(clusters[0]);
+    const vector<tuple<int,int>> &leading_cluster = *std::max_element(clusters.begin(), clusters.end(), []
+                                                    (const std::vector<std::tuple<int, int> > &a, const std::vector<std::tuple<int, int> > &b)
+                                                    {return a.size() < b.size();});
 
-    const float window_scale = 5;
+    int window_x_min = INT_MAX;
+    int window_x_max = INT_MIN;
+    int window_y_min = INT_MAX;
+    int window_y_max = INT_MIN;
 
-    const int window_half_size = window_scale * leading_cluster_radius;
+    for (const auto &[x,y] : leading_cluster) {
+        window_x_min = min(window_x_min, x);
+        window_x_max = max(window_x_max, x);
+        window_y_min = min(window_y_min, y);
+        window_y_max = max(window_y_max, y);
+    }
 
-    const int window_x_min = max<int>(0, leading_cluster_x - window_half_size);
-    const int window_x_max = min<int>(width, leading_cluster_x + window_half_size);
-    const int window_y_min = max<int>(0, leading_cluster_y - window_half_size);
-    const int window_y_max = min<int>(height, leading_cluster_y + window_half_size);
+    const int border_size = 10;
+    window_x_min = max(0, window_x_min - border_size);
+    window_x_max = min(width, window_x_max + border_size);
+    window_y_min = max(0, window_y_min - border_size);
+    window_y_max = min(height, window_y_max + border_size);
 
     return make_tuple(window_x_min, window_y_min, window_x_max, window_y_max);
 };
