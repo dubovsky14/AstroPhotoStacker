@@ -27,6 +27,7 @@ add_executable(stack_calibration_frames utils/stack_calibration_frames.cxx)
 add_executable(rank_sharpness utils/rank_sharpness.cxx)
 add_executable(create_synthetic_flat utils/create_synthetic_flat.cxx)
 add_executable(calculate_noise utils/calculate_noise.cxx)
+add_executable(test_local_shifts utils/test_local_shifts.cxx)
 add_executable(tests ${CI_TESTS_SOURCES} "utils/tests.cxx")
 
 add_dependencies(AstroPhotoStacker AstroPhotoStackerLib)
@@ -38,6 +39,7 @@ add_dependencies(stack_calibration_frames AstroPhotoStackerLib)
 add_dependencies(rank_sharpness AstroPhotoStackerLib)
 add_dependencies(create_synthetic_flat AstroPhotoStackerLib)
 add_dependencies(calculate_noise AstroPhotoStackerLib)
+add_dependencies(test_local_shifts AstroPhotoStackerLib)
 
 # link the libraw library
 target_link_libraries(AstroPhotoStackerLib PUBLIC ${LINKER_FLAGS} ${OpenCV_LIBS})
@@ -50,3 +52,4 @@ target_link_libraries(stack_calibration_frames AstroPhotoStackerLib ${LINKER_FLA
 target_link_libraries(rank_sharpness AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
 target_link_libraries(create_synthetic_flat AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
 target_link_libraries(calculate_noise AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
+target_link_libraries(test_local_shifts AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})

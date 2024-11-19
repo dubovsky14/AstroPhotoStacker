@@ -9,7 +9,7 @@ using namespace std;
 LocalShiftsHandler::LocalShiftsHandler(const std::vector<LocalShift> &shifts) : m_shifts(shifts) {
     for (const auto &shift : shifts) {
         const std::vector<int> coordinate = {shift.x, shift.y};
-        const std::tuple<int,int,bool> value = std::tuple<int,int,bool>(shift.x, shift.y, shift.valid_ap);
+        const std::tuple<int,int,bool> value = std::tuple<int,int,bool>(shift.dx, shift.dy, shift.valid_ap);
 
         m_kd_tree_shifts.add_point(coordinate, value);
     }

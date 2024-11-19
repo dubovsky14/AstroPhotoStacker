@@ -222,8 +222,6 @@ namespace AstroPhotoStacker {
 
             int m_memory_usage_limit_in_mb = -1;
 
-            std::string m_alignment_file_address;
-
             std::vector<InputFrame>     m_frames_to_stack;
             std::vector<bool>           m_apply_alignment; // for calibration frames we just stack them
             std::vector<std::vector<double> > m_stacked_image;

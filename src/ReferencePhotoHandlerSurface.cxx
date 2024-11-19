@@ -8,7 +8,7 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 
-ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &input_frame, float threshold_fraction) : ReferencePhotoHandlerPlanetary(input_frame, threshold_fraction) {
+ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &input_frame, float threshold_fraction) : ReferencePhotoHandlerPlanetaryZeroRotation(input_frame, threshold_fraction) {
     m_threshold_fraction = threshold_fraction;
     CalibratedPhotoHandler calibrated_photo_handler(input_frame, true);
     calibrated_photo_handler.define_alignment(0,0,0,0,0);
@@ -32,13 +32,13 @@ ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &inp
         brightness.at(i_pixel) = value;
     }
 
-    ReferencePhotoHandlerPlanetary::initialize(brightness.data(), m_width, m_height, threshold_fraction);
+    ReferencePhotoHandlerPlanetaryZeroRotation::initialize(brightness.data(), m_width, m_height, threshold_fraction);
 
     initialize_alignment_grid(brightness.data());
 };
 
 
-ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const unsigned short *brightness, int width, int height, float threshold_fraction) : ReferencePhotoHandlerPlanetary(brightness, width, height, threshold_fraction) {
+ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const unsigned short *brightness, int width, int height, float threshold_fraction) : ReferencePhotoHandlerPlanetaryZeroRotation(brightness, width, height, threshold_fraction) {
     initialize_alignment_grid(brightness);
 };
 

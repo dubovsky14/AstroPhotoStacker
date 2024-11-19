@@ -17,7 +17,6 @@ void StackerBase::set_memory_usage_limit(int memory_usage_limit_in_mb)  {
 };
 
 void StackerBase::add_alignment_text_file(const string &alignment_file_address) {
-    m_alignment_file_address = alignment_file_address;
     m_photo_alignment_handler = make_unique<PhotoAlignmentHandler>();
     m_photo_alignment_handler->read_from_text_file(alignment_file_address);
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/ReferencePhotoHandlerPlanetary.h"
+#include "../headers/ReferencePhotoHandlerPlanetaryZeroRotation.h"
 #include "../headers/AlignmentPointBoxGrid.h"
 #include "../headers/LocalShift.h"
 
@@ -15,7 +15,7 @@ namespace AstroPhotoStacker   {
     /**
      * @brief Class responsible for handling the reference photo, providing methods for alignement of planetary photos
      */
-    class ReferencePhotoHandlerSurface : public ReferencePhotoHandlerPlanetary {
+    class ReferencePhotoHandlerSurface : public ReferencePhotoHandlerPlanetaryZeroRotation {
         public:
             ReferencePhotoHandlerSurface()                             = delete;
             ReferencePhotoHandlerSurface(const ReferencePhotoHandlerSurface&) = delete;
