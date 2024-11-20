@@ -20,7 +20,7 @@ namespace AstroPhotoStacker {
                 return m_shifts;
             };
 
-            bool calculate_shifted_coordinates(int x, int y, int *shifted_x, int *shifted_y) const;
+            bool calculate_shifted_coordinates(int x, int y, int *shifted_x, int *shifted_y, float *score = nullptr);
 
             inline bool empty() const { return m_empty; };
 
@@ -30,9 +30,10 @@ namespace AstroPhotoStacker {
         private:
             std::vector<LocalShift> m_shifts;
 
-            KDTree<int,2,std::tuple<int,int,bool>> m_kd_tree_shifts;
+            KDTree<int,2,std::tuple<int,int,bool,float>> m_kd_tree_shifts;  // dx, dy, valid_ap, score
 
             bool m_empty = true;
 
+            std::vector<std::tuple<std::vector<int>, std::tuple<int,int,bool,float>>> m_kd_tree_result_buffer;
     };
 }

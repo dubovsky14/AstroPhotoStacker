@@ -65,6 +65,10 @@ void CalibratedPhotoHandler::set_bit_depth(unsigned short int bit_depth)    {
 };
 
 void CalibratedPhotoHandler::calibrate() {
+    if (!m_local_shifts_handler.empty()) {
+        m_score_handler.initialize_local_scores(m_width, m_height, 1);
+    }
+
     // firstly apply the calibration frames on the original data
     for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler : m_calibration_frames) {
         for (int y = 0; y < m_height; y++) {
@@ -96,9 +100,11 @@ void CalibratedPhotoHandler::calibrate() {
                     if (!m_local_shifts_handler.empty()) {
                         int x_int = int(x_original);
                         int y_int = int(y_original);
-                        if (m_local_shifts_handler.calculate_shifted_coordinates(x_int, y_int, &x_int, &y_int)) {
+                        float score = 1;
+                        if (m_local_shifts_handler.calculate_shifted_coordinates(x_int, y_int, &x_int, &y_int, &score)) {
                             x_original = x_int;
                             y_original = y_int;
+                            m_score_handler.set_local_score(x_shifted, y_shifted, score);
                         }
                         else {
                             continue;
@@ -130,9 +136,11 @@ void CalibratedPhotoHandler::calibrate() {
                 if (!m_local_shifts_handler.empty()) {
                     int x_int = int(x_original);
                     int y_int = int(y_original);
-                    if (m_local_shifts_handler.calculate_shifted_coordinates(x_int, y_int, &x_int, &y_int)) {
+                    float score = 1;
+                    if (m_local_shifts_handler.calculate_shifted_coordinates(x_int, y_int, &x_int, &y_int, &score)) {
                         x_original = x_int;
                         y_original = y_int;
+                        m_score_handler.set_local_score(x_shifted, y_shifted, score);
                     }
                     else {
                         continue;

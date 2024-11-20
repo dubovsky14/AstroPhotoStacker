@@ -141,23 +141,28 @@ namespace AstroPhotoStacker   {
                 }
             };
 
-            std::vector<std::tuple<std::vector<CoordinateType>, ValueType>> get_k_nearest_neighbors(const CoordinateType *query_point, unsigned int n_points)    const   {
+            void get_k_nearest_neighbors(const CoordinateType *query_point, unsigned int n_points, std::vector<std::tuple<std::vector<CoordinateType>, ValueType>> *result)    const   {
+                result->resize(0);
                 std::vector<long long int> indices = get_k_nearest_neighbors_indices(query_point, n_points);
-                std::vector<std::tuple<std::vector<CoordinateType>, ValueType>> result;
-                result.reserve(indices.size());
+                result->reserve(indices.size());
                 for (long long int index : indices)  {
                     const KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType> &point = m_nodes[index];
                     std::vector<CoordinateType> coordinates;
                     for (unsigned int i = 0; i < m_n_dim; ++i)  {
                         coordinates.push_back(point.m_coordinates[i]);
                     }
-                    result.push_back (
+                    result->push_back (
                         std::tuple<std::vector<CoordinateType>, ValueType>   (
                             coordinates,
                             point.m_value
                         )
                     );
                 }
+            };
+
+            std::vector<std::tuple<std::vector<CoordinateType>, ValueType>> get_k_nearest_neighbors(const CoordinateType *query_point, unsigned int n_points)    const   {
+                std::vector<std::tuple<std::vector<CoordinateType>, ValueType>> result;
+                get_k_nearest_neighbors(query_point, n_points, &result);
                 return result;
             };
 

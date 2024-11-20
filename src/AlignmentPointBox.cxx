@@ -8,7 +8,7 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 
-float AlignmentPointBox::s_contrast_threshold = 0.8;
+float AlignmentPointBox::s_contrast_threshold = 0.4;
 
 AlignmentPointBox::AlignmentPointBox(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_size, unsigned short max_value)   {
     m_x_center = x_center;

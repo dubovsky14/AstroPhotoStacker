@@ -9,7 +9,7 @@ using namespace std;
 LocalShiftsHandler::LocalShiftsHandler(const std::vector<LocalShift> &shifts) : m_shifts(shifts) {
     for (const auto &shift : shifts) {
         const std::vector<int> coordinate = {shift.x, shift.y};
-        const std::tuple<int,int,bool> value = std::tuple<int,int,bool>(shift.dx, shift.dy, shift.valid_ap);
+        const std::tuple<int,int,bool,float> value = std::tuple<int,int,bool,float>(shift.dx, shift.dy, shift.valid_ap, shift.score);
 
         m_kd_tree_shifts.add_point(coordinate, value);
     }
@@ -17,31 +17,36 @@ LocalShiftsHandler::LocalShiftsHandler(const std::vector<LocalShift> &shifts) : 
     m_empty = false;
 };
 
-bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifted_x, int *shifted_y) const  {
+bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifted_x, int *shifted_y, float *score)   {
     if (empty()) {
         return false;
     }
     const int n_neighbors = 3;
     const int query_point[2] = {x, y};
-    std::vector<std::tuple<std::vector<int>, tuple<int,int,bool>>> closest_nodes = m_kd_tree_shifts.get_k_nearest_neighbors(query_point, n_neighbors);
-    if (closest_nodes.size() == 0) {
+    m_kd_tree_shifts.get_k_nearest_neighbors(query_point, n_neighbors, &m_kd_tree_result_buffer);
+    if (m_kd_tree_result_buffer.size() == 0) {
         return false;
     }
-    if (get<2>(get<1>(closest_nodes[0])) == false) {
+    if (get<2>(get<1>(m_kd_tree_result_buffer[0])) == false) {
         return false;
     }
     float sum_weights = 0;
     float sum_x = 0;
     float sum_y = 0;
-    for (const std::tuple<std::vector<int>, tuple<int,int,bool>> &node: closest_nodes) {
+    float score_leading = -1;
+    for (const std::tuple<std::vector<int>, tuple<int,int,bool,float>> &node: m_kd_tree_result_buffer) {
         const vector<int> &coordinates = get<0>(node);
-        const tuple<int,int,bool> &value = get<1>(node);
+        const tuple<int,int,bool,float> &value = get<1>(node);
         const int dx = get<0>(value);
         const int dy = get<1>(value);
         const bool valid_ap = get<2>(value);
 
         if (!valid_ap) {
             continue;
+        }
+
+        if (score_leading == -1) {
+            score_leading = get<3>(value);
         }
 
         const float dist2 = (x - coordinates[0]) * (x - coordinates[0]) + (y - coordinates[1]) * (y - coordinates[1]);
@@ -57,6 +62,9 @@ bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifte
     }
     *shifted_x = x + sum_x / sum_weights;
     *shifted_y = y + sum_y / sum_weights;
+    if (score != nullptr) {
+        *score = score_leading;
+    }
     return true;
 };
 
