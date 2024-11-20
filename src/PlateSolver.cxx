@@ -32,10 +32,10 @@ bool PlateSolver::plate_solve(  const std::vector<std::tuple<float,float,int> > 
                     calculate_asterism_hash(four_stars_positions, &asterism_hash, &starA, &starB, &starC, &starD);
 
                     // closest hashes and star indices from the reference photo
-                    const std::vector<std::tuple<vector<float>, StarIndices> > nearest_neighbors =
+                    const std::vector<std::tuple<std::array<float, 4>, StarIndices> > nearest_neighbors =
                         m_kdtree->get_k_nearest_neighbors(asterism_hash.data(), 4);
 
-                    for (const std::tuple<vector<float>, StarIndices> &hash_tuple : nearest_neighbors)  {
+                    for (const tuple<std::array<float, 4>, StarIndices> &hash_tuple : nearest_neighbors)  {
                         const StarIndices &reference_star_indices = get<1>(hash_tuple);
                         const tuple<float,float,int> &reference_star_A = m_reference_stars->at(get<0>(reference_star_indices));
                         const tuple<float,float,int> &reference_star_B = m_reference_stars->at(get<1>(reference_star_indices));

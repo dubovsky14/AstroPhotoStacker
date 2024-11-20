@@ -23,7 +23,7 @@ bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifte
     }
     const int n_neighbors = 3;
     const int query_point[2] = {x, y};
-    m_kd_tree_shifts.get_k_nearest_neighbors(query_point, n_neighbors, &m_kd_tree_result_buffer);
+    m_kd_tree_result_buffer = m_kd_tree_shifts.get_k_nearest_neighbors(query_point, n_neighbors);
     if (m_kd_tree_result_buffer.size() == 0) {
         return false;
     }
@@ -34,8 +34,8 @@ bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifte
     float sum_x = 0;
     float sum_y = 0;
     float score_leading = -1;
-    for (const std::tuple<std::vector<int>, tuple<int,int,bool,float>> &node: m_kd_tree_result_buffer) {
-        const vector<int> &coordinates = get<0>(node);
+    for (const std::tuple<std::array<int,2>, tuple<int,int,bool,float>> &node: m_kd_tree_result_buffer) {
+        const std::array<int,2> &coordinates = get<0>(node);
         const tuple<int,int,bool,float> &value = get<1>(node);
         const int dx = get<0>(value);
         const int dy = get<1>(value);

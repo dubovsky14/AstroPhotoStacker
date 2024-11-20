@@ -10,6 +10,7 @@
 #include<algorithm>
 #include<fstream>
 #include <stdlib.h>
+#include <array>
 
 namespace AstroPhotoStacker   {
     typedef int PointIndexType;
@@ -26,7 +27,7 @@ namespace AstroPhotoStacker   {
 
             PointIndexType get_child_index(const CoordinateType *coordinates);
 
-            CoordinateType      m_coordinates[NumberOfCoordinates];
+            std::array<CoordinateType, NumberOfCoordinates> m_coordinates;
             ValueType           m_value;
             short               m_split_axis            = -1;
             PointIndexType      m_index_child_left      = -1;
@@ -141,28 +142,20 @@ namespace AstroPhotoStacker   {
                 }
             };
 
-            void get_k_nearest_neighbors(const CoordinateType *query_point, unsigned int n_points, std::vector<std::tuple<std::vector<CoordinateType>, ValueType>> *result)    const   {
-                result->resize(0);
+            std::vector<std::tuple<std::array<CoordinateType, NumberOfCoordinates>, ValueType>> get_k_nearest_neighbors(const CoordinateType *query_point, unsigned int n_points)    const   {
                 std::vector<long long int> indices = get_k_nearest_neighbors_indices(query_point, n_points);
-                result->reserve(indices.size());
+                std::vector<std::tuple<std::array<CoordinateType, NumberOfCoordinates>, ValueType>> result;
+                result.reserve(indices.size());
                 for (long long int index : indices)  {
                     const KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType> &point = m_nodes[index];
-                    std::vector<CoordinateType> coordinates;
-                    for (unsigned int i = 0; i < m_n_dim; ++i)  {
-                        coordinates.push_back(point.m_coordinates[i]);
-                    }
-                    result->push_back (
-                        std::tuple<std::vector<CoordinateType>, ValueType>   (
+                    std::array<CoordinateType, NumberOfCoordinates> coordinates = point.m_coordinates;
+                    result.push_back (
+                        std::tuple<std::array<CoordinateType, NumberOfCoordinates>, ValueType>   (
                             coordinates,
                             point.m_value
                         )
                     );
                 }
-            };
-
-            std::vector<std::tuple<std::vector<CoordinateType>, ValueType>> get_k_nearest_neighbors(const CoordinateType *query_point, unsigned int n_points)    const   {
-                std::vector<std::tuple<std::vector<CoordinateType>, ValueType>> result;
-                get_k_nearest_neighbors(query_point, n_points, &result);
                 return result;
             };
 
@@ -370,7 +363,15 @@ namespace AstroPhotoStacker   {
                 }
             };
 
-            double get_distance_squared(const CoordinateType *coordinates_1, const CoordinateType *coordinates_2)   const    {
+            double get_distance_squared(const std::array<CoordinateType, NumberOfCoordinates> &coordinates_1, const std::array<CoordinateType, NumberOfCoordinates> &coordinates_2)   const    {
+                double distance = 0.0;
+                for (unsigned int i = 0; i < m_n_dim; ++i)  {
+                    distance += (coordinates_1[i] - coordinates_2[i]) * (coordinates_1[i] - coordinates_2[i]);
+                }
+                return distance;
+            };
+
+            double get_distance_squared(const CoordinateType *coordinates_1, const std::array<CoordinateType, NumberOfCoordinates> &coordinates_2)   const    {
                 double distance = 0.0;
                 for (unsigned int i = 0; i < m_n_dim; ++i)  {
                     distance += (coordinates_1[i] - coordinates_2[i]) * (coordinates_1[i] - coordinates_2[i]);

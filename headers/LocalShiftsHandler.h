@@ -34,6 +34,6 @@ namespace AstroPhotoStacker {
 
             bool m_empty = true;
 
-            std::vector<std::tuple<std::vector<int>, std::tuple<int,int,bool,float>>> m_kd_tree_result_buffer;
+            std::vector<std::tuple<std::array<int,2>, std::tuple<int,int,bool,float>>> m_kd_tree_result_buffer;
     };
 }

@@ -88,7 +88,7 @@ void SyntheticFlatCreator::replace_values_above_threshold() {
             const unsigned short pixel_value = m_original_gray_scale_data[y * m_width + x];
             coordinate_buffer[0] = x;
             if (pixel_value >= m_threshold) {
-                const std::vector<std::tuple<std::vector<unsigned>, unsigned>> neighbors = kdtree.get_k_nearest_neighbors(coordinate_buffer, 5);
+                const std::vector<std::tuple<std::array<unsigned,2>, unsigned>> neighbors = kdtree.get_k_nearest_neighbors(coordinate_buffer, 5);
 
                 if (neighbors.size() > 0) {
                     unsigned sum = 0;
