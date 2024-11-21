@@ -283,6 +283,37 @@ namespace AstroPhotoStacker   {
                 return median_node_index;
             };
 
+
+            static inline void update_index_and_distance_vector(std::vector<std::tuple<long long int, double>> *node_indices_and_distances, long long int node_index, double distance, unsigned int requested_neighbors) {
+                if (node_indices_and_distances->size() == requested_neighbors && distance >= std::get<1>(node_indices_and_distances->back())) {
+                    return;
+                }
+
+                size_t index_in_vector_to_place = 0;
+                for (size_t i = 0; i < node_indices_and_distances->size(); ++i) {
+                    if (distance < std::get<1>((*node_indices_and_distances)[i])) {
+                        index_in_vector_to_place = i;
+                    }
+                    else    {
+                        break;
+                    }
+                }
+
+                if (node_indices_and_distances->size() < requested_neighbors) {
+                    node_indices_and_distances->push_back(std::tuple<long long int, double>(node_index, distance));
+                    for (size_t i = node_indices_and_distances->size()-1; i > index_in_vector_to_place; --i) {
+                        (*node_indices_and_distances)[i] = (*node_indices_and_distances)[i-1];
+                    }
+                    (*node_indices_and_distances)[index_in_vector_to_place] = std::tuple<long long int, double>(node_index, distance);
+                }
+                else    {
+                    for (size_t i = node_indices_and_distances->size()-1; i > index_in_vector_to_place; --i) {
+                        (*node_indices_and_distances)[i] = (*node_indices_and_distances)[i-1];
+                    }
+                    (*node_indices_and_distances)[index_in_vector_to_place] = std::tuple<long long int, double>(node_index, distance);
+                }
+            };
+
             void get_n_closest_nodes_recursive( const CoordinateType *coordinates,
                                                 std::vector<std::tuple<long long int, double>> *node_indices_and_distances,
                                                 unsigned int n_neighbors,
@@ -295,18 +326,7 @@ namespace AstroPhotoStacker   {
                 const KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType> &node = m_nodes[node_index];
                 const double distance_to_node = get_distance_squared(coordinates, node.m_coordinates);
 
-                if (node_indices_and_distances->size() < n_neighbors) {
-                    node_indices_and_distances->push_back(std::tuple<long long int, double>(node_index, distance_to_node));
-                    std::sort(node_indices_and_distances->begin(), node_indices_and_distances->end(), [](const auto &a, const auto &b) {
-                        return std::get<1>(a) < std::get<1>(b);
-                    });
-                }
-                else if (distance_to_node < std::get<1>(node_indices_and_distances->back())) {
-                    (*node_indices_and_distances)[n_neighbors-1] = std::tuple<long long int, double>(node_index, distance_to_node);
-                    std::sort(node_indices_and_distances->begin(), node_indices_and_distances->end(), [](const auto &a, const auto &b) {
-                        return std::get<1>(a) < std::get<1>(b);
-                    });
-                }
+                update_index_and_distance_vector(node_indices_and_distances, node_index, distance_to_node, n_neighbors);
 
                 const bool go_to_left = coordinates[node.m_split_axis] < node.m_coordinates[node.m_split_axis];
                 if (go_to_left) {
@@ -379,7 +399,6 @@ namespace AstroPhotoStacker   {
                 return distance;
             };
     };
-
 
 
 }
