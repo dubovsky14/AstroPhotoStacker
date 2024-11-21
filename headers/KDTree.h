@@ -225,7 +225,7 @@ namespace AstroPhotoStacker   {
                 return m_nodes[index];
             };
 
-        private:
+        protected:
             bool m_tree_structure_built = false;
             std::vector<KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType>> m_nodes;
             long long int m_root_node_index = -1;

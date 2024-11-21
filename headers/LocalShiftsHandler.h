@@ -3,7 +3,7 @@
 #include <vector>
 #include <tuple>
 
-#include "../headers/KDTree.h"
+#include "../headers/KDTreeWithBuffer.h"
 #include "../headers/LocalShift.h"
 
 
@@ -30,10 +30,8 @@ namespace AstroPhotoStacker {
         private:
             std::vector<LocalShift> m_shifts;
 
-            KDTree<int,2,std::tuple<int,int,bool,float>> m_kd_tree_shifts;  // dx, dy, valid_ap, score
+            KDTreeWithBuffer<int,2,std::tuple<int,int,bool,float>> m_kd_tree_shifts;  // dx, dy, valid_ap, score
 
             bool m_empty = true;
-
-            std::vector<std::tuple<std::array<int,2>, std::tuple<int,int,bool,float>>> m_kd_tree_result_buffer;
     };
 }
