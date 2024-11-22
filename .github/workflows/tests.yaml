@@ -53,6 +53,31 @@ jobs:
               ./bin/tests hot_pixel_identifier AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/ temp_hot_pixel_file.txt AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/reference_files/hot_pixels.txt
         name: hot-pixel-identification
 
+  kd-tree-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [build-linux]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: |
+            mkdir bin
+              sudo apt-get update -y || true &&  DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata libx11-dev && sudo apt-get install -y --no-install-recommends libopencv-dev
+              sudo apt-get install libraw-dev
+              sudo apt-get install -y libexiv2-dev
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact-linux-build
+          path: bin/.
+      - run:  |
+              chmod u+x bin/tests
+              ./bin/tests kd_tree
+        name: kd-tree-test
+
   produce-alignment-file:
     runs-on: ubuntu-latest
     timeout-minutes: 10

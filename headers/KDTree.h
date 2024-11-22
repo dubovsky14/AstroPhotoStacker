@@ -291,10 +291,10 @@ namespace AstroPhotoStacker   {
                     }
                 }
 
-                size_t index_in_vector_to_place = 0;
+               size_t index_in_vector_to_place = 0;
                 for (size_t i = 0; i < node_indices_and_distances->size(); ++i) {
-                    if (distance >= std::get<1>((*node_indices_and_distances)[i])) {
-                        index_in_vector_to_place = i;
+                    index_in_vector_to_place = i;
+                    if (distance < std::get<1>((*node_indices_and_distances)[i])) {
                         break;
                     }
                 }
