@@ -285,33 +285,28 @@ namespace AstroPhotoStacker   {
 
 
             static inline void update_index_and_distance_vector(std::vector<std::tuple<long long int, double>> *node_indices_and_distances, long long int node_index, double distance, unsigned int requested_neighbors) {
-                if (node_indices_and_distances->size() == requested_neighbors && distance >= std::get<1>(node_indices_and_distances->back())) {
-                    return;
+                if (node_indices_and_distances->size() == requested_neighbors)  {
+                    if (distance >= std::get<1>(node_indices_and_distances->back())) {
+                        return;
+                    }
                 }
 
                 size_t index_in_vector_to_place = 0;
                 for (size_t i = 0; i < node_indices_and_distances->size(); ++i) {
-                    if (distance < std::get<1>((*node_indices_and_distances)[i])) {
+                    if (distance >= std::get<1>((*node_indices_and_distances)[i])) {
                         index_in_vector_to_place = i;
-                    }
-                    else    {
                         break;
                     }
                 }
 
                 if (node_indices_and_distances->size() < requested_neighbors) {
-                    node_indices_and_distances->push_back(std::tuple<long long int, double>(node_index, distance));
-                    for (size_t i = node_indices_and_distances->size()-1; i > index_in_vector_to_place; --i) {
-                        (*node_indices_and_distances)[i] = (*node_indices_and_distances)[i-1];
-                    }
-                    (*node_indices_and_distances)[index_in_vector_to_place] = std::tuple<long long int, double>(node_index, distance);
+                    node_indices_and_distances->resize(node_indices_and_distances->size() + 1);
                 }
-                else    {
-                    for (size_t i = node_indices_and_distances->size()-1; i > index_in_vector_to_place; --i) {
-                        (*node_indices_and_distances)[i] = (*node_indices_and_distances)[i-1];
-                    }
-                    (*node_indices_and_distances)[index_in_vector_to_place] = std::tuple<long long int, double>(node_index, distance);
+
+                for (size_t i = node_indices_and_distances->size()-1; i > index_in_vector_to_place; --i) {
+                    (*node_indices_and_distances)[i] = (*node_indices_and_distances)[i-1];
                 }
+                (*node_indices_and_distances)[index_in_vector_to_place] = std::tuple<long long int, double>(node_index, distance);
             };
 
             void get_n_closest_nodes_recursive( const CoordinateType *coordinates,
