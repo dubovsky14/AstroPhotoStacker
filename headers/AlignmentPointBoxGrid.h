@@ -44,13 +44,46 @@ namespace AstroPhotoStacker {
              */
             std::vector<LocalShift> get_local_shifts(const MonochromeImageData &calibrated_image) const;
 
-            const std::vector<std::tuple<int,int,AlignmentPointBox>> &get_alignment_boxes() const {return m_boxes;};
+            const std::vector<AlignmentPointBox> &get_alignment_boxes() const {return m_boxes;};
+
+            template<typename PixelType>
+            static void draw_boxes_into_image(  const std::vector<std::tuple<int,int,AlignmentPointBox>> &alignment_boxes,
+                                                std::vector<std::vector<PixelType>> *image,
+                                                int width,
+                                                int height,
+                                                const std::vector<int> &valid_ap_color,
+                                                const std::vector<int> &invalid_ap_color)    {
+
+                for (const std::tuple<int,int,AlignmentPointBox> &box : alignment_boxes) {
+                    const int x = std::get<0>(box);
+                    const int y = std::get<1>(box);
+                    const AlignmentPointBox &apb = std::get<2>(box);
+
+                    const int x_min = std::max<int>(0, x - apb.get_box_width()/2);
+                    const int x_max = std::min<int>(width-1, x + apb.get_box_width()/2);
+                    const int y_min = std::max<int>(0, y - apb.get_box_height()/2);
+                    const int y_max = std::min<int>(height-1, y + apb.get_box_height()/2);
+
+                    const std::vector<int> &colors = true ? valid_ap_color : invalid_ap_color;
+
+                    for (int i_color = 0; i_color < 3; i_color++) {
+                        for (int y = y_min; y <= y_max; y++) {
+                            (*image)[i_color][y*width + x_min] = colors[i_color]; // left
+                            (*image)[i_color][y*width + x_max] = colors[i_color]; // right
+                        }
+                        for (int x = x_min; x <= x_max; x++) {
+                            (*image)[i_color][y_min*width + x] = colors[i_color]; // top
+                            (*image)[i_color][y_max*width + x] = colors[i_color]; // bottom
+                        }
+                    }
+                }
+            };
 
 
         private:
             std::tuple<int,int> get_interpolated_shift(const std::vector<LocalShift> &local_shifts, int x, int y)   const;
 
-            std::vector<std::tuple<int,int,AlignmentPointBox>> m_boxes; // x, y, box
+            std::vector<AlignmentPointBox> m_boxes; // x, y, box
             AlignmentWindow m_alignment_window;
 
             /**

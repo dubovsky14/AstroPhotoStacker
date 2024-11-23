@@ -31,6 +31,14 @@ namespace AstroPhotoStacker {
                 return m_max_value;
             };
 
+            unsigned int get_center_x() const   {
+                return m_x_center;
+            };
+
+            unsigned int get_center_y() const   {
+                return m_y_center;
+            };
+
             bool good_match(float chi2) const;
 
             static float get_sharpness_factor(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_width, unsigned int box_height);

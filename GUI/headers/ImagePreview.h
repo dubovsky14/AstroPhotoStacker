@@ -76,6 +76,16 @@ class ImagePreview {
         void read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original);
 
         /**
+         * @brief Update original image
+         *
+         * @param original_image original image data
+         * @param width width of the image
+         * @param height height of the image
+         * @param apply_green_correction whether to apply green channel correction
+         */
+        void update_original_image(const std::vector<std::vector<short int>> &original_image, int width, int height, bool apply_green_correction);
+
+        /**
          * @brief Set exposure correction
          *
          * @param exposure_correction exposure correction value

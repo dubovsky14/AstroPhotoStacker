@@ -20,7 +20,7 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
     for (int y = alignment_window.y_min; y < alignment_window.y_max; y += step_size) {
         for (int x = alignment_window.x_min; x < alignment_window.x_max; x += step_size) {
             if (AlignmentPointBox::is_valid_ap(image_data, x, y, box_size, box_size, max_value)) {
-                m_boxes.push_back(std::make_tuple(x, y, AlignmentPointBox(image_data, x, y, box_size, box_size, max_value)));
+                m_boxes.emplace_back(image_data, x, y, box_size, box_size, max_value);
             }
         }
     }
@@ -48,7 +48,7 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
         const int y = alignment_window.y_min + random_uniform(0, alignment_window_height - box_height);
 
         if (AlignmentPointBox::is_valid_ap(image_data, x, y, box_width, box_height, max_value)) {
-            m_boxes.push_back(std::make_tuple(x, y, AlignmentPointBox(image_data, x, y, box_width, box_height, max_value)));
+            m_boxes.emplace_back(image_data, x, y, box_width, box_height, max_value);
         }
         if (m_boxes.size() >= n_boxes) {
             break;
@@ -82,11 +82,11 @@ void AlignmentPointBoxGrid::sort_alignment_boxes()    {
     // sort them in a "snail" way
     const int center_x = (m_alignment_window.x_min + m_alignment_window.x_max)/2;
     const int center_y = (m_alignment_window.y_min + m_alignment_window.y_max)/2;
-    sort(m_boxes.begin(), m_boxes.end(), [center_x, center_y, &get_side_and_index](const std::tuple<int,int,AlignmentPointBox> &a, const std::tuple<int,int,AlignmentPointBox> &b) {
-        const int x0_centered = get<0>(a) - center_x;
-        const int y0_centered = get<1>(a) - center_y;
-        const int x1_centered = get<0>(b) - center_x;
-        const int y1_centered = get<1>(b) - center_y;
+    sort(m_boxes.begin(), m_boxes.end(), [center_x, center_y, &get_side_and_index](const AlignmentPointBox &a, const AlignmentPointBox &b) {
+        const int x0_centered = a.get_center_x() - center_x;
+        const int y0_centered = a.get_center_y() - center_y;
+        const int x1_centered = b.get_center_x() - center_x;
+        const int y1_centered = b.get_center_y() - center_y;
 
         int max_0 = max(abs(x0_centered), abs(y0_centered));
         int max_1 = max(abs(x1_centered), abs(y1_centered));
@@ -109,10 +109,9 @@ void AlignmentPointBoxGrid::sort_alignment_boxes()    {
 std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const MonochromeImageData &calibrated_image) const {
     vector<LocalShift> shifts;
     int valid_boxes = 0;
-    for (const auto &box : m_boxes) {
-        const int original_x = get<0>(box);
-        const int original_y = get<1>(box);
-        const AlignmentPointBox &apb = get<2>(box);
+    for (const AlignmentPointBox &box : m_boxes) {
+        const int original_x = box.get_center_x();
+        const int original_y = box.get_center_y();
 
         const std::tuple<int,int> prefit_shift = get_interpolated_shift(shifts, original_x, original_y);
         const int adjusted_x = original_x + get<0>(prefit_shift);
@@ -124,15 +123,15 @@ std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const Monochrome
             best_x = original_x;
             best_y = original_y;
         }
-        float best_chi2 = apb.get_chi2(calibrated_image, best_x, best_x);
+        float best_chi2 = box.get_chi2(calibrated_image, best_x, best_x);
 
         const int max_shift_size = 20;
         for (int y_shift = -max_shift_size; y_shift <= max_shift_size; y_shift++) {
             for (int x_shift = -max_shift_size; x_shift <= max_shift_size; x_shift++) {
-                if (!AlignmentPointBox::is_valid_ap(calibrated_image, adjusted_x + x_shift, adjusted_y + y_shift, apb.get_box_width(), apb.get_box_height(), apb.get_max_value())) {
+                if (!AlignmentPointBox::is_valid_ap(calibrated_image, adjusted_x + x_shift, adjusted_y + y_shift, box.get_box_width(), box.get_box_height(), box.get_max_value())) {
                     continue;
                 }
-                const float chi2 = apb.get_chi2(calibrated_image, adjusted_x + x_shift, adjusted_y + y_shift);
+                const float chi2 = box.get_chi2(calibrated_image, adjusted_x + x_shift, adjusted_y + y_shift);
                 if (chi2 < best_chi2) {
                     best_chi2 = chi2;
                     best_x = adjusted_x + x_shift;
@@ -141,7 +140,7 @@ std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const Monochrome
             }
         }
 
-        const bool good_match = apb.good_match(best_chi2);
+        const bool good_match = box.good_match(best_chi2);
         valid_boxes += good_match;
 
         LocalShift local_shift;
@@ -150,7 +149,7 @@ std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const Monochrome
         local_shift.dx = good_match ?  best_x - original_x : 0;
         local_shift.dy = good_match ?  best_y - original_y : 0;
         local_shift.valid_ap = good_match;
-        local_shift.score = AlignmentPointBox::get_sharpness_factor(calibrated_image, best_x, best_y, apb.get_box_width(), apb.get_box_height());
+        local_shift.score = AlignmentPointBox::get_sharpness_factor(calibrated_image, best_x, best_y, box.get_box_width(), box.get_box_height());
 
         shifts.push_back(local_shift);
     }

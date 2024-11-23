@@ -71,19 +71,23 @@ void ImagePreview::read_preview_from_file(const std::string &path)  {
     read_preview_from_frame(InputFrame(path));
 };
 
-void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {
-    m_current_preview_is_raw_file = false;
-    m_image_resize_tool.set_original_size(width_original, height_original);
-    m_original_image = std::vector<std::vector<short int>>(3, std::vector<short int>(width_original*height_original,0));
-    for (int i_color = 0; i_color < 3; i_color++)   {
-        for (int i_pixel = 0; i_pixel < width_original*height_original; i_pixel++)   {
-            m_original_image[i_color][i_pixel] = stacked_image[i_color][i_pixel];
-        }
-    }
+void ImagePreview::update_original_image(const std::vector<std::vector<short int>> &original_image, int width, int height, bool apply_green_correction)   {
+    m_current_preview_is_raw_file = apply_green_correction;
+    m_image_resize_tool.set_original_size(width, height);
+    m_original_image = original_image;
     m_image_resize_tool.set_default_resized_area();
-    m_current_preview_is_raw_file = false;
     update_max_values_original();
     update_preview_data();
+};
+
+void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {
+    std::vector<std::vector<short int>> stacked_image_short_int(3, std::vector<short int>(width_original*height_original,0));
+    for (int i_color = 0; i_color < 3; i_color++)   {
+        for (int i_pixel = 0; i_pixel < width_original*height_original; i_pixel++)   {
+            stacked_image_short_int[i_color][i_pixel] = stacked_image[i_color][i_pixel];
+        }
+    }
+    update_original_image(stacked_image_short_int, width_original, height_original, false);
 };
 
 void ImagePreview::update_preview_bitmap()   {
