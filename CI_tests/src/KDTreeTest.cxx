@@ -1,6 +1,7 @@
 #include "../headers/KDTreeTest.h"
 
 #include "../../headers/KDTreeWithBuffer.h"
+#include "../../headers/Common.h"
 
 #include <iostream>
 #include <vector>
@@ -12,10 +13,6 @@
 
 using namespace std;
 using namespace AstroPhotoStacker;
-
-float AstroPhotoStacker::random_uniform(float min, float max) {
-    return min + static_cast<float>(rand())/static_cast<float>(RAND_MAX/(max-min));
-}
 
 void AstroPhotoStacker::test_kd_tree()   {
     vector<vector<float> > random_points;

@@ -13,6 +13,10 @@ float AstroPhotoStacker::random_uniform()  {
     return (float(rand())) / (float(RAND_MAX)+1);
 }
 
+float AstroPhotoStacker::random_uniform(float a, float b)  {
+    return a + (b-a)*random_uniform();
+};
+
 bool AstroPhotoStacker::contains(const string &main_string, const string &substring)    {
     return (main_string.find(substring)) != std::string::npos;
 };

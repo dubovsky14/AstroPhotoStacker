@@ -13,9 +13,28 @@ namespace AstroPhotoStacker {
         public:
             AlignmentPointBoxGrid() = delete;
 
+            /**
+             * @brief Construct a new Alignment Point Box Grid object with square boxes and uniform spacing
+             */
             AlignmentPointBoxGrid(  const MonochromeImageData &image_data,
                                     const AlignmentWindow &alignment_window,
-                                    unsigned int box_size, unsigned int box_spacing, int center_x, int center_y);
+                                    unsigned int box_size, unsigned int box_spacing);
+
+
+            /**
+             * @brief Construct a new Alignment Point Box Grid object with square boxes and uniform spacing
+             *
+             * @param image_data The image data
+             * @param alignment_window The alignment window
+             * @param box_width_range The range of the box width in pixels - std::pair<float,float> - min, max
+             * @param box_height_range The range of the box height in pixels - std::pair<float,float> - min, max
+             * @param n_boxes The number of boxes
+             */
+            AlignmentPointBoxGrid(  const MonochromeImageData &image_data,
+                                    const AlignmentWindow &alignment_window,
+                                    std::pair<int,int> box_width_range,
+                                    std::pair<int,int> box_height_range,
+                                    unsigned int n_boxes);
 
             /**
              * @brief Get the local shifts of the alignment point boxes.
@@ -33,6 +52,11 @@ namespace AstroPhotoStacker {
 
             std::vector<std::tuple<int,int,AlignmentPointBox>> m_boxes; // x, y, box
             AlignmentWindow m_alignment_window;
+
+            /**
+             * @brief Sort the alignment boxes in a "snail" way around the center of the alignment window
+             */
+            void sort_alignment_boxes();
 
     };
 }

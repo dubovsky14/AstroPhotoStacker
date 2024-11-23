@@ -7,11 +7,11 @@
 namespace AstroPhotoStacker {
     class AlignmentPointBox    {
         public:
-            AlignmentPointBox(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_size, unsigned short max_value);
+            AlignmentPointBox(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_width, unsigned int box_height, unsigned short max_value);
 
             float get_chi2(const MonochromeImageData &image_data, int window_pos_x, int window_pos_y) const;
 
-            static bool is_valid_ap(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_size, unsigned short max_value);
+            static bool is_valid_ap(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_width, unsigned int box_height, unsigned short max_value);
 
             static void  set_contrast_threshold(float threshold);
 
@@ -19,8 +19,12 @@ namespace AstroPhotoStacker {
 
             float get_relative_rms() const;
 
-            unsigned int get_box_size() const   {
-                return m_box_size;
+            unsigned int get_box_width() const   {
+                return m_box_width;
+            };
+
+            unsigned int get_box_height() const   {
+                return m_box_height;
             };
 
             unsigned short get_max_value() const    {
@@ -29,13 +33,14 @@ namespace AstroPhotoStacker {
 
             bool good_match(float chi2) const;
 
-            static float get_sharpness_factor(const MonochromeImageData &image_data, int x_center, int y_center, int box_size);
+            static float get_sharpness_factor(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_width, unsigned int box_height);
 
         private:
             std::vector<unsigned short> m_brightness;
             int m_x_center;
             int m_y_center;
-            unsigned int m_box_size;
+            unsigned int m_box_width;
+            unsigned int m_box_height;
             unsigned short m_max_value;
             float m_max_acceptable_chi2 = 10e100;
 

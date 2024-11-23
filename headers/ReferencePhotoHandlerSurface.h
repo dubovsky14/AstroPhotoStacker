@@ -13,7 +13,7 @@
 namespace AstroPhotoStacker   {
 
     /**
-     * @brief Class responsible for handling the reference photo, providing methods for alignement of planetary photos
+     * @brief Class responsible for handling the reference photo, providing methods for alignement for solar system photos, where effects of seeing are important
      */
     class ReferencePhotoHandlerSurface : public ReferencePhotoHandlerPlanetaryZeroRotation {
         public:
@@ -23,10 +23,10 @@ namespace AstroPhotoStacker   {
             /**
              * @brief Construct a new Reference Photo Handler object
              *
-             * @param input_frame - input frame data
+             * @param reference_frame    - reference frame - local shifts will be calculated to match this frame
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerSurface(const InputFrame &input_frame, float threshold_fraction);
+            ReferencePhotoHandlerSurface(const InputFrame &reference_frame, float threshold_fraction);
 
             /**
              * @brief Construct a new Reference Photo Handler object

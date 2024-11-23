@@ -10,21 +10,22 @@ using namespace AstroPhotoStacker;
 
 float AlignmentPointBox::s_contrast_threshold = 0.4;
 
-AlignmentPointBox::AlignmentPointBox(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_size, unsigned short max_value)   {
+AlignmentPointBox::AlignmentPointBox(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_width, unsigned int box_height, unsigned short max_value)   {
     m_x_center = x_center;
     m_y_center = y_center;
-    m_box_size = box_size % 2 == 1 ? box_size : box_size + 1;
+    m_box_width  = box_width % 2 == 1  ? box_width  : box_width  + 1;
+    m_box_height = box_height % 2 == 1 ? box_height : box_height + 1;
     m_max_value = max_value;
-    m_brightness = vector<unsigned short>(m_box_size*m_box_size);
+    m_brightness = vector<unsigned short>(m_box_width*m_box_height);
 
 
-    const unsigned int y_min = y_center - m_box_size/2;
-    const unsigned int x_min = x_center - m_box_size/2;
+    const unsigned int y_min = y_center - m_box_height/2;
+    const unsigned int x_min = x_center - m_box_width/2;
 
 
-    for (unsigned int y = 0; y < m_box_size; y++) {
-        for (unsigned int x = 0; x < m_box_size; x++) {
-            m_brightness[y * m_box_size + x] = image_data.brightness[(y_min + y) * image_data.width + x_min + x];
+    for (unsigned int y = 0; y < m_box_height; y++) {
+        for (unsigned int x = 0; x < m_box_width; x++) {
+            m_brightness[y * m_box_width + x] = image_data.brightness[(y_min + y) * image_data.width + x_min + x];
         }
     }
 
@@ -34,17 +35,17 @@ AlignmentPointBox::AlignmentPointBox(const MonochromeImageData &image_data, int 
 float AlignmentPointBox::get_chi2(const MonochromeImageData &image_data, int x_center, int y_center) const  {
     double chi2 = 0;
 
-    const unsigned int y_min = y_center - m_box_size/2;
-    const unsigned int x_min = x_center - m_box_size/2;
+    const unsigned int y_min = y_center - m_box_height/2;
+    const unsigned int x_min = x_center - m_box_width/2;
 
-    if (y_min < 0 || int(y_min + m_box_size) >= image_data.height || x_min < 0 || int(x_min + m_box_size) >= image_data.width) {
+    if (y_min < 0 || int(y_min + m_box_height) >= image_data.height || x_min < 0 || int(x_min + m_box_width) >= image_data.width) {
         throw runtime_error("AlignmentPointBox::get_chi2: Box out of bounds.");
     }
 
-    for (unsigned int y = 0; y < m_box_size; y++) {
-        for (unsigned int x = 0; x < m_box_size; x++) {
+    for (unsigned int y = 0; y < m_box_height; y++) {
+        for (unsigned int x = 0; x < m_box_width; x++) {
             const double brightness_input = image_data.brightness[(y_min + y) * image_data.width + x_min + x];
-            const double brightness_box = m_brightness[y * m_box_size + x];
+            const double brightness_box = m_brightness[y * m_box_width + x];
             chi2 += (brightness_input - brightness_box) * (brightness_input - brightness_box);
         }
     }
@@ -52,14 +53,14 @@ float AlignmentPointBox::get_chi2(const MonochromeImageData &image_data, int x_c
     return chi2;
 };
 
-bool AlignmentPointBox::is_valid_ap(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_size, unsigned short max_value)    {
+bool AlignmentPointBox::is_valid_ap(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_width, unsigned int box_height, unsigned short max_value)    {
     unsigned short min_brightness = numeric_limits<unsigned short>::max();
     unsigned short max_brightness = numeric_limits<unsigned short>::min();
 
-    int y_min = y_center - box_size/2;
-    int y_max = y_center + box_size/2;
-    int x_min = x_center - box_size/2;
-    int x_max = x_center + box_size/2;
+    int y_min = y_center - box_height/2;
+    int y_max = y_center + box_height/2;
+    int x_min = x_center - box_width/2;
+    int x_max = x_center + box_width/2;
 
     if (y_min < 0 || y_max >= image_data.height || x_min < 0 || x_max >= image_data.width) {
         return false;
@@ -113,14 +114,18 @@ bool AlignmentPointBox::good_match(float chi2) const   {
     return chi2 < m_max_acceptable_chi2;
 };
 
-float AlignmentPointBox::get_sharpness_factor(const MonochromeImageData &image_data, int x_center, int y_center, int box_size)  {
-    if (box_size % 2 == 0) {
-        box_size += 1;
+float AlignmentPointBox::get_sharpness_factor(const MonochromeImageData &image_data, int x_center, int y_center, unsigned int box_width, unsigned int box_height)  {
+    if (box_width % 2 == 0) {
+        box_width += 1;
     }
-    const int y_min = y_center - box_size/2;
-    const int y_max = y_center + box_size/2;
-    const int x_min = x_center - box_size/2;
-    const int x_max = x_center + box_size/2;
+    if (box_height % 2 == 0) {
+        box_height += 1;
+    }
+
+    int y_min = y_center - box_height/2;
+    int y_max = y_center + box_height/2;
+    int x_min = x_center - box_width/2;
+    int x_max = x_center + box_width/2;
 
     if (y_min < 0 || y_max >= image_data.height || x_min < 0 || x_max >= image_data.width) {
         return 0;
@@ -134,7 +139,7 @@ float AlignmentPointBox::get_sharpness_factor(const MonochromeImageData &image_d
             sum += sharpness_x*sharpness_x + sharpness_y*sharpness_y;
         }
     }
-    return sum/((box_size-1)*(box_size-1));
+    return sum/((box_width-1)*(box_height-1));
 };
 
 float AlignmentPointBox::calculate_acceptable_chi2(const MonochromeImageData &image_data) const {

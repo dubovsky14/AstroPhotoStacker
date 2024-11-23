@@ -15,6 +15,13 @@ namespace AstroPhotoStacker {
     float random_uniform();
 
     /**
+     * @brief Generate a random number between a and b
+     *
+     * @return float The generated random number
+    */
+    float random_uniform(float a, float b);
+
+    /**
      * @brief Calculate 2nd root of a number
      *
      * @tparam X The type of the number

@@ -8,9 +8,9 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 
-ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &input_frame, float threshold_fraction) : ReferencePhotoHandlerPlanetaryZeroRotation(input_frame, threshold_fraction) {
+ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &reference_frame, float threshold_fraction) : ReferencePhotoHandlerPlanetaryZeroRotation(reference_frame, threshold_fraction) {
     m_threshold_fraction = threshold_fraction;
-    CalibratedPhotoHandler calibrated_photo_handler(input_frame, true);
+    CalibratedPhotoHandler calibrated_photo_handler(reference_frame, true);
     calibrated_photo_handler.define_alignment(0,0,0,0,0);
     calibrated_photo_handler.calibrate();
 
@@ -57,14 +57,15 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
 
     const int alignment_window_width = m_alignment_window.x_max - m_alignment_window.x_min;
     const int alignment_window_height = m_alignment_window.y_max - m_alignment_window.y_min;
-    const int average_window_size = (alignment_window_width + alignment_window_height)/2;
 
-    const int box_size = max(20, average_window_size/40);
-    const int box_spacing = 5;
+    const int min_box_width = max(20, alignment_window_width/60);
+    const int max_box_width = max(50, alignment_window_width/25);
+    const int min_box_height = max(20, alignment_window_height/60);
+    const int max_box_height = max(50, alignment_window_height/25);
+    const std::pair<int,int> box_width_range = {min_box_width, max_box_width};
+    const std::pair<int,int> box_height_range = {min_box_height, max_box_height};
 
-
-
-    m_alignment_point_box_grid = make_unique<AlignmentPointBoxGrid>(blurred_image_data, m_alignment_window, box_size, box_spacing, m_center_of_mass_x, m_center_of_mass_y);
+    m_alignment_point_box_grid = make_unique<AlignmentPointBoxGrid>(blurred_image_data, m_alignment_window, box_width_range, box_height_range, 100);
 
     cout << "Alignment grid initialized, number of boxes: " << m_alignment_point_box_grid->get_alignment_boxes().size() << endl;
 };

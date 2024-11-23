@@ -1,4 +1,5 @@
 #include "../headers/AlignmentPointBoxGrid.h"
+#include "../headers/Common.h"
 
 #include <tuple>
 #include <vector>
@@ -11,21 +12,55 @@ using namespace std;
 
 AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image_data,
                                                 const AlignmentWindow &alignment_window,
-                                                unsigned int box_size, unsigned int box_spacing,
-                                                int center_x, int center_y)  {
+                                                unsigned int box_size, unsigned int box_spacing)  {
 
     const unsigned short max_value = *std::max_element(image_data.brightness, image_data.brightness + image_data.width*image_data.height);
     const int step_size = box_size + box_spacing;
     m_alignment_window = alignment_window;
     for (int y = alignment_window.y_min; y < alignment_window.y_max; y += step_size) {
         for (int x = alignment_window.x_min; x < alignment_window.x_max; x += step_size) {
-            if (AlignmentPointBox::is_valid_ap(image_data, x, y, box_size, max_value)) {
-                m_boxes.push_back(std::make_tuple(x, y, AlignmentPointBox(image_data, x, y, box_size, max_value)));
+            if (AlignmentPointBox::is_valid_ap(image_data, x, y, box_size, box_size, max_value)) {
+                m_boxes.push_back(std::make_tuple(x, y, AlignmentPointBox(image_data, x, y, box_size, box_size, max_value)));
             }
         }
     }
 
+    sort_alignment_boxes();
+};
 
+AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image_data,
+                                                const AlignmentWindow &alignment_window,
+                                                std::pair<int,int> box_width_range,
+                                                std::pair<int,int> box_height_range,
+                                                unsigned int n_boxes)   {
+
+
+    const unsigned short max_value = *std::max_element(image_data.brightness, image_data.brightness + image_data.width*image_data.height);
+    const unsigned int alignment_window_width = alignment_window.x_max - alignment_window.x_min;
+    const unsigned int alignment_window_height = alignment_window.y_max - alignment_window.y_min;
+
+    // not all boxes will be valid -> let's try to get n_boxes valid boxes, but also don't wanna get stuck in an infinite loop
+    for (unsigned int i = 0; i < n_boxes*10; i++) {
+        const int box_width  = random_uniform(box_width_range.first,  box_width_range.second);
+        const int box_height = random_uniform(box_height_range.first, box_height_range.second);
+
+        const int x = alignment_window.x_min + random_uniform(0, alignment_window_width - box_width);
+        const int y = alignment_window.y_min + random_uniform(0, alignment_window_height - box_height);
+
+        if (AlignmentPointBox::is_valid_ap(image_data, x, y, box_width, box_height, max_value)) {
+            m_boxes.push_back(std::make_tuple(x, y, AlignmentPointBox(image_data, x, y, box_width, box_height, max_value)));
+        }
+        if (m_boxes.size() >= n_boxes) {
+            break;
+        }
+    }
+
+    sort_alignment_boxes();
+};
+
+
+
+void AlignmentPointBoxGrid::sort_alignment_boxes()    {
     auto get_side_and_index = [](int x_centered, int y_centered) {
         const int max_coordinate = max(abs(x_centered), abs(y_centered));
 
@@ -45,6 +80,8 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
     };
 
     // sort them in a "snail" way
+    const int center_x = (m_alignment_window.x_min + m_alignment_window.x_max)/2;
+    const int center_y = (m_alignment_window.y_min + m_alignment_window.y_max)/2;
     sort(m_boxes.begin(), m_boxes.end(), [center_x, center_y, &get_side_and_index](const std::tuple<int,int,AlignmentPointBox> &a, const std::tuple<int,int,AlignmentPointBox> &b) {
         const int x0_centered = get<0>(a) - center_x;
         const int y0_centered = get<1>(a) - center_y;
@@ -67,6 +104,7 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
         return index_0 < index_1;
     });
 };
+
 
 std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const MonochromeImageData &calibrated_image) const {
     vector<LocalShift> shifts;
@@ -91,7 +129,7 @@ std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const Monochrome
         const int max_shift_size = 20;
         for (int y_shift = -max_shift_size; y_shift <= max_shift_size; y_shift++) {
             for (int x_shift = -max_shift_size; x_shift <= max_shift_size; x_shift++) {
-                if (!AlignmentPointBox::is_valid_ap(calibrated_image, adjusted_x + x_shift, adjusted_y + y_shift, apb.get_box_size(), apb.get_max_value())) {
+                if (!AlignmentPointBox::is_valid_ap(calibrated_image, adjusted_x + x_shift, adjusted_y + y_shift, apb.get_box_width(), apb.get_box_height(), apb.get_max_value())) {
                     continue;
                 }
                 const float chi2 = apb.get_chi2(calibrated_image, adjusted_x + x_shift, adjusted_y + y_shift);
@@ -112,7 +150,7 @@ std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const Monochrome
         local_shift.dx = good_match ?  best_x - original_x : 0;
         local_shift.dy = good_match ?  best_y - original_y : 0;
         local_shift.valid_ap = good_match;
-        local_shift.score = AlignmentPointBox::get_sharpness_factor(calibrated_image, best_x, best_y, apb.get_box_size());
+        local_shift.score = AlignmentPointBox::get_sharpness_factor(calibrated_image, best_x, best_y, apb.get_box_width(), apb.get_box_height());
 
         shifts.push_back(local_shift);
     }
