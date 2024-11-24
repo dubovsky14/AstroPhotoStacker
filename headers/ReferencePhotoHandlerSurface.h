@@ -45,6 +45,8 @@ namespace AstroPhotoStacker   {
                                                         float rotation_center_y,
                                                         float rotation) const;
 
+            const std::vector<AlignmentPointBox> &get_alignment_boxes() const {return m_alignment_point_box_grid->get_alignment_boxes();};
+
         protected:
 
             std::unique_ptr<AlignmentPointBoxGrid> m_alignment_point_box_grid = nullptr;

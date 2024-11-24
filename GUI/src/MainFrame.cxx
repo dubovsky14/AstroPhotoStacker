@@ -16,6 +16,7 @@
 #include "../../headers/thread_pool.h"
 #include "../../headers/StackerBase.h"
 #include "../../headers/VideoReader.h"
+#include "../../headers/AlignmentPointBoxGrid.h"
 
 #include <wx/spinctrl.h>
 #include <wx/progdlg.h>
@@ -153,6 +154,25 @@ void MyFrame::add_alignment_menu()  {
         }
     }, id);
 
+    id = unique_counter();
+    alignment_menu->Append(id, "Show alignment boxes", "Show alignment boxes");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        int width, height;
+        std::vector<std::vector<short int>> preview_original_image = m_current_preview->get_original_image(&width, &height);
+        const bool preview_is_raw_file = m_current_preview->preview_is_raw_file();
+        cout << "Drawing " << m_alignment_box_vector_storage.size() <<  " alignment boxes" << endl;
+        AstroPhotoStacker::AlignmentPointBoxGrid::draw_boxes_into_image(
+            m_alignment_box_vector_storage,
+            &preview_original_image,
+            width,
+            height,
+            {0, 16000, 0},
+            {16000,0,0});
+
+        m_current_preview->update_original_image(preview_original_image, width, height, preview_is_raw_file);
+    }, id);
+
+
     m_menu_bar->Append(alignment_menu, "&Alignment");
 };
 
@@ -203,7 +223,7 @@ void MyFrame::add_aligned_images_producer_menu()  {
         if (!frames_aligned) {
             wxMessageDialog dialog(this, "Please align the frames first!", "Frames not aligned");
             if (dialog.ShowModal() == wxID_YES) {
-                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, static_cast<StackSettings *>(m_stack_settings.get()));
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, static_cast<StackSettings *>(m_stack_settings.get()), &m_alignment_box_vector_storage);
                 select_alignment_window->Show(true);
             }
             else {
@@ -399,7 +419,7 @@ void MyFrame::add_button_bar()   {
             dialog->ShowModal();
             return;
         }
-        AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, m_stack_settings.get());
+        AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, m_stack_settings.get(), &m_alignment_box_vector_storage);
         select_alignment_window->Show(true);
     });
 
@@ -463,7 +483,7 @@ void MyFrame::add_button_bar()   {
         if (!frames_aligned) {
             wxMessageDialog dialog(this, "Please align the files first!", "Files not aligned");
             if (dialog.ShowModal() == wxID_YES) {
-                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, static_cast<StackSettings *>(m_stack_settings.get()));
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, static_cast<StackSettings *>(m_stack_settings.get()), &m_alignment_box_vector_storage);
                 select_alignment_window->Show(true);
             }
             else {

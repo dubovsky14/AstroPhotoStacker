@@ -128,6 +128,9 @@ void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const
                 vector<LocalShift> local_shifts = surface_handler->get_local_shifts(input_frame, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
                 m_local_shifts_vector[file_index] = local_shifts;
                 alignment_info.local_shifts_handler = LocalShiftsHandler(local_shifts);
+                if (m_alignment_box_vector_storage) {
+                    *m_alignment_box_vector_storage = surface_handler->get_alignment_boxes();
+                }
             }
         }
         else {

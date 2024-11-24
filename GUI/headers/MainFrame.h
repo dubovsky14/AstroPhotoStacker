@@ -187,6 +187,8 @@ class MyFrame : public wxFrame  {
 
         static std::string s_gui_folder_path;
 
+        std::vector<AstroPhotoStacker::AlignmentPointBox> m_alignment_box_vector_storage;
+
 };
 
 inline int unique_counter()    {

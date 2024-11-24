@@ -156,9 +156,14 @@ class ImagePreview {
         /**
          * @brief Get original image data as vector<vector<short int>> (3 color channels, each with width*height pixels)
          *
+         * @param width pointer to the width of the image
+         * @param height pointer to the height of the image
+         *
          * @return  const std::vector<std::vector<short int>>& original image data
         */
-        const std::vector<std::vector<short int>>& get_original_image() const { return m_original_image;};
+        const std::vector<std::vector<short int>>& get_original_image(int *width = nullptr, int *height = nullptr) const;
+
+        bool preview_is_raw_file() const { return m_current_preview_is_raw_file;};
 
         /**
          * @brief Image preview bitmap (for sizer)

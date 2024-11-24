@@ -11,13 +11,14 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handler, StackSettings *stack_settings)
+AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handler, StackSettings *stack_settings, std::vector<AstroPhotoStacker::AlignmentPointBox> *alignment_box_vector_storage)
     :  wxFrame(parent, wxID_ANY, "Select alignment file")      {
 
     //SetSize(400, 200);
 
     m_stack_settings = stack_settings;
     m_filelist_handler = filelist_handler;
+    m_alignment_box_vector_storage = alignment_box_vector_storage;
     wxBoxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
 
     wxStaticText* select_file_text = new wxStaticText(this, wxID_ANY, "Select alignment file:");
@@ -70,6 +71,11 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
         photo_alignment_handler.set_alignment_method(m_stack_settings->get_alignment_method());
         photo_alignment_handler.set_number_of_cpu_threads(m_stack_settings->get_n_cpus());
         const std::atomic<int> &n_processed = photo_alignment_handler.get_number_of_aligned_files();
+        if (m_alignment_box_vector_storage != nullptr) {
+            m_alignment_box_vector_storage->clear();
+            photo_alignment_handler.set_alignment_box_vector_storage(m_alignment_box_vector_storage);
+        }
+
 
         const int files_total = frames_to_align.size();
         wxProgressDialog *progress_bar = new wxProgressDialog("Aligning files", "Aligned 0 / " + std::to_string(files_total) + " files", files_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);

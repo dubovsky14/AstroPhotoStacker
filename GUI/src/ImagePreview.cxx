@@ -171,6 +171,16 @@ void ImagePreview::set_stretcher(const CombinedColorStrecherTool *color_stretche
     m_color_stretcher = color_stretcher;
 };
 
+const std::vector<std::vector<short int>>& ImagePreview::get_original_image(int *width, int *height) const    {
+    if (width != nullptr) {
+        *width = m_image_resize_tool.get_width_original();
+    }
+    if (height != nullptr) {
+        *height = m_image_resize_tool.get_height_original();
+    }
+    return m_original_image;
+};
+
 void ImagePreview::update_max_values_original()    {
     m_max_values_original = std::vector<int>(3,0);
     for (int i_color = 0; i_color < 3; i_color++)   {

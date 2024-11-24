@@ -47,22 +47,21 @@ namespace AstroPhotoStacker {
             const std::vector<AlignmentPointBox> &get_alignment_boxes() const {return m_boxes;};
 
             template<typename PixelType>
-            static void draw_boxes_into_image(  const std::vector<std::tuple<int,int,AlignmentPointBox>> &alignment_boxes,
+            static void draw_boxes_into_image(  const std::vector<AlignmentPointBox> &alignment_boxes,
                                                 std::vector<std::vector<PixelType>> *image,
                                                 int width,
                                                 int height,
                                                 const std::vector<int> &valid_ap_color,
                                                 const std::vector<int> &invalid_ap_color)    {
 
-                for (const std::tuple<int,int,AlignmentPointBox> &box : alignment_boxes) {
-                    const int x = std::get<0>(box);
-                    const int y = std::get<1>(box);
-                    const AlignmentPointBox &apb = std::get<2>(box);
+                for (const AlignmentPointBox &box : alignment_boxes) {
+                    const int x = box.get_center_x();
+                    const int y = box.get_center_y();
 
-                    const int x_min = std::max<int>(0, x - apb.get_box_width()/2);
-                    const int x_max = std::min<int>(width-1, x + apb.get_box_width()/2);
-                    const int y_min = std::max<int>(0, y - apb.get_box_height()/2);
-                    const int y_max = std::min<int>(height-1, y + apb.get_box_height()/2);
+                    const int x_min = std::max<int>(0, x - box.get_box_width()/2);
+                    const int x_max = std::min<int>(width-1, x + box.get_box_width()/2);
+                    const int y_min = std::max<int>(0, y - box.get_box_height()/2);
+                    const int y_max = std::min<int>(height-1, y + box.get_box_height()/2);
 
                     const std::vector<int> &colors = true ? valid_ap_color : invalid_ap_color;
 
