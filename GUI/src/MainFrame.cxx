@@ -157,19 +157,17 @@ void MyFrame::add_alignment_menu()  {
     id = unique_counter();
     alignment_menu->Append(id, "Show alignment boxes", "Show alignment boxes");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        int width, height;
-        std::vector<std::vector<short int>> preview_original_image = m_current_preview->get_original_image(&width, &height);
-        const bool preview_is_raw_file = m_current_preview->preview_is_raw_file();
-        cout << "Drawing " << m_alignment_box_vector_storage.size() <<  " alignment boxes" << endl;
-        AstroPhotoStacker::AlignmentPointBoxGrid::draw_boxes_into_image(
-            m_alignment_box_vector_storage,
-            &preview_original_image,
-            width,
-            height,
-            {0, 16000, 0},
-            {16000,0,0});
-
-        m_current_preview->update_original_image(preview_original_image, width, height, preview_is_raw_file);
+        auto draw_boxes_lambda = [this](std::vector<std::vector<short int>> *image_data, int width, int height) {
+            cout << "Drawing " << m_alignment_box_vector_storage.size() <<  " alignment boxes" << endl;
+            AstroPhotoStacker::AlignmentPointBoxGrid::draw_boxes_into_image(
+                m_alignment_box_vector_storage,
+                image_data,
+                width,
+                height,
+                {0, 255, 0},
+                {255,0,0});
+        };
+        m_current_preview->add_layer(draw_boxes_lambda);
     }, id);
 
 

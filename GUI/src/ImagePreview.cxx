@@ -97,7 +97,8 @@ void ImagePreview::update_preview_bitmap()   {
 
 wxImage ImagePreview::get_updated_wximage(bool apply_green_correction)  const  {
     wxImage image_wx(m_width, m_height);
-    auto set_pixels = [&image_wx, this](float green_channel_correction) {
+    const bool apply_additional_layers = m_additional_layers_preview.size() == m_original_image.size();
+    auto set_pixels = [&image_wx, this, apply_additional_layers](float green_channel_correction) {
         const float scale_factor = pow(2,m_exposure_correction)*2*255.0 / m_max_value;
         for (int y = 0; y < m_height; ++y) {
             for (int x = 0; x < m_width; ++x) {
@@ -116,6 +117,15 @@ wxImage ImagePreview::get_updated_wximage(bool apply_green_correction)  const  {
                 red   = min<int>(255,scale_factor*red  );
                 green = min<int>(255,scale_factor*green*green_channel_correction);
                 blue  = min<int>(255,scale_factor*blue );
+
+                if (apply_additional_layers) {
+                    const bool valid_pixel = m_additional_layers_preview[0][index] >= 0;
+                    if (valid_pixel) {
+                        red   = m_additional_layers_preview[0][index];
+                        green = m_additional_layers_preview[1][index];
+                        blue  = m_additional_layers_preview[2][index];
+                    }
+                }
                 image_wx.SetRGB(x, y, red, green, blue);
             }
         }
@@ -165,8 +175,6 @@ void ImagePreview::zoom_out(float mouse_position_relative_x, float mouse_positio
     zoom(mouse_position_relative_x, mouse_position_relative_y, -1./3);
 };
 
-
-
 void ImagePreview::set_stretcher(const CombinedColorStrecherTool *color_stretcher)    {
     m_color_stretcher = color_stretcher;
 };
@@ -181,6 +189,11 @@ const std::vector<std::vector<short int>>& ImagePreview::get_original_image(int 
     return m_original_image;
 };
 
+void ImagePreview::add_layer(const std::function<void(std::vector<std::vector<short int>> *, int, int)> &functor)   {
+    m_additional_layers_functors.push_back(functor);
+    update_additional_layers_data();
+};
+
 void ImagePreview::update_max_values_original()    {
     m_max_values_original = std::vector<int>(3,0);
     for (int i_color = 0; i_color < 3; i_color++)   {
@@ -192,8 +205,10 @@ void ImagePreview::update_max_values_original()    {
 };
 
 void ImagePreview::update_preview_data(float mouse_position_relative_x, float mouse_position_relative_y)    {
-
+    const bool has_additional_layers = m_additional_layers_functors.size() != 0;
     m_preview_data = std::vector<std::vector<int>>(3, std::vector<int>(m_width*m_height,0)); // 2D vector of brightness values - first index = color, second index = pixel
+    m_additional_layers_preview = has_additional_layers ? std::vector<std::vector<short int>>(3, std::vector<short int>(m_width*m_height, -1)) : std::vector<std::vector<short int>>();
+
     std::vector<int>                count(m_width*m_height,0);
 
     m_image_resize_tool.set_relative_mouse_position(mouse_position_relative_x, mouse_position_relative_y);
@@ -213,6 +228,16 @@ void ImagePreview::update_preview_data(float mouse_position_relative_x, float mo
                 const int index_new = pixel_preview_y * m_width + pixel_preview_x;
                 m_preview_data[i_color][index_new] += m_original_image[i_color][index];
                 count.at(index_new)++;
+
+                if (has_additional_layers && i_color == 0) {
+                    const bool valid_pixel = m_additional_layers_data[0][index] >= 0;
+                    if (valid_pixel) {
+                        m_additional_layers_preview[0][index_new] = m_additional_layers_data[0][index];
+                        m_additional_layers_preview[1][index_new] = m_additional_layers_data[1][index];
+                        m_additional_layers_preview[2][index_new] = m_additional_layers_data[2][index];
+                    }
+
+                }
             }
         }
     }
@@ -303,4 +328,13 @@ void ImagePreview::bind_shift_events()    {
 
         update_preview_bitmap();
     });
+};
+
+
+void ImagePreview::update_additional_layers_data()  {
+    m_additional_layers_data = std::vector<std::vector<short int>>(3, std::vector<short int>(m_image_resize_tool.get_width_original()*m_image_resize_tool.get_height_original(), -1));
+    for (const auto &functor : m_additional_layers_functors) {
+        functor(&m_additional_layers_data, m_image_resize_tool.get_width_original(), m_image_resize_tool.get_height_original());
+    }
+    update_preview_bitmap();
 };

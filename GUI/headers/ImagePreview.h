@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <string>
+#include <functional>
 
 #include <wx/wx.h>
 #include <wx/generic/statbmpg.h>
@@ -170,13 +171,19 @@ class ImagePreview {
         */
        wxGenericStaticBitmap *get_image_preview_bitmap()   const   {return m_preview_bitmap;};
 
+       void add_layer(const std::function<void(std::vector<std::vector<short int>> *, int, int)> &functor);
+
     protected:
         wxFrame *m_parent = nullptr;
         wxGenericStaticBitmap                  *m_preview_bitmap       = nullptr;
         ImageResizeTool m_image_resize_tool;
 
 
-        std::vector<std::vector<short int>> m_original_image; // 3 color channels, each with width*height pixels
+        std::vector<std::vector<short int>>                     m_original_image;               // 3 color channels, each with width*height pixels
+        std::vector<std::vector<short int>>                     m_additional_layers_data;       // 3 color channels, each with width*height pixels
+        std::vector<std::vector<short int>>                     m_additional_layers_preview;    // 3 color channels, each with width*height pixels = -1 means empty pixel in the additional layer
+
+        std::vector<std::function<void(std::vector<std::vector<short int>> *, int, int)>>   m_additional_layers_functors;   // vector of functors to apply additional layers to the image, such as crop borders, alignment points, etc.
 
         int m_width = 0;
         int m_height =0;
@@ -203,4 +210,6 @@ class ImagePreview {
         wxImage get_updated_wximage(bool apply_green_correction) const;
 
         void bind_shift_events();
+
+        void update_additional_layers_data();
 };
