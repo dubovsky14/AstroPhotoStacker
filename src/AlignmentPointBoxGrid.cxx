@@ -47,6 +47,10 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
         const int x = alignment_window.x_min + random_uniform(0, alignment_window_width - box_width);
         const int y = alignment_window.y_min + random_uniform(0, alignment_window_height - box_height);
 
+        if (!fulfill_overlap_condition(m_boxes, x, y, box_width, box_height, m_maximal_overlap_between_boxes))    {
+            continue;
+        }
+
         if (AlignmentPointBox::is_valid_ap(image_data, x, y, box_width, box_height, max_value)) {
             m_boxes.emplace_back(image_data, x, y, box_width, box_height, max_value);
         }
@@ -212,4 +216,52 @@ std::tuple<int,int> AlignmentPointBoxGrid::get_interpolated_shift(const vector<L
         sum_weights += weight;
     }
     return std::make_tuple(sum_x / sum_weights, sum_y / sum_weights);
+};
+
+bool AlignmentPointBoxGrid::fulfill_overlap_condition(const std::vector<AlignmentPointBox> &boxes, int x, int y, int width, int height, float max_allowed_overlap_fraction)     {
+    for (const AlignmentPointBox &box : boxes) {
+        const int old_box_x_min = box.get_center_x() - box.get_box_width()/2;
+        const int old_box_x_max = box.get_center_x() + box.get_box_width()/2;
+        const int old_box_y_min = box.get_center_y() - box.get_box_height()/2;
+        const int old_box_y_max = box.get_center_y() + box.get_box_height()/2;
+        const unsigned int old_box_area = box.get_box_width() * box.get_box_height();
+
+        const int new_box_x_min = x;
+        const int new_box_x_max = x + width;
+        const int new_box_y_min = y;
+        const int new_box_y_max = y + height;
+        const unsigned int new_box_area = width * height;
+
+        auto get_one_dimension_overlap = [](int a_min, int a_max, int b_min, int b_max) -> std::pair<int,int> {
+            if (a_min > b_min) {
+                swap(a_min, b_min);
+                swap(a_max, b_max);
+            }
+
+            if (a_max < b_min) {
+                return {-1, -1};
+            }
+
+            int overlap_start = b_min;
+
+            if (a_max < b_max) {
+                return {overlap_start, a_max};
+            }
+            return {overlap_start, b_max};
+        };
+
+        const auto [x_overlap_start, x_overlap_end] = get_one_dimension_overlap(old_box_x_min, old_box_x_max, new_box_x_min, new_box_x_max);
+        const auto [y_overlap_start, y_overlap_end] = get_one_dimension_overlap(old_box_y_min, old_box_y_max, new_box_y_min, new_box_y_max);
+
+        if (x_overlap_start == -1 || y_overlap_start == -1) {
+            continue;
+        }
+
+        const unsigned int overlap_area = (x_overlap_end - x_overlap_start) * (y_overlap_end - y_overlap_start);
+
+        if (overlap_area > max_allowed_overlap_fraction * min(old_box_area, new_box_area)) {
+            return false;
+        }
+    }
+    return true;
 };

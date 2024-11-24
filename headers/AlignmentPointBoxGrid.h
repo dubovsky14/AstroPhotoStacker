@@ -90,5 +90,9 @@ namespace AstroPhotoStacker {
              */
             void sort_alignment_boxes();
 
+            float m_maximal_overlap_between_boxes = 0.3;
+
+            static bool fulfill_overlap_condition(const std::vector<AlignmentPointBox> &boxes, int x, int y, int width, int height, float max_allowed_overlap_fraction);
+
     };
 }
