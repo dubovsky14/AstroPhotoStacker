@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <functional>
+#include <map>
 
 #include <wx/wx.h>
 #include <wx/generic/statbmpg.h>
@@ -171,7 +172,18 @@ class ImagePreview {
         */
        wxGenericStaticBitmap *get_image_preview_bitmap()   const   {return m_preview_bitmap;};
 
-       void add_layer(const std::function<void(std::vector<std::vector<short int>> *, int, int)> &functor);
+        /**
+         * @brief Add additional layer to the image preview - for example to show alignment boxes or crop borders
+         *
+         * @param layer_name name of the layer
+         * @param functor function to apply the layer
+        */
+        void add_layer(const std::string &layer_name, const std::function<void(std::vector<std::vector<short int>> *, int, int)> &functor);
+
+        /**
+         * @brief Remove additional layer
+        */
+        void remove_layer(const std::string &layer_name);
 
     protected:
         wxFrame *m_parent = nullptr;
@@ -183,7 +195,8 @@ class ImagePreview {
         std::vector<std::vector<short int>>                     m_additional_layers_data;       // 3 color channels, each with width*height pixels
         std::vector<std::vector<short int>>                     m_additional_layers_preview;    // 3 color channels, each with width*height pixels = -1 means empty pixel in the additional layer
 
-        std::vector<std::function<void(std::vector<std::vector<short int>> *, int, int)>>   m_additional_layers_functors;   // vector of functors to apply additional layers to the image, such as crop borders, alignment points, etc.
+        // vector of functors to apply additional layers to the image, such as crop borders, alignment points, etc.
+        std::map<std::string, std::function<void(std::vector<std::vector<short int>> *, int, int)>>   m_additional_layers_functors;
 
         int m_width = 0;
         int m_height =0;

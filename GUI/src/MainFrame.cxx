@@ -154,10 +154,12 @@ void MyFrame::add_alignment_menu()  {
         }
     }, id);
 
+
+    const std::string alignment_boxes_preview_name = "alignment_boxes";
     id = unique_counter();
     alignment_menu->Append(id, "Show alignment boxes", "Show alignment boxes");
-    Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        auto draw_boxes_lambda = [this](std::vector<std::vector<short int>> *image_data, int width, int height) {
+    Bind(wxEVT_MENU, [this, alignment_boxes_preview_name](wxCommandEvent&){
+        auto draw_boxes_lambda = [this, alignment_boxes_preview_name](std::vector<std::vector<short int>> *image_data, int width, int height) {
             cout << "Drawing " << m_alignment_box_vector_storage.size() <<  " alignment boxes" << endl;
             AstroPhotoStacker::AlignmentPointBoxGrid::draw_boxes_into_image(
                 m_alignment_box_vector_storage,
@@ -167,7 +169,13 @@ void MyFrame::add_alignment_menu()  {
                 {0, 255, 0},
                 {255,0,0});
         };
-        m_current_preview->add_layer(draw_boxes_lambda);
+        m_current_preview->add_layer(alignment_boxes_preview_name, draw_boxes_lambda);
+    }, id);
+
+    id = unique_counter();
+    alignment_menu->Append(id, "Hide alignment boxes", "Hide alignment boxes");
+    Bind(wxEVT_MENU, [this, alignment_boxes_preview_name](wxCommandEvent&){
+        m_current_preview->remove_layer(alignment_boxes_preview_name);
     }, id);
 
 

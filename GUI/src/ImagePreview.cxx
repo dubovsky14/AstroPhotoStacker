@@ -189,8 +189,16 @@ const std::vector<std::vector<short int>>& ImagePreview::get_original_image(int 
     return m_original_image;
 };
 
-void ImagePreview::add_layer(const std::function<void(std::vector<std::vector<short int>> *, int, int)> &functor)   {
-    m_additional_layers_functors.push_back(functor);
+void ImagePreview::add_layer(const std::string &layer_name, const std::function<void(std::vector<std::vector<short int>> *, int, int)> &functor)   {
+    m_additional_layers_functors[layer_name] = functor;
+    update_additional_layers_data();
+};
+
+void ImagePreview::remove_layer(const std::string &layer_name)    {
+    if (m_additional_layers_functors.find(layer_name) == m_additional_layers_functors.end()) {
+        return;
+    }
+    m_additional_layers_functors.erase(layer_name);
     update_additional_layers_data();
 };
 
@@ -333,8 +341,9 @@ void ImagePreview::bind_shift_events()    {
 
 void ImagePreview::update_additional_layers_data()  {
     m_additional_layers_data = std::vector<std::vector<short int>>(3, std::vector<short int>(m_image_resize_tool.get_width_original()*m_image_resize_tool.get_height_original(), -1));
-    for (const auto &functor : m_additional_layers_functors) {
-        functor(&m_additional_layers_data, m_image_resize_tool.get_width_original(), m_image_resize_tool.get_height_original());
+    for (const auto &layer_name_and_functor : m_additional_layers_functors) {
+        layer_name_and_functor.second(&m_additional_layers_data, m_image_resize_tool.get_width_original(), m_image_resize_tool.get_height_original());
     }
+    update_preview_data();
     update_preview_bitmap();
 };
