@@ -3,6 +3,7 @@
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/thread_pool.h"
 #include "../../headers/InputFrame.h"
+#include "../../headers/AlignmentPointBox.h"
 
 #include <vector>
 #include <iostream>
@@ -14,12 +15,12 @@ using namespace AstroPhotoStacker;
 AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handler, StackSettings *stack_settings, std::vector<AstroPhotoStacker::AlignmentPointBox> *alignment_box_vector_storage)
     :  wxFrame(parent, wxID_ANY, "Select alignment file")      {
 
-    //SetSize(400, 200);
+    SetSize(m_window_size);
 
     m_stack_settings = stack_settings;
     m_filelist_handler = filelist_handler;
     m_alignment_box_vector_storage = alignment_box_vector_storage;
-    wxBoxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
+    m_main_sizer = new wxBoxSizer(wxVERTICAL);
 
     wxStaticText* select_file_text = new wxStaticText(this, wxID_ANY, "Select alignment file:");
     select_file_text->SetFont(wxFont(15, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
@@ -58,11 +59,13 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
     wxChoice* choice_box_alignment_method = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, alignment_methods.size(), alignment_methods.data());
     choice_box_alignment_method->SetSelection(0);
     stack_settings->set_alignment_method("stars");
-    choice_box_alignment_method->Bind(wxEVT_CHOICE, [choice_box_alignment_method, stack_settings](wxCommandEvent&){
+    choice_box_alignment_method->Bind(wxEVT_CHOICE, [this, choice_box_alignment_method, stack_settings](wxCommandEvent&){
         int current_selection = choice_box_alignment_method->GetSelection();
         std::string alignment_method = choice_box_alignment_method->GetString(current_selection).ToStdString();
         stack_settings->set_alignment_method(alignment_method);
+        update_options_visibility(alignment_method);
     });
+
 
     wxButton* button_ok = new wxButton(this, wxID_ANY, "Align files");
     button_ok->Bind(wxEVT_BUTTON, [this, frames_to_align, indices_frames_to_align, parent](wxCommandEvent&){
@@ -120,12 +123,55 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
         this->Close();
     });
 
-    main_sizer->Add(select_file_text, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
-    main_sizer->Add(choice_box_alignment_frame, 0,  wxEXPAND, 5);
-    main_sizer->Add(select_alignment_method, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
-    main_sizer->Add(choice_box_alignment_method, 0,  wxEXPAND, 5);
-    main_sizer->Add(button_ok, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+    m_main_sizer->Add(select_file_text, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
+    m_main_sizer->Add(choice_box_alignment_frame, 0,  wxEXPAND, 5);
+    m_main_sizer->Add(select_alignment_method, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
+    m_main_sizer->Add(choice_box_alignment_method, 0,  wxEXPAND, 5);
+    m_main_sizer->Add(button_ok, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
-    this->SetSizer(main_sizer);
 
+    add_surface_method_settings();
+
+    this->SetSizer(m_main_sizer);
+
+};
+
+
+void AlignmentFrame::add_surface_method_settings()  {
+    m_hidden_options_sizer = new wxBoxSizer(wxVERTICAL);
+
+    // Contrast threshold
+    const float initial_contrast_threshold = AlignmentPointBox::get_contrast_threshold();
+    m_contrast_threshold_text = new wxStaticText(this, wxID_ANY, "Contrast threshold:" + to_string(initial_contrast_threshold));
+    m_hidden_options_sizer->Add(m_contrast_threshold_text, 0, wxEXPAND, 5);
+    m_slider_contrast_threshold = new wxSlider(this, wxID_ANY, initial_contrast_threshold*100, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+    m_slider_contrast_threshold->SetToolTip("If ratio between darkest and brightest pixels is higher, the alignment point will be rejected.");
+    m_slider_contrast_threshold->Bind(wxEVT_SLIDER, [this](wxCommandEvent&){
+        const float contrast_threshold = m_slider_contrast_threshold->GetValue()/100.;
+        const std::string new_label = "Contrast threshold: " + to_string(contrast_threshold+0.00001).substr(0,4);
+        m_contrast_threshold_text->SetLabel(new_label);
+        AlignmentPointBox::set_contrast_threshold(contrast_threshold);
+    });
+    m_hidden_options_sizer->Add(m_slider_contrast_threshold, 0, wxEXPAND, 5);
+
+    m_contrast_threshold_text->Hide();
+    m_slider_contrast_threshold->Hide();
+
+    m_main_sizer->Add(m_hidden_options_sizer, 2, wxEXPAND, 5);
+};
+
+void AlignmentFrame::update_options_visibility(const std::string &alignment_method)    {
+    if (alignment_method == "surface") {
+        m_contrast_threshold_text->Show();
+        m_slider_contrast_threshold->Show();
+    }
+    else    {
+        m_contrast_threshold_text->Hide();
+        m_slider_contrast_threshold->Hide();
+    }
+
+
+    m_hidden_options_sizer->Layout();
+    m_hidden_options_sizer->Fit(this);
+    SetSize(m_window_size);
 };

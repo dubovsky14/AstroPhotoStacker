@@ -242,12 +242,7 @@ bool AlignmentPointBoxGrid::fulfill_overlap_condition(const std::vector<Alignmen
                 return {-1, -1};
             }
 
-            int overlap_start = b_min;
-
-            if (a_max < b_max) {
-                return {overlap_start, a_max};
-            }
-            return {overlap_start, b_max};
+            return {b_min, min(a_max, b_max)};
         };
 
         const auto [x_overlap_start, x_overlap_end] = get_one_dimension_overlap(old_box_x_min, old_box_x_max, new_box_x_min, new_box_x_max);
