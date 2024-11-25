@@ -1,4 +1,5 @@
 #include "../headers/AlignmentFrame.h"
+#include "../headers/ProgressBarWindow.h"
 
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/thread_pool.h"
@@ -33,7 +34,6 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handle
     add_button_align_files(parent);
 
     this->SetSizer(m_main_sizer);
-
 };
 
 void AlignmentFrame::initialize_list_of_frames_to_align()   {
@@ -126,7 +126,6 @@ void AlignmentFrame::update_options_visibility(const std::string &alignment_meth
         m_slider_contrast_threshold->Hide();
     }
 
-
     m_hidden_options_sizer->Layout();
     m_hidden_options_sizer->Fit(this);
     SetSize(m_window_size);
@@ -139,29 +138,21 @@ void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
         AstroPhotoStacker::PhotoAlignmentHandler photo_alignment_handler;
         photo_alignment_handler.set_alignment_method(m_stack_settings->get_alignment_method());
         photo_alignment_handler.set_number_of_cpu_threads(m_stack_settings->get_n_cpus());
-        const std::atomic<int> &n_processed = photo_alignment_handler.get_number_of_aligned_files();
         if (m_alignment_box_vector_storage != nullptr) {
             m_alignment_box_vector_storage->clear();
             photo_alignment_handler.set_alignment_box_vector_storage(m_alignment_box_vector_storage);
         }
 
 
-        const int files_total = m_frames_to_align.size();
-        wxProgressDialog *progress_bar = new wxProgressDialog("Aligning files", "Aligned 0 / " + std::to_string(files_total) + " files", files_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
-        progress_bar->Update(n_processed);
-
-        thread_pool pool(1);
-        pool.submit([this, &photo_alignment_handler](){
-            photo_alignment_handler.align_files(m_stack_settings->get_alignment_frame(), m_frames_to_align);
-        });
-
-        while (pool.get_tasks_total()) {
-            progress_bar->Update(n_processed, "Aligned " + std::to_string(n_processed) + " / " + std::to_string(files_total) + " files");
-            wxMilliSleep(100);
-        }
-        progress_bar->Close();
-
-        pool.wait_for_tasks();
+        const int files_total = m_indices_frames_to_align.size();
+        const std::atomic<int> &n_processed = photo_alignment_handler.get_number_of_aligned_files();
+        run_task_with_progress_dialog(  "Aligning files",
+                                        "Aligned ",
+                                        "files",
+                                        n_processed,
+                                        files_total,
+                                        [this, &photo_alignment_handler](){photo_alignment_handler.align_files(m_stack_settings->get_alignment_frame(), m_frames_to_align);},
+                                        "All files aligned", 100);
 
         const std::vector<AstroPhotoStacker::FileAlignmentInformation> &alignment_info = photo_alignment_handler.get_alignment_parameters_vector();
         const std::vector<std::vector<AstroPhotoStacker::LocalShift>> &local_shifts = photo_alignment_handler.get_local_shifts_vector();
