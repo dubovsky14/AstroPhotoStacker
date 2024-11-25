@@ -4,6 +4,8 @@
 #include "../headers/MonochromeImageData.h"
 #include "../headers/ImageFilesInputOutput.h"
 
+#include "../headers/AlignmentSettingsSurface.h"
+
 using namespace AstroPhotoStacker;
 using namespace std;
 
@@ -48,6 +50,7 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
     image_data.width = m_width;
     image_data.height = m_height;
 
+    const AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
     const vector<unsigned short> blurred_brightness = gaussian_blur(image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
     MonochromeImageData blurred_image_data;
     blurred_image_data.brightness = blurred_brightness.data();
@@ -65,7 +68,12 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
     const std::pair<int,int> box_width_range = {min_box_width, max_box_width};
     const std::pair<int,int> box_height_range = {min_box_height, max_box_height};
 
-    m_alignment_point_box_grid = make_unique<AlignmentPointBoxGrid>(blurred_image_data, m_alignment_window, box_width_range, box_height_range, 100);
+    m_alignment_point_box_grid = make_unique<AlignmentPointBoxGrid>(
+        blurred_image_data,
+        m_alignment_window,
+        box_width_range,
+        box_height_range,
+        alignment_settings_surface->get_number_of_boxes());
 
     cout << "Alignment grid initialized, number of boxes: " << m_alignment_point_box_grid->get_alignment_boxes().size() << endl;
 };
