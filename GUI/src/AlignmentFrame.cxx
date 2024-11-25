@@ -96,34 +96,29 @@ void AlignmentFrame::add_alignment_method_menu()    {
 void AlignmentFrame::add_surface_method_settings()  {
     m_hidden_options_sizer = new wxBoxSizer(wxVERTICAL);
 
-    // Contrast threshold
-    const float initial_contrast_threshold = AlignmentPointBox::get_contrast_threshold();
-    m_contrast_threshold_text = new wxStaticText(this, wxID_ANY, "Contrast threshold:" + to_string(initial_contrast_threshold));
-    m_hidden_options_sizer->Add(m_contrast_threshold_text, 0, wxEXPAND, 5);
-    m_slider_contrast_threshold = new wxSlider(this, wxID_ANY, initial_contrast_threshold*100, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
-    m_slider_contrast_threshold->SetToolTip("If ratio between darkest and brightest pixels is higher, the alignment point will be rejected.");
-    m_slider_contrast_threshold->Bind(wxEVT_SLIDER, [this](wxCommandEvent&){
-        const float contrast_threshold = m_slider_contrast_threshold->GetValue()/100.;
-        const std::string new_label = "Contrast threshold: " + to_string(contrast_threshold+0.00001).substr(0,4);
-        m_contrast_threshold_text->SetLabel(new_label);
-        AlignmentPointBox::set_contrast_threshold(contrast_threshold);
+    m_contrast_threshold_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Contrast threshold: ",
+        0,
+        1,
+        AlignmentPointBox::get_contrast_threshold(),
+        0.01,
+        2,
+        [](float value){AlignmentPointBox::set_contrast_threshold(value);
     });
-    m_hidden_options_sizer->Add(m_slider_contrast_threshold, 0, wxEXPAND, 5);
 
-    m_contrast_threshold_text->Hide();
-    m_slider_contrast_threshold->Hide();
+    m_contrast_threshold_slider->add_sizer(m_hidden_options_sizer, 0, wxEXPAND, 5);
+    m_contrast_threshold_slider->hide();
 
     m_main_sizer->Add(m_hidden_options_sizer, 2, wxEXPAND, 5);
 };
 
 void AlignmentFrame::update_options_visibility(const std::string &alignment_method)    {
     if (alignment_method == "surface") {
-        m_contrast_threshold_text->Show();
-        m_slider_contrast_threshold->Show();
+        m_contrast_threshold_slider->show();
     }
     else    {
-        m_contrast_threshold_text->Hide();
-        m_slider_contrast_threshold->Hide();
+        m_contrast_threshold_slider->hide();
     }
 
     m_hidden_options_sizer->Layout();

@@ -2,6 +2,7 @@
 
 #include "../headers/FilelistHandler.h"
 #include "../headers/MainFrame.h"
+#include "../headers/FloatingPointSlider.h"
 
 #include "../../headers/StackSettings.h"
 #include "../../headers/AlignmentPointBox.h"
@@ -11,6 +12,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 
 /**
@@ -46,8 +48,7 @@ class AlignmentFrame : public wxFrame  {
         wxBoxSizer *m_hidden_options_sizer = nullptr;
         wxBoxSizer *m_main_sizer = nullptr;
 
-        wxStaticText    *m_contrast_threshold_text = nullptr;
-        wxSlider        *m_slider_contrast_threshold = nullptr;
+        std::unique_ptr<FloatingPointSlider> m_contrast_threshold_slider = nullptr;
 
         void initialize_list_of_frames_to_align();
         std::vector<int>                            m_indices_frames_to_align;
