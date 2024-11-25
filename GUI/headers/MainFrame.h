@@ -6,6 +6,7 @@
 #include "../headers/RecentPathsHandler.h"
 #include "../headers/CombinedColorStrecherTool.h"
 #include "../headers/ThreePointSlider.h"
+#include "../headers/FloatingPointSlider.h"
 
 #include "../headers/HistogramDataTool.h"
 #include "../headers/HistogramDataToolGUI.h"
@@ -145,6 +146,7 @@ class MyFrame : public wxFrame  {
 
         int                             m_preview_size[2]   = {600, 400};
         std::unique_ptr<ImagePreview>   m_current_preview = std::make_unique<ImagePreview>(this, m_preview_size[0], m_preview_size[1], 255, true);
+        std::unique_ptr<FloatingPointSlider> m_exposure_correction_slider   = nullptr;
 
         std::unique_ptr<HistogramDataTool> m_histogram_data_tool            = nullptr;
         std::unique_ptr<HistogramDataToolGUI> m_histogram_data_tool_gui     = nullptr;

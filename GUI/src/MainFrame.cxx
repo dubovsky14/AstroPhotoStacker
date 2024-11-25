@@ -871,30 +871,21 @@ void MyFrame::update_alignment_status()  {
 };
 
 void MyFrame::add_exposure_correction_spin_ctrl()   {
-    // Create a wxStaticText to display the current value
-    wxStaticText* exposure_correction_text = new wxStaticText(this, wxID_ANY, "Exposure correction: 0.0");
-
-    // Create the wxSlider
-    wxSlider* slider_exposure = new wxSlider(this, wxID_ANY, 0, -70, 70, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
-
-    // Bind the slider's wxEVT_SLIDER event to a lambda function that updates the value text
-    slider_exposure->Bind(wxEVT_SLIDER, [exposure_correction_text, slider_exposure, this](wxCommandEvent&){
-        const float exposure_correction = slider_exposure->GetValue()/10.;
-        //m_current_preview->set_exposure_correction( exposure_correction );
-
-        IndividualColorStretchingToolBase &luminance_stretcher = m_color_stretcher.get_luminance_stretcher(1);
-        (dynamic_cast<IndividualColorStretchingBlackCorrectionWhite&>(luminance_stretcher)).set_stretching_parameters(0,exposure_correction,1);
-
-        update_image_preview();
-        const std::string new_label = "Exposure correction: " + to_string(exposure_correction+0.0001).substr(0,4);
-        exposure_correction_text->SetLabel(new_label);
-    });
-
-    // Add the controls to a sizer
-    //wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-    m_sizer_top_right->Add(exposure_correction_text, 0,   wxEXPAND, 5);
-    m_sizer_top_right->Add(slider_exposure, 0,  wxEXPAND, 5);
-
+    m_exposure_correction_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Exposure correction: ",
+        -7.0,
+        7.0,
+        0.0,
+        0.1,
+        1,
+        [this](float exposure_correction){
+            IndividualColorStretchingToolBase &luminance_stretcher = m_color_stretcher.get_luminance_stretcher(1);
+            (dynamic_cast<IndividualColorStretchingBlackCorrectionWhite&>(luminance_stretcher)).set_stretching_parameters(0,exposure_correction,1);
+            update_image_preview();
+        }
+    );
+    m_exposure_correction_slider->add_sizer(m_sizer_top_right, 0, wxEXPAND, 5);
 };
 
 void MyFrame::add_input_numbers_overview()  {
