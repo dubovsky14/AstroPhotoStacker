@@ -29,10 +29,15 @@ class AlignmentFrame : public wxFrame  {
         AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handler, AstroPhotoStacker::StackSettings *stack_settings, std::vector<AstroPhotoStacker::AlignmentPointBox> *alignment_box_vector_storage = nullptr);
 
     private:
+        void add_reference_file_selection_menu();
 
         void add_surface_method_settings();
 
+        void add_alignment_method_menu();
+
         void update_options_visibility(const std::string &alignment_method);
+
+        void add_button_align_files(MyFrame *parent);
 
         AstroPhotoStacker::StackSettings *m_stack_settings = nullptr;
         FilelistHandler *m_filelist_handler = nullptr;
@@ -43,6 +48,11 @@ class AlignmentFrame : public wxFrame  {
 
         wxStaticText    *m_contrast_threshold_text = nullptr;
         wxSlider        *m_slider_contrast_threshold = nullptr;
+
+        void initialize_list_of_frames_to_align();
+        std::vector<int>                            m_indices_frames_to_align;
+        std::vector<AstroPhotoStacker::InputFrame>  m_frames_to_align;
+        std::vector<wxString>                       m_available_light_frames;
 
         wxSize m_window_size = wxSize(600, 400);
 };
