@@ -7,9 +7,12 @@
 #include "../../headers/AlignmentPointBox.h"
 #include "../../headers/AlignmentSettingsSurface.h"
 
+#include <wx/progdlg.h>
+
 #include <vector>
 #include <iostream>
-#include <wx/progdlg.h>
+#include <functional>
+#include <stdexcept>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -75,12 +78,7 @@ void AlignmentFrame::add_reference_file_selection_menu()    {
 void AlignmentFrame::add_alignment_method_menu()    {
     wxStaticText* select_alignment_method = new wxStaticText(this, wxID_ANY, "Select alignment method:");
     select_alignment_method->SetFont(wxFont(15, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
-    std::vector<wxString> alignment_methods;
-    alignment_methods.push_back("stars");
-    alignment_methods.push_back("planetary");
-    alignment_methods.push_back("planetary without rotation");
-    alignment_methods.push_back("surface");
-    wxChoice* choice_box_alignment_method = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, alignment_methods.size(), alignment_methods.data());
+    wxChoice* choice_box_alignment_method = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_alignment_methods.size(), m_alignment_methods.data());
     choice_box_alignment_method->SetSelection(0);
     m_stack_settings->set_alignment_method("stars");
     choice_box_alignment_method->Bind(wxEVT_CHOICE, [this, choice_box_alignment_method](wxCommandEvent&){
@@ -99,8 +97,42 @@ void AlignmentFrame::add_surface_method_settings()  {
 
     AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
 
-    m_contrast_threshold_slider = make_unique<FloatingPointSlider>(
-        this,
+    auto add_hidden_settings_slider = [this, alignment_settings_surface](
+            const std::string &alignment_method,
+            const std::string &label,
+            float min_value,
+            float max_value,
+            float initial_value,
+            float step,
+            int n_digits,
+            std::function<void(float)> callback
+        )   {
+            if (find(m_alignment_methods.begin(), m_alignment_methods.end(), alignment_method) == m_alignment_methods.end())    {
+                throw std::runtime_error("Attempted to use \'add_hidden_settings_slider\' function with unknown alignment method.");
+            }
+
+            auto this_slider = make_unique<FloatingPointSlider>(
+                    this,
+                    label,
+                    min_value,
+                    max_value,
+                    initial_value,
+                    step,
+                    n_digits,
+                    callback
+            );
+            this_slider->add_sizer(m_hidden_options_sizer, 0, wxEXPAND, 5);
+            this_slider->hide();
+
+            if (m_hidden_settings_sliders.find(alignment_method) == m_hidden_settings_sliders.end()) {
+                m_hidden_settings_sliders[alignment_method] = vector<unique_ptr<FloatingPointSlider>>();
+            }
+            m_hidden_settings_sliders[alignment_method].push_back(std::move(this_slider));
+    };
+
+
+    add_hidden_settings_slider(
+        "surface",
         "Contrast threshold: ",
         0,
         1,
@@ -109,11 +141,9 @@ void AlignmentFrame::add_surface_method_settings()  {
         2,
         [](float value){AlignmentPointBox::set_contrast_threshold(value);
     });
-    m_contrast_threshold_slider->add_sizer(m_hidden_options_sizer, 0, wxEXPAND, 5);
-    m_contrast_threshold_slider->hide();
 
-    m_number_of_boxes_slider = make_unique<FloatingPointSlider>(
-        this,
+    add_hidden_settings_slider(
+        "surface",
         "Number of boxes: ",
         0,
         500,
@@ -124,11 +154,9 @@ void AlignmentFrame::add_surface_method_settings()  {
             AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
             alignment_settings_surface->set_number_of_boxes(value+0.1);
     });
-    m_number_of_boxes_slider->add_sizer(m_hidden_options_sizer, 0, wxEXPAND, 5);
-    m_number_of_boxes_slider->hide();
 
-    m_maximal_overlap_between_boxes_slider = make_unique<FloatingPointSlider>(
-        this,
+    add_hidden_settings_slider(
+        "surface",
         "Maximal allowed overlap between alignment boxes: ",
         0,
         1,
@@ -140,23 +168,23 @@ void AlignmentFrame::add_surface_method_settings()  {
             alignment_settings_surface->set_max_overlap_between_boxes(value);
         }
     );
-    m_maximal_overlap_between_boxes_slider->add_sizer(m_hidden_options_sizer, 0, wxEXPAND, 5);
-    m_maximal_overlap_between_boxes_slider->hide();
 
 
     m_main_sizer->Add(m_hidden_options_sizer, 2, wxEXPAND, 5);
 };
 
-void AlignmentFrame::update_options_visibility(const std::string &alignment_method)    {
-    if (alignment_method == "surface") {
-        m_contrast_threshold_slider->show();
-        m_number_of_boxes_slider->show();
-        m_maximal_overlap_between_boxes_slider->show();
-    }
-    else    {
-        m_contrast_threshold_slider->hide();
-        m_number_of_boxes_slider->hide();
-        m_maximal_overlap_between_boxes_slider->hide();
+void AlignmentFrame::update_options_visibility(const std::string &selected_alignment_method)    {
+    for (auto &[available_method, vector_sliders] : m_hidden_settings_sliders)    {
+        if (wxString(available_method) == selected_alignment_method) {
+            for (unique_ptr<FloatingPointSlider> &slider : vector_sliders)  {
+                slider->show();
+            }
+        }
+        else {
+            for (unique_ptr<FloatingPointSlider> &slider : vector_sliders)  {
+                slider->hide();
+            }
+        }
     }
 
     m_hidden_options_sizer->Layout();

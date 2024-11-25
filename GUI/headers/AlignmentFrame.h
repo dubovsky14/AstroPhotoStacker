@@ -41,6 +41,8 @@ class AlignmentFrame : public wxFrame  {
 
         void add_button_align_files(MyFrame *parent);
 
+        std::vector<wxString> m_alignment_methods = {"stars", "planetary", "planetary without rotation", "surface"};
+
         AstroPhotoStacker::StackSettings *m_stack_settings = nullptr;
         FilelistHandler *m_filelist_handler = nullptr;
         std::vector<AstroPhotoStacker::AlignmentPointBox> *m_alignment_box_vector_storage = nullptr;
@@ -48,6 +50,7 @@ class AlignmentFrame : public wxFrame  {
         wxBoxSizer *m_hidden_options_sizer = nullptr;
         wxBoxSizer *m_main_sizer = nullptr;
 
+        std::map<std::string, std::vector<std::unique_ptr<FloatingPointSlider>>> m_hidden_settings_sliders;
         std::unique_ptr<FloatingPointSlider> m_contrast_threshold_slider            = nullptr;
         std::unique_ptr<FloatingPointSlider> m_number_of_boxes_slider               = nullptr;
         std::unique_ptr<FloatingPointSlider> m_maximal_overlap_between_boxes_slider = nullptr;
