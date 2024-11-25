@@ -40,7 +40,8 @@ class AlignedImagesProducerGUI : public wxFrame  {
         wxBoxSizer *m_basic_settings_sizer = nullptr;
         wxBoxSizer *m_image_preview_sizer = nullptr;
 
-        std::unique_ptr<FloatingPointSlider> m_fraction_to_stack_slider = nullptr;
+        std::unique_ptr<FloatingPointSlider> m_fraction_to_stack_slider     = nullptr;
+        std::unique_ptr<FloatingPointSlider> m_exposure_correction_slider   = nullptr;
 
 
         std::unique_ptr<AstroPhotoStacker::AlignedImagesProducer> m_aligned_images_producer = nullptr;
