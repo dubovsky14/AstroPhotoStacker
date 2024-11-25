@@ -32,7 +32,8 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
                                                 const AlignmentWindow &alignment_window,
                                                 std::pair<int,int> box_width_range,
                                                 std::pair<int,int> box_height_range,
-                                                unsigned int n_boxes)   {
+                                                unsigned int n_boxes,
+                                                float maximal_allowed_overlap)   {
 
 
     const unsigned short max_value = *std::max_element(image_data.brightness, image_data.brightness + image_data.width*image_data.height);
@@ -47,7 +48,7 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
         const int x = alignment_window.x_min + random_uniform(0, alignment_window_width - box_width);
         const int y = alignment_window.y_min + random_uniform(0, alignment_window_height - box_height);
 
-        if (!fulfill_overlap_condition(m_boxes, x, y, box_width, box_height, m_maximal_overlap_between_boxes))    {
+        if (!fulfill_overlap_condition(m_boxes, x, y, box_width, box_height, maximal_allowed_overlap))    {
             continue;
         }
 

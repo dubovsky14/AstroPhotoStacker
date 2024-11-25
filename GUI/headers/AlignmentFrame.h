@@ -48,7 +48,10 @@ class AlignmentFrame : public wxFrame  {
         wxBoxSizer *m_hidden_options_sizer = nullptr;
         wxBoxSizer *m_main_sizer = nullptr;
 
-        std::unique_ptr<FloatingPointSlider> m_contrast_threshold_slider = nullptr;
+        std::unique_ptr<FloatingPointSlider> m_contrast_threshold_slider            = nullptr;
+        std::unique_ptr<FloatingPointSlider> m_number_of_boxes_slider               = nullptr;
+        std::unique_ptr<FloatingPointSlider> m_maximal_overlap_between_boxes_slider = nullptr;
+
 
         void initialize_list_of_frames_to_align();
         std::vector<int>                            m_indices_frames_to_align;

@@ -5,6 +5,7 @@
 #include "../../headers/thread_pool.h"
 #include "../../headers/InputFrame.h"
 #include "../../headers/AlignmentPointBox.h"
+#include "../../headers/AlignmentSettingsSurface.h"
 
 #include <vector>
 #include <iostream>
@@ -96,6 +97,8 @@ void AlignmentFrame::add_alignment_method_menu()    {
 void AlignmentFrame::add_surface_method_settings()  {
     m_hidden_options_sizer = new wxBoxSizer(wxVERTICAL);
 
+    AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
+
     m_contrast_threshold_slider = make_unique<FloatingPointSlider>(
         this,
         "Contrast threshold: ",
@@ -106,9 +109,40 @@ void AlignmentFrame::add_surface_method_settings()  {
         2,
         [](float value){AlignmentPointBox::set_contrast_threshold(value);
     });
-
     m_contrast_threshold_slider->add_sizer(m_hidden_options_sizer, 0, wxEXPAND, 5);
     m_contrast_threshold_slider->hide();
+
+    m_number_of_boxes_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Number of boxes: ",
+        0,
+        500,
+        alignment_settings_surface->get_number_of_boxes(),
+        1,
+        0,
+        [](float value){
+            AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
+            alignment_settings_surface->set_number_of_boxes(value+0.1);
+    });
+    m_number_of_boxes_slider->add_sizer(m_hidden_options_sizer, 0, wxEXPAND, 5);
+    m_number_of_boxes_slider->hide();
+
+    m_maximal_overlap_between_boxes_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Maximal allowed overlap between alignment boxes: ",
+        0,
+        1,
+        alignment_settings_surface->get_max_overlap_between_boxes(),
+        0.01,
+        2,
+        [](float value){
+            AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
+            alignment_settings_surface->set_max_overlap_between_boxes(value);
+        }
+    );
+    m_maximal_overlap_between_boxes_slider->add_sizer(m_hidden_options_sizer, 0, wxEXPAND, 5);
+    m_maximal_overlap_between_boxes_slider->hide();
+
 
     m_main_sizer->Add(m_hidden_options_sizer, 2, wxEXPAND, 5);
 };
@@ -116,9 +150,13 @@ void AlignmentFrame::add_surface_method_settings()  {
 void AlignmentFrame::update_options_visibility(const std::string &alignment_method)    {
     if (alignment_method == "surface") {
         m_contrast_threshold_slider->show();
+        m_number_of_boxes_slider->show();
+        m_maximal_overlap_between_boxes_slider->show();
     }
     else    {
         m_contrast_threshold_slider->hide();
+        m_number_of_boxes_slider->hide();
+        m_maximal_overlap_between_boxes_slider->hide();
     }
 
     m_hidden_options_sizer->Layout();

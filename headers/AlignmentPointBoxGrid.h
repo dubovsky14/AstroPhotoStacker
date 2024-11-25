@@ -29,12 +29,14 @@ namespace AstroPhotoStacker {
              * @param box_width_range The range of the box width in pixels - std::pair<float,float> - min, max
              * @param box_height_range The range of the box height in pixels - std::pair<float,float> - min, max
              * @param n_boxes The number of boxes
+             * @param maximal_allowed_overlap Maximal overlap between the boxes relative to the smaller box' area
              */
             AlignmentPointBoxGrid(  const MonochromeImageData &image_data,
                                     const AlignmentWindow &alignment_window,
                                     std::pair<int,int> box_width_range,
                                     std::pair<int,int> box_height_range,
-                                    unsigned int n_boxes);
+                                    unsigned int n_boxes,
+                                    float maximal_allowed_overlap);
 
             /**
              * @brief Get the local shifts of the alignment point boxes.
@@ -89,8 +91,6 @@ namespace AstroPhotoStacker {
              * @brief Sort the alignment boxes in a "snail" way around the center of the alignment window
              */
             void sort_alignment_boxes();
-
-            float m_maximal_overlap_between_boxes = 0.3;
 
             static bool fulfill_overlap_condition(const std::vector<AlignmentPointBox> &boxes, int x, int y, int width, int height, float max_allowed_overlap_fraction);
 

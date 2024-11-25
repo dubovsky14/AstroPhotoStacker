@@ -73,7 +73,8 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
         m_alignment_window,
         box_width_range,
         box_height_range,
-        alignment_settings_surface->get_number_of_boxes());
+        alignment_settings_surface->get_number_of_boxes(),
+        alignment_settings_surface->get_max_overlap_between_boxes());
 
     cout << "Alignment grid initialized, number of boxes: " << m_alignment_point_box_grid->get_alignment_boxes().size() << endl;
 };
