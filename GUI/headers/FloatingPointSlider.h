@@ -19,7 +19,7 @@ class FloatingPointSlider {
                             unsigned int n_decimals,
                             std::function<void(float)> callback);
 
-        void set_tooltip(const std::string &tooltip);
+        void set_tool_tip(const std::string &tooltip);
 
         void hide();
 

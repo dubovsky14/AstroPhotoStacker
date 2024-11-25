@@ -355,18 +355,22 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
     });
     advanced_settings_sizer->Add(stack_images_checkbox, 0, wxEXPAND, 5);
 
-    wxStaticText* fraction_to_stack_text = new wxStaticText(this, wxID_ANY, "Fraction of images to stack: " + to_string(m_fraction_to_stack+0.00001).substr(0,4));
-    advanced_settings_sizer->Add(fraction_to_stack_text, 0, wxEXPAND, 5);
+    m_fraction_to_stack_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Fraction of images to stack: ",
+        0,
+        1,
+        m_fraction_to_stack,
+        0.01,
+        2,
+        [this](float fraction_to_stack){
+            m_fraction_to_stack = fraction_to_stack;
+        }
+    );
+    m_fraction_to_stack_slider->set_tool_tip("Fraction of images from each group which will be stacked.");
+    m_fraction_to_stack_slider->add_sizer(advanced_settings_sizer, 0, wxEXPAND, 5);
 
-    wxSlider* slider_stack_fraction = new wxSlider(this, wxID_ANY, m_fraction_to_stack*100, 0, 100, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
-    slider_stack_fraction->SetToolTip("Fraction of images from each group which will be stacked.");
-    slider_stack_fraction->Bind(wxEVT_SLIDER, [fraction_to_stack_text, slider_stack_fraction, this](wxCommandEvent&){
-        const float fraction_to_stack = slider_stack_fraction->GetValue()/100.;
-        const std::string new_label = "Fraction of images to stack: " + to_string(fraction_to_stack+0.00001).substr(0,4);
-        fraction_to_stack_text->SetLabel(new_label);
-        m_fraction_to_stack = fraction_to_stack;
-    });
-    advanced_settings_sizer->Add(slider_stack_fraction, 0, wxEXPAND, 5);
+
 };
 
 void AlignedImagesProducerGUI::add_video_settings()   {

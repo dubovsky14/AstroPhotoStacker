@@ -15,7 +15,7 @@ FloatingPointSlider::FloatingPointSlider(   wxWindow *parent,
 
 
     const float ten_power_n_decimals = pow(10, n_decimals);
-    const wxString label_with_value = label + get_rounded_value(initial_value, n_decimals);
+    const wxString label_with_value = label + get_rounded_value(initial_value+0.0000001, n_decimals);
     m_text = new wxStaticText(parent, wxID_ANY, label_with_value);
     m_slider = new wxSlider(parent, wxID_ANY, initial_value*ten_power_n_decimals, min_value*ten_power_n_decimals, max_value*ten_power_n_decimals, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
     m_slider->Bind(wxEVT_SLIDER, [this, ten_power_n_decimals, label, n_decimals, callback](wxCommandEvent&){
@@ -26,7 +26,7 @@ FloatingPointSlider::FloatingPointSlider(   wxWindow *parent,
     });
 };
 
-void FloatingPointSlider::set_tooltip(const std::string &tooltip)   {
+void FloatingPointSlider::set_tool_tip(const std::string &tooltip)   {
     m_slider->SetToolTip(tooltip);
 };
 

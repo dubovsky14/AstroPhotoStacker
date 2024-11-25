@@ -5,6 +5,7 @@
 #include "../headers/ImagePreviewCropTool.h"
 #include "../headers/CombinedColorStrecherTool.h"
 #include "../headers/TimeLapseVideoSettings.h"
+#include "../headers/FloatingPointSlider.h"
 
 #include "../../headers/AlignedImagesProducer.h"
 #include "../../headers/InputFrame.h"
@@ -38,6 +39,8 @@ class AlignedImagesProducerGUI : public wxFrame  {
         wxBoxSizer *m_main_vertical_sizer = nullptr;
         wxBoxSizer *m_basic_settings_sizer = nullptr;
         wxBoxSizer *m_image_preview_sizer = nullptr;
+
+        std::unique_ptr<FloatingPointSlider> m_fraction_to_stack_slider = nullptr;
 
 
         std::unique_ptr<AstroPhotoStacker::AlignedImagesProducer> m_aligned_images_producer = nullptr;
