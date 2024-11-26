@@ -174,14 +174,14 @@ void AlignmentFrame::add_surface_method_settings()  {
 };
 
 void AlignmentFrame::update_options_visibility(const std::string &selected_alignment_method)    {
-    for (auto &[available_method, vector_sliders] : m_hidden_settings_sliders)    {
+    for (const auto &[available_method, vector_of_sliders] : m_hidden_settings_sliders)    {
         if (wxString(available_method) == selected_alignment_method) {
-            for (unique_ptr<FloatingPointSlider> &slider : vector_sliders)  {
+            for (const unique_ptr<FloatingPointSlider> &slider : vector_of_sliders)  {
                 slider->show();
             }
         }
         else {
-            for (unique_ptr<FloatingPointSlider> &slider : vector_sliders)  {
+            for (const unique_ptr<FloatingPointSlider> &slider : vector_of_sliders)  {
                 slider->hide();
             }
         }
