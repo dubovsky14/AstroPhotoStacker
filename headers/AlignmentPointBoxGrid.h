@@ -80,12 +80,21 @@ namespace AstroPhotoStacker {
                 }
             };
 
+            /**
+             * @brief Given the provided fraction, what is the pixel brightness for which this fraction of the pixels are brighter
+             */
+            static unsigned short int get_brigness_for_corresponding_fraction(const MonochromeImageData &image_data, const AlignmentWindow &alignment_window, float fraction = 0.1);
+
+            static std::vector<float> get_scaled_data_in_alignment_window(const MonochromeImageData &image_data, const AlignmentWindow &alignment_window, float scale_factor);
+
 
         private:
             std::tuple<int,int> get_interpolated_shift(const std::vector<LocalShift> &local_shifts, int x, int y)   const;
 
             std::vector<AlignmentPointBox> m_boxes; // x, y, box
             AlignmentWindow m_alignment_window;
+            std::vector<float> m_scaled_data_reference_image_in_alignment_window;
+
 
             /**
              * @brief Sort the alignment boxes in a "snail" way around the center of the alignment window

@@ -13,14 +13,17 @@ using namespace std;
 AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image_data,
                                                 const AlignmentWindow &alignment_window,
                                                 unsigned int box_size, unsigned int box_spacing)  {
-
-    const unsigned short max_value = *std::max_element(image_data.brightness, image_data.brightness + image_data.width*image_data.height);
     const int step_size = box_size + box_spacing;
     m_alignment_window = alignment_window;
+    const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
+    m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
+    const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
     for (int y = alignment_window.y_min; y < alignment_window.y_max; y += step_size) {
         for (int x = alignment_window.x_min; x < alignment_window.x_max; x += step_size) {
-            if (AlignmentPointBox::is_valid_ap(image_data, x, y, box_size, box_size, max_value)) {
-                m_boxes.emplace_back(image_data, x, y, box_size, box_size, max_value);
+            int xa = x - alignment_window.x_min;
+            int ya = y - alignment_window.y_min;
+            if (AlignmentPointBox::is_valid_ap(&m_scaled_data_reference_image_in_alignment_window, alignment_window, xa, ya, box_size, box_size, max_value)) {
+                m_boxes.emplace_back(&m_scaled_data_reference_image_in_alignment_window, alignment_window, x, y, box_size, box_size, max_value);
             }
         }
     }
@@ -36,9 +39,13 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
                                                 float maximal_allowed_overlap)   {
 
 
-    const unsigned short max_value = *std::max_element(image_data.brightness, image_data.brightness + image_data.width*image_data.height);
     const unsigned int alignment_window_width = alignment_window.x_max - alignment_window.x_min;
     const unsigned int alignment_window_height = alignment_window.y_max - alignment_window.y_min;
+    m_alignment_window = alignment_window;
+
+    const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
+    m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
+    const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
 
     // not all boxes will be valid -> let's try to get n_boxes valid boxes, but also don't wanna get stuck in an infinite loop
     for (unsigned int i = 0; i < n_boxes*10; i++) {
@@ -52,8 +59,10 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
             continue;
         }
 
-        if (AlignmentPointBox::is_valid_ap(image_data, x, y, box_width, box_height, max_value)) {
-            m_boxes.emplace_back(image_data, x, y, box_width, box_height, max_value);
+        int xa = x - alignment_window.x_min;
+        int ya = y - alignment_window.y_min;
+        if (AlignmentPointBox::is_valid_ap(&m_scaled_data_reference_image_in_alignment_window, alignment_window, xa, ya, box_width, box_height, max_value)) {
+            m_boxes.emplace_back(&m_scaled_data_reference_image_in_alignment_window, alignment_window, x, y, box_width, box_height, max_value);
         }
         if (m_boxes.size() >= n_boxes) {
             break;
@@ -114,29 +123,34 @@ void AlignmentPointBoxGrid::sort_alignment_boxes()    {
 std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const MonochromeImageData &calibrated_image) const {
     vector<LocalShift> shifts;
     int valid_boxes = 0;
+    const int alignment_window_width = m_alignment_window.x_max - m_alignment_window.x_min;
+    const int alignment_window_height = m_alignment_window.y_max - m_alignment_window.y_min;
+
+    const float scale_factor = 1./get_brigness_for_corresponding_fraction(calibrated_image, m_alignment_window, 0.1);
+    const vector<float> scaled_values_in_alignment_window = get_scaled_data_in_alignment_window(calibrated_image, m_alignment_window, scale_factor);
     for (const AlignmentPointBox &box : m_boxes) {
         const int original_x = box.get_center_x();
         const int original_y = box.get_center_y();
 
         const std::tuple<int,int> prefit_shift = get_interpolated_shift(shifts, original_x, original_y);
-        const int adjusted_x = original_x + get<0>(prefit_shift);
-        const int adjusted_y = original_y + get<1>(prefit_shift);
+        const int adjusted_x = original_x - m_alignment_window.x_min + get<0>(prefit_shift);
+        const int adjusted_y = original_y - m_alignment_window.y_min + get<1>(prefit_shift);
 
         int best_x = adjusted_x;
         int best_y = adjusted_y;
-        if (adjusted_x < 0 || adjusted_x >= calibrated_image.width || adjusted_y < 0 || adjusted_y >= calibrated_image.height) {
-            best_x = original_x;
-            best_y = original_y;
+        if (adjusted_x < 0 || adjusted_x >= alignment_window_width || adjusted_y < 0 || adjusted_y >= alignment_window_height) {
+            best_x = original_x - m_alignment_window.x_min;
+            best_y = original_y - m_alignment_window.y_min;
         }
-        float best_chi2 = box.get_chi2(calibrated_image, best_x, best_x);
+        float best_chi2 = std::numeric_limits<float>::max();
 
         const int max_shift_size = 20;
         for (int y_shift = -max_shift_size; y_shift <= max_shift_size; y_shift++) {
             for (int x_shift = -max_shift_size; x_shift <= max_shift_size; x_shift++) {
-                if (!AlignmentPointBox::is_valid_ap(calibrated_image, adjusted_x + x_shift, adjusted_y + y_shift, box.get_box_width(), box.get_box_height(), box.get_max_value())) {
+                if (!AlignmentPointBox::is_valid_ap(&scaled_values_in_alignment_window, m_alignment_window, adjusted_x + x_shift, adjusted_y + y_shift, box.get_box_width(), box.get_box_height(), box.get_max_value())) {
                     continue;
                 }
-                const float chi2 = box.get_chi2(calibrated_image, adjusted_x + x_shift, adjusted_y + y_shift);
+                const float chi2 = box.get_chi2(&scaled_values_in_alignment_window, adjusted_x + x_shift, adjusted_y + y_shift);
                 if (chi2 < best_chi2) {
                     best_chi2 = chi2;
                     best_x = adjusted_x + x_shift;
@@ -148,13 +162,17 @@ std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const Monochrome
         const bool good_match = box.good_match(best_chi2);
         valid_boxes += good_match;
 
+        // shift best_x and best_y back to the original image coordinates
+        best_x += m_alignment_window.x_min;
+        best_y += m_alignment_window.y_min;
+
         LocalShift local_shift;
         local_shift.x = original_x;
         local_shift.y = original_y;
         local_shift.dx = good_match ?  best_x - original_x : 0;
         local_shift.dy = good_match ?  best_y - original_y : 0;
         local_shift.valid_ap = good_match;
-        local_shift.score = AlignmentPointBox::get_sharpness_factor(calibrated_image, best_x, best_y, box.get_box_width(), box.get_box_height());
+        local_shift.score = AlignmentPointBox::get_sharpness_factor(&scaled_values_in_alignment_window, m_alignment_window, best_x, best_y, box.get_box_width(), box.get_box_height());
 
         shifts.push_back(local_shift);
     }
@@ -216,6 +234,11 @@ std::tuple<int,int> AlignmentPointBoxGrid::get_interpolated_shift(const vector<L
         sum_y += y1 * weight;
         sum_weights += weight;
     }
+
+    if (sum_weights == 0) {
+        return std::make_tuple(0, 0);
+    }
+
     return std::make_tuple(sum_x / sum_weights, sum_y / sum_weights);
 };
 
@@ -260,4 +283,45 @@ bool AlignmentPointBoxGrid::fulfill_overlap_condition(const std::vector<Alignmen
         }
     }
     return true;
+};
+
+unsigned short int AlignmentPointBoxGrid::get_brigness_for_corresponding_fraction(  const MonochromeImageData &image_data,
+                                                                                    const AlignmentWindow &alignment_window,
+                                                                                    float fraction) {
+
+    vector<unsigned int> histogram(65536, 0);
+    for (int y = alignment_window.y_min; y < alignment_window.y_max; y++) {
+        for (int x = alignment_window.x_min; x < alignment_window.x_max; x++) {
+            const unsigned short brightness = image_data.brightness[y*image_data.width + x];
+            histogram[brightness]++;
+        }
+    }
+
+    const unsigned int total_pixels = (alignment_window.y_max - alignment_window.y_min) * (alignment_window.x_max - alignment_window.x_min);
+    const unsigned int targeted_n_pixels_above_threshold = fraction * total_pixels;
+    unsigned int sum = 0;
+    for (int i = histogram.size() - 1; i >= 0; i--) {
+        sum += histogram[i];
+        if (sum >= targeted_n_pixels_above_threshold) {
+            return i;
+        }
+    }
+    return 0;
+};
+
+std::vector<float> AlignmentPointBoxGrid::get_scaled_data_in_alignment_window(  const MonochromeImageData &image_data,
+                                                                                const AlignmentWindow &alignment_window,
+                                                                                float scale_factor) {
+    vector<float> scaled_data;
+    const int alignment_window_width  = alignment_window.x_max - alignment_window.x_min;
+    const int alignment_window_height = alignment_window.y_max - alignment_window.y_min;
+    scaled_data.resize(alignment_window_width*alignment_window_height);
+    for (int i_y = alignment_window.y_min; i_y < alignment_window.y_max; i_y++) {
+        for (int i_x = alignment_window.x_min; i_x < alignment_window.x_max; i_x++) {
+            const int index_original = i_y*image_data.width + i_x;
+            const int index_scaled = (i_y - alignment_window.y_min)*alignment_window_width + (i_x - alignment_window.x_min);
+            scaled_data[index_scaled] = scale_factor*image_data.brightness[index_original];
+        }
+    }
+    return scaled_data;
 };
