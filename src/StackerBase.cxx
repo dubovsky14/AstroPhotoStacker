@@ -60,7 +60,7 @@ void StackerBase::save_stacked_photo(const std::string &file_address, const std:
         }
     }
 
-    const double scale_factor = max_value_output / max_value_input;
+    const double scale_factor = 0.5 * max_value_output / max_value_input;
     for (unsigned int color = 0; color < stacked_image.size(); color++) {
         for (int index = 0; index < width*height; index++) {
             data_for_plotting[color][index] *= scale_factor;
