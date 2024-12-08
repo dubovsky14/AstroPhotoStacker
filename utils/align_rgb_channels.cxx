@@ -40,7 +40,7 @@ int main(int argc, const char **argv) {
         const pair<int,int> shift_red = convert_string_to_pair(shift_red_str);
         const pair<int,int> shift_blue = shift_blue_str == "" ? pair<int,int>({-shift_red.first, -shift_red.second}) : convert_string_to_pair(shift_blue_str);
 
-        RGBAlignmentTool<unsigned int> rgb_alignment_tool(input_file);
+        RGBAlignmentTool rgb_alignment_tool(input_file);
         rgb_alignment_tool.calculate_shifted_image(shift_red, shift_blue);
         rgb_alignment_tool.save_shifted_image(output_file);
     }

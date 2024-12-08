@@ -12,7 +12,6 @@ namespace AstroPhotoStacker {
     /**
      * @brief A class used to align RGB images for planetary images - to correct for atmospheric dispersion
      */
-    template <typename PixelType = unsigned int>
     class RGBAlignmentTool  {
         public:
             RGBAlignmentTool() = delete;

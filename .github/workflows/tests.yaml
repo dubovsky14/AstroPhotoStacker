@@ -152,8 +152,8 @@ jobs:
           name: artifact-produce-alignment-file
           path: output/.
       - run:  |
-              chmod u+x bin/AstroPhotoStacker
-              ./bin/AstroPhotoStacker -alignment_file output/test_alignment.txt -raw_files_dir AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/ -output output/test_stacked_image_default_stack.png
+              chmod u+x bin/astro_photo_stacker
+              ./bin/astro_photo_stacker -alignment_file output/test_alignment.txt -raw_files_dir AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/ -output output/test_stacked_image_default_stack.png
       - uses: actions/upload-artifact@v3
         with:
           name: artifact-produce-stacked-image

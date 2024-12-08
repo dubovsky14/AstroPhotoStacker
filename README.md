@@ -108,7 +108,7 @@ When you want to use hot pixel text file in the stacking step, you have to use o
 After producing the alignment file, you can run the stacking itself:
 
 ```
-./bin/AstroPhotoStacker -option1 <option1_value> -option2 <option2_value> ...
+./bin/astro_photo_stacker -option1 <option1_value> -option2 <option2_value> ...
 ```
 
 Where the following options are mandatory:

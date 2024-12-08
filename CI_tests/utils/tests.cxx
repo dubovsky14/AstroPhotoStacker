@@ -1,5 +1,5 @@
-#include "../CI_tests/headers/HotPixelIdentification_test.h"
-#include "../CI_tests/headers/KDTreeTest.h"
+#include "../headers/HotPixelIdentification_test.h"
+#include "../headers/KDTreeTest.h"
 
 
 #include <iostream>

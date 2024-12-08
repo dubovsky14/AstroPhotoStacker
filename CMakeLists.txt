@@ -15,44 +15,29 @@ file(GLOB SOURCES "src/*.cxx")
 set(LINKER_FLAGS "-lexiv2 -lraw")
 
 add_library(AstroPhotoStackerLib SHARED ${SOURCES})
-
-file(GLOB CI_TESTS_SOURCES "CI_tests/src/*.cxx")
-
-# add the executable
-add_executable(AstroPhotoStacker utils/main.cxx)
-add_executable(produce_alignment_file utils/produce_alignment_file.cxx)
-add_executable(convert_raw_to_jpg utils/convert_raw_to_jpg.cxx)
-add_executable(identify_hot_pixels utils/identify_hot_pixels.cxx)
-add_executable(stack_calibration_frames utils/stack_calibration_frames.cxx)
-add_executable(rank_sharpness utils/rank_sharpness.cxx)
-add_executable(create_synthetic_flat utils/create_synthetic_flat.cxx)
-add_executable(calculate_noise utils/calculate_noise.cxx)
-add_executable(test_local_shifts utils/test_local_shifts.cxx)
-add_executable(tests ${CI_TESTS_SOURCES} "utils/tests.cxx")
-add_executable(align_rgb_channels utils/align_rgb_channels.cxx)
-
-add_dependencies(AstroPhotoStacker AstroPhotoStackerLib)
-add_dependencies(produce_alignment_file AstroPhotoStackerLib)
-add_dependencies(convert_raw_to_jpg AstroPhotoStackerLib)
-add_dependencies(identify_hot_pixels AstroPhotoStackerLib)
-add_dependencies(tests AstroPhotoStackerLib)
-add_dependencies(stack_calibration_frames AstroPhotoStackerLib)
-add_dependencies(rank_sharpness AstroPhotoStackerLib)
-add_dependencies(create_synthetic_flat AstroPhotoStackerLib)
-add_dependencies(calculate_noise AstroPhotoStackerLib)
-add_dependencies(test_local_shifts AstroPhotoStackerLib)
-add_dependencies(align_rgb_channels AstroPhotoStackerLib)
-
-# link the libraw library
 target_link_libraries(AstroPhotoStackerLib PUBLIC ${LINKER_FLAGS} ${OpenCV_LIBS})
-target_link_libraries(AstroPhotoStacker AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
-target_link_libraries(produce_alignment_file AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
-target_link_libraries(convert_raw_to_jpg AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
-target_link_libraries(identify_hot_pixels AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
+
+
+# Find all .cxx files in the utils folder
+file(GLOB UTILS_SOURCES "utils/*.cxx")
+
+# Iterate over each .cxx file
+foreach(SOURCE_FILE ${UTILS_SOURCES})
+    # Get the filename without the extension
+    get_filename_component(EXECUTABLE_NAME ${SOURCE_FILE} NAME_WE)
+
+    # Add executable
+    add_executable(${EXECUTABLE_NAME} ${SOURCE_FILE})
+
+    # Add dependencies
+    add_dependencies(${EXECUTABLE_NAME} AstroPhotoStackerLib)
+
+    # Link libraries
+    target_link_libraries(${EXECUTABLE_NAME} AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
+endforeach()
+
+# CI tests
+file(GLOB CI_TESTS_SOURCES "CI_tests/src/*.cxx")
+add_executable(tests ${CI_TESTS_SOURCES} "CI_tests/utils/tests.cxx")
+add_dependencies(tests AstroPhotoStackerLib)
 target_link_libraries(tests AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
-target_link_libraries(stack_calibration_frames AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
-target_link_libraries(rank_sharpness AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
-target_link_libraries(create_synthetic_flat AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
-target_link_libraries(calculate_noise AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
-target_link_libraries(test_local_shifts AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
-target_link_libraries(align_rgb_channels AstroPhotoStackerLib ${LINKER_FLAGS} ${OpenCV_LIBS})
