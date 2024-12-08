@@ -4,6 +4,10 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <filesystem>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -37,6 +41,20 @@ Metadata AstroPhotoStacker::read_metadata_video(const std::string &input_file) {
 
     } catch (Exiv2::AnyError& e) {
         std::cerr << "Error reading file " << input_file << ": " << e.what() << std::endl;
+
+        // get at least the timestamp
+        auto ftime = filesystem::last_write_time(input_file);
+        auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+            ftime - filesystem::file_time_type::clock::now() + std::chrono::system_clock::now()
+        );
+
+        std::time_t cftime = std::chrono::system_clock::to_time_t(sctp);
+
+        // convert to string
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&cftime), "%Y:%m:%d %H:%M:%S");
+        metadata.date_time = ss.str();
+        metadata.timestamp = get_unix_timestamp(metadata.date_time);
     }
     return metadata;
 }
