@@ -28,7 +28,7 @@ void FitFileReader::read_data(std::ifstream &file) {
 
     // lines are indexed from bottom to top ...
     for (int i_line = 0; i_line < m_height; i_line++) {
-        file.read((char *)&m_data[(m_height - i_line - 1)*m_width], m_width*2);
+        file.read((char *)&m_data[(i_line)*m_width], m_width*2);
     }
 
     // subtract zero point
