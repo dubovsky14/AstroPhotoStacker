@@ -1,6 +1,7 @@
 #include "../headers/raw_file_reader.h"
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/FitFileReader.h"
+#include "../headers/InputFrame.h"
 
 #include <vector>
 #include <filesystem>
@@ -73,7 +74,7 @@ int main(int argc, char **argv) {
         int width, height;
         if (is_fit_file(input_file))    {
             vector<char> colors;
-            vector<unsigned short> brightness = read_raw_file<unsigned short>(input_file, &width, &height, &colors);
+            vector<unsigned short> brightness = read_raw_file<unsigned short>(InputFrame(input_file), &width, &height, &colors);
             const Metadata metadata = read_metadata_from_raw_file(input_file);
             if (metadata.monochrome) {
                 rgb_image.push_back(brightness);
@@ -88,7 +89,7 @@ int main(int argc, char **argv) {
         }
         else    {
             vector<char> colors;
-            vector<unsigned short> brightness = read_raw_file<unsigned short>(input_file, &width, &height, &colors);
+            vector<unsigned short> brightness = read_raw_file<unsigned short>(InputFrame(input_file), &width, &height, &colors);
             rgb_image = convert_raw_data_to_rgb_image(brightness.data(), colors.data(), width, height);
             scale_to_8_bits(&rgb_image, width, height);
         }

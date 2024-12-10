@@ -46,7 +46,7 @@ float PhotoRanker::calculate_frame_ranking(const InputFrame &input_frame)  {
     const bool raw_file = is_raw_file(input_frame.get_file_address());
     std::vector<unsigned short> brightness;
     if (raw_file) {
-        brightness = read_raw_file<unsigned short>(input_frame.get_file_address(), &width, &height);
+        brightness = read_raw_file<unsigned short>(input_frame, &width, &height);
     }
     else {
         brightness = read_rgb_image_as_gray_scale<unsigned short>(input_frame, &width, &height);

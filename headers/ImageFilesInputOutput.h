@@ -316,7 +316,7 @@ namespace AstroPhotoStacker {
         std::vector<ValueType> brightness;
         if (raw_file) {
             std::vector<char> colors;
-            brightness = read_raw_file<ValueType>(input_frame.get_file_address(), width, height, &colors);
+            brightness = read_raw_file<ValueType>(input_frame, width, height, &colors);
             debayer_monochrome(&brightness, *width, *height, colors);
             return brightness;
         }

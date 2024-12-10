@@ -18,21 +18,34 @@ Metadata AstroPhotoStacker::read_metadata_from_raw_file(const std::string &raw_f
         FitFileMetadataReader fit_file_metadata_reader(raw_file_address);
         return fit_file_metadata_reader.get_metadata();
     }
+    if (ZWOVideoTextFileInfo::is_valid_zwo_video_text_file(raw_file_address + ".txt")) {
+        ZWOVideoTextFileInfo zwo_video_text_file_info(raw_file_address + ".txt");
+        Metadata metadata;
+        metadata.exposure_time = zwo_video_text_file_info.get_exposure_time();
+        metadata.iso = zwo_video_text_file_info.get_gain();
+        return metadata;
+    }
     return read_metadata_from_raw_file_dslr_slr(raw_file_address);
 };
 
 bool AstroPhotoStacker::is_raw_file(const std::string &file_address)   {
+    if (ZWOVideoTextFileInfo::is_valid_zwo_video_text_file(file_address + ".txt")) {
+        return true;
+    }
     if (is_fit_file(file_address)) {
         return true;
     }
     return is_raw_file_dslr_slr(file_address);
 };
 
-std::vector<char> AstroPhotoStacker::get_color_info_as_number(const std::string &raw_file)   {
-    if (is_fit_file(raw_file)) {
+std::vector<char> AstroPhotoStacker::get_color_info_as_number(const InputFrame &input_frame)   {
+    if (input_frame.is_video_frame()) {
         return {0,1,2,3};
     }
-    return get_color_info_as_number_dslr_slr(raw_file);
+    if (is_fit_file(input_frame.get_file_address())) {
+        return {0,1,2,3};
+    }
+    return get_color_info_as_number_dslr_slr(input_frame.get_file_address());
 };
 
 

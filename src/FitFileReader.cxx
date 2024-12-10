@@ -35,7 +35,7 @@ void FitFileReader::read_data(std::ifstream &file) {
     std::transform(m_data.begin(), m_data.end(), m_data.begin(), [this](unsigned short int x) {return x - m_zero_point;});
 
     if (m_is_rgb) {
-        apply_green_correction();
+        //apply_green_correction();
     }
 
     // why the fuck do some FIT files come with 16 bit precision? This is absurd, it's just a noise causing problems ...

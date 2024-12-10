@@ -18,7 +18,7 @@ CalibrationFrameBase::CalibrationFrameBase(const InputFrame &input_frame) {
 
     try    {
         // raw file
-        m_data_original = read_raw_file<unsigned short int>(input_file, &m_width, &m_height, &m_colors);
+        m_data_original = read_raw_file<unsigned short int>(input_frame, &m_width, &m_height, &m_colors);
     }
     catch(const std::exception& e)    {
         try        {

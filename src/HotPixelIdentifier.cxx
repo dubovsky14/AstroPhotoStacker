@@ -34,7 +34,7 @@ void HotPixelIdentifier::add_photo(const InputFrame &input_frame)    {
     }
 
     int width,height;
-    vector<unsigned short int> pixel_values = read_raw_file<unsigned short int>(input_frame.get_file_address(), &width, &height);
+    vector<unsigned short int> pixel_values = read_raw_file<unsigned short int>(input_frame, &width, &height);
     add_photo(pixel_values.data(), width, height);
 };
 

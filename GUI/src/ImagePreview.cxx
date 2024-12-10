@@ -53,7 +53,7 @@ void ImagePreview::read_preview_from_frame(const InputFrame &input_frame)  {
     m_current_preview_is_raw_file = is_raw_file(input_frame.get_file_address());
     if (m_current_preview_is_raw_file)  {
         int width_original, height_original;
-        m_original_image = ColorInterpolationTool::get_interpolated_rgb_image(input_frame.get_file_address(), &width_original, &height_original);
+        m_original_image = ColorInterpolationTool::get_interpolated_rgb_image(input_frame, &width_original, &height_original);
         m_image_resize_tool.set_original_size(width_original, height_original);
     }
     else {

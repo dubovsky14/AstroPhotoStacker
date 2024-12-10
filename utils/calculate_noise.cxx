@@ -1,5 +1,6 @@
 #include "../headers/raw_file_reader.h"
 #include "../headers/ImageFilesInputOutput.h"
+#include "../headers/InputFrame.h"
 
 #include <vector>
 #include <filesystem>
@@ -16,7 +17,7 @@ int main(int argc, char **argv) {
     const std::string input_file = argv[1];
     int width, height;
     vector<char> colors;
-    vector<unsigned short> brightness = read_raw_file<unsigned short>(input_file, &width, &height, &colors);
+    vector<unsigned short> brightness = read_raw_file<unsigned short>(InputFrame(input_file), &width, &height, &colors);
 
     double mean = 0;
     double mean2 = 0;

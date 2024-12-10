@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../headers/raw_file_reader.h"
+#include "../headers/InputFrame.h"
 
 #include <vector>
 #include <memory>
@@ -101,18 +102,18 @@ namespace AstroPhotoStacker {
              * @brief Get the interpolated RGB image from a raw file.
              *
              * @tparam output_type The data type of the output image.
-             * @param raw_file The path to the raw file.
+             * @param input_frame InputFrame.
              * @param width The width of the image.
              * @param height The height of the image.
              * @return The interpolated RGB image as a vector of vectors of the given data type.
             */
             template<typename output_type = short int>
-            static std::vector<std::vector<output_type>> get_interpolated_rgb_image(const std::string &raw_file, int *width, int *height) {
+            static std::vector<std::vector<output_type>> get_interpolated_rgb_image(const InputFrame &input_frame, int *width, int *height) {
                 int temp_width;
                 int temp_height;
                 std::vector<char> colors;
-                std::vector<short> raw_data = read_raw_file<short int>(raw_file, &temp_width, &temp_height, &colors);
-                const std::vector<char> color_conversion_table = get_color_info_as_number(raw_file);
+                std::vector<short> raw_data = read_raw_file<short int>(input_frame, &temp_width, &temp_height, &colors);
+                const std::vector<char> color_conversion_table = get_color_info_as_number(input_frame);
                 ColorInterpolationTool color_interpolation_tool(raw_data.data(), temp_width, temp_height, colors, color_conversion_table);
 
                 if (width != nullptr) {

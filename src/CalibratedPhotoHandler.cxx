@@ -11,8 +11,8 @@ CalibratedPhotoHandler::CalibratedPhotoHandler(const InputFrame &input_frame, bo
         const string &file_address = input_frame.get_file_address();
         m_is_raw_file = is_raw_file(file_address);
         if (m_is_raw_file)  {
-            m_data_original = read_raw_file<short>(file_address, &m_width, &m_height, &m_colors_original);
-            m_color_conversion_table = get_color_info_as_number(file_address);
+            m_data_original = read_raw_file<short>(input_frame, &m_width, &m_height, &m_colors_original);
+            m_color_conversion_table = get_color_info_as_number(input_frame);
             m_input_file_type = InputFileType::RAW_RGB;
         }
         else {
