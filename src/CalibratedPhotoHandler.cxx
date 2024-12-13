@@ -7,23 +7,18 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 CalibratedPhotoHandler::CalibratedPhotoHandler(const InputFrame &input_frame, bool use_color_interpolation)    {
-    if (input_frame.is_still_image())   {
-        const string &file_address = input_frame.get_file_address();
-        m_is_raw_file = is_raw_file(file_address);
-        if (m_is_raw_file)  {
-            m_data_original = read_raw_file<short>(input_frame, &m_width, &m_height, &m_colors_original);
-            m_color_conversion_table = get_color_info_as_number(input_frame);
-            m_input_file_type = InputFileType::RAW_RGB;
-        }
-        else {
-            m_data_original_color_interpolation = read_rgb_image<short>(input_frame, &m_width, &m_height);
-            m_input_file_type = InputFileType::IMAGE_RGB;
-        }
+    const string &file_address = input_frame.get_file_address();
+    m_is_raw_file = is_raw_file(file_address);
+    if (m_is_raw_file)  {
+        m_data_original = read_raw_file<short>(input_frame, &m_width, &m_height, &m_colors_original);
+        m_color_conversion_table = get_color_info_as_number(input_frame);
+        m_input_file_type = InputFileType::RAW_RGB;
     }
     else {
         m_data_original_color_interpolation = read_rgb_image<short>(input_frame, &m_width, &m_height);
         m_input_file_type = InputFileType::IMAGE_RGB;
     }
+
     m_use_color_interpolation = use_color_interpolation;
 
     m_y_min = 0;

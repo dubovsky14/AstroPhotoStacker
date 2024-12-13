@@ -62,9 +62,9 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
     const int alignment_window_height = m_alignment_window.y_max - m_alignment_window.y_min;
 
     const int min_box_width = max(20, alignment_window_width/60);
-    const int max_box_width = max(50, alignment_window_width/25);
+    const int max_box_width = max(400, alignment_window_width/5);
     const int min_box_height = max(20, alignment_window_height/60);
-    const int max_box_height = max(50, alignment_window_height/25);
+    const int max_box_height = max(400, alignment_window_height/5);
     const std::pair<int,int> box_width_range = {min_box_width, max_box_width};
     const std::pair<int,int> box_height_range = {min_box_height, max_box_height};
 

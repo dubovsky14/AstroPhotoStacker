@@ -1,6 +1,7 @@
 #include "../headers/raw_file_reader.h"
 
 #include "../headers/FitFileMetadataReader.h"
+#include "../headers/MetadataCommon.h"
 
 #include <libraw/libraw.h>
 #include <iomanip>
@@ -23,6 +24,10 @@ Metadata AstroPhotoStacker::read_metadata_from_raw_file(const std::string &raw_f
         Metadata metadata;
         metadata.exposure_time = zwo_video_text_file_info.get_exposure_time();
         metadata.iso = zwo_video_text_file_info.get_gain();
+
+        Metadata timestamp_metadata = get_file_creation_timestamp(raw_file_address, metadata);
+        metadata.timestamp = timestamp_metadata.timestamp;
+        metadata.date_time = timestamp_metadata.date_time;
         return metadata;
     }
     return read_metadata_from_raw_file_dslr_slr(raw_file_address);
@@ -50,6 +55,10 @@ std::vector<char> AstroPhotoStacker::get_color_info_as_number(const InputFrame &
 
 
 bool AstroPhotoStacker::get_photo_resolution_raw_file(const std::string &raw_file, int *width, int *height) {
+    if (ZWOVideoTextFileInfo::is_valid_zwo_video_text_file(raw_file + ".txt")) {
+        read_one_channel_from_video_frame<short>(raw_file, 0, width, height, 0);
+        return true;
+    }
     if (is_fit_file(raw_file)) {
         FitFileMetadataReader fit_file_metadata_reader(raw_file);
         *width = fit_file_metadata_reader.get_width();

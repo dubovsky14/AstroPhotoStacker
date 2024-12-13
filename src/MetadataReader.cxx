@@ -1,13 +1,10 @@
 #include "../headers/MetadataReader.h"
+#include "../headers/MetadataCommon.h"
 
 #include <exiv2/exiv2.hpp>
 #include <string>
 #include <iostream>
 #include <stdexcept>
-#include <chrono>
-#include <ctime>
-#include <iomanip>
-#include <filesystem>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -111,38 +108,14 @@ Metadata AstroPhotoStacker::read_metadata_rgb_image(const std::string &input_fil
 
 Metadata AstroPhotoStacker::read_metadata(const InputFrame &input_frame)    {
     const std::string input_file = input_frame.get_file_address();
-    if (input_frame.is_video_frame()) {
-        return read_metadata_video(input_file);
-    }
     const bool raw_file = is_raw_file(input_file);
     if (raw_file)    {
         return read_metadata_from_raw_file(input_file);
     }
+    if (input_frame.is_video_frame()) {
+        return read_metadata_video(input_file);
+    }
     else    {
         return read_metadata_rgb_image(input_file);
     }
-};
-
-int AstroPhotoStacker::get_unix_timestamp(const std::string &time_string)  {
-    struct tm tm;
-    strptime(time_string.c_str(), "%Y:%m:%d %H:%M:%S", &tm);
-    return mktime(&tm);
-};
-
-Metadata AstroPhotoStacker::get_file_creation_timestamp(const std::string &file_address, const Metadata &other_metadata)  {
-        Metadata metadata = other_metadata;
-
-        auto ftime = filesystem::last_write_time(file_address);
-        auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
-            ftime - filesystem::file_time_type::clock::now() + std::chrono::system_clock::now()
-        );
-        std::time_t cftime = std::chrono::system_clock::to_time_t(sctp);
-
-        // convert to string
-        std::stringstream ss;
-        ss << std::put_time(std::localtime(&cftime), "%Y:%m:%d %H:%M:%S");
-        metadata.date_time = ss.str();
-        metadata.timestamp = get_unix_timestamp(metadata.date_time);
-
-        return metadata;
 };

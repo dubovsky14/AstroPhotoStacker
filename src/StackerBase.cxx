@@ -32,7 +32,7 @@ void StackerBase::add_photo(const InputFrame &input_frame, bool apply_alignment)
     m_frames_to_stack.push_back(input_frame);
     m_apply_alignment.push_back(apply_alignment);
 
-    m_contain_only_rgb_raw_files = m_contain_only_rgb_raw_files && is_raw_file(input_frame.get_file_address()) && input_frame.is_still_image();
+    m_contain_only_rgb_raw_files = m_contain_only_rgb_raw_files && is_raw_file(input_frame.get_file_address());
 };
 
 void StackerBase::add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler) {

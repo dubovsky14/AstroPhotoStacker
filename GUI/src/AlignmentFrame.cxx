@@ -47,10 +47,12 @@ void AlignmentFrame::initialize_list_of_frames_to_align()   {
 
     const std::vector<InputFrame>  &all_light_frames_addresses = m_filelist_handler->get_frames(FileTypes::LIGHT);
     const std::vector<bool>        &light_frames_is_checked    = m_filelist_handler->get_frames_checked(FileTypes::LIGHT);
-
+    const unsigned int max_number_of_frames_for_gui = 2000; // without this, it would freeze for planetary videos
     for (unsigned int i = 0; i < all_light_frames_addresses.size(); ++i) {
         if (light_frames_is_checked[i]) {
-            m_available_light_frames.push_back(all_light_frames_addresses[i].to_gui_string());
+            if (m_available_light_frames.size() >= max_number_of_frames_for_gui) {
+                m_available_light_frames.push_back(all_light_frames_addresses[i].to_gui_string());
+            }
             m_indices_frames_to_align.push_back(i);
             m_frames_to_align.push_back(all_light_frames_addresses[i]);
         }
