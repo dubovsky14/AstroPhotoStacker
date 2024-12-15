@@ -3,6 +3,7 @@
 #include "../../headers/raw_file_reader.h"
 #include "../../headers/ImageFilesInputOutput.h"
 #include "../../headers/ColorInterpolationTool.h"
+#include "../../headers/InputFrameData.h"
 
 
 #include <opencv2/opencv.hpp>
@@ -51,16 +52,15 @@ void ImagePreview::initialize_bitmap()    {
 
 void ImagePreview::read_preview_from_frame(const InputFrame &input_frame)  {
     m_current_preview_is_raw_file = is_raw_file(input_frame.get_file_address());
-    if (m_current_preview_is_raw_file)  {
-        int width_original, height_original;
-        m_original_image = ColorInterpolationTool::get_interpolated_rgb_image(input_frame, &width_original, &height_original);
-        m_image_resize_tool.set_original_size(width_original, height_original);
+    InputFrameData<short int> input_frame_data(input_frame);
+    if (input_frame_data.is_raw_file()) {
+        input_frame_data.debayer();
     }
-    else {
-        int width_original, height_original;
-        m_original_image = read_rgb_image<short>(input_frame, &width_original, &height_original);
-        m_image_resize_tool.set_original_size(width_original, height_original);
-    }
+    m_original_image = input_frame_data.get_image_data_color();
+    const int width_original = input_frame_data.get_width();
+    const int height_original = input_frame_data.get_height();
+    m_image_resize_tool.set_original_size(width_original, height_original);
+
     m_max_zoom_factor = std::min<double>(m_image_resize_tool.get_height_original()/m_height, m_image_resize_tool.get_width_original()/m_width);
     m_image_resize_tool.set_default_resized_area();
     update_max_values_original();

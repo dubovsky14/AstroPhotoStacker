@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <tuple>
+#include <stdexcept>
 
 namespace AstroPhotoStacker   {
     /**
@@ -39,7 +40,7 @@ namespace AstroPhotoStacker   {
      * @return std::vector<ValueType> - pointer to the array containing the brightness values
     */
     template<typename ValueType = unsigned short>
-    std::vector<ValueType> read_raw_file_dslr_slr(const std::string &raw_file_address, int *width, int *height, std::vector<char> *colors = nullptr)   {
+    std::vector<ValueType> read_raw_file_dslr_slr(const std::string &raw_file_address, int *width, int *height, std::vector<char> *colors)   {
         // create a LibRaw object
         LibRaw raw_processor;
 
@@ -64,28 +65,20 @@ namespace AstroPhotoStacker   {
         }
 
         std::vector<ValueType> brightness(*width*(*height));
-        if (colors != nullptr)   {
-            colors->resize((*width)*(*height));
+        if (colors == nullptr)   {
+            throw std::runtime_error("Colors vector is not initialized");
         }
+        colors->resize((*width)*(*height));
         const unsigned short int (*image_data)[4] = raw_processor.imgdata.image;
 
-        if (colors != nullptr)   {
-            for (int row = 0; row < *height; ++row) {
-                for (int col = 0; col < *width; ++col) {
-                    const unsigned int index = row * (*width) + col;
-                    brightness[index] = image_data[index][raw_processor.COLOR(row,col)];
-                    (*colors)[index] = raw_processor.COLOR(row,col);
-                    if ((*colors)[index] == 3)    {
-                        (*colors)[index] = 1;
-                    }
-                }
-            }
-        }
-        else    {
-            for (int row = 0; row < *height; ++row) {
-                for (int col = 0; col < *width; ++col) {
-                    const unsigned int index = row * (*width) + col;
-                    brightness[index] = image_data[index][raw_processor.COLOR(row,col)];
+
+        for (int row = 0; row < *height; ++row) {
+            for (int col = 0; col < *width; ++col) {
+                const unsigned int index = row * (*width) + col;
+                brightness[index] = image_data[index][raw_processor.COLOR(row,col)];
+                (*colors)[index] = raw_processor.COLOR(row,col);
+                if ((*colors)[index] == 3)    {
+                    (*colors)[index] = 1;
                 }
             }
         }

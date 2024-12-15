@@ -6,6 +6,7 @@
 #include "../headers/LocalShiftsHandler.h"
 #include "../headers/CalibratedPhotoScoreHandler.h"
 #include "../headers/InputFrame.h"
+#include "../headers/InputFrameData.h"
 
 #include <string>
 #include <memory>
@@ -171,19 +172,14 @@ namespace AstroPhotoStacker {
 
             std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
             LocalShiftsHandler m_local_shifts_handler;
-            std::vector<short int> m_data_original;
+            std::unique_ptr<InputFrameData<short int>> m_input_frame_data_original = nullptr;
 
             bool m_use_color_interpolation = false;
-            std::vector<std::vector<short int>> m_data_original_color_interpolation;
             std::vector<std::vector<short int>> m_data_shifted_color_interpolation;
 
             std::vector<short int> m_data_shifted;
-            std::vector<char> m_colors_original;
             std::vector<char> m_colors_shifted;
-            std::vector<char> m_color_conversion_table; // color number from the raw file usually can take values 0,1,2,3. 3 is usually green, but it is not guaranteed, so we need to convert it to 0,1,2
 
             void fix_hot_pixel(int x, int y);
-
-            void run_color_interpolation();
     };
 }
