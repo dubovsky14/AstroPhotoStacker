@@ -57,19 +57,17 @@ class HistogramDataToolGUI  {
 
         /**
          * @Get mean values of the colors
-         * @param apply_green_correction Apply green correction
          *
          * @return Vector of mean values of the colors, return empty vector if histogram data tool is not set
         */
-        std::vector<float> get_mean_values(bool apply_green_correction = true) const;
+        std::vector<float> get_mean_values() const;
 
         /**
          * Get median values of the colors
-         * @param apply_green_correction Apply green correction
          *
          * @return Vector of median values of the colors, return empty vector if histogram data tool is not set
         */
-        std::vector<float> get_median_values(bool apply_green_correction = true) const;
+        std::vector<float> get_median_values() const;
 
     private:
 

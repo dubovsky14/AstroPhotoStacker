@@ -56,12 +56,6 @@ class HistogramDataTool {
         static std::vector<int> rebin_data(const std::vector<int> &original_histogram, unsigned int new_n_bins);
 
         /**
-         * @brief Applies a green channel correction to the RGB histograms.
-         * @param rgb_histograms The RGB histograms to which to apply the correction.
-         */
-        static void apply_green_correction(std::vector<std::vector<int>> *rgb_histograms);
-
-        /**
          * @brief Gets the maximum value of the histogram data.
          * @return The maximum value of the histogram data.
          */
@@ -72,14 +66,14 @@ class HistogramDataTool {
          *
          * @return The mean value of the histogram data in all color channels as vector<float>.
          */
-        std::vector<float> get_mean_values(const CombinedColorStrecherTool *color_stretcher, bool apply_green_channel_correction = true) const;
+        std::vector<float> get_mean_values(const CombinedColorStrecherTool *color_stretcher) const;
 
         /**
          * @brief Get median value of the histogram data in all color channels.
          *
          * @return The median value of the histogram data in all color channels as vector<float>.
          */
-        std::vector<float> get_median_values(const CombinedColorStrecherTool *color_stretcher, bool apply_green_channel_correction = true) const;
+        std::vector<float> get_median_values(const CombinedColorStrecherTool *color_stretcher) const;
 
         /**
          * @brief Gets the histogram data for a specific color.
@@ -93,7 +87,7 @@ class HistogramDataTool {
          * @param color_stretcher The color stretcher tool.
          * @return The stretched color data - one value per bin, i.e. size of all vectors is max_value + 1.
          */
-        std::vector<std::vector<int>> get_stretched_color_data(const CombinedColorStrecherTool &color_stretcher, bool apply_green_channel_correction = true) const;
+        std::vector<std::vector<int>> get_stretched_color_data(const CombinedColorStrecherTool &color_stretcher) const;
 
         /**
          * @brief Gets histogram data for color channels

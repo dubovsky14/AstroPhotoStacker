@@ -56,16 +56,16 @@ void HistogramDataToolGUI::set_color_stretcher(const CombinedColorStrecherTool &
     update_plot();
 };
 
-std::vector<float> HistogramDataToolGUI::get_mean_values(bool apply_green_correction) const  {
+std::vector<float> HistogramDataToolGUI::get_mean_values() const  {
     if (m_histogram_data_tool != nullptr) {
-        return m_histogram_data_tool->get_mean_values(m_color_stretcher == nullptr ? nullptr : m_color_stretcher.get(), apply_green_correction);
+        return m_histogram_data_tool->get_mean_values(m_color_stretcher == nullptr ? nullptr : m_color_stretcher.get());
     }
     return {};
 };
 
-std::vector<float> HistogramDataToolGUI::get_median_values(bool apply_green_correction) const  {
+std::vector<float> HistogramDataToolGUI::get_median_values() const  {
     if (m_histogram_data_tool != nullptr) {
-        return m_histogram_data_tool->get_median_values(m_color_stretcher == nullptr ? nullptr : m_color_stretcher.get(), apply_green_correction);
+        return m_histogram_data_tool->get_median_values(m_color_stretcher == nullptr ? nullptr : m_color_stretcher.get());
     }
     return {};
 };
@@ -105,7 +105,6 @@ void HistogramDataToolGUI::update_plot()    {
                 const float value = histogram_data.at(pixel_coordinate_x);
                 const int height = m_height_pixels*value / max_value;
 
-                //image.SetRGB(pixel_coordinate_x, height, m_line_colors[i_color].Red(), m_line_colors[i_color].Green(), m_line_colors[i_color].Blue());
                 for (int pixel_coordinate_y = 0; pixel_coordinate_y < height; pixel_coordinate_y++) {
                     image.SetRGB(pixel_coordinate_x, m_height_pixels - pixel_coordinate_y, m_line_colors[i_color].Red(), m_line_colors[i_color].Green(), m_line_colors[i_color].Blue());
                 }

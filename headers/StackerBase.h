@@ -90,7 +90,7 @@ namespace AstroPhotoStacker {
              * @param file_address - path to the file
              * @param image_options - options for saving the image. See OpenCV documentation for details
             */
-            virtual void save_stacked_photo(const std::string &file_address, bool apply_color_correction = true, int image_options = 18) const;
+            virtual void save_stacked_photo(const std::string &file_address, int image_options = 18) const;
 
             /**
              * @brief Save the stacked photo
@@ -101,7 +101,7 @@ namespace AstroPhotoStacker {
              * @param height - height of the image
              * @param image_options - options for saving the image. See OpenCV documentation for details
             */
-            static void save_stacked_photo(const std::string &file_address, const std::vector<std::vector<double> > &stacked_image, int width, int height, bool apply_color_correction = true, int image_options = 18);
+            static void save_stacked_photo(const std::string &file_address, const std::vector<std::vector<double> > &stacked_image, int width, int height, int image_options = 18);
 
             /**
              * @brief Set the number of CPU threads
@@ -171,13 +171,6 @@ namespace AstroPhotoStacker {
             const int get_height() const { return m_height; };
 
             /**
-             * @brief Does the stack contain only raw RBG files?
-             *
-             * @return bool - true if the stack contains only raw RGB files
-             */
-            bool contains_only_rgb_raw_files() const { return m_contain_only_rgb_raw_files; };
-
-            /**
              * @brief Get maximal memory usage, considering the number of frames and their resolution
              *
              * @return unsigned long long - maximal memory usage
@@ -212,9 +205,6 @@ namespace AstroPhotoStacker {
             int m_width;
             int m_height;
             bool m_interpolate_colors;
-
-            // needed for color correction
-            bool m_contain_only_rgb_raw_files = true;
 
             constexpr static short int c_empty_pixel_value = -1;
 

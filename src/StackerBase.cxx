@@ -31,8 +31,6 @@ void StackerBase::add_alignment_info(const InputFrame &input_frame, float x_shif
 void StackerBase::add_photo(const InputFrame &input_frame, bool apply_alignment) {
     m_frames_to_stack.push_back(input_frame);
     m_apply_alignment.push_back(apply_alignment);
-
-    m_contain_only_rgb_raw_files = m_contain_only_rgb_raw_files && is_raw_file(input_frame.get_file_address());
 };
 
 void StackerBase::add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler) {
@@ -44,11 +42,11 @@ void StackerBase::register_hot_pixels_file(const std::string &hot_pixels_file)  
     m_hot_pixel_identifier->load_hot_pixels_from_file(hot_pixels_file);
 };
 
-void StackerBase::save_stacked_photo(const string &file_address, bool apply_color_correction, int image_options) const {
-    save_stacked_photo(file_address, m_stacked_image, m_width, m_height, apply_color_correction, image_options);
+void StackerBase::save_stacked_photo(const string &file_address, int image_options) const {
+    save_stacked_photo(file_address, m_stacked_image, m_width, m_height, image_options);
 };
 
-void StackerBase::save_stacked_photo(const std::string &file_address, const std::vector<std::vector<double> > &stacked_image, int width, int height, bool apply_color_correction, int image_options)   {
+void StackerBase::save_stacked_photo(const std::string &file_address, const std::vector<std::vector<double> > &stacked_image, int width, int height, int image_options)   {
     std::vector<std::vector<double> > data_for_plotting = stacked_image;
 
     const unsigned int max_value_output = pow(2, get_output_bit_depth(image_options)) -1;
