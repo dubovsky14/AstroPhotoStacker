@@ -54,8 +54,10 @@ namespace AstroPhotoStacker   {
             throw std::runtime_error("Cannot unpack raw data from file " + raw_file_address);
         }
 
-        raw_processor.raw2image();
+
+        raw_processor.imgdata.params.use_camera_wb = 1;
         raw_processor.subtract_black();
+        raw_processor.dcraw_process();
 
         int col, bps;
         raw_processor.get_mem_image_format(width, height, &col, &bps);
@@ -65,20 +67,22 @@ namespace AstroPhotoStacker   {
         }
 
         std::vector<ValueType> brightness(*width*(*height));
-        if (colors == nullptr)   {
-            throw std::runtime_error("Colors vector is not initialized");
+        if (colors != nullptr)   {
+            colors->resize((*width)*(*height));
         }
-        colors->resize((*width)*(*height));
         const unsigned short int (*image_data)[4] = raw_processor.imgdata.image;
 
 
         for (int row = 0; row < *height; ++row) {
             for (int col = 0; col < *width; ++col) {
                 const unsigned int index = row * (*width) + col;
-                brightness[index] = image_data[index][raw_processor.COLOR(row,col)];
-                (*colors)[index] = raw_processor.COLOR(row,col);
-                if ((*colors)[index] == 3)    {
-                    (*colors)[index] = 1;
+                const int color = raw_processor.COLOR(row, col);
+                brightness[index] = image_data[index][color]/2; // divide by 2 to get 15-bit values
+                if (colors != nullptr)  {
+                    (*colors)[index] = color;
+                    if ((*colors)[index] == 3)    {
+                        (*colors)[index] = 1;
+                    }
                 }
             }
         }

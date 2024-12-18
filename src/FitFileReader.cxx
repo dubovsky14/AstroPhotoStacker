@@ -34,39 +34,13 @@ void FitFileReader::read_data(std::ifstream &file) {
     // subtract zero point
     std::transform(m_data.begin(), m_data.end(), m_data.begin(), [this](unsigned short int x) {return x - m_zero_point;});
 
-    if (m_is_rgb) {
-        //apply_green_correction();
-    }
-
     // why the fuck do some FIT files come with 16 bit precision? This is absurd, it's just a noise causing problems ...
     shrink_to_15_bits();
 };
 
 void FitFileReader::shrink_to_15_bits()    {
-    if (m_bit_depth == 16) {
-        for (unsigned int i = 0; i < m_data.size(); i++) {
-            m_data[i] = m_data[i] >> 1;
-        }
-    }
     m_bit_depth = 15;
-};
-
-void FitFileReader::apply_green_correction()   {
-    if (!m_is_rgb) {
-        return;
+    for (unsigned int i = 0; i < m_data.size(); i++) {
+        m_data[i] = m_data[i] >> 1;
     }
-    const int max_value = (2 << (m_bit_depth - 1)) - 1;
-
-    for (int i_y = 0; i_y < m_height; i_y++) {
-        for (int i_x = 0; i_x < m_width; i_x++) {
-            const unsigned int i_color = get_color(i_x, i_y);
-            if (i_color == 1) {
-                //m_data[i_y*m_width + i_x] = std::min<int>(2*m_data[i_y*m_width + i_x], max_value/2);
-            }
-            else  {
-                m_data[i_y*m_width + i_x] = std::min<int>(0.5*m_data[i_y*m_width + i_x], max_value/2);
-            }
-        }
-    }
-
 };

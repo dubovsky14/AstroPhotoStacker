@@ -57,6 +57,7 @@ bool ReferencePhotoHandlerStars::calculate_alignment(const InputFrame &input_fra
         return plate_solve(stars, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
     }
     catch (runtime_error &e)    {
+        cout << "Error: " << e.what() << endl;
         return false;
     }
 };

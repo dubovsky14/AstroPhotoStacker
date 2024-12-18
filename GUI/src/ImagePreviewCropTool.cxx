@@ -7,9 +7,8 @@ ImagePreviewCropTool::ImagePreviewCropTool(wxFrame *parent, int width, int heigh
     bind_crop_events();
 };
 
-void ImagePreviewCropTool::update_preview_bitmap(bool apply_green_correction)   {
-    m_current_preview_is_raw_file = apply_green_correction;
-    wxImage image_wx = get_updated_wximage(apply_green_correction);
+void ImagePreviewCropTool::update_preview_bitmap()   {
+    wxImage image_wx = get_updated_wximage();
 
     plot_crop_rectangle(&image_wx);
 

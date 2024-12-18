@@ -1,8 +1,5 @@
 #include "../headers/ImagePreview.h"
 
-#include "../../headers/raw_file_reader.h"
-#include "../../headers/ImageFilesInputOutput.h"
-#include "../../headers/ColorInterpolationTool.h"
 #include "../../headers/InputFrameData.h"
 
 
@@ -51,7 +48,6 @@ void ImagePreview::initialize_bitmap()    {
 };
 
 void ImagePreview::read_preview_from_frame(const InputFrame &input_frame)  {
-    m_current_preview_is_raw_file = is_raw_file(input_frame.get_file_address());
     InputFrameData<short int> input_frame_data(input_frame);
     if (input_frame_data.is_raw_file()) {
         input_frame_data.debayer();
@@ -71,8 +67,7 @@ void ImagePreview::read_preview_from_file(const std::string &path)  {
     read_preview_from_frame(InputFrame(path));
 };
 
-void ImagePreview::update_original_image(const std::vector<std::vector<short int>> &original_image, int width, int height, bool apply_green_correction)   {
-    m_current_preview_is_raw_file = apply_green_correction;
+void ImagePreview::update_original_image(const std::vector<std::vector<short int>> &original_image, int width, int height)   {
     m_image_resize_tool.set_original_size(width, height);
     m_original_image = original_image;
     m_image_resize_tool.set_default_resized_area();
@@ -87,62 +82,49 @@ void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector
             stacked_image_short_int[i_color][i_pixel] = stacked_image[i_color][i_pixel];
         }
     }
-    update_original_image(stacked_image_short_int, width_original, height_original, false);
+    update_original_image(stacked_image_short_int, width_original, height_original);
 };
 
-void ImagePreview::update_preview_bitmap()   {
-    const bool apply_green_correction = m_current_preview_is_raw_file;
-    update_preview_bitmap(apply_green_correction);
-};
-
-wxImage ImagePreview::get_updated_wximage(bool apply_green_correction)  const  {
+wxImage ImagePreview::get_updated_wximage()  const  {
     wxImage image_wx(m_width, m_height);
     const bool apply_additional_layers = m_additional_layers_preview.size() == m_original_image.size();
-    auto set_pixels = [&image_wx, this, apply_additional_layers](float green_channel_correction) {
-        const float scale_factor = pow(2,m_exposure_correction)*2*255.0 / m_max_value;
-        for (int y = 0; y < m_height; ++y) {
-            for (int x = 0; x < m_width; ++x) {
-                const int index = x + y*m_width;
-                int red   = m_preview_data[0][index];
-                int green = m_preview_data[1][index];
-                int blue  = m_preview_data[2][index];
 
-                if (m_color_stretcher != nullptr) {
-                    if (m_color_stretcher->has_stretchers()) {
-                        red   = m_color_stretcher->stretch(red,   m_max_value, 0);
-                        green = m_color_stretcher->stretch(green, m_max_value, 1);
-                        blue  = m_color_stretcher->stretch(blue,  m_max_value, 2);
-                    }
-                }
-                red   = min<int>(255,scale_factor*red  );
-                green = min<int>(255,scale_factor*green*green_channel_correction);
-                blue  = min<int>(255,scale_factor*blue );
+    const float scale_factor = pow(2,m_exposure_correction)*2*255.0 / m_max_value;
+    for (int y = 0; y < m_height; ++y) {
+        for (int x = 0; x < m_width; ++x) {
+            const int index = x + y*m_width;
+            int red   = m_preview_data[0][index];
+            int green = m_preview_data[1][index];
+            int blue  = m_preview_data[2][index];
 
-                if (apply_additional_layers) {
-                    const bool valid_pixel = m_additional_layers_preview[0][index] >= 0;
-                    if (valid_pixel) {
-                        red   = m_additional_layers_preview[0][index];
-                        green = m_additional_layers_preview[1][index];
-                        blue  = m_additional_layers_preview[2][index];
-                    }
+            if (m_color_stretcher != nullptr) {
+                if (m_color_stretcher->has_stretchers()) {
+                    red   = m_color_stretcher->stretch(red,   m_max_value, 0);
+                    green = m_color_stretcher->stretch(green, m_max_value, 1);
+                    blue  = m_color_stretcher->stretch(blue,  m_max_value, 2);
                 }
-                image_wx.SetRGB(x, y, red, green, blue);
             }
-        }
-    };
+            red   = min<int>(255,scale_factor*red  );
+            green = min<int>(255,scale_factor*green);
+            blue  = min<int>(255,scale_factor*blue );
 
-    if (apply_green_correction) {
-        set_pixels(0.5);
+            if (apply_additional_layers) {
+                const bool valid_pixel = m_additional_layers_preview[0][index] >= 0;
+                if (valid_pixel) {
+                    red   = m_additional_layers_preview[0][index];
+                    green = m_additional_layers_preview[1][index];
+                    blue  = m_additional_layers_preview[2][index];
+                }
+            }
+            image_wx.SetRGB(x, y, red, green, blue);
+        }
     }
-    else {
-        set_pixels(1);
-    }
+
     return image_wx;
 };
 
-void ImagePreview::update_preview_bitmap(bool apply_green_correction)   {
-    wxImage image_wx = get_updated_wximage(apply_green_correction);
-    m_current_preview_is_raw_file = apply_green_correction;
+void ImagePreview::update_preview_bitmap()   {
+    wxImage image_wx = get_updated_wximage();
 
     // Convert the wxImage to a wxBitmap
     wxBitmap bitmap(image_wx);

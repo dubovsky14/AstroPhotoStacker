@@ -70,16 +70,6 @@ void StackerBase::save_stacked_photo(const std::string &file_address, const std:
     const bool color_image_target = ((image_options >> 3) == (3-1));
 
     if (color_image_source) {
-        if (apply_color_correction) {
-            // scale down green (we have 2 green channels)
-            std::transform(data_for_plotting[1].begin(), data_for_plotting[1].end(), data_for_plotting[1].begin(), [](double value) { return value / 2; });
-
-
-            // for some reason, the max of blue and red has to be 32767, not 65534
-            std::transform(data_for_plotting[0].begin(), data_for_plotting[0].end(), data_for_plotting[0].begin(), [max_value_output](double value) { return std::min<double>(value, max_value_output/2 + 1); });
-            std::transform(data_for_plotting[2].begin(), data_for_plotting[2].end(), data_for_plotting[2].begin(), [max_value_output](double value) { return std::min<double>(value, max_value_output/2 + 1); });
-        }
-
         if (color_image_target) {
             create_color_image(&data_for_plotting.at(0)[0], &data_for_plotting.at(1)[0], &data_for_plotting.at(2)[0] , width, height, file_address, image_options);
         }

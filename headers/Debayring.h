@@ -42,57 +42,28 @@ namespace AstroPhotoStacker {
             result.push_back(std::vector<output_type>(width*height, 0));
         }
 
-        for (int i_color = 0; i_color < 3; i_color++) {
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    const int index = y*width + x;
-                    const int color_original = colors_original[index];
-                    result[i_color][index] = data_original[index];
+        for (int y = 0; y < height-1; y++) {
+            for (int x = 0; x < width-1; x++) {
+                int this_pixel_rgb[3] = {0, 0, 0};
+                int n_pixels[3] = {0, 0, 0};
 
-                    short int neighbors_values[8];
-                    int neighbors_distances[8];
-
-                    neighbors_distances[0] = (i_color == color_original) ? 1 : -1;
-                    neighbors_values[0] = data_original[index];
-
-                    get_closest_pixel_of_given_color(data_original, colors_original, height, width, x, y, i_color, 1, 0, &neighbors_values[1], &neighbors_distances[1],1);    // right
-                    get_closest_pixel_of_given_color(data_original, colors_original, height, width, x, y, i_color, 0, 1, &neighbors_values[2], &neighbors_distances[2],1);    // down
-                    get_closest_pixel_of_given_color(data_original, colors_original, height, width, x, y, i_color, 1, 1, &neighbors_values[3], &neighbors_distances[3],1);    // right down
-
-                    float sum = 0;
-                    float weight_sum = 0;
-                    for (unsigned int i_neighbor = 0; i_neighbor < 4; i_neighbor++) {
-                        if (neighbors_distances[i_neighbor] == -1) {
-                            continue;
-                        }
-                        sum += neighbors_values[i_neighbor];
-                        weight_sum += 1;
+                // average out 2x2 pixels
+                for (int y2 = 0; y2 < 2; y2++)  {
+                    for (int x2 = 0; x2 < 2; x2++)   {
+                        const unsigned int index = (y+y2)*width + (x+x2);
+                        const unsigned int color = colors_original[index];
+                        this_pixel_rgb[color] += data_original[index];
+                        n_pixels[color]++;
                     }
+                }
 
-                    // this should happen only for rightmost and bottommost pixels
-                    if (weight_sum == 0) {
-                        get_closest_pixel_of_given_color(data_original, colors_original, height, width, x, y, i_color, 1, 0, &neighbors_values[0], &neighbors_distances[0]);     // right
-                        get_closest_pixel_of_given_color(data_original, colors_original, height, width, x, y, i_color, -1, 0, &neighbors_values[1], &neighbors_distances[1]);    // left
-                        get_closest_pixel_of_given_color(data_original, colors_original, height, width, x, y, i_color, 0, 1, &neighbors_values[2], &neighbors_distances[2]);     // down
-                        get_closest_pixel_of_given_color(data_original, colors_original, height, width, x, y, i_color, 0, -1, &neighbors_values[3], &neighbors_distances[3]);    // up
-
-                        get_closest_pixel_of_given_color(data_original, colors_original, height, width, x, y, i_color, 1, 1, &neighbors_values[4], &neighbors_distances[4]);     // down-right
-                        get_closest_pixel_of_given_color(data_original, colors_original, height, width, x, y, i_color, -1, 1, &neighbors_values[5], &neighbors_distances[5]);    // down-left
-                        get_closest_pixel_of_given_color(data_original, colors_original, height, width, x, y, i_color, 1, -1, &neighbors_values[6], &neighbors_distances[6]);    // up-right
-                        get_closest_pixel_of_given_color(data_original, colors_original, height, width, x, y, i_color, -1, -1, &neighbors_values[7], &neighbors_distances[7]);   // up-left
-
-                        // now let's calculate weighted mean of the neighbors, with 1/distance as the weight
-                        sum = 0;
-                        weight_sum = 0;
-                        for (unsigned int i_neighbor = 0; i_neighbor < sizeof(neighbors_distances)/sizeof(neighbors_distances[0]); i_neighbor++) {
-                            if (neighbors_distances[i_neighbor] == -1) {
-                                continue;
-                            }
-                            sum += float(neighbors_values[i_neighbor])/neighbors_distances[i_neighbor];
-                            weight_sum += 1.0/neighbors_distances[i_neighbor];
-                        }
+                // save the result
+                for (int color = 0; color < 3; color++) {
+                    if (n_pixels[color] == 0)   {
+                        result[color][y*width + x] = 0;
+                        continue;
                     }
-                    result[i_color][index] = sum/weight_sum;
+                    result[color][y*width + x] = this_pixel_rgb[color]/n_pixels[color];
                 }
             }
         }

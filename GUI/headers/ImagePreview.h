@@ -83,9 +83,8 @@ class ImagePreview {
          * @param original_image original image data
          * @param width width of the image
          * @param height height of the image
-         * @param apply_green_correction whether to apply green channel correction
          */
-        void update_original_image(const std::vector<std::vector<short int>> &original_image, int width, int height, bool apply_green_correction);
+        void update_original_image(const std::vector<std::vector<short int>> &original_image, int width, int height);
 
         /**
          * @brief Set exposure correction
@@ -107,14 +106,6 @@ class ImagePreview {
          * @param static_bitmap pointer to static bitmap to update
         */
         virtual void update_preview_bitmap();
-
-        /**
-         * @brief Update preview bitmap - an object in GUI
-         *
-         * @param static_bitmap pointer to static bitmap to update
-         * @param apply_green_correction whether to apply green channel correction
-        */
-        virtual void update_preview_bitmap(bool apply_gree_correction);
 
         /**
          * @brief Zoom in the preview at a given position
@@ -165,12 +156,10 @@ class ImagePreview {
         */
         const std::vector<std::vector<short int>>& get_original_image(int *width = nullptr, int *height = nullptr) const;
 
-        bool preview_is_raw_file() const { return m_current_preview_is_raw_file;};
-
         /**
          * @brief Image preview bitmap (for sizer)
         */
-       wxGenericStaticBitmap *get_image_preview_bitmap()   const   {return m_preview_bitmap;};
+        wxGenericStaticBitmap *get_image_preview_bitmap()   const   {return m_preview_bitmap;};
 
         /**
          * @brief Add additional layer to the image preview - for example to show alignment boxes or crop borders
@@ -205,7 +194,6 @@ class ImagePreview {
         int m_max_value;
         std::vector<int> m_max_values_original;
         const CombinedColorStrecherTool *m_color_stretcher = nullptr;
-        bool m_current_preview_is_raw_file = true;
 
         double m_zoom_factor = 1.0;
         double m_max_zoom_factor = 8.0;
@@ -220,7 +208,7 @@ class ImagePreview {
 
         void on_mouse_wheel(wxMouseEvent& event);
 
-        wxImage get_updated_wximage(bool apply_green_correction) const;
+        wxImage get_updated_wximage() const;
 
         void bind_shift_events();
 

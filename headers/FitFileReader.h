@@ -40,8 +40,6 @@ namespace AstroPhotoStacker {
 
             std::vector<unsigned short int> m_data;
 
-            void apply_green_correction();
-
             void shrink_to_15_bits();
     };
 }

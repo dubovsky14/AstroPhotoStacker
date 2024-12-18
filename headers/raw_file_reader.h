@@ -72,15 +72,7 @@ namespace AstroPhotoStacker   {
 
             const ZWOVideoTextFileInfo info(input_frame.get_file_address() + ".txt");
             const std::array<char, 4> &bayer_matrix = info.get_bayer_matrix();
-            // green correction
-                for (int i_x = 0; i_x < *width; i_x++) {
-                    for (int i_y = 0; i_y < *height; i_y++) {
-                        if (bayer_matrix[(i_y%2)*2 + i_x%2] == 1)   {
-                            const int index = i_y*(*width) + i_x;
-                            result[index] *= 2;
-                        }
-                    }
-                }
+
             if (colors != nullptr)   {
                 colors->resize(result.size());
                 for (int i_x = 0; i_x < *width; i_x++) {
