@@ -1,7 +1,6 @@
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/raw_file_reader.h"
 #include "../headers/ImageFilesInputOutput.h"
-#include "../headers/ColorInterpolationTool.h"
 #include "../headers/Debayring.h"
 
 using namespace std;

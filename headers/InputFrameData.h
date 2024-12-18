@@ -3,7 +3,6 @@
 #include "../headers/InputFrame.h"
 #include "../headers/raw_file_reader.h"
 #include "../headers/ImageFilesInputOutput.h"
-#include "../headers/ColorInterpolationTool.h"
 
 #include "../headers/Debayring.h"
 
@@ -18,21 +17,6 @@ namespace AstroPhotoStacker {
                 m_is_raw_file = AstroPhotoStacker::is_raw_file(input_frame.get_file_address());
                 if (m_is_raw_file)  {
                     m_image_data_raw = read_raw_file<PixelType>(input_frame, &m_width, &m_height, &m_colors);
-                    const std::vector<char> color_conversion_table = get_color_info_as_number(input_frame);
-
-                    bool diagonal_conversion_table = true;
-                    for (unsigned int i_color = 0; i_color < color_conversion_table.size(); i_color++) {
-                        if (static_cast<unsigned int>(color_conversion_table[i_color]) != i_color) {
-                            diagonal_conversion_table = false;
-                            break;
-                        }
-                    }
-                    if (!diagonal_conversion_table) {
-                        for (char &color : m_colors) {
-                            color = color_conversion_table[color];
-                        }
-                    }
-
                     m_n_colors = *std::max_element(m_colors.begin(), m_colors.end()) + 1;
                 }
                 else {
