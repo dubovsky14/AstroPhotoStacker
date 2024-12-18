@@ -5,6 +5,7 @@
 #include "../headers/raw_file_reader.h"
 #include "../headers/InputFrame.h"
 #include "../headers/VideoReader.h"
+#include "../headers/Debayring.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -291,22 +292,6 @@ namespace AstroPhotoStacker {
         }
         else {
             return read_video_frame_as_gray_scale<ValueType>(input_frame.get_file_address(), input_frame.get_frame_number(), width, height);
-        }
-    };
-
-    template <class ValueType>
-    void debayer_monochrome(std::vector<ValueType> *data, int width, int height, const std::vector<char> &colors) {
-        for (int y = 0; y < height-1; y++) {
-            for (int x = 0; x < width-1; x++) {
-                const int index = y*width + x;
-
-                if (colors[index] == 1) { // this one is green, and also the one to bottom right
-                    data->at(index) = (static_cast<int>(data->at(index+1)) + static_cast<int>(data->at(index+width)) + data->at(index)/2 + data->at(index+width+1)/2)/3;
-                }
-                else {
-                    data->at(index) = (data->at(index+1)/2 + data->at(index+width)/2 + static_cast<int>(data->at(index)) + static_cast<int>(data->at(index+width+1)))/3;
-                }
-            }
         }
     };
 

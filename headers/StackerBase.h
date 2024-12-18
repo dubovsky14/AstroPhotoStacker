@@ -171,7 +171,7 @@ namespace AstroPhotoStacker {
             const int get_height() const { return m_height; };
 
             /**
-             * @brief Does the stack contain only raw RBG files (in order to apply green channel correction)
+             * @brief Does the stack contain only raw RBG files?
              *
              * @return bool - true if the stack contains only raw RGB files
              */

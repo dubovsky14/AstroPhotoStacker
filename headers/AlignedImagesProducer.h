@@ -79,8 +79,6 @@ namespace AstroPhotoStacker {
 
             static void scale_down_image(std::vector<std::vector<unsigned short>> *image, unsigned int origianal_max, unsigned int new_max);
 
-            static void apply_green_correction(std::vector<std::vector<unsigned short>> *image, unsigned short max_value);
-
             void produce_video(const std::string &output_video_address)   const;
 
             TimeLapseVideoSettings *get_timelapse_video_settings();
@@ -120,8 +118,7 @@ namespace AstroPhotoStacker {
                                         int width,
                                         int height,
                                         const std::string &output_file_address,
-                                        int unix_time,
-                                        bool use_green_correction) const;
+                                        int unix_time) const;
 
             mutable std::atomic<int> m_n_tasks_processed = 0;
             std::vector<std::tuple<std::string, int>>   m_output_adresses_and_unix_times;

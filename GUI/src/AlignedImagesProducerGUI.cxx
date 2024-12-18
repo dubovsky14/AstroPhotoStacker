@@ -437,7 +437,7 @@ void AlignedImagesProducerGUI::add_group_to_stack(const vector<size_t> &group) c
 
 
 void AlignedImagesProducerGUI::process_and_save_stacked_image(  const std::vector<std::vector<double>> &stacked_image,
-                                                                const std::string &output_file_address, int unix_time, bool use_green_correction, int original_width, int original_height)  const   {
+                                                                const std::string &output_file_address, int unix_time, int original_width, int original_height)  const   {
 
         vector<vector<unsigned short>> cropped_image_ushort(stacked_image.size());
         int crop_top_left_x, crop_top_left_y, crop_width, crop_height;
@@ -460,10 +460,6 @@ void AlignedImagesProducerGUI::process_and_save_stacked_image(  const std::vecto
 
         if (max_value > 255) {
             AlignedImagesProducer::scale_down_image(&cropped_image_ushort, max_value, 255);
-        }
-
-        if (use_green_correction) {
-            AlignedImagesProducer::apply_green_correction(&cropped_image_ushort, 255);
         }
 
         cv::Mat opencv_image = get_opencv_color_image(&cropped_image_ushort[0][0], &cropped_image_ushort[1][0], &cropped_image_ushort[2][0], crop_width, crop_height);

@@ -69,4 +69,20 @@ namespace AstroPhotoStacker {
         }
         return result;
     }
+
+    template <class ValueType>
+    void debayer_monochrome(std::vector<ValueType> *data, int width, int height, const std::vector<char> &colors) {
+        for (int y = 0; y < height-1; y++) {
+            for (int x = 0; x < width-1; x++) {
+                const int index = y*width + x;
+
+                if (colors[index] == 1) { // this one is green, and also the one to bottom right
+                    data->at(index) = (static_cast<int>(data->at(index+1)) + static_cast<int>(data->at(index+width)) + data->at(index)/2 + data->at(index+width+1)/2)/3;
+                }
+                else {
+                    data->at(index) = (data->at(index+1)/2 + data->at(index+width)/2 + static_cast<int>(data->at(index)) + static_cast<int>(data->at(index+width+1)))/3;
+                }
+            }
+        }
+    };
 };

@@ -72,12 +72,6 @@ void StackerWeightedMedian::calculate_stacked_photo_internal()  {
 
     m_values_to_stack.clear();
 
-    // fix green pixels
-    if (m_number_of_colors == 3 && !m_interpolate_colors) {
-        for (int i_pixel = 0; i_pixel < m_width*m_height; i_pixel++) {
-            m_stacked_image[1][i_pixel] /= 2;
-        }
-    }
     fix_empty_pixels();
 };
 

@@ -178,9 +178,8 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
 
     const Metadata metadata = read_metadata(first_frame);
     const int unix_time = metadata.timestamp + m_timestamp_offset;
-    const bool use_green_correction = stacker->contains_only_rgb_raw_files();
 
-    process_and_save_image(&output_image, width, height, output_file_address, unix_time, use_green_correction);
+    process_and_save_image(&output_image, width, height, output_file_address, unix_time);
 
     std::scoped_lock lock(m_output_adresses_and_unix_times_mutex);
     m_output_adresses_and_unix_times.push_back({output_file_address, unix_time});
@@ -231,9 +230,8 @@ void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_fram
 
     const Metadata metadata = read_metadata(input_frame);
     const int unix_time = metadata.timestamp + m_timestamp_offset;
-    const bool use_green_correction = is_raw_file(input_frame.get_file_address());
 
-    process_and_save_image(&output_image, width, height, output_file_address, unix_time, use_green_correction);
+    process_and_save_image(&output_image, width, height, output_file_address, unix_time);
 
     std::scoped_lock lock(m_output_adresses_and_unix_times_mutex);
     m_output_adresses_and_unix_times.push_back({output_file_address, unix_time});
@@ -245,8 +243,7 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<unsi
                                                     int width,
                                                     int height,
                                                     const std::string &output_file_address,
-                                                    int unix_time,
-                                                    bool use_green_correction) const    {
+                                                    int unix_time) const    {
 
     unsigned short max_value = 0;
     for (const vector<unsigned short> &color_channel : *stacked_image) {
@@ -260,9 +257,6 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<unsi
     }
     if (max_value > 255) {
         scale_down_image(stacked_image, max_value, 255);
-    }
-    if (use_green_correction) {
-        apply_green_correction(stacked_image, 255);
     }
 
     //// show AP boxes
@@ -311,15 +305,6 @@ void AlignedImagesProducer::scale_down_image(   std::vector<std::vector<unsigned
             image->at(color)[i] = image->at(color)[i]*new_max/origianal_max;
         }
     }
-};
-
-void AlignedImagesProducer::apply_green_correction(std::vector<std::vector<unsigned short>> *image, unsigned short max_value)    {
-    // scale down green (we have 2 green channels)
-    std::transform(image->at(1).begin(), image->at(1).end(), image->at(1).begin(), [](unsigned short value) { return value; });
-
-    // for some reason, the max of blue and red has to be 32767, not 65534
-    std::transform(image->at(0).begin(), image->at(0).end(), image->at(0).begin(), [max_value](unsigned short value) { return std::min<unsigned short>(value*2, max_value); });
-    std::transform(image->at(2).begin(), image->at(2).end(), image->at(2).begin(), [max_value](unsigned short value) { return std::min<unsigned short>(value*2, max_value); });
 };
 
 void AlignedImagesProducer::produce_video(const std::string &output_video_address) const {
