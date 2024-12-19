@@ -103,7 +103,7 @@ void HistogramDataToolGUI::update_plot()    {
             const int max_value = *std::max_element(histogram_data.begin()+edge_to_cut_off, histogram_data.end()-edge_to_cut_off);
             for (int pixel_coordinate_x = 0; pixel_coordinate_x < m_width_pixels; pixel_coordinate_x++) {
                 const float value = histogram_data.at(pixel_coordinate_x);
-                const int height = m_height_pixels*value / max_value;
+                const int height = min<int>(m_height_pixels, m_height_pixels*value / max_value);
 
                 for (int pixel_coordinate_y = 0; pixel_coordinate_y < height; pixel_coordinate_y++) {
                     image.SetRGB(pixel_coordinate_x, m_height_pixels - pixel_coordinate_y, m_line_colors[i_color].Red(), m_line_colors[i_color].Green(), m_line_colors[i_color].Blue());

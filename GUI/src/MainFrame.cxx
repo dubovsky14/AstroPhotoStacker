@@ -979,7 +979,7 @@ void MyFrame::update_histogram()    {
         return;
     }
     // TODO bit depth and number of channels are hardcoded - this should be changed
-    m_histogram_data_tool = std::make_unique<HistogramDataTool>(pow(2,13), 3);
+    m_histogram_data_tool = std::make_unique<HistogramDataTool>(pow(2,15)-1, 3);
     m_histogram_data_tool->extract_data_from_image(m_current_preview->get_original_image());
     m_histogram_data_tool_gui->set_color_stretcher(m_color_stretcher);
 
@@ -1041,7 +1041,7 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
 
         if (m_stack_settings->apply_color_stretching()) {
             std::vector<std::vector<double> > stacked_image = m_stacker->get_stacked_image();
-            m_color_stretcher.stretch_image(&stacked_image, pow(2,13), false);
+            m_color_stretcher.stretch_image(&stacked_image, pow(2,15)-1, false);
             AstroPhotoStacker::StackerBase::save_stacked_photo(file_address,
                                             stacked_image,
                                             m_stacker->get_width(),

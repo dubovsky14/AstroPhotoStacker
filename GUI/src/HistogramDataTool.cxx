@@ -68,7 +68,7 @@ std::vector<std::vector<int>> HistogramDataTool::get_stretched_color_data(const 
     std::vector<std::vector<int>> result(m_number_of_colors, std::vector<int>(m_max_value + 1, 0));
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
         for (unsigned int i_value = 0; i_value < m_histogram_data_colors[i_color].size(); i_value++) {
-            const int stretched_value = color_stretcher.stretch(i_value, m_max_value,i_color);
+            const int stretched_value = min<int>(m_max_value, color_stretcher.stretch(i_value, m_max_value,i_color));
             result[i_color][stretched_value] += m_histogram_data_colors[i_color][i_value];
         }
     }
