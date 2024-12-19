@@ -360,8 +360,11 @@ void MyFrame::update_files_to_stack_checkbox()   {
                 const AstroPhotoStacker::Metadata metadata = m_filelist_handler.get_metadata()[i_file];
                 const AlignmentFileInfo alignment_info = m_filelist_handler.get_alignment_info()[i_file];
                 const float alignment_score = alignment_info.ranking;
+                const std::string exposure_string = metadata.exposure_time > 0.5 ?
+                                                    AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s" :
+                                                    AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time * 1000) + " ms";
                 metadata_string =   "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture) +
-                                    "\t\t" + AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s"
+                                    "\t\t" + exposure_string +
                                     "\t\t" + to_string(metadata.iso) + " ISO" +
                                     "\t\t\tscore: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3);
             }

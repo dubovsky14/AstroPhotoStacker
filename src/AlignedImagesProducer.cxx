@@ -2,7 +2,6 @@
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/MetadataReader.h"
-#include "../headers/raw_file_reader.h"
 #include "../headers/Common.h"
 #include "../headers/TimeLapseVideoCreator.h"
 #include "../headers/StackerFactory.h"
@@ -294,7 +293,6 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<unsi
     cv::imwrite(output_file_address, opencv_image);
 
 };
-
 
 void AlignedImagesProducer::scale_down_image(   std::vector<std::vector<unsigned short>> *image,
                                                 unsigned int origianal_max,

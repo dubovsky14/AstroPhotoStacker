@@ -43,17 +43,6 @@ bool AstroPhotoStacker::is_raw_file(const std::string &file_address)   {
     return is_raw_file_dslr_slr(file_address);
 };
 
-std::vector<char> AstroPhotoStacker::get_color_info_as_number(const InputFrame &input_frame)   {
-    if (input_frame.is_video_frame()) {
-        return {0,1,2,3};
-    }
-    if (is_fit_file(input_frame.get_file_address())) {
-        return {0,1,2,3};
-    }
-    return get_color_info_as_number_dslr_slr(input_frame.get_file_address());
-};
-
-
 bool AstroPhotoStacker::get_photo_resolution_raw_file(const std::string &raw_file, int *width, int *height) {
     if (ZWOVideoTextFileInfo::is_valid_zwo_video_text_file(raw_file + ".txt")) {
         read_one_channel_from_video_frame<short>(raw_file, 0, width, height, 0);

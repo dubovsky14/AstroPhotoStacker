@@ -94,22 +94,6 @@ namespace AstroPhotoStacker   {
     };
 
     /**
-     * @brief Get the color information as a vector of characters (R - red, G - green, B - blue)
-     *
-     * @param raw_file - path to the raw file
-     * @return std::vector<char> - vector of characters containing the color information for given index of the color (R = red, G = green, B = blue)
-    */
-    std::vector<char> get_color_info_as_char_vector_dslr_slr(const std::string &raw_file);
-
-    /**
-     * @brief Get the color information as a vector of numbers (0 - red, 1 - green, 2 - blue)
-     *
-     * @param raw_file - path to the raw file
-     * @return std::vector<char> - vector of numbers containing the color information for given index of the color (0 = red, 1 = green, 2 = blue)
-    */
-    std::vector<char> get_color_info_as_number_dslr_slr(const std::string &raw_file);
-
-    /**
      * @brief Get the resolution of the photo
      *
      * @param raw_file - path to the raw file
