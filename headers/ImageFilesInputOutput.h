@@ -143,6 +143,27 @@ namespace AstroPhotoStacker {
         }
     }
 
+
+    /**
+     * @brief Create a color image from an array of pixel values
+     *
+     * @tparam pixel_values_type The type of the pixel values
+     * @param input_image: vector<vector<ValueType>> The input image
+     * @param width The width of the image
+     * @param height The height of the image
+     * @param filename The filename of the image
+     * @param image_settings The settings of the image
+    */
+    template <typename pixel_values_type>
+    void create_color_image( const std::vector<std::vector<pixel_values_type>> &input_image,
+                            int width, int height, const std::string& filename, int image_settings = CV_8UC3) {
+
+        if (input_image.size() != 3) {
+            throw std::runtime_error("Input image must have 3 channels");
+        }
+        create_color_image(input_image[0].data(), input_image[1].data(), input_image[2].data(), width, height, filename, image_settings);
+    }
+
     /**
      * @brief Create a color image from an array of pixel values
      *
