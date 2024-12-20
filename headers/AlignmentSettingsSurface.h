@@ -20,6 +20,10 @@ namespace AstroPhotoStacker {
 
             void set_number_of_boxes(int number_of_boxes);
 
+            bool get_regular_grid() const;
+
+            void set_regular_grid(bool regular_grid);
+
         private:
             static std::unique_ptr<AlignmentSettingsSurface> s_singleton_instance;
 
@@ -32,6 +36,7 @@ namespace AstroPhotoStacker {
             float m_contrast_threshold        = 0.4;
             float m_max_overlap_between_boxes = 0.3;
             int   m_number_of_boxes           = 100;
+            bool  m_regular_grid              = true;
 
     };
 }

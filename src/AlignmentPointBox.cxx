@@ -172,7 +172,7 @@ bool AlignmentPointBox::valid_box_coordinates(int x_center, int y_center, int bo
 };
 
 float AlignmentPointBox::calculate_acceptable_chi2() const {
-    const int max_shift = 1;
+    const int max_shift = 4;
     float result = 0;
     for (int y_shift = -max_shift; y_shift <= max_shift; y_shift++) {
         for (int x_shift = -max_shift; x_shift <= max_shift; x_shift++) {

@@ -172,7 +172,48 @@ void AlignmentFrame::add_surface_method_settings()  {
     );
 
 
+
+    auto add_hidden_checkbox = [this, alignment_settings_surface](
+            const std::string &alignment_method,
+            const std::string &label,
+            const std::string &tooltip,
+            bool default_value,
+            std::function<void(bool)> callback)   {
+                    if (find(m_alignment_methods.begin(), m_alignment_methods.end(), alignment_method) == m_alignment_methods.end())    {
+                        throw std::runtime_error("Attempted to use \'add_hidden_settings_slider\' function with unknown alignment method.");
+                    }
+
+                    wxCheckBox* checkbox = new wxCheckBox(this, wxID_ANY, label);
+                    checkbox->SetValue(default_value);
+                    checkbox->SetToolTip(tooltip);
+                    checkbox->Bind(wxEVT_CHECKBOX, [callback, checkbox, this](wxCommandEvent&){
+                        const bool is_checked = checkbox->GetValue();
+                        callback(is_checked);
+                    });
+                    m_hidden_options_sizer->Add(checkbox, 0, wxEXPAND, 5);
+
+                    if (m_hidden_settings_checkboxes.find(alignment_method) == m_hidden_settings_checkboxes.end()) {
+                        m_hidden_settings_checkboxes[alignment_method] = vector<wxCheckBox*>();
+                    }
+                    m_hidden_settings_checkboxes[alignment_method].push_back(checkbox);
+    };
+
+    add_hidden_checkbox(
+        "surface",
+        "Use regular grid",
+        "If checked, APs will be placed in regular grid. If not checked, their positions will be random.",
+        alignment_settings_surface->get_regular_grid(),
+        [](bool value){
+            AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
+            alignment_settings_surface->set_regular_grid(value);
+        }
+    );
+
+
+
     m_main_sizer->Add(m_hidden_options_sizer, 2, wxEXPAND, 5);
+
+    update_options_visibility(m_stack_settings->get_alignment_method());
 };
 
 void AlignmentFrame::update_options_visibility(const std::string &selected_alignment_method)    {
@@ -185,6 +226,19 @@ void AlignmentFrame::update_options_visibility(const std::string &selected_align
         else {
             for (const unique_ptr<FloatingPointSlider> &slider : vector_of_sliders)  {
                 slider->hide();
+            }
+        }
+    }
+
+    for (const auto &[available_method, vector_of_checkboxes] : m_hidden_settings_checkboxes)    {
+        if (wxString(available_method) == selected_alignment_method) {
+            for (wxCheckBox* checkbox : vector_of_checkboxes)  {
+                checkbox->Show();
+            }
+        }
+        else {
+            for (wxCheckBox* checkbox : vector_of_checkboxes)  {
+                checkbox->Hide();
             }
         }
     }

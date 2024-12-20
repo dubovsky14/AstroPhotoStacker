@@ -50,7 +50,8 @@ class AlignmentFrame : public wxFrame  {
         wxBoxSizer *m_hidden_options_sizer = nullptr;
         wxBoxSizer *m_main_sizer = nullptr;
 
-        std::map<std::string, std::vector<std::unique_ptr<FloatingPointSlider>>> m_hidden_settings_sliders;
+        std::map<std::string, std::vector<std::unique_ptr<FloatingPointSlider>>>    m_hidden_settings_sliders;
+        std::map<std::string, std::vector<wxCheckBox*>>                             m_hidden_settings_checkboxes;
 
 
         void initialize_list_of_frames_to_align();

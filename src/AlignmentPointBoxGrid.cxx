@@ -10,6 +10,82 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
+
+AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image_data,
+                                                const AlignmentWindow &alignment_window,
+                                                const AlignmentSettingsSurface &alignment_settings) {
+
+    const bool regular_grid = alignment_settings.get_regular_grid();
+    const unsigned int n_boxes = alignment_settings.get_number_of_boxes();
+    const float maximal_allowed_overlap = alignment_settings.get_max_overlap_between_boxes();
+
+    // #TODO: clean up this mess
+    const int alignment_window_width = alignment_window.x_max - alignment_window.x_min;
+    const int alignment_window_height = alignment_window.y_max - alignment_window.y_min;
+
+    const int min_box_width = max(20, alignment_window_width/60);
+    const int max_box_width = max(400, alignment_window_width/5);
+    const int min_box_height = max(20, alignment_window_height/60);
+    const int max_box_height = max(400, alignment_window_height/5);
+    const std::pair<int,int> box_width_range = {min_box_width, max_box_width};
+    const std::pair<int,int> box_height_range = {min_box_height, max_box_height};
+
+    if (regular_grid)   {
+        const int alignment_window_area = (alignment_window.x_max - alignment_window.x_min)*(alignment_window.y_max - alignment_window.y_min);
+
+        const int box_area = alignment_window_area/n_boxes;
+        const int box_size = sqrt(box_area)*0.8;
+        const int box_spacing = box_size/4;
+
+        const int step_size = box_size + box_spacing;
+        m_alignment_window = alignment_window;
+        const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
+        m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
+        const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
+        for (int y = alignment_window.y_min; y < alignment_window.y_max; y += step_size) {
+            for (int x = alignment_window.x_min; x < alignment_window.x_max; x += step_size) {
+                int xa = x - alignment_window.x_min;
+                int ya = y - alignment_window.y_min;
+                if (AlignmentPointBox::is_valid_ap(&m_scaled_data_reference_image_in_alignment_window, alignment_window, xa, ya, box_size, box_size, max_value)) {
+                    m_boxes.emplace_back(&m_scaled_data_reference_image_in_alignment_window, alignment_window, x, y, box_size, box_size, max_value);
+                }
+            }
+        }
+    }
+    else {
+        const unsigned int alignment_window_width = alignment_window.x_max - alignment_window.x_min;
+        const unsigned int alignment_window_height = alignment_window.y_max - alignment_window.y_min;
+        m_alignment_window = alignment_window;
+
+        const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
+        m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
+        const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
+
+        // not all boxes will be valid -> let's try to get n_boxes valid boxes, but also don't wanna get stuck in an infinite loop
+        for (unsigned int i = 0; i < n_boxes*10; i++) {
+            const int box_width  = random_uniform(box_width_range.first,  box_width_range.second);
+            const int box_height = random_uniform(box_height_range.first, box_height_range.second);
+
+            const int x = alignment_window.x_min + random_uniform(0, alignment_window_width - box_width);
+            const int y = alignment_window.y_min + random_uniform(0, alignment_window_height - box_height);
+
+            if (!fulfill_overlap_condition(m_boxes, x, y, box_width, box_height, maximal_allowed_overlap))    {
+                continue;
+            }
+
+            int xa = x - alignment_window.x_min;
+            int ya = y - alignment_window.y_min;
+            if (AlignmentPointBox::is_valid_ap(&m_scaled_data_reference_image_in_alignment_window, alignment_window, xa, ya, box_width, box_height, max_value)) {
+                m_boxes.emplace_back(&m_scaled_data_reference_image_in_alignment_window, alignment_window, x, y, box_width, box_height, max_value);
+            }
+            if (m_boxes.size() >= n_boxes) {
+                break;
+            }
+        }
+    }
+    sort_alignment_boxes();
+};
+
 AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image_data,
                                                 const AlignmentWindow &alignment_window,
                                                 unsigned int box_size, unsigned int box_spacing)  {
@@ -39,33 +115,24 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
                                                 float maximal_allowed_overlap)   {
 
 
-    const unsigned int alignment_window_width = alignment_window.x_max - alignment_window.x_min;
-    const unsigned int alignment_window_height = alignment_window.y_max - alignment_window.y_min;
-    m_alignment_window = alignment_window;
+    const int alignment_window_area = (alignment_window.x_max - alignment_window.x_min)*(alignment_window.y_max - alignment_window.y_min);
 
+    const int box_area = alignment_window_area/n_boxes;
+    const int box_size = sqrt(box_area)*0.8;
+    const int box_spacing = box_size/4;
+
+    const int step_size = box_size + box_spacing;
+    m_alignment_window = alignment_window;
     const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
     m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
     const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
-
-    // not all boxes will be valid -> let's try to get n_boxes valid boxes, but also don't wanna get stuck in an infinite loop
-    for (unsigned int i = 0; i < n_boxes*10; i++) {
-        const int box_width  = random_uniform(box_width_range.first,  box_width_range.second);
-        const int box_height = random_uniform(box_height_range.first, box_height_range.second);
-
-        const int x = alignment_window.x_min + random_uniform(0, alignment_window_width - box_width);
-        const int y = alignment_window.y_min + random_uniform(0, alignment_window_height - box_height);
-
-        if (!fulfill_overlap_condition(m_boxes, x, y, box_width, box_height, maximal_allowed_overlap))    {
-            continue;
-        }
-
-        int xa = x - alignment_window.x_min;
-        int ya = y - alignment_window.y_min;
-        if (AlignmentPointBox::is_valid_ap(&m_scaled_data_reference_image_in_alignment_window, alignment_window, xa, ya, box_width, box_height, max_value)) {
-            m_boxes.emplace_back(&m_scaled_data_reference_image_in_alignment_window, alignment_window, x, y, box_width, box_height, max_value);
-        }
-        if (m_boxes.size() >= n_boxes) {
-            break;
+    for (int y = alignment_window.y_min; y < alignment_window.y_max; y += step_size) {
+        for (int x = alignment_window.x_min; x < alignment_window.x_max; x += step_size) {
+            int xa = x - alignment_window.x_min;
+            int ya = y - alignment_window.y_min;
+            if (AlignmentPointBox::is_valid_ap(&m_scaled_data_reference_image_in_alignment_window, alignment_window, xa, ya, box_size, box_size, max_value)) {
+                m_boxes.emplace_back(&m_scaled_data_reference_image_in_alignment_window, alignment_window, x, y, box_size, box_size, max_value);
+            }
         }
     }
 

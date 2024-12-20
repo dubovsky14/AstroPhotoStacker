@@ -4,6 +4,7 @@
 #include "../headers/MonochromeImageData.h"
 #include "../headers/LocalShift.h"
 #include "../headers/AlignmentWindow.h"
+#include "../headers/AlignmentSettingsSurface.h"
 
 #include <tuple>
 #include <vector>
@@ -12,6 +13,13 @@ namespace AstroPhotoStacker {
     class AlignmentPointBoxGrid {
         public:
             AlignmentPointBoxGrid() = delete;
+
+            /**
+             * @brief Construct a new Alignment Point Box Grid object with square boxes and uniform spacing
+             */
+            AlignmentPointBoxGrid(  const MonochromeImageData &image_data,
+                                    const AlignmentWindow &alignment_window,
+                                    const AlignmentSettingsSurface &alignment_settings);
 
             /**
              * @brief Construct a new Alignment Point Box Grid object with square boxes and uniform spacing

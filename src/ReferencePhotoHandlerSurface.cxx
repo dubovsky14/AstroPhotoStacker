@@ -57,24 +57,10 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
     blurred_image_data.width = m_width;
     blurred_image_data.height = m_height;
 
-
-    const int alignment_window_width = m_alignment_window.x_max - m_alignment_window.x_min;
-    const int alignment_window_height = m_alignment_window.y_max - m_alignment_window.y_min;
-
-    const int min_box_width = max(20, alignment_window_width/60);
-    const int max_box_width = max(400, alignment_window_width/5);
-    const int min_box_height = max(20, alignment_window_height/60);
-    const int max_box_height = max(400, alignment_window_height/5);
-    const std::pair<int,int> box_width_range = {min_box_width, max_box_width};
-    const std::pair<int,int> box_height_range = {min_box_height, max_box_height};
-
     m_alignment_point_box_grid = make_unique<AlignmentPointBoxGrid>(
         blurred_image_data,
         m_alignment_window,
-        box_width_range,
-        box_height_range,
-        alignment_settings_surface->get_number_of_boxes(),
-        alignment_settings_surface->get_max_overlap_between_boxes());
+        *alignment_settings_surface);
 
     cout << "Alignment grid initialized, number of boxes: " << m_alignment_point_box_grid->get_alignment_boxes().size() << endl;
 };

@@ -27,9 +27,9 @@ bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifte
     if (closest_nodes.size() == 0) {
         return false;
     }
-    if (get<2>(get<1>(closest_nodes[0])) == false) {
-        return false;
-    }
+
+    bool valid_point_found = false;
+
     float sum_weights = 0;
     float sum_x = 0;
     float sum_y = 0;
@@ -44,6 +44,7 @@ bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifte
         if (!valid_ap) {
             continue;
         }
+        valid_point_found = true;
 
         if (score_leading == -1) {
             score_leading = get<3>(value);
@@ -60,6 +61,11 @@ bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifte
         sum_x += weight * dx;
         sum_y += weight * dy;
     }
+
+    if (!valid_point_found) {
+        return false;
+    }
+
     *shifted_x = x + sum_x / sum_weights;
     *shifted_y = y + sum_y / sum_weights;
     if (score != nullptr) {

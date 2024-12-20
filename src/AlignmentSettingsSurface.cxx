@@ -46,3 +46,11 @@ int AlignmentSettingsSurface::get_number_of_boxes() const {
 void AlignmentSettingsSurface::set_number_of_boxes(int number_of_boxes) {
     m_number_of_boxes = number_of_boxes;
 }
+
+bool AlignmentSettingsSurface::get_regular_grid() const {
+    return m_regular_grid;
+};
+
+void AlignmentSettingsSurface::set_regular_grid(bool regular_grid)  {
+    m_regular_grid = regular_grid;
+};
