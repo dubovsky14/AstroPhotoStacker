@@ -10,6 +10,7 @@
 
 #include "../headers/HistogramDataTool.h"
 #include "../headers/HistogramDataToolGUI.h"
+#include "../headers/PostProcessingTool.h"
 
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/HotPixelIdentifier.h"
@@ -70,6 +71,7 @@ class MyFrame : public wxFrame  {
         void add_alignment_menu();
         void add_hot_pixel_menu();
         void add_aligned_images_producer_menu();
+        void add_postprocessing_menu();
 
         void add_menu_bar();
 
@@ -178,6 +180,8 @@ class MyFrame : public wxFrame  {
         // luminance streching slider:
         ThreePointSlider *m_luminance_stretching_slider = nullptr;
         CombinedColorStrecherTool m_color_stretcher;
+
+        PostProcessingTool m_post_processing_tool;
 
         ThreePointSlider *m_stretching_slider_red = nullptr;
         ThreePointSlider *m_stretching_slider_green = nullptr;

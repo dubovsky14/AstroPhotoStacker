@@ -5,6 +5,7 @@
 #include "../headers/ThreePointSlider.h"
 #include "../headers/AlignedImagesProducerGUI.h"
 #include "../headers/ProgressBarWindow.h"
+#include "../headers/PostProcessingToolGUI.h"
 
 
 #include "../headers/IndividualColorStretchingBlackMidtoneWhite.h"
@@ -245,6 +246,28 @@ void MyFrame::add_aligned_images_producer_menu()  {
     m_menu_bar->Append(produce_aligned_images_menu, "&Produce aligned images");
 }
 
+
+void MyFrame::add_postprocessing_menu() {
+    wxMenu *postprocessing_menu = new wxMenu;
+
+    int id = unique_counter();
+    postprocessing_menu->Append(id, "Open post-processing editor", "Open post-processing editor");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        if (m_stacker == nullptr) {
+            return;
+        }
+
+        const vector<vector<double>> &stacked_image = m_stacker->get_stacked_image();
+        const int width = m_stacker->get_width();
+        const int height = m_stacker->get_height();
+
+        PostProcessingToolGUI *aligned_images_producer_gui = new PostProcessingToolGUI(this, stacked_image, width, height, &m_post_processing_tool);
+        aligned_images_producer_gui->Show(true);
+    }, id);
+
+    m_menu_bar->Append(postprocessing_menu, "&Postprocessing");
+};
+
 void MyFrame::add_menu_bar()    {
     m_menu_bar = new wxMenuBar;
 
@@ -252,6 +275,7 @@ void MyFrame::add_menu_bar()    {
     add_alignment_menu();
     add_hot_pixel_menu();
     add_aligned_images_producer_menu();
+    add_postprocessing_menu();
 
     SetMenuBar(m_menu_bar);
 };
@@ -1039,18 +1063,20 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
             file_address += ".tif";
         }
 
+
+        std::vector<std::vector<double> > stacked_image = m_stacker->get_stacked_image();
+
         if (m_stack_settings->apply_color_stretching()) {
-            std::vector<std::vector<double> > stacked_image = m_stacker->get_stacked_image();
             m_color_stretcher.stretch_image(&stacked_image, pow(2,15)-1, false);
-            AstroPhotoStacker::StackerBase::save_stacked_photo(file_address,
-                                            stacked_image,
-                                            m_stacker->get_width(),
-                                            m_stacker->get_height(),
-                                            CV_16UC3);
         }
-        else    {
-            m_stacker->save_stacked_photo(file_address, CV_16UC3);
-        }
+
+        stacked_image = m_post_processing_tool.post_process_image(stacked_image, m_stacker->get_width(), m_stacker->get_height());
+
+        AstroPhotoStacker::StackerBase::save_stacked_photo(file_address,
+                                        stacked_image,
+                                        m_stacker->get_width(),
+                                        m_stacker->get_height(),
+                                        CV_16UC3);
     }
 };
 

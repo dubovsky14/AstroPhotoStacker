@@ -229,8 +229,7 @@ namespace AstroPhotoStacker {
 
 
     template<class ValueType>
-    std::vector<std::vector<ValueType> > read_still_rgb_image(const std::string &input_file, int *width, int *height) {
-        cv::Mat image = cv::imread(input_file, cv::IMREAD_COLOR);
+    std::vector<std::vector<ValueType> > opencv_rgb_image_to_vector_vector(const cv::Mat &image, int *width, int *height) {
         *width = image.cols;
         *height = image.rows;
         std::vector<std::vector<ValueType>> result(3, std::vector<ValueType>(*width*(*height)));
@@ -254,6 +253,13 @@ namespace AstroPhotoStacker {
             }
         }
         return result;
+    };
+
+
+    template<class ValueType>
+    std::vector<std::vector<ValueType> > read_still_rgb_image(const std::string &input_file, int *width, int *height) {
+        cv::Mat image = cv::imread(input_file, cv::IMREAD_COLOR);
+        return opencv_rgb_image_to_vector_vector<ValueType>(image, width, height);
     };
 
     template<class ValueType>
