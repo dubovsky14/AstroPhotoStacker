@@ -30,6 +30,14 @@ class ImagePreview {
         */
         ImagePreview(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation);
 
+
+        /**
+         * @brief Get the maximum zoom factor
+         *
+         * @return double maximum zoom factor
+         */
+        void set_max_zoom_factor(double max_zoom_factor) { m_max_zoom_factor = max_zoom_factor;};
+
         /**
          * @brief Is an image loaded?
          *

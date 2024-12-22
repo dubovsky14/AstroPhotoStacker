@@ -26,6 +26,13 @@ class PostProcessingToolGUI : public wxFrame  {
         wxBoxSizer *m_main_vertical_sizer = nullptr;
         std::unique_ptr<ImagePreview> m_image_preview = nullptr;
 
+        CombinedColorStrecherTool m_color_stretcher; // for exposure correction
+        std::unique_ptr<FloatingPointSlider> m_exposure_correction_slider   = nullptr;
+
+        void add_image_preview();
+
+        void add_exposure_correction_spin_ctrl();
+
         void add_rgb_alignment_settings();
 
         void add_sharpening_settings();

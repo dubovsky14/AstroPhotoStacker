@@ -226,7 +226,6 @@ void ImagePreview::update_preview_data(float mouse_position_relative_x, float mo
                         m_additional_layers_preview[1][index_new] = m_additional_layers_data[1][index];
                         m_additional_layers_preview[2][index_new] = m_additional_layers_data[2][index];
                     }
-
                 }
             }
         }

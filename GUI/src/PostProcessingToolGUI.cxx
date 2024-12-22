@@ -1,4 +1,5 @@
 #include "../headers/PostProcessingToolGUI.h"
+#include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 
 using namespace std;
 
@@ -14,13 +15,10 @@ PostProcessingToolGUI::PostProcessingToolGUI(MyFrame *parent, const std::vector<
     m_main_vertical_sizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(m_main_vertical_sizer);
 
-    int preview_width = 600;
-    int preview_height = preview_width * float(height) / width;
-    m_image_preview = make_unique<ImagePreview>(this, preview_width, preview_height, 255, true);
-    m_image_preview->read_preview_from_stacked_image(stacked_image, width, height);
-    m_image_preview->update_preview_bitmap();
 
-    m_main_vertical_sizer->Add(m_image_preview->get_image_preview_bitmap(), 1, wxCENTER, 0);
+    add_image_preview();
+
+    add_exposure_correction_spin_ctrl();
 
     add_rgb_alignment_settings();
 
@@ -28,6 +26,41 @@ PostProcessingToolGUI::PostProcessingToolGUI(MyFrame *parent, const std::vector<
 
     add_apply_button();
 };
+
+
+void PostProcessingToolGUI::add_image_preview()    {
+    int preview_width = 600;
+    int preview_height = preview_width * float(m_height) / m_width;
+    m_image_preview = make_unique<ImagePreview>(this, preview_width, preview_height, 255, true);
+    m_image_preview->set_max_zoom_factor(32);
+    m_image_preview->read_preview_from_stacked_image(*m_stacked_image, m_width, m_height);
+    m_image_preview->update_preview_bitmap();
+
+    m_main_vertical_sizer->Add(m_image_preview->get_image_preview_bitmap(), 1, wxCENTER, 0);
+};
+
+
+void PostProcessingToolGUI::add_exposure_correction_spin_ctrl()   {
+    m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackCorrectionWhite>());
+    m_image_preview->set_stretcher(&m_color_stretcher);
+
+    m_exposure_correction_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Exposure correction: ",
+        -7.0,
+        7.0,
+        0.0,
+        0.1,
+        1,
+        [this](float value){
+            IndividualColorStretchingToolBase &luminance_stretcher = m_color_stretcher.get_luminance_stretcher(0);
+            (dynamic_cast<IndividualColorStretchingBlackCorrectionWhite&>(luminance_stretcher)).set_stretching_parameters(0,value,1);
+            m_image_preview->update_preview_bitmap();
+        }
+    );
+    m_exposure_correction_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
+};
+
 
 void PostProcessingToolGUI::add_rgb_alignment_settings()    {
     wxCheckBox* use_rgb_alignment_checkbox = new wxCheckBox(this, wxID_ANY, "Apply rgb alignment");
