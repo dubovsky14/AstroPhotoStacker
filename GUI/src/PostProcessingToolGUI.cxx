@@ -65,6 +65,7 @@ void PostProcessingToolGUI::add_exposure_correction_spin_ctrl()   {
 void PostProcessingToolGUI::add_rgb_alignment_settings()    {
     wxCheckBox* use_rgb_alignment_checkbox = new wxCheckBox(this, wxID_ANY, "Apply rgb alignment");
     use_rgb_alignment_checkbox->SetValue(m_post_processing_tool->get_apply_rgb_alignment());
+    use_rgb_alignment_checkbox->SetToolTip("Shifts the red and blue channels according to values bellow, to compensate for atmospheric dispersion.");
     use_rgb_alignment_checkbox->Bind(wxEVT_CHECKBOX, [use_rgb_alignment_checkbox, this](wxCommandEvent&){
         const bool is_checked = use_rgb_alignment_checkbox->GetValue();
         m_post_processing_tool->set_apply_rgb_alignment(is_checked);
@@ -80,6 +81,7 @@ void PostProcessingToolGUI::add_rgb_alignment_settings()    {
             m_post_processing_tool->set_shift_blue(shift_blue);
         }
     );
+    red_shift_x_slider->set_tool_tip("Shifts the red channel in x-coordinate. Blue channel will be shifted in opposite direction by the same amount.");
     red_shift_x_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
 
     FloatingPointSlider* red_shift_y_slider = new FloatingPointSlider(
@@ -91,6 +93,7 @@ void PostProcessingToolGUI::add_rgb_alignment_settings()    {
             m_post_processing_tool->set_shift_blue(shift_blue);
         }
     );
+    red_shift_y_slider->set_tool_tip("Shifts the red channel in y-coordinate (positive direction points downwards). Blue channel will be shifted in opposite direction by the same amount.");
     red_shift_y_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
 };
 
@@ -113,6 +116,7 @@ void PostProcessingToolGUI::add_sharpening_settings()   {
             m_post_processing_tool->set_kernel_size(kernel_size_int);
         }
     );
+    m_kernel_size_slider->set_tool_tip("Size of the kernel used for sharpening. Must be an odd number.");
     m_kernel_size_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
 
     const float default_gauss_width = m_post_processing_tool->get_gauss_width();
@@ -121,6 +125,7 @@ void PostProcessingToolGUI::add_sharpening_settings()   {
             m_post_processing_tool->set_gauss_width(gauss_width);
         }
     );
+    m_gauss_width_slider->set_tool_tip("Width of the gaussian distribution used in the sharpenning kernel.");
     m_gauss_width_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
 
     const float default_center_value = m_post_processing_tool->get_center_value();
@@ -129,6 +134,7 @@ void PostProcessingToolGUI::add_sharpening_settings()   {
             m_post_processing_tool->set_center_value(center_value);
         }
     );
+    m_center_value_slider->set_tool_tip("Center value of the gaussian distribution used in the sharpenning kernel (normalization constant).");
     m_center_value_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
 };
 
