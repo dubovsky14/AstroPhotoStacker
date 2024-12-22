@@ -254,6 +254,8 @@ void MyFrame::add_postprocessing_menu() {
     postprocessing_menu->Append(id, "Open post-processing editor", "Open post-processing editor");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         if (m_stacker == nullptr) {
+            wxMessageDialog dialog(this, "Files have not been stacked yet!", "Frames not stacked");
+            dialog.ShowModal();
             return;
         }
 
@@ -524,6 +526,16 @@ void MyFrame::add_button_bar()   {
             }
         }
 
+        FilelistHandler filelist_handler_only_checked = m_filelist_handler.get_filelist_with_checked_frames();
+        if (filelist_handler_only_checked.get_frames(FileTypes::LIGHT).empty()) {
+            wxMessageDialog dialog(this, "No light frames have been checked. Please check them first!", "No frames checked.");
+            if (dialog.ShowModal() == wxID_YES) {
+                return;
+            }
+            else {
+                return;
+            }
+        }
         m_stacker = get_configured_stacker(*m_stack_settings, m_filelist_handler);
         if (this->m_stack_settings->use_hot_pixel_correction()) {
             m_stacker->set_hot_pixels(m_hot_pixel_identifier->get_hot_pixels());
@@ -1053,6 +1065,16 @@ void MyFrame::on_open_darks(wxCommandEvent& event)    {
 }
 
 void MyFrame::on_save_stacked(wxCommandEvent& event) {
+    const bool has_stacked_image = m_stacker != nullptr ? !m_stacker->get_stacked_image().empty() : false;
+    if (!has_stacked_image) {
+        wxMessageDialog dialog(this, "Files have not been stacked yet!", "Frames not stacked");
+        if (dialog.ShowModal() == wxID_YES) {
+            return;
+        }
+        else {
+            return;
+        }
+    }
     const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
     wxFileDialog dialog(this, "Save stacked file", "", default_path, "*['.tif']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (dialog.ShowModal() == wxID_OK) {
