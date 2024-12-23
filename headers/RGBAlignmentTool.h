@@ -21,7 +21,8 @@ namespace AstroPhotoStacker {
                 m_data_shifted = m_data_original.clone();
             };
 
-            RGBAlignmentTool(const std::vector<std::vector<double>> &image, int width, int height) {
+            template<typename PixelType>
+            RGBAlignmentTool(const std::vector<std::vector<PixelType>> &image, int width, int height) {
                 m_data_original = get_opencv_color_image(&image[0][0], &image[1][0], &image[2][0], width, height);
                 m_data_shifted = m_data_original.clone();
             };

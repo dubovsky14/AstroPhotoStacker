@@ -4,6 +4,7 @@
 #include "../../headers/SharpeningFunctions.h"
 
 #include <vector>
+#include <iostream>
 
 class PostProcessingTool    {
     public:
@@ -50,7 +51,9 @@ class PostProcessingTool    {
             }
 
             if (m_apply_sharpening) {
+                std::cout << "Sharpening image\n";
                 processed_image = AstroPhotoStacker::sharpen_image(processed_image, width, height, m_kernel_size, m_gauss_width, m_center_value);
+                std::cout << "Sharpening image completed\n";
             }
 
             return processed_image;

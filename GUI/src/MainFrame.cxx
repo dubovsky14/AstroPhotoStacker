@@ -238,7 +238,7 @@ void MyFrame::add_aligned_images_producer_menu()  {
             }
         }
 
-        AlignedImagesProducerGUI *aligned_images_producer_gui = new AlignedImagesProducerGUI(this);
+        AlignedImagesProducerGUI *aligned_images_producer_gui = new AlignedImagesProducerGUI(this, &m_post_processing_tool);
         aligned_images_producer_gui->Show(true);
 
     }, id);

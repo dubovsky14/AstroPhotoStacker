@@ -258,6 +258,15 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<unsi
         scale_down_image(stacked_image, max_value, 255);
     }
 
+
+    if (m_post_processing_tool) {
+        *stacked_image = m_post_processing_tool(*stacked_image, width, height);
+    }
+
+    if (max_value > 255) {
+        scale_down_image(stacked_image, max_value, 255);
+    }
+
     //// show AP boxes
     //const LocalShiftsHandler &local_shifts_handler = alignment_info.local_shifts_handler;
     //if (!local_shifts_handler.empty()) {

@@ -32,9 +32,9 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent) :
+AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent, const PostProcessingTool *post_processing_tool) :
         wxFrame(parent, wxID_ANY, "Produce aligned images", wxDefaultPosition, wxSize(1000, 1000)),
-        m_parent(parent)    {
+        m_parent(parent), m_post_processing_tool(post_processing_tool)    {
 
     m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackCorrectionWhite>());
 
@@ -125,6 +125,9 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
     const FilelistHandler *filelist_handler = &m_parent->get_filelist_handler();
     m_aligned_images_producer = make_unique<AlignedImagesProducer>(stack_settings->get_n_cpus(), stack_settings->get_max_memory());
     m_aligned_images_producer->set_add_datetime(m_add_datetime);
+    m_aligned_images_producer->set_post_processing_tool([this](const std::vector<std::vector<unsigned short>> &image, int width, int height){
+        return m_post_processing_tool->post_process_image(image, width, height);
+    });
     m_aligned_images_producer->set_timestamp_offset(m_timestamp_offset);
     *m_aligned_images_producer->get_timelapse_video_settings() = m_timelapse_video_settings;
 
@@ -330,7 +333,6 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
     advanced_settings_sizer->Add(spin_ctrl_timestamp_offset, 0, wxEXPAND, 5);
 
 
-
     // Stacking options
     wxStaticText* stack_settings_text = new wxStaticText(this, wxID_ANY, "Stack settings:");
     set_text_size(stack_settings_text, 20);
@@ -434,62 +436,6 @@ void AlignedImagesProducerGUI::add_group_to_stack(const vector<size_t> &group) c
 
     m_aligned_images_producer->add_image_group_to_stack(selected_frames, selected_alignment_info, *stack_settings);
 };
-
-
-void AlignedImagesProducerGUI::process_and_save_stacked_image(  const std::vector<std::vector<double>> &stacked_image,
-                                                                const std::string &output_file_address, int unix_time, int original_width, int original_height)  const   {
-
-        vector<vector<unsigned short>> cropped_image_ushort(stacked_image.size());
-        int crop_top_left_x, crop_top_left_y, crop_width, crop_height;
-        m_image_preview_crop_tool->get_crop_coordinates(&crop_top_left_x, &crop_top_left_y, &crop_width, &crop_height);
-        unsigned short max_value = 0;
-        for (unsigned int i_color = 0; i_color < stacked_image.size(); i_color++)   {
-            const vector<double> &color_channel = stacked_image[i_color];
-
-            for (int y = crop_top_left_y; y < crop_top_left_y + crop_height; y++) {
-                for (int x = crop_top_left_x; x < crop_top_left_x + crop_width; x++) {
-                    const unsigned int index_original = x + original_width*y;
-                    cropped_image_ushort[i_color].push_back(color_channel[index_original]);
-                    max_value = max<unsigned short>(max_value, color_channel[index_original]);
-                }
-            }
-        }
-        if (m_apply_color_stretcher) {
-            m_color_stretcher.stretch_image(&cropped_image_ushort, max_value, true);
-        }
-
-        if (max_value > 255) {
-            AlignedImagesProducer::scale_down_image(&cropped_image_ushort, max_value, 255);
-        }
-
-        cv::Mat opencv_image = get_opencv_color_image(&cropped_image_ushort[0][0], &cropped_image_ushort[1][0], &cropped_image_ushort[2][0], crop_width, crop_height);
-        const int max_height = 1080;
-        const int max_width = 1920;
-        // rescale image if it exceeds maximal size
-        if (crop_width > max_width || crop_height > max_height) {
-            const float scale_factor_width = max_width/static_cast<float>(crop_width);
-            const float scale_factor_height = max_height/static_cast<float>(crop_height);
-
-            const float scale_factor = min(scale_factor_width, scale_factor_height);
-            cv::resize(opencv_image, opencv_image, cv::Size(), scale_factor, scale_factor);
-        }
-
-        if (m_add_datetime) {
-            const string datetime = unix_time_to_string(unix_time);
-
-            const int current_width = opencv_image.cols;
-            const int current_height = opencv_image.rows;
-
-            const float font_size = current_width/1200.0;
-            const float font_width = font_size*2;
-
-            cv::putText(opencv_image, datetime, cv::Point(0.6*current_width, 0.9*current_height), cv::FONT_HERSHEY_SIMPLEX, font_size, CV_RGB(255, 0, 0), font_width);
-
-        }
-        cv::imwrite(output_file_address, opencv_image);
-
-};
-
 
 bool AlignedImagesProducerGUI::has_valid_alignment(const AlignmentFileInfo &alignment_info) const  {
     return fabs(alignment_info.ranking) > 0.001;

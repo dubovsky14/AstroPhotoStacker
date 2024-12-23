@@ -6,6 +6,7 @@
 #include "../headers/CombinedColorStrecherTool.h"
 #include "../headers/TimeLapseVideoSettings.h"
 #include "../headers/FloatingPointSlider.h"
+#include "../headers/PostProcessingTool.h"
 
 #include "../../headers/AlignedImagesProducer.h"
 #include "../../headers/InputFrame.h"
@@ -32,10 +33,11 @@ class AlignedImagesProducerGUI : public wxFrame  {
          * @param parent pointer to the parent frame (main frame)
          * @param aligned_images_producer pointer to the aligned images producer object
          */
-        AlignedImagesProducerGUI(MyFrame *parent);
+        AlignedImagesProducerGUI(MyFrame *parent, const PostProcessingTool *post_processing_tool);
 
     private:
         MyFrame *m_parent = nullptr;
+        const PostProcessingTool *m_post_processing_tool = nullptr;
         wxBoxSizer *m_main_vertical_sizer = nullptr;
         wxBoxSizer *m_basic_settings_sizer = nullptr;
         wxBoxSizer *m_image_preview_sizer = nullptr;
@@ -75,8 +77,6 @@ class AlignedImagesProducerGUI : public wxFrame  {
         float m_fraction_to_stack = 0.5;
 
         AstroPhotoStacker::TimeLapseVideoSettings m_timelapse_video_settings;
-
-        void process_and_save_stacked_image(const std::vector<std::vector<double>> &stacked_image, const std::string &output_file_address, int unix_time, int original_width, int original_height)   const;
 
         bool has_valid_alignment(const AlignmentFileInfo &alignment_info) const;
 };

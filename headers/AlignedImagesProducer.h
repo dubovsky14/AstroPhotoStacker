@@ -81,6 +81,10 @@ namespace AstroPhotoStacker {
 
             void produce_video(const std::string &output_video_address)   const;
 
+            void set_post_processing_tool(std::function<std::vector<std::vector<unsigned short>>(const std::vector<std::vector<unsigned short>> &, int, int)> post_processing_tool) {
+                m_post_processing_tool = post_processing_tool;
+            };
+
             TimeLapseVideoSettings *get_timelapse_video_settings();
 
         private:
@@ -102,6 +106,7 @@ namespace AstroPhotoStacker {
             int m_timestamp_offset = 0;
 
             std::function<void(std::vector<std::vector<unsigned short>>*, unsigned short max_value)> m_image_stretching_function = nullptr;
+            std::function<std::vector<std::vector<unsigned short>>(const std::vector<std::vector<unsigned short>>&, int, int)> m_post_processing_tool = nullptr;
 
             std::vector<InputFrame>                 m_frames_to_align;
             std::vector<FileAlignmentInformation>   m_alignment_info;

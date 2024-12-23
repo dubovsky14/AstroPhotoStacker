@@ -85,14 +85,14 @@ bool AlignmentPointBox::is_valid_ap(const std::vector<float> *scaled_data_vector
             if (brightness > max_brightness) {
                 max_brightness = brightness;
             }
-            if (brightness > 0.2*max_value) {
+            if (brightness > 0.4*max_value) {
                 n_pixels_above_40_percent_of_maximum++;
             }
         }
     }
 
-    // at least 20% of the pixels should be above 40% of the maximum
-    if (n_pixels_above_40_percent_of_maximum < 0.2*box_width*box_height) {
+    // at least 30% of the pixels should be above 40% of the maximum
+    if (n_pixels_above_40_percent_of_maximum < 0.3*box_width*box_height) {
         return false;
     }
 
