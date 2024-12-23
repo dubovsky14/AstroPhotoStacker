@@ -19,6 +19,15 @@ ZWOVideoTextFileInfo::ZWOVideoTextFileInfo(const std::string &input_file) {
     read_data(&file);
 }
 
+Metadata ZWOVideoTextFileInfo::get_metadata() const {
+    Metadata metadata;
+    metadata.exposure_time = m_exposure_time;
+    metadata.iso = m_gain;
+    metadata.timestamp = m_unix_time;
+    metadata.date_time = m_timestamp_string;
+    return metadata;
+};
+
 void ZWOVideoTextFileInfo::read_data(std::ifstream *file)   {
     std::string line;
     while (std::getline(*file, line)) {

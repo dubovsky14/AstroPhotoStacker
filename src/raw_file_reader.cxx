@@ -21,11 +21,7 @@ Metadata AstroPhotoStacker::read_metadata_from_raw_file(const std::string &raw_f
     }
     if (ZWOVideoTextFileInfo::is_valid_zwo_video_text_file(raw_file_address + ".txt")) {
         ZWOVideoTextFileInfo zwo_video_text_file_info(raw_file_address + ".txt");
-        Metadata metadata;
-        metadata.exposure_time = zwo_video_text_file_info.get_exposure_time();
-        metadata.iso = zwo_video_text_file_info.get_gain();
-        metadata.timestamp = zwo_video_text_file_info.get_unix_time();
-        metadata.date_time = zwo_video_text_file_info.get_timestamp_string();
+        Metadata metadata = zwo_video_text_file_info.get_metadata();
 
         if (metadata.timestamp == 0) {
             Metadata timestamp_metadata = get_file_creation_timestamp(raw_file_address, metadata);

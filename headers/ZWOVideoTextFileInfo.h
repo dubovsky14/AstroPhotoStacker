@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../headers/Metadata.h"
+
 #include <string>
 #include <fstream>
 #include <array>
@@ -8,6 +10,8 @@ namespace AstroPhotoStacker {
     class ZWOVideoTextFileInfo {
         public:
             ZWOVideoTextFileInfo(const std::string &input_file);
+
+            Metadata get_metadata() const;
 
             int get_gain() const {
                 return m_gain;
