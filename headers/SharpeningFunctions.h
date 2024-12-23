@@ -26,7 +26,7 @@ namespace AstroPhotoStacker {
                     float sum = 0;
                     for (int y_kernel = 0; y_kernel < kernel_size; y_kernel++) {
                         for (int x_kernel = 0; x_kernel < kernel_size; x_kernel++) {
-                            sum += kernel[y_kernel][x_kernel] * original_image[i_color][(y + y_kernel - 1) * width + x + x_kernel - 1];
+                            sum += kernel[y_kernel][x_kernel] * original_image[i_color][(y + y_kernel - kernel_half_size) * width + x + x_kernel - kernel_half_size];
                         }
                     }
                     sharpened_image[i_color][y * width + x] = std::max<float>(sum,0.);
