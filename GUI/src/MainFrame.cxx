@@ -1029,6 +1029,7 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
         allowed_extensions.push_back("avi");
         allowed_extensions.push_back("mov");
         allowed_extensions.push_back("mp4");
+        allowed_extensions.push_back("ser");
     }
 
     string wildcard_string = "Image files |";

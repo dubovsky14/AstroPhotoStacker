@@ -25,7 +25,7 @@ std::vector<InputFrame> AstroPhotoStacker::get_video_frames(const std::string &v
 
 bool AstroPhotoStacker::is_valid_video_file(const std::string &video_address)   {
     const string extension = to_upper_copy(video_address.substr(video_address.find_last_of(".") + 1));
-    const vector<string> supported_extensions = {"AVI", "MP4", "MOV"};
+    const vector<string> supported_extensions = {"AVI", "MP4", "MOV", "SER"};
     bool is_supported_extension = false;
     for (const string &supported_extension : supported_extensions) {
         if (extension == supported_extension) {
