@@ -244,27 +244,25 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<unsi
                                                     const std::string &output_file_address,
                                                     int unix_time) const    {
 
-    unsigned short max_value = 0;
-    for (const vector<unsigned short> &color_channel : *stacked_image) {
-        for (unsigned short pixel_value : color_channel) {
-            max_value = max(max_value, pixel_value);
-        }
-    }
+    unsigned short max_value = get_max_value_ingoring_borders(*stacked_image, width, height, 5);
 
     if (m_image_stretching_function) {
         m_image_stretching_function(stacked_image, max_value);
     }
+
+
     if (max_value > 255) {
         scale_down_image(stacked_image, max_value, 255);
     }
-
 
     if (m_post_processing_tool) {
         *stacked_image = m_post_processing_tool(*stacked_image, width, height);
     }
 
-    if (max_value > 255) {
-        scale_down_image(stacked_image, max_value, 255);
+    for (vector<unsigned short> &color_channel : *stacked_image) {
+        for (unsigned short &value : color_channel) {
+            value = min<unsigned short>(value, 255);
+        }
     }
 
     //// show AP boxes
@@ -309,7 +307,7 @@ void AlignedImagesProducer::scale_down_image(   std::vector<std::vector<unsigned
 
     for (int color = 0; color < 3; color++) {
         for (unsigned int i = 0; i < image->at(color).size(); i++) {
-            image->at(color)[i] = image->at(color)[i]*new_max/origianal_max;
+            image->at(color)[i] = image->at(color)[i]*float(new_max)/origianal_max;
         }
     }
 };

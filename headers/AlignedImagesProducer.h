@@ -132,5 +132,19 @@ namespace AstroPhotoStacker {
 
             std::vector<GroupToStack> m_groups_to_stack;
 
+            template <typename PixelType>
+            static PixelType get_max_value_ingoring_borders(const std::vector<std::vector<PixelType>> &image, int width, int height, int border_size = 1)  {
+                PixelType max_value = 0;
+                for (unsigned int i_color = 0; i_color < 3; i_color++) {
+                    for (int y = border_size; y < height - border_size; y++) {
+                        for (int x = border_size; x < width - border_size; x++) {
+                            const unsigned int index = x + width*y;
+                            max_value = std::max(max_value, image[i_color][index]);
+                        }
+                    }
+                }
+                return max_value;
+            };
+
     };
 }

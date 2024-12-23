@@ -9,9 +9,9 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 
-int AstroPhotoStacker::get_unix_timestamp(const std::string &time_string)  {
+int AstroPhotoStacker::get_unix_timestamp(const std::string &time_string, const std::string timestamp_format)  {
     struct tm tm;
-    strptime(time_string.c_str(), "%Y:%m:%d %H:%M:%S", &tm);
+    strptime(time_string.c_str(), timestamp_format.c_str(), &tm);
     return mktime(&tm);
 };
 

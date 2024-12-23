@@ -24,10 +24,15 @@ Metadata AstroPhotoStacker::read_metadata_from_raw_file(const std::string &raw_f
         Metadata metadata;
         metadata.exposure_time = zwo_video_text_file_info.get_exposure_time();
         metadata.iso = zwo_video_text_file_info.get_gain();
+        metadata.timestamp = zwo_video_text_file_info.get_unix_time();
+        metadata.date_time = zwo_video_text_file_info.get_timestamp_string();
 
-        Metadata timestamp_metadata = get_file_creation_timestamp(raw_file_address, metadata);
-        metadata.timestamp = timestamp_metadata.timestamp;
-        metadata.date_time = timestamp_metadata.date_time;
+        if (metadata.timestamp == 0) {
+            Metadata timestamp_metadata = get_file_creation_timestamp(raw_file_address, metadata);
+            metadata.timestamp = timestamp_metadata.timestamp;
+            metadata.date_time = timestamp_metadata.date_time;
+        }
+
         return metadata;
     }
     return read_metadata_from_raw_file_dslr_slr(raw_file_address);

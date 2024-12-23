@@ -1,13 +1,18 @@
 #include "../headers/ZWOVideoTextFileInfo.h"
 #include "../headers/Common.h"
+#include "../headers/MetadataCommon.h"
 
 #include <vector>
+#include <string>
+#include <iostream>
 
 using namespace std;
 using namespace AstroPhotoStacker;
 
 ZWOVideoTextFileInfo::ZWOVideoTextFileInfo(const std::string &input_file) {
     std::ifstream file(input_file);
+    set_timestamp_string(input_file);
+
     if (!file.is_open()) {
         throw std::runtime_error("Unable to open file: " + input_file);
     }
@@ -62,4 +67,25 @@ void ZWOVideoTextFileInfo::read_bayer_matrix(const std::string &matrix_string)  
 
         m_bayer_matrix[i] = color_code;
     }
+};
+
+void ZWOVideoTextFileInfo::set_timestamp_string(const std::string &input_file)   {
+    const string file_name = split_string(input_file, "/").back();
+    // name of file format: 2024-12-13-200104-something
+
+    const vector<string> elements = split_string(file_name, "-");
+    if (elements.size() < 4) {
+        return;
+    }
+
+    const string &original_daytime_string = elements[3];
+    if (original_daytime_string.length() != 6) {
+        return;
+    }
+
+    const string daytime_string = original_daytime_string.substr(0, 2) + ":" + original_daytime_string.substr(2, 2) + ":" + original_daytime_string.substr(4, 2);
+
+    m_timestamp_string = elements[0] + "-" + elements[1] + "-" + elements[2] + " " + daytime_string;
+
+    m_unix_time = get_unix_timestamp(m_timestamp_string, "%Y-%m-%d %H:%M:%S");
 };
