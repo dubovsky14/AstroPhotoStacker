@@ -13,7 +13,7 @@
 
 #include "../../headers/Common.h"
 #include "../../headers/raw_file_reader.h"
-#include "../../headers/MetadataReader.h"
+#include "../../headers/MetadataManager.h"
 #include "../../headers/thread_pool.h"
 #include "../../headers/StackerBase.h"
 #include "../../headers/VideoReader.h"
@@ -1041,8 +1041,9 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
     if (dialog.ShowModal() == wxID_OK) {
         wxArrayString paths;
         dialog.GetPaths(paths);
+        AstroPhotoStacker::MetadataManager metadata_manager;
         for (auto path : paths) {
-            const AstroPhotoStacker::Metadata metadata = AstroPhotoStacker::read_metadata(InputFrame(path.ToStdString()));
+            const AstroPhotoStacker::Metadata metadata = metadata_manager.get_metadata(InputFrame(path.ToStdString()));
             const string str_path = path.ToStdString();
             m_filelist_handler.add_file(path.ToStdString(), type, false, AlignmentFileInfo(), metadata);
             m_recent_paths_handler->set_recent_file_path_from_file(type, path.ToStdString());
