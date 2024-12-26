@@ -14,6 +14,7 @@ struct InputFrameInfoGUI {
     bool                            is_checked;
     AlignmentFileInfo               alignment_info;
     AstroPhotoStacker::Metadata     metadata;
+    std::string                     gui_string;
 };
 
 class InputFile   {
@@ -21,6 +22,12 @@ class InputFile   {
         explicit InputFile(const std::string &file_path);
 
         const std::string &get_file_path() const;
+
+        const std::string get_gui_string() const;
+
+        const std::vector<InputFrameInfoGUI> &get_frames_info() const    {
+            return m_frames;
+        };
 
         const std::vector<AstroPhotoStacker::InputFrame> get_frames() const;
 

@@ -15,6 +15,8 @@ message(${wxWidgets_INCLUDE_DIRS})
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS "-Wall -O3")
+#set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_CXX_FLAGS "-Wall -O0")
 set(LINKER_FLAGS "-lexiv2 -lraw")
 
 file(GLOB SOURCES "src/*.cxx")

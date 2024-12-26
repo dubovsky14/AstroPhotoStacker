@@ -5,18 +5,46 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 
-FramesCheckbox::FramesCheckbox(wxWindow *parent)    {
-    // TODO
+FramesCheckbox::FramesCheckbox( wxWindow *parent,
+                                const wxArrayString& choices,
+                                wxWindowID id,
+                                const wxPoint& pos,
+                                const wxSize& size,
+                                long style)   {
+    m_files_to_stack_checkbox = new wxCheckListBox(parent, id, pos, size, choices, style);
+
+    m_files_to_stack_checkbox->Bind(wxEVT_LISTBOX, [this](wxCommandEvent &event){
+        int index = event.GetSelection();
+        const RowInfo &row_info = m_row_info_vector[index];
+        if (row_info.frame_index == -1) {  // unroll / hide frame sequence
+            m_input_files_are_unrolled.at(FileTypes::LIGHT)[row_info.file_index] = !m_input_files_are_unrolled.at(FileTypes::LIGHT)[row_info.file_index];
+            update_checkbox();
+        }
+        else {
+            const InputFile &input_file = m_input_files.at(FileTypes::LIGHT).at(row_info.file_index);
+            const InputFrame &input_frame = input_file.get_frames_info().at(row_info.frame_index).input_frame;
+            if (m_on_click_callback) {
+                m_on_click_callback(input_frame);
+            }
+        }
+    });
+};
+
+void FramesCheckbox::add_sizer(wxBoxSizer *sizer, int proportion, int flag, int border)  {
+    sizer->Add(m_files_to_stack_checkbox, proportion, flag, border);
 };
 
 void FramesCheckbox::add_files(const std::vector<std::string> &files, FileTypes file_type)  {
     if (m_input_files.find(file_type) == m_input_files.end()) {
         m_input_files[file_type] = vector<InputFile>();
+        m_input_files_are_unrolled[file_type] = vector<bool>();
     }
 
     for (const string &file : files)    {
         m_input_files[file_type].push_back(InputFile(file));
+        m_input_files_are_unrolled[file_type].push_back(false);
     }
+    update_checkbox();
 };
 
 vector<InputFrame> FramesCheckbox::get_checked_frames(FileTypes type) const {
@@ -81,4 +109,53 @@ int FramesCheckbox::get_light_file_index(const InputFrame &input_frame) const   
         }
     }
     return -1;
+};
+
+void FramesCheckbox::update_checkbox()  {
+    m_files_to_stack_checkbox->Clear();
+    m_row_info_vector.clear();
+
+    unsigned int i_row = 0;
+    for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
+        if (m_input_files.find(type) == m_input_files.end()) continue;
+
+        const vector<InputFile> &files = m_input_files[type];
+        const vector<bool> &files_are_unrolled = m_input_files_are_unrolled[type];
+        for (int i_file = 0; i_file < int(files.size()); i_file++) {
+            const InputFile &file = files[i_file];
+            const bool has_multiple_frames = file.has_multiple_frames();
+            if (!has_multiple_frames)   {
+                const InputFrameInfoGUI frame_info = file.get_frames_info().at(0);
+                const string frame_description = to_string(type) + "\t" + frame_info.gui_string;
+                if (frame_info.is_checked)  {
+                    m_files_to_stack_checkbox->Check(i_row);
+                }
+                m_files_to_stack_checkbox->Append(frame_description);
+                m_row_info_vector.push_back({type, i_file, 0});
+                i_row++;
+            }
+            else {
+                if (files_are_unrolled[i_file]) {
+                    const vector<InputFrameInfoGUI> &frames = file.get_frames_info();
+                    for (int i_frame = 0; i_frame < int(frames.size()); i_frame++) {
+                        const InputFrameInfoGUI &frame_info = frames[i_frame];
+                        const string frame_description = to_string(type) + "\t" + frame_info.gui_string;
+                        if (frame_info.is_checked)  {
+                            m_files_to_stack_checkbox->Check(i_row);
+                        }
+                        m_files_to_stack_checkbox->Append(frame_description);
+                        m_row_info_vector.push_back({type, i_file, i_frame});
+                        i_row++;
+                    }
+                }
+                else {
+                    const string file_string = to_string(type) + "\t" + file.get_gui_string();
+                    m_files_to_stack_checkbox->Append(file_string);
+                    m_files_to_stack_checkbox->Check(i_row);
+                    m_row_info_vector.push_back({type, i_file, -1});
+                    i_row++;
+                }
+            }
+        }
+    }
 };

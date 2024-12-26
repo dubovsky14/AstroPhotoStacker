@@ -7,6 +7,7 @@
 #include "../headers/CombinedColorStrecherTool.h"
 #include "../headers/ThreePointSlider.h"
 #include "../headers/FloatingPointSlider.h"
+#include "../headers/FramesCheckbox.h"
 
 #include "../headers/HistogramDataTool.h"
 #include "../headers/HistogramDataToolGUI.h"
@@ -157,6 +158,7 @@ class MyFrame : public wxFrame  {
 
 
         wxCheckListBox *m_files_to_stack_checkbox = nullptr;
+        FramesCheckbox *m_frames_checkbox         = nullptr;
 
 
         FilelistHandler m_filelist_handler;

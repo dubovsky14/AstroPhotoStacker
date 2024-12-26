@@ -352,12 +352,19 @@ void MyFrame::add_files_to_stack_checkbox()  {
 
 
     wxArrayString files;
-    m_files_to_stack_checkbox = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, files, wxLB_MULTIPLE);
+    m_files_to_stack_checkbox = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxSize(600,20), files, wxLB_MULTIPLE);
+    m_frames_checkbox = new FramesCheckbox(this);
+    m_frames_checkbox->add_on_click_callback([this](const InputFrame &frame){
+        m_current_preview->read_preview_from_frame(frame);
+        update_image_preview();
+        update_alignment_status();
+    });
 
     // Create a new sizer for the header and the checkbox list
     wxBoxSizer* checkboxSizer = new wxBoxSizer(wxVERTICAL);
     checkboxSizer->Add(headerPanel, 0, wxEXPAND | wxALL, 5);
     checkboxSizer->Add(m_files_to_stack_checkbox, 1, wxEXPAND | wxALL, 5);
+    m_frames_checkbox->add_sizer(checkboxSizer, 1, wxEXPAND | wxALL, 5);
 
     // Add the new sizer to the main frame's sizer
     m_sizer_main_frame->Add(checkboxSizer, 9, wxEXPAND | wxALL, 5);
@@ -1041,13 +1048,17 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
     if (dialog.ShowModal() == wxID_OK) {
         wxArrayString paths;
         dialog.GetPaths(paths);
+        vector<string> paths_vector;
         AstroPhotoStacker::MetadataManager metadata_manager;
         for (auto path : paths) {
             const AstroPhotoStacker::Metadata metadata = metadata_manager.get_metadata(InputFrame(path.ToStdString()));
             const string str_path = path.ToStdString();
             m_filelist_handler.add_file(path.ToStdString(), type, false, AlignmentFileInfo(), metadata);
             m_recent_paths_handler->set_recent_file_path_from_file(type, path.ToStdString());
+            paths_vector.push_back(str_path);
         }
+
+        m_frames_checkbox->add_files(paths_vector, type);
     }
     dialog.Destroy();
     update_checked_files_in_filelist();

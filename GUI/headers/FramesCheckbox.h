@@ -17,10 +17,21 @@
 #include <memory>
 #include <map>
 
-
+struct RowInfo {
+    FileTypes   file_type;
+    int         file_index;
+    int         frame_index;
+};
 class FramesCheckbox  {
     public:
-        FramesCheckbox(wxWindow *parent);
+        FramesCheckbox( wxWindow *parent,
+                        const wxArrayString& choices = {},
+                        wxWindowID id = wxID_ANY,
+                        const wxPoint& pos = wxDefaultPosition,
+                        const wxSize& size = wxDefaultSize,
+                        long style = wxLB_MULTIPLE);
+
+        void add_sizer(wxBoxSizer *sizer, int proportion, int flag, int border);
 
         void add_files(const std::vector<std::string> &files, FileTypes file_type);
 
@@ -42,6 +53,11 @@ class FramesCheckbox  {
         wxCheckListBox *m_files_to_stack_checkbox;
         int get_light_file_index(const AstroPhotoStacker::InputFrame &input_frame) const;
 
+        void update_checkbox();
+
         std::map<FileTypes, std::vector<InputFile>> m_input_files;
+        std::map<FileTypes, std::vector<bool>>      m_input_files_are_unrolled;
         std::function<void(const AstroPhotoStacker::InputFrame&)>      m_on_click_callback = nullptr;
+
+        std::vector<RowInfo> m_row_info_vector; // -1 if the row is a file, otherwise the index of the frame in the file
 };

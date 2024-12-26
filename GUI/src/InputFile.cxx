@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -27,6 +28,10 @@ InputFile::InputFile(const std::string &file_path)  {
 
 const std::string& InputFile::get_file_path() const {
     return m_file_path;
+};
+
+const std::string InputFile::get_gui_string() const    {
+    return m_file_path + " (" + to_string(m_frames.size()) + " frames)";
 };
 
 const std::vector<AstroPhotoStacker::InputFrame> InputFile::get_frames() const {
@@ -128,5 +133,16 @@ void InputFile::add_frame(  const AstroPhotoStacker::InputFrame &input_frame,
     frame_info.is_checked = is_checked;
     frame_info.alignment_info = alignment_info;
     frame_info.metadata = metadata;
+
+    const float alignment_score = alignment_info.ranking;
+    const std::string exposure_string = metadata.exposure_time > 0.5 ?
+                                        AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s" :
+                                        AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time * 1000) + " ms";
+    const string metadata_string =  "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture) +
+                                    "\t\t" + exposure_string +
+                                    "\t\t" + to_string(metadata.iso) + " ISO" +
+                                    "\t\t\tscore: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3);
+
+    frame_info.gui_string = input_frame.to_gui_string() + " " + metadata_string;
     m_frames.push_back(frame_info);
 };
