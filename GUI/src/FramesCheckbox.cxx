@@ -135,11 +135,17 @@ void FramesCheckbox::update_checkbox()  {
                 i_row++;
             }
             else {
+                const string file_string = to_string(type) + "\t" + file.get_gui_string();
+                m_files_to_stack_checkbox->Append(file_string);
+                m_files_to_stack_checkbox->Check(i_row);
+                m_row_info_vector.push_back({type, i_file, -1});
+                i_row++;
+
                 if (files_are_unrolled[i_file]) {
                     const vector<InputFrameInfoGUI> &frames = file.get_frames_info();
                     for (int i_frame = 0; i_frame < int(frames.size()); i_frame++) {
                         const InputFrameInfoGUI &frame_info = frames[i_frame];
-                        const string frame_description = to_string(type) + "\t" + frame_info.gui_string;
+                        const string frame_description = "  " + to_string(type) + "\t" + frame_info.gui_string;
                         if (frame_info.is_checked)  {
                             m_files_to_stack_checkbox->Check(i_row);
                         }
@@ -147,13 +153,6 @@ void FramesCheckbox::update_checkbox()  {
                         m_row_info_vector.push_back({type, i_file, i_frame});
                         i_row++;
                     }
-                }
-                else {
-                    const string file_string = to_string(type) + "\t" + file.get_gui_string();
-                    m_files_to_stack_checkbox->Append(file_string);
-                    m_files_to_stack_checkbox->Check(i_row);
-                    m_row_info_vector.push_back({type, i_file, -1});
-                    i_row++;
                 }
             }
         }
