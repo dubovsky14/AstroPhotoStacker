@@ -49,11 +49,22 @@ class FramesCheckbox  {
 
         AstroPhotoStacker::Metadata get_metadata(const AstroPhotoStacker::InputFrame &frame) const;
 
+        void remove_checked_frames();
+
+        /*
+        @brief Updates the checked status of the frames in the filelist based on the checked status of the checkboxes
+
+        // #TODO: Refactor this and move it to private
+        */
+        void update_checked_elements();
+
+
     private:
         wxCheckListBox *m_files_to_stack_checkbox;
         int get_light_file_index(const AstroPhotoStacker::InputFrame &input_frame) const;
 
         void update_checkbox();
+
 
         std::map<FileTypes, std::vector<InputFile>> m_input_files;
         std::map<FileTypes, std::vector<bool>>      m_input_files_are_unrolled;

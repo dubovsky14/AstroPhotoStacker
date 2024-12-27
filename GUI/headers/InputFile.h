@@ -41,6 +41,8 @@ class InputFile   {
 
         void remove_frame(const AstroPhotoStacker::InputFrame &input_frame);
 
+        void remove_checked_frames();
+
         bool all_frames_are_aligned() const;
 
         void set_check_for_all_frames(bool checked);

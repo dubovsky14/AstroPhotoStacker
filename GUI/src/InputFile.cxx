@@ -82,6 +82,15 @@ void InputFile::remove_frame(const AstroPhotoStacker::InputFrame &input_frame)  
     }
 };
 
+void InputFile::remove_checked_frames()    {
+    for (unsigned int i_frame = 0; i_frame < m_frames.size(); ++i_frame) {
+        if (m_frames[i_frame].is_checked) {
+            m_frames.erase(m_frames.begin() + i_frame);
+            i_frame--;
+        }
+    }
+};
+
 bool InputFile::all_frames_are_aligned() const  {
     for (const InputFrameInfoGUI &frame_info : m_frames) {
         if (!frame_info.alignment_info.initialized) {

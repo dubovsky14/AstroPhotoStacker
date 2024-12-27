@@ -351,8 +351,6 @@ void MyFrame::add_files_to_stack_checkbox()  {
     });
 
 
-    wxArrayString files;
-    m_files_to_stack_checkbox = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxSize(600,20), files, wxLB_MULTIPLE);
     m_frames_checkbox = new FramesCheckbox(this);
     m_frames_checkbox->add_on_click_callback([this](const InputFrame &frame){
         m_current_preview->read_preview_from_frame(frame);
@@ -363,69 +361,22 @@ void MyFrame::add_files_to_stack_checkbox()  {
     // Create a new sizer for the header and the checkbox list
     wxBoxSizer* checkboxSizer = new wxBoxSizer(wxVERTICAL);
     checkboxSizer->Add(headerPanel, 0, wxEXPAND | wxALL, 5);
-    checkboxSizer->Add(m_files_to_stack_checkbox, 1, wxEXPAND | wxALL, 5);
     m_frames_checkbox->add_sizer(checkboxSizer, 1, wxEXPAND | wxALL, 5);
 
     // Add the new sizer to the main frame's sizer
     m_sizer_main_frame->Add(checkboxSizer, 9, wxEXPAND | wxALL, 5);
-
-    m_files_to_stack_checkbox->Bind(wxEVT_LISTBOX, [this](wxCommandEvent &event){
-        int index = event.GetSelection();
-        const string text = m_files_to_stack_checkbox->GetString(index).ToStdString();
-        const bool update_needed = update_checked_files_in_filelist();
-
-        // Do not update the preview if the files was just checked/unchecked - it is slow
-        if (!update_needed) {
-            update_image_preview_file(text);
-        }
-    });
 };
 
 void MyFrame::update_files_to_stack_checkbox()   {
-    m_files_to_stack_checkbox->Clear();
-    for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
-        const vector<InputFrame> &frames = m_filelist_handler.get_frames(type);
-        for (unsigned int i_file = 0; i_file < frames.size(); i_file++) {
-            const string frame_description = frames[i_file].to_gui_string();
-            // aperture, exposure time, ISO, and focal length
-            std::string metadata_string = "";
-            if (type == FileTypes::LIGHT)   {
-                const AstroPhotoStacker::Metadata metadata = m_filelist_handler.get_metadata()[i_file];
-                const AlignmentFileInfo alignment_info = m_filelist_handler.get_alignment_info()[i_file];
-                const float alignment_score = alignment_info.ranking;
-                const std::string exposure_string = metadata.exposure_time > 0.5 ?
-                                                    AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s" :
-                                                    AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time * 1000) + " ms";
-                metadata_string =   "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture) +
-                                    "\t\t" + exposure_string +
-                                    "\t\t" + to_string(metadata.iso) + " ISO" +
-                                    "\t\t\tscore: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3);
-            }
-            const std::string file_string = to_string(type) + "\t\t" + frame_description + metadata_string;
-            m_files_to_stack_checkbox->Append(file_string);
-
-            if (m_filelist_handler.get_frames_checked(type).at(i_file)) {
-                m_files_to_stack_checkbox->Check(i_file);
-            }
-        }
-    }
+    // TODO
 };
 
 bool MyFrame::update_checked_files_in_filelist() {
-    wxArrayInt checked_indices;
-    m_files_to_stack_checkbox->GetCheckedItems(checked_indices);
-    bool updated = false;
-    for (int i = 0; i < m_filelist_handler.get_number_of_all_frames(); i++) {
-        const bool file_checked_in_checkbox = m_files_to_stack_checkbox->IsChecked(i);
-        const bool file_checked_in_filelist = m_filelist_handler.frame_is_checked(i);
-        if (file_checked_in_checkbox != file_checked_in_filelist) {
-            m_filelist_handler.set_frame_checked(i, file_checked_in_checkbox);
-            updated = true;
-        }
-    }
+    m_frames_checkbox->update_checked_elements();
+
     update_input_numbers_overview();
     update_alignment_status();
-    return updated;
+    return true;
 };
 
 void MyFrame::add_button_bar()   {
@@ -439,16 +390,10 @@ void MyFrame::add_button_bar()   {
         update_checked_files_in_filelist();
         if (button_check_all->GetLabel() == "Uncheck all") {
             m_frames_checkbox->set_checked_status_for_all_frames(false);
-            for (unsigned int i = 0; i < m_files_to_stack_checkbox->GetCount(); ++i) {
-                m_files_to_stack_checkbox->Check(i, false);
-            }
             button_check_all->SetLabel("Check all");
         }
         else {
             m_frames_checkbox->set_checked_status_for_all_frames(true);
-            for (unsigned int i = 0; i < m_files_to_stack_checkbox->GetCount(); ++i) {
-                m_files_to_stack_checkbox->Check(i);
-            }
             button_check_all->SetLabel("Uncheck all");
         }
         update_checked_files_in_filelist();
@@ -468,18 +413,7 @@ void MyFrame::add_button_bar()   {
     });
 
     button_remove_checked->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
-        // get checked files:
-        wxArrayInt checked_indices;
-        m_files_to_stack_checkbox->GetCheckedItems(checked_indices);
-
-        // remove checked files from m_filelist_handler
-        for (int i = checked_indices.GetCount() - 1; i >= 0; --i) {
-            const std::string option = m_files_to_stack_checkbox->GetString(checked_indices[i]).ToStdString();
-            m_filelist_handler.remove_frame(checked_indices[i]);
-        }
-
-        // update m_files_to_stack_checkbox
-        update_files_to_stack_checkbox();
+        m_frames_checkbox->remove_checked_frames();
     });
 
     button_hot_pixel_id->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){

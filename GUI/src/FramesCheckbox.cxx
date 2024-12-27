@@ -102,6 +102,38 @@ Metadata FramesCheckbox::get_metadata(const InputFrame &frame) const  {
     return Metadata();
 };
 
+void FramesCheckbox::remove_checked_frames()    {
+    update_checked_elements();
+    for (auto &[frame_type, input_files] : m_input_files) {
+        for (unsigned int i_file = 0; i_file < input_files.size(); i_file++) {
+            InputFile &input_file = input_files[i_file];
+            input_file.remove_checked_frames();
+
+            if (input_file.get_frames_info().empty()) {
+                input_files.erase(input_files.begin() + i_file);
+                m_input_files_are_unrolled[frame_type].erase(m_input_files_are_unrolled[frame_type].begin() + i_file);
+                i_file--;
+            }
+        }
+
+    }
+    update_checkbox();
+};
+
+void FramesCheckbox::update_checked_elements()    {
+    for (unsigned int i = 0; i < m_files_to_stack_checkbox->GetCount(); i++) {
+        const bool file_checked_in_checkbox = m_files_to_stack_checkbox->IsChecked(i);
+        const RowInfo &row_info = m_row_info_vector[i];
+        if (row_info.frame_index == -1) {
+            // TODO
+        }
+        else {
+            InputFile &input_file = m_input_files.at(row_info.file_type)[row_info.file_index];
+            input_file.set_frame_is_checked(input_file.get_frames_info().at(row_info.frame_index).input_frame, file_checked_in_checkbox);
+        }
+    }
+};
+
 int FramesCheckbox::get_light_file_index(const InputFrame &input_frame) const   {
     const string input_frame_path = input_frame.get_file_address();
     if (m_input_files.find(FileTypes::LIGHT) == m_input_files.end()) {

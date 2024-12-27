@@ -156,8 +156,6 @@ class MyFrame : public wxFrame  {
 
         void update_histogram();
 
-
-        wxCheckListBox *m_files_to_stack_checkbox = nullptr;
         FramesCheckbox *m_frames_checkbox         = nullptr;
 
 
