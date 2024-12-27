@@ -66,6 +66,10 @@ void FramesCheckbox::set_checked_status_for_all_frames(bool checked)    {
             input_file.set_check_for_all_frames(checked);
         }
     }
+
+    for (unsigned int i_row = 0; i_row < m_files_to_stack_checkbox->GetCount(); ++i_row) {
+        m_files_to_stack_checkbox->Check(i_row, checked);
+    }
 };
 
 //std::unique_ptr<AstroPhotoStacker::StackerBase> FramesCheckbox::get_configured_stacker(const AstroPhotoStacker::StackSettings &stack_settings) const  {
@@ -146,10 +150,10 @@ void FramesCheckbox::update_checkbox()  {
                     for (int i_frame = 0; i_frame < int(frames.size()); i_frame++) {
                         const InputFrameInfoGUI &frame_info = frames[i_frame];
                         const string frame_description = "  " + to_string(type) + "\t" + frame_info.gui_string;
-                        if (frame_info.is_checked)  {
-                            m_files_to_stack_checkbox->Check(i_row);
-                        }
                         m_files_to_stack_checkbox->Append(frame_description);
+                        if (frame_info.is_checked)  {
+                            m_files_to_stack_checkbox->Check(i_row, true);
+                        }
                         m_row_info_vector.push_back({type, i_file, i_frame});
                         i_row++;
                     }

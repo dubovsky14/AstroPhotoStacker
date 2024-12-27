@@ -17,12 +17,12 @@ InputFile::InputFile(const std::string &file_path)  {
         const std::vector<InputFrame> video_frames = get_video_frames(file_path);
         for (const InputFrame &video_frame : video_frames)   {
             const Metadata metadata = metadata_manager.get_metadata(video_frame);
-            add_frame(video_frame, false, default_alignment_info, metadata);
+            add_frame(video_frame, true, default_alignment_info, metadata);
         }
     }
     else    {
         const Metadata metadata = metadata_manager.get_metadata(InputFrame(file_path));
-        add_frame(InputFrame(file_path), false, default_alignment_info, metadata);
+        add_frame(InputFrame(file_path), true, default_alignment_info, metadata);
     }
 };
 

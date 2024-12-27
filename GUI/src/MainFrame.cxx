@@ -438,12 +438,14 @@ void MyFrame::add_button_bar()   {
     button_check_all->Bind(wxEVT_BUTTON, [this, button_check_all](wxCommandEvent&){
         update_checked_files_in_filelist();
         if (button_check_all->GetLabel() == "Uncheck all") {
+            m_frames_checkbox->set_checked_status_for_all_frames(false);
             for (unsigned int i = 0; i < m_files_to_stack_checkbox->GetCount(); ++i) {
                 m_files_to_stack_checkbox->Check(i, false);
             }
             button_check_all->SetLabel("Check all");
         }
         else {
+            m_frames_checkbox->set_checked_status_for_all_frames(true);
             for (unsigned int i = 0; i < m_files_to_stack_checkbox->GetCount(); ++i) {
                 m_files_to_stack_checkbox->Check(i);
             }

@@ -11,15 +11,19 @@ def adjust_values(settings_dict : dict) -> None:
     settings_dict["Gain"] = settings_dict["Gain"].split()[0]
 
 def convert_firecapture_txt_to_zwo_txt(firecapture_txt_file : str, zwo_txt_file : str) -> None:
-    settings = {}
-    with open(firecapture_txt_file, 'r') as input_file:
-        for line in input_file:
-            if "=" not in line:
-                continue
-            elements = line.split("=")
-            settings[elements[0].strip()] = elements[1].strip()
-
-    adjust_values(settings)
+    try:
+        settings = {}
+        with open(firecapture_txt_file, 'r') as input_file:
+            for line in input_file:
+                if "=" not in line:
+                    continue
+                elements = line.split("=")
+                settings[elements[0].strip()] = elements[1].strip()
+        adjust_values(settings)
+    except Exception as e:
+        print(f"Error: {e} in file {firecapture_txt_file}")
+        exit()
+        return
 
     with open(zwo_txt_file, 'w') as output_file:
         output_file.write(f'[{settings["Camera"]}]\n')
