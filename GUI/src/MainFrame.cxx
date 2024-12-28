@@ -376,6 +376,8 @@ void MyFrame::add_files_to_stack_checkbox()  {
 
 void MyFrame::update_files_to_stack_checkbox()   {
     m_files_to_stack_checkbox->Clear();
+    vector<string> rows;
+    vector<bool>   rows_checked;
     for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
         const vector<InputFrame> &frames = m_filelist_handler.get_frames(type);
         for (unsigned int i_file = 0; i_file < frames.size(); i_file++) {
@@ -395,12 +397,20 @@ void MyFrame::update_files_to_stack_checkbox()   {
                                     "\t\t\tscore: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3);
             }
             const std::string file_string = to_string(type) + "\t\t" + frame_description + metadata_string;
-            m_files_to_stack_checkbox->Append(file_string);
+            rows.push_back(file_string);
 
-            if (m_filelist_handler.get_frames_checked(type).at(i_file)) {
-                m_files_to_stack_checkbox->Check(i_file);
-            }
+            rows_checked.push_back(m_filelist_handler.get_frames_checked(type).at(i_file));
         }
+    }
+
+    wxArrayString rows_wx;
+    for (const string &row : rows) {
+        rows_wx.Add(row);
+    }
+
+    m_files_to_stack_checkbox->Append(rows_wx);
+    for (unsigned int i = 0; i < rows_checked.size(); i++) {
+        m_files_to_stack_checkbox->Check(i, rows_checked[i]);
     }
 };
 
@@ -1045,7 +1055,7 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
         for (auto path : paths) {
             const AstroPhotoStacker::Metadata metadata = metadata_manager.get_metadata(InputFrame(path.ToStdString()));
             const string str_path = path.ToStdString();
-            m_filelist_handler.add_file(path.ToStdString(), type, false, AlignmentFileInfo(), metadata);
+            m_filelist_handler.add_file(path.ToStdString(), type, true, AlignmentFileInfo(), metadata);
             m_recent_paths_handler->set_recent_file_path_from_file(type, path.ToStdString());
         }
     }
