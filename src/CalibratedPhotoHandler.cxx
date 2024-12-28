@@ -62,7 +62,7 @@ void CalibratedPhotoHandler::calibrate() {
             for (int y = 0; y < m_height; y++) {
                 for (int x = 0; x < m_width; x++) {
                     auto &value = m_input_frame_data_original->get_pixel_value_raw(x, y);
-                    value = calibration_frame_handler->get_updated_pixel_value(value, x, y);
+                    value = std::min<float>(32'767, calibration_frame_handler->get_updated_pixel_value(value, x, y));
                 }
             }
         }
