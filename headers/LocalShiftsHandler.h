@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <tuple>
+#include <string>
 
 #include "../headers/KDTreeWithBuffer.h"
 #include "../headers/LocalShift.h"
@@ -16,6 +17,8 @@ namespace AstroPhotoStacker {
 
             LocalShiftsHandler(const std::vector<LocalShift> &shifts);
 
+            LocalShiftsHandler(const std::string &string_from_alignment_file);
+
             const std::vector<LocalShift> &get_shifts() const {
                 return m_shifts;
             };
@@ -27,8 +30,13 @@ namespace AstroPhotoStacker {
             // for debugging
             void draw_ap_boxes_into_image(std::vector<std::vector<unsigned short>> *image, int width, int height, int boxsize, const std::vector<int> &valid_ap_color, const std::vector<int> &invalid_ap_color, int global_shift_x = 0, int global_shift_y = 0) const;
 
+            // for storing alignment boxes in alignment text file
+            std::string to_string() const;
+
         private:
             std::vector<LocalShift> m_shifts;
+
+            void initialize(const std::vector<LocalShift> &shifts);
 
             KDTreeWithBuffer<int,2,std::tuple<int,int,bool,float>> m_kd_tree_shifts;  // dx, dy, valid_ap, score
 

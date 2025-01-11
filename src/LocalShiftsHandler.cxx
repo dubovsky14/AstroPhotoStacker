@@ -1,4 +1,5 @@
 #include "../headers/LocalShiftsHandler.h"
+#include "../headers/Common.h"
 
 #include <vector>
 #include <tuple>
@@ -6,15 +7,8 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
-LocalShiftsHandler::LocalShiftsHandler(const std::vector<LocalShift> &shifts) : m_shifts(shifts) {
-    for (const auto &shift : shifts) {
-        const std::vector<int> coordinate = {shift.x, shift.y};
-        const std::tuple<int,int,bool,float> value = std::tuple<int,int,bool,float>(shift.dx, shift.dy, shift.valid_ap, shift.score);
-
-        m_kd_tree_shifts.add_point(coordinate, value);
-    }
-    m_kd_tree_shifts.build_tree_structure();
-    m_empty = false;
+LocalShiftsHandler::LocalShiftsHandler(const std::vector<LocalShift> &shifts)  {
+    initialize(shifts);
 };
 
 bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifted_x, int *shifted_y, float *score)   {
@@ -104,3 +98,59 @@ void LocalShiftsHandler::draw_ap_boxes_into_image(std::vector<std::vector<unsign
     }
 };
 
+std::string LocalShiftsHandler::to_string() const   {
+    if (empty()) {
+        return "";
+    }
+
+    // x,y,dx,dy,valid_ap,score;x,y,dx,dy,valid_ap,score;...
+    std::string result = "";
+    for (const LocalShift &shift : m_shifts) {
+        result += std::to_string(shift.x) + "," +
+                  std::to_string(shift.y) + "," +
+                  std::to_string(shift.dx) + "," +
+                  std::to_string(shift.dy) + "," +
+                  std::to_string(shift.valid_ap) + "," +
+                  std::to_string(shift.score) + ";";
+    }
+    return result;
+};
+
+LocalShiftsHandler::LocalShiftsHandler(const std::string &string_from_alignment_file)   {
+    vector<LocalShift> shifts;
+    // x,y,dx,dy,valid_ap,score;x,y,dx,dy,valid_ap,score;...
+    const vector<string> elements = split_string(string_from_alignment_file, ";");
+    for (const string &element : elements) {
+        const vector<string> values = split_string(element, ",");
+        if (values.size() != 6) {
+            continue;
+        }
+        LocalShift shift;
+        shift.x = std::stoi(values[0]);
+        shift.y = std::stoi(values[1]);
+        shift.dx = std::stoi(values[2]);
+        shift.dy = std::stoi(values[3]);
+        shift.valid_ap = std::stoi(values[4]);
+        shift.score = std::stof(values[5]);
+        shifts.push_back(shift);
+    }
+    initialize(shifts);
+};
+
+void LocalShiftsHandler::initialize(const std::vector<LocalShift> &shifts)  {
+    m_shifts = shifts;
+
+    if (shifts.empty()) {
+        m_empty = true;
+        return;
+    }
+
+    for (const auto &shift : shifts) {
+        const std::vector<int> coordinate = {shift.x, shift.y};
+        const std::tuple<int,int,bool,float> value = std::tuple<int,int,bool,float>(shift.dx, shift.dy, shift.valid_ap, shift.score);
+
+        m_kd_tree_shifts.add_point(coordinate, value);
+    }
+    m_kd_tree_shifts.build_tree_structure();
+    m_empty = false;
+};

@@ -276,7 +276,8 @@ void FilelistHandler::save_alignment_to_file(const std::string &output_address) 
                     << info.rotation_center_x << " | "
                     << info.rotation_center_y << " | "
                     << info.rotation << " | "
-                    << info.ranking << std::endl;
+                    << info.ranking << " | "
+                    << info.local_shifts_handler.to_string() << std::endl;
     }
 };
 
@@ -285,7 +286,7 @@ void FilelistHandler::load_alignment_from_file(const std::string &input_address)
     std::string line;
     while (std::getline(input_file, line))   {
         vector<string> elements = split_string(line, " | ");
-        if (elements.size() != 8)   {
+        if (elements.size() < 8)   {
             continue;
         }
         const std::string file_address = elements[0];
@@ -301,6 +302,9 @@ void FilelistHandler::load_alignment_from_file(const std::string &input_address)
         alignment_info.ranking           = std::stof(elements[7]);
         alignment_info.initialized       = true;
 
+        if (elements.size() > 8)    {
+            alignment_info.local_shifts_handler = LocalShiftsHandler(elements[8]);
+        }
 
         const std::vector<InputFrame> &light_files = get_frames(FileTypes::LIGHT);
         for (unsigned int i_file = 0; i_file < light_files.size(); ++i_file)   {
