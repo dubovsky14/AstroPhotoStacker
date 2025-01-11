@@ -75,7 +75,7 @@ bool AlignmentPointBox::is_valid_ap(const std::vector<float> *scaled_data_vector
         return false;
     }
 
-    int n_pixels_above_40_percent_of_maximum = 0;
+    int n_pixels_above_5_percent_of_maximum = 0;
     for (int y = y_min; y <= y_max; y++) {
         for (int x = x_min; x <= x_max; x++) {
             const float brightness = (*scaled_data_vector)[y * alignment_window_width + x];
@@ -85,14 +85,14 @@ bool AlignmentPointBox::is_valid_ap(const std::vector<float> *scaled_data_vector
             if (brightness > max_brightness) {
                 max_brightness = brightness;
             }
-            if (brightness > 0.4*max_value) {
-                n_pixels_above_40_percent_of_maximum++;
+            if (brightness > 0.05*max_value) {
+                n_pixels_above_5_percent_of_maximum++;
             }
         }
     }
 
-    // at least 30% of the pixels should be above 40% of the maximum
-    if (n_pixels_above_40_percent_of_maximum < 0.3*box_width*box_height) {
+    // at least 30% of the pixels should be above 5% of the maximum
+    if (n_pixels_above_5_percent_of_maximum < 0.3*box_width*box_height) {
         return false;
     }
 

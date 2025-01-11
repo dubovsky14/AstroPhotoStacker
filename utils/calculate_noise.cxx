@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     const double variance = mean2 - mean*mean;
     const double std_dev = sqrt(variance);
 
-    cout << "Average noise level: " << mean << "\t\tRMS: " << std_dev << endl;
+    cout << "File: " << input_file << "Average noise level: " << mean << "\t\tRMS: " << std_dev << endl;
 
 
     return 0;
