@@ -8,6 +8,7 @@
 #include "../headers/StackerCutOffAverage.h"
 #include "../headers/StackerMaximum.h"
 #include "../headers/StackerMinimum.h"
+#include "../headers/StackerCenter.h"
 #include "../headers/StackerWeightedBestScore.h"
 
 
@@ -33,6 +34,9 @@ std::unique_ptr<StackerBase> AstroPhotoStacker::create_stacker(const std::string
     }
     else if (stacker_type == "minimum") {
         return std::make_unique<StackerMinimum>(number_of_colors, width, height, interpolate_colors);
+    }
+    else if (stacker_type == "center") {
+        return std::make_unique<StackerCenter>(number_of_colors, width, height, interpolate_colors);
     }
     else if (stacker_type == "best score") {
         return std::make_unique<StackerWeightedBestScore>(number_of_colors, width, height, interpolate_colors);
