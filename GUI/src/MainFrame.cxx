@@ -1034,7 +1034,7 @@ void MyFrame::update_histogram()    {
 
 void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title)    {
     const std::string default_path = m_recent_paths_handler->get_recent_file_path(type, "");
-    std::vector<string> allowed_extensions = {"cr2", "cr3", "jpg", "jpeg", "png", "fit", "tif", "tiff"};
+    std::vector<string> allowed_extensions = {"cr2", "cr3", "jpg", "jpeg", "png", "fit", "tif", "tiff", "nef", "dng"};
     if (type == FileTypes::LIGHT) {
         allowed_extensions.push_back("avi");
         allowed_extensions.push_back("mov");
