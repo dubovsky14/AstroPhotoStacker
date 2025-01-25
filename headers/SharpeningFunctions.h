@@ -16,24 +16,31 @@ namespace AstroPhotoStacker {
 
     template<typename PixelType>
     std::vector<std::vector<PixelType>> apply_kernel(const std::vector<std::vector<PixelType>> &original_image, int width, int height, const std::vector<std::vector<float>> &kernel)  {
-        std::vector<std::vector<PixelType>> sharpened_image(original_image.size(), std::vector<PixelType>(original_image[0].size(), 0));
+        std::vector<std::vector<float>> sharpened_image(original_image.size(), std::vector<float>(original_image[0].size(), 0));
 
         const int kernel_size = kernel.size();
         const int kernel_half_size = kernel_size / 2;
-        for (int y = kernel_half_size; y < height - kernel_half_size; y++) {
-            for (int x = kernel_half_size; x < width - kernel_half_size; x++) {
-                for (int i_color = 0; i_color < 3; i_color++) {
-                    float sum = 0;
-                    for (int y_kernel = 0; y_kernel < kernel_size; y_kernel++) {
-                        for (int x_kernel = 0; x_kernel < kernel_size; x_kernel++) {
-                            sum += kernel[y_kernel][x_kernel] * original_image[i_color][(y + y_kernel - kernel_half_size) * width + x + x_kernel - kernel_half_size];
+        for (int i_color = 0; i_color < 3; i_color++) {
+            for (int y_kernel = 0; y_kernel < kernel_size; y_kernel++) {
+                for (int y = kernel_half_size; y < height - kernel_half_size; y++) {
+                    for (int x_kernel = 0; x_kernel < kernel_size; x_kernel++) {
+                        for (int x = kernel_half_size; x < width - kernel_half_size; x++) {
+                            sharpened_image[i_color][y * width + x] += kernel[y_kernel][x_kernel] * original_image[i_color][(y + y_kernel - kernel_half_size) * width + x + x_kernel - kernel_half_size];
                         }
                     }
-                    sharpened_image[i_color][y * width + x] = std::max<float>(sum,0.);
                 }
             }
         }
-        return sharpened_image;
+
+        std::vector<std::vector<PixelType>> sharpened_image_return(original_image.size(), std::vector<PixelType>(original_image[0].size(), 0));
+        for (int i_color = 0; i_color < 3; i_color++) {
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    sharpened_image_return[i_color][y * width + x] = std::max<float>(sharpened_image[i_color][y * width + x], 0);
+                }
+            }
+        }
+        return sharpened_image_return;
     };
 
 
