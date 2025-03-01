@@ -22,7 +22,7 @@ std::unique_ptr<StackerBase> AstroPhotoStacker::create_stacker(const std::string
         return std::make_unique<StackerMeanValue>(number_of_colors, width, height, interpolate_colors);
     } else if (stacker_type == "median") {
         return std::make_unique<StackerMedian>(number_of_colors, width, height, interpolate_colors);
-    } else if (stacker_type == "kappa-sigma clipping") {
+    } else if (stacker_type == "kappa-sigma mean") {
         return std::make_unique<StackerKappaSigmaClipping>(number_of_colors, width, height, interpolate_colors);
     } else if (stacker_type == "kappa-sigma median") {
         return std::make_unique<StackerKappaSigmaMedian>(number_of_colors, width, height, interpolate_colors);

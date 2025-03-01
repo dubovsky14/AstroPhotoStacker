@@ -34,7 +34,6 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
                                         alignment_info.ranking,
                                         alignment_info.local_shifts_handler);
     }
-
     const vector<InputFrame> &dark_frames = filelist_handler_only_checked.get_frames(FileTypes::DARK);
     if (dark_frames.size() > 0) {
         const InputFrame &dark_frame = dark_frames[0];
