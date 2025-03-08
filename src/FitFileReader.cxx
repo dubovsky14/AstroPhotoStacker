@@ -22,12 +22,9 @@ void FitFileReader::read_data(std::ifstream &file) {
     while (file.peek() == ' ') {
         file.read(&x, 1);
     }
-    int current_pos = file.tellg();
-
-    // shift stream one byte back
-    file.seekg(current_pos);
 
     for (unsigned int i_pixel = 0; i_pixel < n_elements; i_pixel++) {
+        // data are not stored as usual 16 bit unsigned integers - first byte is the least significant one, second byte is the most significant one
         unsigned short pixel_value;
         file.read(reinterpret_cast<char*>(&pixel_value)+1, 1);
         file.read(reinterpret_cast<char*>(&pixel_value), 1);
@@ -37,12 +34,10 @@ void FitFileReader::read_data(std::ifstream &file) {
     // subtract zero point
     std::transform(m_data.begin(), m_data.end(), m_data.begin(), [this](unsigned short int x) {return x - m_zero_point;});
 
-
-    // why the fuck do some FIT files come with 16 bit precision? This is absurd, it's just a noise causing problems ...
+    // we need this to be able to convert it to 16 bit signed integers (-1 is "no value")
+    // do not worry, if the resolution is 14 bits for example, the 2 least significant bits will be 0 (and not the two most significant ones)
     shrink_to_15_bits();
 };
-
-
 
 void FitFileReader::shrink_to_15_bits()    {
     m_bit_depth = 15;
