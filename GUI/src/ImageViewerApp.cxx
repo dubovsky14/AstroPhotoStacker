@@ -185,6 +185,10 @@ void ImageViewerFrame::bind_key_events()  {
         else if (event.GetKeyCode() == WXK_LEFT) {
             load_consecutive_file(-1);
         }
+        else if (event.GetKeyCode() == WXK_DELETE) {
+            std::filesystem::remove(m_file_address);
+            load_consecutive_file(1);
+        }
     });
 };
 
