@@ -21,7 +21,7 @@ jobs:
               cmake ../.
               make
         name: upload_artifact
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: artifact-linux-build
           path: |
@@ -102,7 +102,7 @@ jobs:
               mkdir output
               chmod u+x bin/produce_alignment_file
               ./bin/produce_alignment_file -reference_file AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9132.CR2 -raw_files_dir AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/ -alignment_file output/test_alignment.txt
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: artifact-produce-alignment-file
           path: |
@@ -154,7 +154,7 @@ jobs:
       - run:  |
               chmod u+x bin/astro_photo_stacker
               ./bin/astro_photo_stacker -alignment_file output/test_alignment.txt -raw_files_dir AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/ -output output/test_stacked_image_default_stack.png
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: artifact-produce-stacked-image
           path: |
