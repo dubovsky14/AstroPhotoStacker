@@ -23,13 +23,13 @@ void FitFileReader::read_data(std::ifstream &file) {
         file.read(&x, 1);
     }
 
-    for (unsigned int i_pixel = 0; i_pixel < n_elements; i_pixel++) {
-        // data are not stored as usual 16 bit unsigned integers - first byte is the least significant one, second byte is the most significant one
-        unsigned short pixel_value;
-        file.read(reinterpret_cast<char*>(&pixel_value)+1, 1);
-        file.read(reinterpret_cast<char*>(&pixel_value), 1);
-        m_data[i_pixel] = pixel_value;
-    }
+
+    file.read(reinterpret_cast<char*>(m_data.data()), n_elements*2);
+
+    // data are not stored as usual 16 bit unsigned integers - first byte is the least significant one, second byte is the most significant one
+    std::transform(m_data.begin(), m_data.end(), m_data.begin(), [](unsigned short int pixel_value) -> unsigned short int {
+        return pixel_value >> 8 | pixel_value << 8;
+    });
 
     // subtract zero point
     std::transform(m_data.begin(), m_data.end(), m_data.begin(), [this](unsigned short int x) {return x - m_zero_point;});
