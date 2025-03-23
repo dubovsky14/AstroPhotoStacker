@@ -13,6 +13,9 @@
 #include <limits>
 
 namespace AstroPhotoStacker {
+    /**
+     * @brief: Class for reading input images in FIT format
+     */
     class FitFileReader : public FitFileMetadataReader {
         public:
             FitFileReader(const std::string &input_file);
@@ -40,8 +43,5 @@ namespace AstroPhotoStacker {
 
             std::vector<unsigned short int> m_data;
 
-            void shrink_to_15_bits();
-
-            void apply_color_balance();
     };
 }
