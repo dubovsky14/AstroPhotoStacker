@@ -8,7 +8,6 @@
 #include "../headers/InputFrame.h"
 #include "../headers/InputFrameData.h"
 
-#include <string>
 #include <memory>
 #include <vector>
 
@@ -35,7 +34,7 @@ namespace AstroPhotoStacker {
              * @param input_frame Information about the input frame - address of the file in case of still image, address of the video and frame number in case of video frame.
              * @param use_color_interpolation Whether to use color interpolation.
             */
-            CalibratedPhotoHandler(const InputFrame &input_frame, bool use_color_interpolation = false);
+            explicit CalibratedPhotoHandler(const InputFrame &input_frame, bool use_color_interpolation = false);
 
             /**
              * @brief Add alignment data to the CalibratedPhotoHandler object.
@@ -51,7 +50,7 @@ namespace AstroPhotoStacker {
             /**
              * @brief Define local shifts to compensate for effect of the seeing in case of planetary and Lunar images.
              *
-             * @param shifts: LocalShiftHandler object with local shifts (or empty).
+             * @param local_shift_handler: LocalShiftHandler object with local shifts (or empty).
             */
             void define_local_shifts(const LocalShiftsHandler &local_shift_handler);
 

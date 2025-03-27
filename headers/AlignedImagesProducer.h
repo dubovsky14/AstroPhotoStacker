@@ -21,13 +21,15 @@ namespace AstroPhotoStacker {
         std::vector<FileAlignmentInformation>   alignment_info;
         StackSettings                           stack_settings;
     };
+
+
     class AlignedImagesProducer {
         public:
-            AlignedImagesProducer(int n_cpu = 1, int memory_usage_limit_in_mb = 8192);
+            explicit AlignedImagesProducer(int n_cpu = 1, int memory_usage_limit_in_mb = 8192);
 
             void limit_output_image_size(int top_left_corner_x, int top_left_corner_y, int width, int height);
 
-            void add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler);
+            void add_calibration_frame_handler(const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler);
 
             void add_image(const InputFrame &input_frame, const FileAlignmentInformation &alignment_info = FileAlignmentInformation());
 
@@ -49,7 +51,7 @@ namespace AstroPhotoStacker {
 
             int get_tasks_total() const;
 
-            void set_image_stretching_function(std::function<void(std::vector<std::vector<unsigned short>>*, unsigned short max_value)> image_stretching_function) {
+            void set_image_stretching_function(const std::function<void(std::vector<std::vector<unsigned short>>*, unsigned short max_value)> &image_stretching_function) {
                 m_image_stretching_function = image_stretching_function;
             };
 
@@ -77,11 +79,11 @@ namespace AstroPhotoStacker {
 
             static std::string get_output_file_name(const InputFrame &input_frame);
 
-            static void scale_down_image(std::vector<std::vector<unsigned short>> *image, unsigned int origianal_max, unsigned int new_max);
+            static void scale_down_image(std::vector<std::vector<unsigned short>> *image, unsigned int original_max, unsigned int new_max);
 
             void produce_video(const std::string &output_video_address)   const;
 
-            void set_post_processing_tool(std::function<std::vector<std::vector<unsigned short>>(const std::vector<std::vector<unsigned short>> &, int, int)> post_processing_tool) {
+            void set_post_processing_tool(const std::function<std::vector<std::vector<unsigned short>>(const std::vector<std::vector<unsigned short>> &, int, int)> &post_processing_tool) {
                 m_post_processing_tool = post_processing_tool;
             };
 
@@ -126,14 +128,14 @@ namespace AstroPhotoStacker {
                                         int unix_time) const;
 
             mutable std::atomic<int> m_n_tasks_processed = 0;
-            std::vector<std::tuple<std::string, int>>   m_output_adresses_and_unix_times;
-            std::mutex                                  m_output_adresses_and_unix_times_mutex;
+            std::vector<std::tuple<std::string, int>>   m_output_addresses_and_unix_times;
+            std::mutex                                  m_output_addresses_and_unix_times_mutex;
 
 
             std::vector<GroupToStack> m_groups_to_stack;
 
             template <typename PixelType>
-            static PixelType get_max_value_ingoring_borders(const std::vector<std::vector<PixelType>> &image, int width, int height, int border_size = 1)  {
+            static PixelType get_max_value_ignoring_borders(const std::vector<std::vector<PixelType>> &image, int width, int height, int border_size = 1)  {
                 PixelType max_value = 0;
                 for (unsigned int i_color = 0; i_color < 3; i_color++) {
                     for (int y = border_size; y < height - border_size; y++) {

@@ -73,16 +73,14 @@ namespace AstroPhotoStacker {
                     const int y_min = std::max<int>(0, y - box.get_box_height()/2);
                     const int y_max = std::min<int>(height-1, y + box.get_box_height()/2);
 
-                    const std::vector<int> &colors = true ? valid_ap_color : invalid_ap_color;
-
                     for (int i_color = 0; i_color < 3; i_color++) {
                         for (int y = y_min; y <= y_max; y++) {
-                            (*image)[i_color][y*width + x_min] = colors[i_color]; // left
-                            (*image)[i_color][y*width + x_max] = colors[i_color]; // right
+                            (*image)[i_color][y*width + x_min] = valid_ap_color[i_color]; // left
+                            (*image)[i_color][y*width + x_max] = valid_ap_color[i_color]; // right
                         }
                         for (int x = x_min; x <= x_max; x++) {
-                            (*image)[i_color][y_min*width + x] = colors[i_color]; // top
-                            (*image)[i_color][y_max*width + x] = colors[i_color]; // bottom
+                            (*image)[i_color][y_min*width + x] = valid_ap_color[i_color]; // top
+                            (*image)[i_color][y_max*width + x] = valid_ap_color[i_color]; // bottom
                         }
                     }
                 }

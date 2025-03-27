@@ -43,10 +43,10 @@ namespace AstroPhotoStacker   {
     float get_star_distance_squared(const std::tuple<float, float, int> &star1, const std::tuple<float, float, int> &star2);
 
     /**
-     * @brief Get scalar product of two vectors with 2 elements
+     * @brief Calculate coordinate along the axis
      *
-     * @param star1 - 2 element array
-     * @param star2 - 2 element array
+     * @param original_vector - 2 element array
+     * @param axis - 2 element array
      * @return float - scalar product of the two vectors
      */
     inline float calculate_coordinate_along_axis(const float *original_vector, const float *axis)   {

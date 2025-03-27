@@ -42,7 +42,7 @@ void AlignedImagesProducer::add_image_group_to_stack(const std::vector<InputFram
 };
 
 
-void AlignedImagesProducer::add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler) {
+void AlignedImagesProducer::add_calibration_frame_handler(const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler) {
     m_calibration_frame_handlers.push_back(calibration_frame_handler);
 };
 
@@ -60,7 +60,7 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
     const int n_cpu = min(m_n_cpu, n_frames);
 
     m_n_tasks_processed = 0;
-    m_output_adresses_and_unix_times.clear();
+    m_output_addresses_and_unix_times.clear();
     thread_pool pool(n_cpu);
 
     // add individual frames
@@ -100,14 +100,14 @@ int AlignedImagesProducer::get_tasks_total() const {
 };
 
 string AlignedImagesProducer::get_output_file_name(const InputFrame &input_frame) {
-    const std::string input_file_address = input_frame.get_file_address();
+    const std::string &input_file_address = input_frame.get_file_address();
     std::string input_file_name = input_file_address;
-    const size_t last_slash = input_file_address.find_last_of("/");
+    const size_t last_slash = input_file_address.find_last_of('/');
     if (last_slash != string::npos) {
         input_file_name = input_file_address.substr(last_slash+1);
     }
 
-    const size_t last_dot = input_file_name.find_last_of(".");
+    const size_t last_dot = input_file_name.find_last_of('.');
     if (last_dot != string::npos) {
         input_file_name = input_file_name.substr(0, last_dot);
     }
@@ -180,8 +180,8 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
 
     process_and_save_image(&output_image, width, height, output_file_address, unix_time);
 
-    std::scoped_lock lock(m_output_adresses_and_unix_times_mutex);
-    m_output_adresses_and_unix_times.push_back({output_file_address, unix_time});
+    std::scoped_lock lock(m_output_addresses_and_unix_times_mutex);
+    m_output_addresses_and_unix_times.emplace_back(output_file_address, unix_time);
 
     m_n_tasks_processed++;
 };
@@ -232,8 +232,8 @@ void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_fram
 
     process_and_save_image(&output_image, width, height, output_file_address, unix_time);
 
-    std::scoped_lock lock(m_output_adresses_and_unix_times_mutex);
-    m_output_adresses_and_unix_times.push_back({output_file_address, unix_time});
+    std::scoped_lock lock(m_output_addresses_and_unix_times_mutex);
+    m_output_addresses_and_unix_times.emplace_back(output_file_address, unix_time);
 
     m_n_tasks_processed++;
 };
@@ -244,7 +244,7 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<unsi
                                                     const std::string &output_file_address,
                                                     int unix_time) const    {
 
-    unsigned short max_value = get_max_value_ingoring_borders(*stacked_image, width, height, 5);
+    unsigned short max_value = get_max_value_ignoring_borders(*stacked_image, width, height, 5);
 
     if (m_image_stretching_function) {
         m_image_stretching_function(stacked_image, max_value);
@@ -264,14 +264,6 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<unsi
             value = min<unsigned short>(value, 255);
         }
     }
-
-    //// show AP boxes
-    //const LocalShiftsHandler &local_shifts_handler = alignment_info.local_shifts_handler;
-    //if (!local_shifts_handler.empty()) {
-    //    cout << "Going to draw AP boxes\n";
-    //    local_shifts_handler.draw_ap_boxes_into_image(stacked_image, width, height, 50, {0, 255, 0}, {255, 0, 0}, m_top_left_corner_x, m_top_left_corner_y);
-    //}
-
 
     cv::Mat opencv_image = get_opencv_color_image(stacked_image->at(0).data(), stacked_image->at(1).data(), stacked_image->at(2).data(), width, height);
 
@@ -302,23 +294,23 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<unsi
 };
 
 void AlignedImagesProducer::scale_down_image(   std::vector<std::vector<unsigned short>> *image,
-                                                unsigned int origianal_max,
+                                                unsigned int original_max,
                                                 unsigned int new_max)  {
 
     for (int color = 0; color < 3; color++) {
         for (unsigned int i = 0; i < image->at(color).size(); i++) {
-            image->at(color)[i] = image->at(color)[i]*float(new_max)/origianal_max;
+            image->at(color)[i] = image->at(color)[i]*float(new_max)/original_max;
         }
     }
 };
 
 void AlignedImagesProducer::produce_video(const std::string &output_video_address) const {
-    if (m_output_adresses_and_unix_times.size() == 0) {
+    if (m_output_addresses_and_unix_times.size() == 0) {
         return;
     }
 
     TimeLapseVideoCreator timelapse_creator(m_timelapse_video_settings);
-    for (const auto &[output_file, unix_time] : m_output_adresses_and_unix_times) {
+    for (const auto &[output_file, unix_time] : m_output_addresses_and_unix_times) {
         timelapse_creator.add_image(output_file, unix_time);
     }
     timelapse_creator.create_video(output_video_address);

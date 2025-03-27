@@ -17,7 +17,7 @@ bool AstroPhotoStacker::calculate_asterism_hash(const vector<tuple<float, float,
         throw runtime_error("Cannot calculate hash of #stars != 4");
     }
 
-    // extract indices of stars A, B, C and D. For now symmetric agains A <-> B and C <-> D swap, we will solve this later
+    // extract indices of stars A, B, C and D. For now symmetric against A <-> B and C <-> D swap, we will solve this later
     int starA(-1), starB(-1), starC(-1), starD(-1);
     get_indices_of_most_distant_stars(stars, &starA, &starB);
     for (int i_star = 0; i_star < 4; i_star++) {
