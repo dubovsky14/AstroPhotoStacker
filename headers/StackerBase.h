@@ -66,16 +66,12 @@ namespace AstroPhotoStacker {
              * @brief Add a photo to the stack
              *
              * @param input_frame - data about the input frame (either a photo or a frame from a video)
+             * @param calibration_frame_handlers - vector of calibration frame handlers
              * @param apply_alignment - if true, the alignment will be applied - switching it off is usefull for calibration frames
             */
-            virtual void add_photo(const InputFrame &input_frame, bool apply_alignment = true);
-
-            /**
-             * @brief Add calibration frame handler
-             *
-             * @param calibration frame handler
-            */
-            void add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler);
+            virtual void add_photo( const InputFrame &input_frame,
+                                    const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers = std::vector<std::shared_ptr<const CalibrationFrameBase> >(),
+                                    bool apply_alignment = true);
 
             /**
              * @brief Read hot pixels from a file
@@ -218,7 +214,8 @@ namespace AstroPhotoStacker {
             std::unique_ptr<PhotoAlignmentHandler> m_photo_alignment_handler    = nullptr;
             std::unique_ptr<HotPixelIdentifier> m_hot_pixel_identifier          = nullptr;
 
-            std::vector<std::shared_ptr<const CalibrationFrameBase> > m_calibration_frame_handlers;
+            // 1st index = light frame index, 2nd index = calibration frame index
+            std::vector<std::vector<std::shared_ptr<const CalibrationFrameBase> >> m_calibration_frame_handlers;
 
             std::atomic<int> m_n_tasks_processed = 0;
 

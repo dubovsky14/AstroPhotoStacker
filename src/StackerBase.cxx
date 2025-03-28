@@ -28,13 +28,12 @@ void StackerBase::add_alignment_info(const InputFrame &input_frame, float x_shif
     m_photo_alignment_handler->add_alignment_info(input_frame, x_shift, y_shift, rotation_center_x, rotation_center_y, rotation, ranking, local_shifts_handler);
 };
 
-void StackerBase::add_photo(const InputFrame &input_frame, bool apply_alignment) {
+void StackerBase::add_photo(const InputFrame &input_frame,
+                            const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers,
+                            bool apply_alignment) {
     m_frames_to_stack.push_back(input_frame);
+    m_calibration_frame_handlers.push_back(calibration_frame_handlers);
     m_apply_alignment.push_back(apply_alignment);
-};
-
-void StackerBase::add_calibration_frame_handler(std::shared_ptr<const CalibrationFrameBase> calibration_frame_handler) {
-    m_calibration_frame_handlers.push_back(calibration_frame_handler);
 };
 
 void StackerBase::register_hot_pixels_file(const std::string &hot_pixels_file)  {
@@ -179,7 +178,7 @@ CalibratedPhotoHandler StackerBase::get_calibrated_photo(unsigned int i_file, in
     calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
     calibrated_photo.define_local_shifts(alignment_info.local_shifts_handler);
     calibrated_photo.limit_y_range(y_min, y_max);
-    for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame : m_calibration_frame_handlers) {
+    for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame : m_calibration_frame_handlers.at(i_file)) {
         calibrated_photo.register_calibration_frame(calibration_frame);
     }
     calibrated_photo.calibrate();
