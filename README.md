@@ -63,6 +63,12 @@ cd ..
 How to run the code:
 --------------------
 
+The recommended way of running the code is via GUI (inside of GUI folder). Please see the instruction on how to build it inside its folder.
+For historical reasons there is also terminal based interface, but it has only a limited set of avaliable features.
+
+Running via terminal
+---------------------
+
 You need to run two steps. The first one will calculate how to shift and rotate your photos to be aligned with a reference photo.
 So firstly look at your photos and choose one of them, that you want to use as a reference (stacked photo will cover this field of view).
 Then run the following command:

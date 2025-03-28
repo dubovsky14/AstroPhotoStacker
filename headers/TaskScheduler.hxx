@@ -21,6 +21,13 @@ namespace AstroPhotoStacker {
             TaskScheduler()                     = delete;
             TaskScheduler(const TaskScheduler&) = delete;
 
+            /**
+             * @brief Submit a task to be executed in parallel
+             *
+             * @param task - the function to be executed
+             * @param release_resources - the resources that will be used by the task
+             * @param args - the arguments of the task
+             */
             template<typename FunctionType, typename... Args>
             void submit(const FunctionType &task, const std::vector<size_t> &resource_requirements, const Args &...args)   {
 
@@ -54,6 +61,11 @@ namespace AstroPhotoStacker {
 
             };
 
+            /**
+             * @brief Wait for all tasks to finish
+             *
+             * @param sleep_time The time to sleep between checking if the tasks are finished
+             */
             void wait_for_tasks(int sleep_time = 100) {
                 while (true)   {
                     std::this_thread::sleep_for(std::chrono::microseconds(sleep_time));
