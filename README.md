@@ -41,7 +41,7 @@ sudo apt-get install -y libexiv2-dev
 Now you should have all the dependencies installed.
 
 
-How to checkout and compile the code:
+How to checkout and compile the code (on Linux):
 --------------------------------------
 
 ```
@@ -59,6 +59,17 @@ make # optionally use "make -j4" for compiling on 4 CPUs, or "make -j" to compil
 
 cd ..
 ```
+
+How to compile on Windows:
+---------------------------
+
+The setup is very similar to the Linux one, there are just 2 additional steps:
+
+1) Uninstall Windows.
+2) Install Linux (preferably Ubuntu).
+
+Then follow the instructions on how to compile the code on Linux.
+
 
 How to run the code:
 --------------------
@@ -134,8 +145,3 @@ and these arguments are optional:
 ```stacker_type``` -> stacking algorithm to be used. The list of available algorithms can be found in ```headers/StackerFactory.h``` header file. Default is ```kappa-sigma clipping```
 
 ```hot_pixels_file``` -> text file with hot pixels coordinates (described in ```Hot pixel identification``` part)
-
-GUI
----
-
-There is a graphical user interface, which is still in development, you can find it in ```GUI``` folder, together with instructions how to use it.
