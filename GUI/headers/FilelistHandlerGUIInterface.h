@@ -67,8 +67,9 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
 
         FilelistHandlerGUIInterface get_filelist_with_checked_frames() const;
 
-    private:
         void update_shown_frames();
+
+    private:
 
         void sort_frames();
 

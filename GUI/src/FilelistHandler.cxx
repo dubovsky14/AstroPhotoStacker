@@ -109,12 +109,13 @@ const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &FilelistHandler::get_fr
 int FilelistHandler::get_number_of_checked_frames(FileTypes type) const  {
     int n_checked_frames = 0;
     for (const auto &group : m_frames_list)   {
-        for (const auto &type : group.second)   {
-            const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames = group.second.at(type.first);
-            for (const auto &frame : frames)   {
-                if (frame.second.is_checked)   {
-                    n_checked_frames++;
-                }
+        if (group.second.find(type) == group.second.end())   {
+            continue;
+        }
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames = group.second.at(type);
+        for (const auto &frame : frames)   {
+            if (frame.second.is_checked)   {
+                n_checked_frames++;
             }
         }
     }

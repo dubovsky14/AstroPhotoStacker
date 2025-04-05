@@ -367,6 +367,7 @@ void MyFrame::update_files_to_stack_checkbox()   {
     vector<string> rows;
     vector<bool>   rows_checked;
 
+    m_filelist_handler_gui_interface.update_shown_frames();
     const vector<std::pair<std::string, FrameID>> &shown_frames = m_filelist_handler_gui_interface.get_shown_frames();
     for (const auto &frame : shown_frames)   {
         const std::string file_string = frame.first;

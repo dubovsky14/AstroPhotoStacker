@@ -59,7 +59,7 @@ void AlignmentFrame::initialize_list_of_frames_to_align()   {
     const unsigned int max_number_of_frames_for_gui = 2000; // without this, it would freeze for planetary videos
     for (unsigned int i = 0; i < checked_light_frames.size(); ++i) {
         if (i < max_number_of_frames_for_gui) {
-            m_available_light_frames.push_back(checked_light_frames[i].first);
+            m_available_light_frames.push_back(checked_light_frames[i].second.input_frame.to_gui_string());
         }
         m_indices_frames_to_align.push_back(i);
         m_frames_to_align.push_back(checked_light_frames[i].second.input_frame);
