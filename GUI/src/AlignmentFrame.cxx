@@ -17,13 +17,13 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handler, StackSettings *stack_settings, std::vector<AstroPhotoStacker::AlignmentPointBox> *alignment_box_vector_storage)
+AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandlerGUIInterface *filelist_handler_gui_interface, StackSettings *stack_settings, std::vector<AstroPhotoStacker::AlignmentPointBox> *alignment_box_vector_storage)
     :  wxFrame(parent, wxID_ANY, "Select alignment file")      {
 
     SetSize(m_window_size);
 
     m_stack_settings = stack_settings;
-    m_filelist_handler = filelist_handler;
+    m_filelist_handler_gui_interface = filelist_handler_gui_interface;
     m_alignment_box_vector_storage = alignment_box_vector_storage;
     m_main_sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -45,8 +45,8 @@ void AlignmentFrame::initialize_list_of_frames_to_align()   {
     m_frames_to_align.clear();
     m_available_light_frames.clear();
 
-    const std::vector<InputFrame>  &all_light_frames_addresses = m_filelist_handler->get_frames(FileTypes::LIGHT);
-    const std::vector<bool>        &light_frames_is_checked    = m_filelist_handler->get_frames_checked(FileTypes::LIGHT);
+    const std::vector<InputFrame>  &all_light_frames_addresses = m_filelist_handler_gui_interface->get_frames(FileTypes::LIGHT);
+    const std::vector<bool>        &light_frames_is_checked    = m_filelist_handler_gui_interface->get_frames_checked(FileTypes::LIGHT);
     const unsigned int max_number_of_frames_for_gui = 2000; // without this, it would freeze for planetary videos
     for (unsigned int i = 0; i < all_light_frames_addresses.size(); ++i) {
         if (light_frames_is_checked[i]) {
@@ -285,11 +285,11 @@ void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
             alignment_file_info.rotation = info.rotation;
             alignment_file_info.ranking = info.ranking;
             alignment_file_info.initialized = true;
-            m_filelist_handler->set_alignment_info(i_file, alignment_file_info);
+            m_filelist_handler_gui_interface->set_alignment_info(i_file, alignment_file_info);
 
             const std::vector<AstroPhotoStacker::LocalShift> &shifts = local_shifts[i_selected_file];
             if (shifts.size() > 0) {
-                m_filelist_handler->set_local_shifts(i_file, shifts);
+                m_filelist_handler_gui_interface->set_local_shifts(i_file, shifts);
             }
         }
         parent->update_files_to_stack_checkbox();

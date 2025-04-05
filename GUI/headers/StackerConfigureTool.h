@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/FilelistHandler.h"
+#include "../headers/FilelistHandlerGUIInterface.h"
 
 #include "../../headers/StackerBase.h"
 #include "../../headers/StackerFactory.h"
@@ -17,7 +17,7 @@
  * @param filelist_handler filelist handler
  * @return std::unique_ptr<AstroPhotoStacker::StackerBase> pointer to the stacker object
  */
-std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const AstroPhotoStacker::StackSettings& stack_settings, const FilelistHandler& filelist_handler);
+std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const AstroPhotoStacker::StackSettings& stack_settings, const FilelistHandlerGUIInterface& filelist_handler);
 
 /**
  * @brief Configure the stacker object with the given settings

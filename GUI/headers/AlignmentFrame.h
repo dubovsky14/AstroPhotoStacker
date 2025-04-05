@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/FilelistHandler.h"
+#include "../headers/FilelistHandlerGUIInterface.h"
 #include "../headers/MainFrame.h"
 #include "../headers/FloatingPointSlider.h"
 
@@ -25,10 +25,10 @@ class AlignmentFrame : public wxFrame  {
          * @brief Construct a new Alignment Frame object
          *
          * @param parent pointer to the parent frame (main frame)
-         * @param filelist_handler pointer to the filelist handler object
+         * @param filelist_handler_gio_interface pointer to the filelist handler GUI interface object
          * @param stack_settings pointer to the stack settings object
          */
-        AlignmentFrame(MyFrame *parent, FilelistHandler *filelist_handler, AstroPhotoStacker::StackSettings *stack_settings, std::vector<AstroPhotoStacker::AlignmentPointBox> *alignment_box_vector_storage = nullptr);
+        AlignmentFrame(MyFrame *parent, FilelistHandlerGUIInterface *filelist_handler_gio_interface, AstroPhotoStacker::StackSettings *stack_settings, std::vector<AstroPhotoStacker::AlignmentPointBox> *alignment_box_vector_storage = nullptr);
 
     private:
         void add_reference_file_selection_menu();
@@ -44,7 +44,7 @@ class AlignmentFrame : public wxFrame  {
         std::vector<wxString> m_alignment_methods = {"stars", "planetary", "planetary without rotation", "surface"};
 
         AstroPhotoStacker::StackSettings *m_stack_settings = nullptr;
-        FilelistHandler *m_filelist_handler = nullptr;
+        FilelistHandlerGUIInterface *m_filelist_handler_gui_interface = nullptr;
         std::vector<AstroPhotoStacker::AlignmentPointBox> *m_alignment_box_vector_storage = nullptr;
 
         wxBoxSizer *m_hidden_options_sizer = nullptr;

@@ -48,8 +48,8 @@ class MyFrame : public wxFrame  {
         void update_alignment_status();
         void update_files_to_stack_checkbox();
 
-        const FilelistHandler& get_filelist_handler() const {
-            return m_filelist_handler;
+        const FilelistHandlerGUIInterface& get_filelist_handler_gui_interface() const {
+            return m_filelist_handler_gui_interface;
         };
 
         const StackSettingsSaver *get_stack_settings() const {
