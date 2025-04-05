@@ -65,6 +65,13 @@ namespace AstroPhotoStacker {
                 return m_frame_number < other.m_frame_number;
             };
 
+            bool operator>(const InputFrame &other) const {
+                if (m_file_address != other.m_file_address) {
+                    return m_file_address > other.m_file_address;
+                }
+                return m_frame_number > other.m_frame_number;
+            };
+
             bool operator==(const InputFrame &other) const {
                 return m_file_address == other.m_file_address && m_frame_number == other.m_frame_number;
             };

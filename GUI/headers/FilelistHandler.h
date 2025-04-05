@@ -3,6 +3,7 @@
 #include "../../headers/LocalShiftsHandler.h"
 #include "../../headers/Metadata.h"
 #include "../../headers/InputFrame.h"
+#include "../headers/FileTypes.h"
 
 #include <string>
 #include <map>
@@ -12,32 +13,7 @@
 #include <functional>
 #include <set>
 
-/**
- * @brief Enum class for file (image) types
-*/
-enum class FileTypes    {
-    FLAT,
-    LIGHT,
-    DARK,
-    BIAS,
-    UNKNOWN
-};
 
-/**
- * @brief Convert FileTypes enum to string
- *
- * @param type FileTypes enum
- * @return std::string string representation of the FileTypes enum
-*/
-std::string to_string(FileTypes type);
-
-/**
- * @brief Convert string to FileTypes enum
- *
- * @param type string representation of the FileTypes enum
- * @return FileTypes FileTypes enum
-*/
-FileTypes string_to_filetype(const std::string& type);
 
 /**
  * @brief Struct for storing alignment and ranking information for a single file
@@ -57,6 +33,7 @@ struct FrameInfo {
     AlignmentFileInfo                       alignment_info;
     AstroPhotoStacker::Metadata             metadata;
     AstroPhotoStacker::InputFrame           input_frame;
+    FileTypes                               type;
     int                                     group_number;
     bool                                    is_checked = true;
 };
@@ -70,8 +47,8 @@ std::ostream& operator<<(std::ostream& os, const AlignmentFileInfo& alignment_in
  * @param vec pointer to the vector
  * @param indices pointer to the indices
 */
-template<typename T>
-void rearange_vector(std::vector<T> *vec, const unsigned int *indices) {
+template<typename T, typename IndexType>
+void rearange_vector(std::vector<T> *vec, const IndexType *indices) {
     std::vector<T> temp_vec;
     temp_vec.reserve(vec->size());
     for (unsigned int i = 0; i < vec->size(); i++) {
@@ -154,6 +131,14 @@ class FilelistHandler   {
         int get_number_of_checked_frames(FileTypes type) const;
 
         /**
+         * @brief Get the number of all frames of a given type
+         *
+         * @param type type of the frames
+         * @return int number of all frames
+        */
+        int get_number_of_all_frames(FileTypes type) const;
+
+        /**
          * @brief Get the number of all frames
          *
          * @return int number of all frames
@@ -212,6 +197,15 @@ class FilelistHandler   {
         void get_alignment_info_tabular_data(std::vector<std::vector<std::string>> *tabular_data, std::vector<std::string> *description) const;
 
         /**
+         * @brief Get the alignment info for a single frame
+         *
+         * @param group number of the group the frame belongs to
+         * @param input_frame input frame data
+         * @return const AlignmentFileInfo& alignment information for the frame, if frame does not exist, return empty AlignmentFileInfo
+        */
+        const AlignmentFileInfo &get_alignment_info(int group, const AstroPhotoStacker::InputFrame &input_frame) const;
+
+        /**
          * @brief Save alignment information to a text file
          *
          * @param output_address path to the output file
@@ -236,6 +230,15 @@ class FilelistHandler   {
         void keep_best_n_frames(unsigned int n);
 
         void set_local_shifts(const AstroPhotoStacker::InputFrame &input_frame, const std::vector<AstroPhotoStacker::LocalShift> &shifts);
+
+        void set_dummy_alignment_for_all_frames();
+
+        std::vector<int> get_group_numbers() const;
+
+    protected:
+        const std::map<int, std::map<FileTypes, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     &get_frames_list() const {
+            return m_frames_list;
+        }
 
     private:
         std::map<int, std::map<FileTypes, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     m_frames_list;

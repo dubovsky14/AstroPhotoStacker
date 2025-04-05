@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/FilelistHandler.h"
+#include "../headers/FilelistHandlerGUIInterface.h"
 #include "../headers/StackSettingsSaver.h"
 #include "../headers/ImagePreview.h"
 #include "../headers/RecentPathsHandler.h"
@@ -90,7 +90,7 @@ class MyFrame : public wxFrame  {
 
         void add_upper_middle_panel();
         void add_image_preview();
-        void update_image_preview_file(const std::string& file_address);
+        void update_image_preview_file(size_t frame_index);
         void update_image_preview_with_stacked_image();
         void update_image_preview();
 
@@ -159,7 +159,7 @@ class MyFrame : public wxFrame  {
         wxCheckListBox *m_files_to_stack_checkbox = nullptr;
 
 
-        FilelistHandler m_filelist_handler;
+        FilelistHandlerGUIInterface m_filelist_handler_gui_interface;
         std::unique_ptr<StackSettingsSaver>    m_stack_settings = nullptr;
         std::unique_ptr<AstroPhotoStacker::HotPixelIdentifier>  m_hot_pixel_identifier = nullptr;
         std::unique_ptr<AstroPhotoStacker::StackerBase>         m_stacker = nullptr;
