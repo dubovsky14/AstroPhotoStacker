@@ -224,6 +224,15 @@ void MyFrame::add_group_menu()   {
         }
     }, id);
 
+    id = unique_counter();
+    group_menu->Append(id, "What are groups?", "What are groups?");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        string message = "Groups allow a user to combine light frames taken in different conditions, ";
+        message += " where different calibration frames are used for different groups.";
+        wxMessageDialog dialog(this, message, "");
+        dialog.ShowModal();
+    }, id);
+
     m_menu_bar->Append(group_menu, "&Groups");
 };
 
@@ -328,36 +337,45 @@ void MyFrame::add_menu_bar()    {
 };
 
 void MyFrame::add_files_to_stack_checkbox()  {
-    wxPanel* headerPanel = new wxPanel(this, wxID_ANY);
+    wxPanel* header_panel = new wxPanel(this, wxID_ANY);
 
     // Create a sizer for the panel
-    wxBoxSizer* headerSizer = new wxBoxSizer(wxHORIZONTAL);
-    headerPanel->SetSizer(headerSizer);
-
-    // Create the static texts
-    wxStaticText* sortByNameText = new wxStaticText(headerPanel, wxID_ANY, "Sort by Name",wxDefaultPosition);
-    wxStaticText* sortByScoreText = new wxStaticText(headerPanel, wxID_ANY, "Sort by Score",wxDefaultPosition);
+    wxBoxSizer* header_sizer = new wxBoxSizer(wxHORIZONTAL);
+    header_panel->SetSizer(header_sizer);
 
     wxBitmap arrow_down_bitmap(s_gui_folder_path + "data/png/arrows/arrow_down_20x10.png", wxBITMAP_TYPE_PNG);
     wxBitmap arrow_up_bitmap(s_gui_folder_path + "data/png/arrows/arrow_up_20x10.png", wxBITMAP_TYPE_PNG);
-    wxSize arrow_size(40, 20);
-    wxBitmapButton* sortByNameArrowUpButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, arrow_size);
-    wxBitmapButton* sortByNameArrowDownButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, arrow_size);
-    wxBitmapButton* sortByScoreArrowUpButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, arrow_size);
-    wxBitmapButton* sortByScoreArrowDownButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, arrow_size);
 
-    // Create a vertical sizer for the name arrows
-    wxBoxSizer* nameArrowSizer = new wxBoxSizer(wxVERTICAL);
-    nameArrowSizer->Add(sortByNameArrowUpButton, 0, wxTOP | wxLEFT | wxRIGHT, 5);
-    nameArrowSizer->Add(sortByNameArrowDownButton, 0, wxBOTTOM | wxLEFT | wxRIGHT, 5);
+    auto add_sorting_option = [this, &arrow_down_bitmap, &arrow_up_bitmap, header_panel, header_sizer]
+        (const std::string &text, void (FilelistHandlerGUIInterface::*sorting_method)(bool)) {
+        wxStaticText* static_text = new wxStaticText(header_panel, wxID_ANY, text, wxDefaultPosition);
+        wxBitmapButton* arrow_up_button = new wxBitmapButton(header_panel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, wxSize(40, 20));
+        wxBitmapButton* arrow_down_button = new wxBitmapButton(header_panel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, wxSize(40, 20));
 
-    // Create a vertical sizer for the score arrows
-    wxBoxSizer* scoreArrowSizer = new wxBoxSizer(wxVERTICAL);
-    scoreArrowSizer->Add(sortByScoreArrowUpButton, 0, wxTOP | wxLEFT | wxRIGHT, 5);
-    scoreArrowSizer->Add(sortByScoreArrowDownButton, 0, wxBOTTOM | wxLEFT | wxRIGHT, 5);
+        // Create a vertical sizer for the arrows
+        wxBoxSizer* arrow_sizer = new wxBoxSizer(wxVERTICAL);
+        arrow_sizer->Add(arrow_up_button,   0, wxTOP    | wxLEFT | wxRIGHT, 5);
+        arrow_sizer->Add(arrow_down_button, 0, wxBOTTOM | wxLEFT | wxRIGHT, 5);
+
+        arrow_up_button->Bind(wxEVT_BUTTON, [this, sorting_method](wxCommandEvent&) {
+            (m_filelist_handler_gui_interface.*sorting_method)(true);
+            update_files_to_stack_checkbox();
+        });
+        arrow_down_button->Bind(wxEVT_BUTTON, [this, sorting_method](wxCommandEvent&) {
+            (m_filelist_handler_gui_interface.*sorting_method)(false);
+            update_files_to_stack_checkbox();
+        });
+
+        // Add the static texts and arrow sizers to the header sizer
+        header_sizer->Add(static_text, 0, wxTOP, 5);
+        header_sizer->Add(arrow_sizer, 0, wxTOP, 5);
+    };
+    add_sorting_option("Sort by Name",  &FilelistHandlerGUIInterface::sort_by_name);
+    add_sorting_option("Sort by Score", &FilelistHandlerGUIInterface::sort_by_ranking);
+    add_sorting_option("Sort by Group", &FilelistHandlerGUIInterface::sort_by_group);
 
     // button for keeping only best N files
-    wxButton *button_keep_best = new wxButton(headerPanel, wxID_ANY, "Keep best N", wxDefaultPosition, wxDefaultSize);
+    wxButton *button_keep_best = new wxButton(header_panel, wxID_ANY, "Keep best N", wxDefaultPosition, wxDefaultSize);
     button_keep_best->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         const int n_files = m_filelist_handler_gui_interface.get_number_of_all_frames();
         const wxString default_value = wxString::Format(wxT("%d"), n_files);
@@ -370,30 +388,7 @@ void MyFrame::add_files_to_stack_checkbox()  {
         }
     });
 
-    // Add the static texts and arrow sizers to the header sizer
-    headerSizer->Add(sortByNameText, 0, wxTOP, 5);
-    headerSizer->Add(nameArrowSizer, 0, wxTOP, 5);
-    headerSizer->Add(sortByScoreText, 0, wxTOP, 5);
-    headerSizer->Add(scoreArrowSizer, 0, wxTOP, 5);
-    headerSizer->Add(button_keep_best, 0, wxTOP, 5);
-
-    sortByScoreArrowUpButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-        this->m_filelist_handler_gui_interface.sort_by_ranking(true);
-        update_files_to_stack_checkbox();
-    });
-    sortByScoreArrowDownButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-        this->m_filelist_handler_gui_interface.sort_by_ranking(false);
-        update_files_to_stack_checkbox();
-    });
-
-    sortByNameArrowUpButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-        this->m_filelist_handler_gui_interface.sort_by_name(true);
-        update_files_to_stack_checkbox();
-    });
-    sortByNameArrowDownButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-        this->m_filelist_handler_gui_interface.sort_by_name(false);
-        update_files_to_stack_checkbox();
-    });
+    header_sizer->Add(button_keep_best, 0, wxTOP, 5);
 
 
     wxArrayString files;
@@ -401,7 +396,7 @@ void MyFrame::add_files_to_stack_checkbox()  {
 
     // Create a new sizer for the header and the checkbox list
     wxBoxSizer* checkboxSizer = new wxBoxSizer(wxVERTICAL);
-    checkboxSizer->Add(headerPanel, 0, wxEXPAND | wxALL, 5);
+    checkboxSizer->Add(header_panel, 0, wxEXPAND | wxALL, 5);
     checkboxSizer->Add(m_files_to_stack_checkbox, 1, wxEXPAND | wxALL, 5);
 
     // Add the new sizer to the main frame's sizer
