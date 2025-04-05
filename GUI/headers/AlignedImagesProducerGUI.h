@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/FilelistHandler.h"
+#include "../headers/FilelistHandlerGUIInterface.h"
 #include "../headers/StackSettings.h"
 #include "../headers/ImagePreviewCropTool.h"
 #include "../headers/CombinedColorStrecherTool.h"
@@ -64,7 +64,11 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
         void add_video_settings();
 
-        void add_group_to_stack(const std::vector<std::size_t> &group)    const;
+        void add_group_to_stack(const std::vector<size_t> &group,
+                                const std::vector<FrameInfo> &light_frames,
+                                const std::map<int, std::vector<std::shared_ptr<const AstroPhotoStacker::CalibrationFrameBase> > > &calibration_handlers_map)   const;
+
+        std::map<int, std::vector<std::shared_ptr<const AstroPhotoStacker::CalibrationFrameBase> > > get_calibration_frame_handlers_map() const;
 
         bool m_add_datetime = false;
         bool m_apply_color_stretcher = false;

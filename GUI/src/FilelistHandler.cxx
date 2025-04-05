@@ -379,6 +379,33 @@ std::vector<int> FilelistHandler::get_group_numbers() const {
     return group_numbers;
 };
 
+std::vector<FrameInfo> FilelistHandler::get_checked_frames_of_type(FileTypes type) const {
+    std::vector<FrameInfo> frames;
+    for (const auto &group : m_frames_list)   {
+        if (group.second.find(type) == group.second.end())   {
+            continue;
+        }
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames_map = group.second.at(type);
+        for (const auto &frame : frames_map)   {
+            if (frame.second.is_checked)   {
+                frames.push_back(frame.second);
+            }
+        }
+    }
+    return frames;
+};
+
+void FilelistHandler::remove_all_frames_of_type_and_group(FileTypes type, int group)    {
+    if (m_frames_list.find(group) == m_frames_list.end())   {
+        return;
+    }
+    if (m_frames_list[group].find(type) == m_frames_list[group].end())   {
+        return;
+    }
+    m_frames_list[group][type].clear();
+};
+
+
 void FilelistHandler::add_empty_group(int group_number) {
     if (m_frames_list.find(group_number) == m_frames_list.end())   {
         m_frames_list[group_number] = std::map<FileTypes, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>();

@@ -27,23 +27,31 @@ void AlignedImagesProducer::limit_output_image_size(int top_left_corner_x, int t
     m_height = height;
 };
 
-void AlignedImagesProducer::add_image(const InputFrame &input_frame, const FileAlignmentInformation &alignment_info) {
+void AlignedImagesProducer::add_image(  const InputFrame &input_frame,
+                                        const FileAlignmentInformation &alignment_info,
+                                        const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers) {
     m_frames_to_align.push_back(input_frame);
     m_alignment_info.push_back(alignment_info);
+    m_calibration_frame_handlers.push_back(calibration_frame_handlers);
 };
 
 
-void AlignedImagesProducer::add_image_group_to_stack(const std::vector<InputFrame> &input_frames, const std::vector<FileAlignmentInformation> &alignment_info, const StackSettings &stack_settings) {
+void AlignedImagesProducer::add_image_group_to_stack(   const std::vector<InputFrame> &input_frames,
+                                                        const std::vector<FileAlignmentInformation> &alignment_info,
+                                                        const StackSettings &stack_settings,
+                                                        const std::vector<std::vector<std::shared_ptr<const CalibrationFrameBase> > > *calibration_frame_handlers) {
     GroupToStack group_to_stack;
     group_to_stack.input_frames     = input_frames;
     group_to_stack.alignment_info   = alignment_info;
     group_to_stack.stack_settings   = stack_settings;
+    if (calibration_frame_handlers != nullptr) {
+        group_to_stack.calibration_frame_handlers = *calibration_frame_handlers;
+    }
+    else {
+        group_to_stack.calibration_frame_handlers.resize(input_frames.size());
+    }
+
     m_groups_to_stack.push_back(group_to_stack);
-};
-
-
-void AlignedImagesProducer::add_calibration_frame_handler(const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler) {
-    m_calibration_frame_handlers.push_back(calibration_frame_handler);
 };
 
 void AlignedImagesProducer::set_datetime_position(float x_frac, float y_frac)   {
@@ -67,8 +75,9 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
     for (int i_file = 0; i_file < n_frames; i_file++) {
         const string output_file_address = output_folder_address + "/" + get_output_file_name(m_frames_to_align[i_file]);
         const FileAlignmentInformation alignment_info = m_alignment_info[i_file];
-        auto submit_alignment = [this, i_file, output_file_address, alignment_info]() {
-            produce_aligned_image(m_frames_to_align[i_file], output_file_address, alignment_info);
+        const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers = m_calibration_frame_handlers[i_file];
+        auto submit_alignment = [this, i_file, output_file_address, alignment_info, &calibration_frame_handlers]() {
+            produce_aligned_image(m_frames_to_align[i_file], output_file_address, alignment_info, calibration_frame_handlers);
         };
         pool.submit(submit_alignment);
     }
@@ -139,7 +148,8 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
     for (unsigned int i_frame = 0; i_frame < group_to_stack.input_frames.size(); i_frame++) {
         const InputFrame &input_frame                   = group_to_stack.input_frames[i_frame];
         const FileAlignmentInformation &alignment_info  = group_to_stack.alignment_info[i_frame];
-        stacker->add_photo(input_frame);
+        const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers = group_to_stack.calibration_frame_handlers[i_frame];
+        stacker->add_photo(input_frame, calibration_frame_handlers);
         stacker->add_alignment_info(    input_frame,
                                         alignment_info.shift_x,
                                         alignment_info.shift_y,
@@ -186,12 +196,16 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
     m_n_tasks_processed++;
 };
 
-void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_frame,  const std::string &output_file_address, const FileAlignmentInformation &alignment_info)  {
+void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_frame,
+                                                    const std::string &output_file_address,
+                                                    const FileAlignmentInformation &alignment_info,
+                                                    const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers)  {
 
     CalibratedPhotoHandler photo_handler(input_frame, true);
     photo_handler.define_alignment(alignment_info.shift_x, alignment_info.shift_y, alignment_info.rotation_center_x, alignment_info.rotation_center_y, alignment_info.rotation);
     photo_handler.define_local_shifts(alignment_info.local_shifts_handler);
-    for (const auto &calibration_frame_handler : m_calibration_frame_handlers) {
+
+    for (const auto &calibration_frame_handler : calibration_frame_handlers) {
         photo_handler.register_calibration_frame(calibration_frame_handler);
     }
     if (m_hot_pixel_identifier) {

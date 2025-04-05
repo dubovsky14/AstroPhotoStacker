@@ -40,8 +40,6 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
 
         void sort_by_group(bool ascending = true);
 
-        void set_frame_checked(int index, bool checked);
-
         std::string get_gui_string(const FrameID &frame_info);
 
         FrameID get_frame_by_index(size_t index) const {
@@ -67,7 +65,7 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
 
         void set_frame_checked(size_t index, bool checked);
 
-       FilelistHandlerGUIInterface get_filelist_with_checked_frames() const;
+        FilelistHandlerGUIInterface get_filelist_with_checked_frames() const;
 
     private:
         void update_shown_frames();

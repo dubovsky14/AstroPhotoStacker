@@ -195,6 +195,7 @@ class MyFrame : public wxFrame  {
 
         std::vector<AstroPhotoStacker::AlignmentPointBox> m_alignment_box_vector_storage;
 
+        int m_current_group = 0;
 };
 
 inline int unique_counter()    {

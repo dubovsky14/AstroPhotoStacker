@@ -353,12 +353,11 @@ void MyFrame::add_files_to_stack_checkbox()  {
 
     m_files_to_stack_checkbox->Bind(wxEVT_LISTBOX, [this](wxCommandEvent &event){
         int index = event.GetSelection();
-        const string text = m_files_to_stack_checkbox->GetString(index).ToStdString();
         const bool update_needed = update_checked_files_in_filelist();
 
         // Do not update the preview if the files was just checked/unchecked - it is slow
         if (!update_needed) {
-            update_image_preview_file(text);
+            update_image_preview_file(index);
         }
     });
 };
@@ -431,7 +430,6 @@ void MyFrame::add_button_bar()   {
     button_align_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         // pop-up window with wxChoice of added light frames
         update_checked_files_in_filelist();
-        m_filelist_handler_gui_interface
         if (m_filelist_handler_gui_interface.get_number_of_checked_frames(FileTypes::LIGHT) == 0) {
             wxMessageDialog *dialog = new wxMessageDialog(this, "No light frames have been checked. Please check them first!", "Frames alignment warning.");
             dialog->ShowModal();
@@ -463,7 +461,7 @@ void MyFrame::add_button_bar()   {
         const vector<int> group_indices = m_filelist_handler_gui_interface.get_group_numbers();
         for (int group_index : group_indices) {
             for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
-                const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames_map = m_filelist_handler_gui_interface.get_frames(group_index, type);
+                const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames_map = m_filelist_handler_gui_interface.get_frames(type, group_index);
                 for (const auto &frame : frames_map)   {
                     if (frame.second.is_checked)   {
                         frames.push_back(frame.first);
@@ -1034,7 +1032,7 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
         for (auto path : paths) {
             const AstroPhotoStacker::Metadata metadata = metadata_manager.get_metadata(InputFrame(path.ToStdString()));
             const string str_path = path.ToStdString();
-            m_filelist_handler_gui_interface.add_file(path.ToStdString(), type, true, AlignmentFileInfo(), metadata);
+            m_filelist_handler_gui_interface.add_file(path.ToStdString(), type, m_current_group, true, AlignmentFileInfo(), metadata);
             m_recent_paths_handler->set_recent_file_path_from_file(type, path.ToStdString());
         }
     }
@@ -1123,55 +1121,59 @@ void MyFrame::update_color_channels_mean_and_median_values_text()   {
 };
 
 void MyFrame::stack_calibration_frames() {
-    for (FileTypes type : {FileTypes::BIAS, FileTypes::DARK, FileTypes::FLAT}) {
-        // get vector of checked files
-        const vector<InputFrame> &all_frames        = m_filelist_handler_gui_interface.get_frames(type);
-        const vector<bool>   &frames_checked_flags  = m_filelist_handler_gui_interface.get_frames_checked(type);
-        vector<InputFrame> frames_to_stack;
-        for (unsigned int i_file = 0; i_file < all_frames.size(); ++i_file) {
-            if (frames_checked_flags[i_file]) {
-                frames_to_stack.push_back(all_frames[i_file]);
+    const vector<int> calibration_group_numbers = m_filelist_handler_gui_interface.get_group_numbers();
+
+    for (int group_number : calibration_group_numbers) {
+        for (FileTypes type : {FileTypes::BIAS, FileTypes::DARK, FileTypes::FLAT}) {
+            // get vector of checked files
+
+            const std::map<InputFrame, FrameInfo> &calibrationf_frame_map = m_filelist_handler_gui_interface.get_frames(type, group_number);
+            vector<InputFrame> frames_to_stack;
+            for (const auto &frame : calibrationf_frame_map) {
+                if (frame.second.is_checked) {
+                    frames_to_stack.push_back(frame.first);
+                }
             }
+
+            // nothing to stack
+            if (frames_to_stack.size() < 2) {
+                continue;
+            }
+
+            // add frames to new filelist handler
+            FilelistHandler calibration_frames_handler;
+            for (const auto &frame : frames_to_stack) {
+                // LIGHT is not a bug - we do not use frames as correction here, we are stacking them
+                calibration_frames_handler.add_frame(frame, FileTypes::LIGHT, 0, true);
+            }
+
+            // create a separate stacker
+            StackSettings calibration_frames_settings = *m_stack_settings;
+            calibration_frames_settings.set_use_color_interpolation(false);
+            std::unique_ptr<AstroPhotoStacker::StackerBase> calibration_stacker = get_configured_stacker(calibration_frames_settings, calibration_frames_handler);
+
+            const string file_type_name = to_string(type);
+            const int tasks_total = calibration_stacker->get_tasks_total();
+            const std::atomic<int> &tasks_processed = calibration_stacker->get_tasks_processed();
+
+            run_task_with_progress_dialog(  "File stacking",
+                                    "Stacking " + file_type_name + " frames:",
+                                    "",
+                                    tasks_processed,
+                                    tasks_total,
+                                    [this, &calibration_stacker](){
+                                        calibration_stacker->calculate_stacked_photo();
+                                    },
+                                    "Calculating final "  + file_type_name + " frame ...");
+
+            const std::string last_frame_name = frames_to_stack.back().get_file_address();
+            const string master_frame_name = last_frame_name.substr(0, last_frame_name.find_last_of('.')) + "_master" + file_type_name + ".tif";
+            calibration_stacker->save_stacked_photo(master_frame_name, CV_16U);
+
+            // remove original calibration frames from filelist handler
+            m_filelist_handler_gui_interface.remove_all_frames_of_type_and_group(type, group_number);
+            m_filelist_handler_gui_interface.add_file(master_frame_name, type, group_number, true);
+            update_files_to_stack_checkbox();
         }
-
-        // nothing to stack
-        if (frames_to_stack.size() < 2) {
-            continue;
-        }
-
-        // add frames to new filelist handler
-        FilelistHandler calibration_frames_handler;
-        for (const auto &frame : frames_to_stack) {
-            // LIGHT is not a bug - we do not use frames as correction here, we are stacking them
-            calibration_frames_handler.add_frame(frame, FileTypes::LIGHT, true);
-        }
-
-        // create a separate stacker
-        StackSettings calibration_frames_settings = *m_stack_settings;
-        calibration_frames_settings.set_use_color_interpolation(false);
-        std::unique_ptr<AstroPhotoStacker::StackerBase> calibration_stacker = get_configured_stacker(calibration_frames_settings, calibration_frames_handler);
-
-        const string file_type_name = to_string(type);
-        const int tasks_total = calibration_stacker->get_tasks_total();
-        const std::atomic<int> &tasks_processed = calibration_stacker->get_tasks_processed();
-
-        run_task_with_progress_dialog(  "File stacking",
-                                "Stacking " + file_type_name + " frames:",
-                                "",
-                                tasks_processed,
-                                tasks_total,
-                                [this, &calibration_stacker](){
-                                    calibration_stacker->calculate_stacked_photo();
-                                },
-                                "Calculating final "  + file_type_name + " frame ...");
-
-        const std::string last_frame_name = frames_to_stack.back().get_file_address();
-        const string master_frame_name = last_frame_name.substr(0, last_frame_name.find_last_of('.')) + "_master" + file_type_name + ".tif";
-        calibration_stacker->save_stacked_photo(master_frame_name, CV_16U);
-
-        // remove original calibration frames from filelist handler
-        m_filelist_handler_gui_interface.remove_all_frames_of_selected_type(type);
-        m_filelist_handler_gui_interface.add_file(master_frame_name, type, true);
-        update_files_to_stack_checkbox();
     }
 };
