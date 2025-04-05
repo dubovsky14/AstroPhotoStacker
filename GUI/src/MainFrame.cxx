@@ -172,6 +172,61 @@ void MyFrame::add_alignment_menu()  {
     m_menu_bar->Append(alignment_menu, "&Alignment");
 };
 
+void MyFrame::add_group_menu()   {
+    wxMenu *group_menu = new wxMenu;
+
+    int id = unique_counter();
+    group_menu->Append(id, "Show current group", "Show current group");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const std::string current_group_string = "Current group number: " + std::to_string(m_current_group);
+        wxMessageDialog dialog(this, current_group_string, "Current group");
+        dialog.ShowModal();
+    }, id);
+
+    id = unique_counter();
+    group_menu->Append(id, "Create new group", "Create new group");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        m_current_group++;
+    }, id);
+
+    id = unique_counter();
+    group_menu->Append(id, "Change current group", "Change current group");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const vector<int> group_numbers = m_filelist_handler_gui_interface.get_group_numbers();
+        wxArrayString group_names;
+        for (const int group_number : group_numbers) {
+            group_names.Add(std::to_string(group_number));
+        }
+        wxSingleChoiceDialog dialog(this, "Select group number", "Group number", group_names);
+        if (dialog.ShowModal() == wxID_OK) {
+            const int selection = dialog.GetSelection();
+            if (selection != -1) {
+                m_current_group = group_numbers[selection];
+            }
+        }
+    }, id);
+
+    id = unique_counter();
+    group_menu->Append(id, "Remove group", "Remove group");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const vector<int> group_numbers = m_filelist_handler_gui_interface.get_group_numbers();
+        wxArrayString group_names;
+        for (const int group_number : group_numbers) {
+            group_names.Add(std::to_string(group_number));
+        }
+        wxSingleChoiceDialog dialog(this, "Select group to delete", "Group number", group_names);
+        if (dialog.ShowModal() == wxID_OK) {
+            const int selection = dialog.GetSelection();
+            if (selection != -1) {
+                m_filelist_handler_gui_interface.remove_group(group_numbers[selection]);
+            }
+            update_files_to_stack_checkbox();
+        }
+    }, id);
+
+    m_menu_bar->Append(group_menu, "&Groups");
+};
+
 void MyFrame::add_hot_pixel_menu()  {
     wxMenu *hot_pixel_menu = new wxMenu;
 
@@ -264,6 +319,7 @@ void MyFrame::add_menu_bar()    {
 
     add_file_menu();
     add_alignment_menu();
+    add_group_menu();
     add_hot_pixel_menu();
     add_aligned_images_producer_menu();
     add_postprocessing_menu();

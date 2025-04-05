@@ -406,6 +406,13 @@ void FilelistHandler::remove_all_frames_of_type_and_group(FileTypes type, int gr
     m_frames_list[group][type].clear();
 };
 
+void FilelistHandler::remove_group(int group_number)    {
+    if (m_frames_list.find(group_number) == m_frames_list.end())   {
+        return;
+    }
+    m_frames_list.erase(group_number);
+};
+
 
 void FilelistHandler::add_empty_group(int group_number) {
     if (m_frames_list.find(group_number) == m_frames_list.end())   {

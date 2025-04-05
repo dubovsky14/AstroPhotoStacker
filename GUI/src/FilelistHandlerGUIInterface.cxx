@@ -111,6 +111,10 @@ void FilelistHandlerGUIInterface::update_shown_frames()      {
 void FilelistHandlerGUIInterface::sort_by_name_internal()   {
     const bool ascending = m_sort_ascending;
     const auto lambda = [ascending](const std::pair<std::string,FrameID> &a, const std::pair<std::string,FrameID> &b) {
+        if (a.second.type != b.second.type) {
+            return a.second.type < b.second.type;
+        }
+
         if (ascending) {
             return a.second.input_frame < b.second.input_frame;
         } else {

@@ -6,23 +6,12 @@
  * @brief Enum class for file (image) types
 */
 enum class FileTypes    {
-    FLAT,
     LIGHT,
+    FLAT,
     DARK,
     BIAS,
     UNKNOWN
 };
-
-int file_type_to_index(FileTypes type);
-
-//bool operator<(const FileTypes &a, const FileTypes &b);
-
-//bool operator>(const FileTypes &a, const FileTypes &b);
-
-//bool operator<=(const FileTypes &a, const FileTypes &b);
-
-//bool operator>=(const FileTypes &a, const FileTypes &b);
-
 
 /**
  * @brief Convert FileTypes enum to string

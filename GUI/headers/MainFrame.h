@@ -69,6 +69,7 @@ class MyFrame : public wxFrame  {
 
         void add_file_menu();
         void add_alignment_menu();
+        void add_group_menu();
         void add_hot_pixel_menu();
         void add_aligned_images_producer_menu();
         void add_postprocessing_menu();

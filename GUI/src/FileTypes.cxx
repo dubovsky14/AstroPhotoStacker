@@ -1,31 +1,5 @@
 #include "../headers/FileTypes.h"
 
-int file_type_to_index(FileTypes type)  {
-    switch (type) {
-        case FileTypes::LIGHT: return 0;
-        case FileTypes::FLAT:  return 1;
-        case FileTypes::DARK:  return 2;
-        case FileTypes::BIAS:  return 3;
-        default: return -1;
-    }
-};
-
-//bool operator<(const FileTypes &a, const FileTypes &b) {
-//    return file_type_to_index(a) < file_type_to_index(b);
-//};
-//
-//bool operator>(const FileTypes &a, const FileTypes &b) {
-//    return file_type_to_index(a) > file_type_to_index(b);
-//};
-//
-//bool operator<=(const FileTypes &a, const FileTypes &b) {
-//    return file_type_to_index(a) <= file_type_to_index(b);
-//};
-//
-//bool operator>=(const FileTypes &a, const FileTypes &b) {
-//    return file_type_to_index(a) >= file_type_to_index(b);
-//};
-
 std::string to_string(FileTypes type)   {
     switch (type)   {
         case FileTypes::FLAT:

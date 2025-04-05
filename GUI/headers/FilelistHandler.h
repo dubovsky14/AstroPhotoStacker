@@ -239,6 +239,8 @@ class FilelistHandler   {
 
         void remove_all_frames_of_type_and_group(FileTypes type, int group);
 
+        void remove_group(int group_number);
+
     protected:
         const std::map<int, std::map<FileTypes, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     &get_frames_list() const {
             return m_frames_list;
