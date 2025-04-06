@@ -450,7 +450,7 @@ void FilelistHandler::load_filelist_from_file(const std::string &input_address) 
     std::string line;
     while (std::getline(input_file, line))   {
         vector<string> elements = split_string(line, " | ");
-        if (elements.size() < 5)   {
+        if (elements.size() != 5)   {
             continue;
         }
         const std::string file_address = elements[0];
@@ -459,7 +459,8 @@ void FilelistHandler::load_filelist_from_file(const std::string &input_address) 
         const int group_number         = std::stoi(elements[3]);
         const bool is_checked          = static_cast<bool>(std::stoi(elements[4]));
 
-        if (!std::filesystem::exists(file_address))   continue;
+        if (!std::filesystem::exists(file_address))     continue;
+        if (type == FrameType::UNKNOWN)                 continue;
 
         const InputFrame input_frame(file_address, frame_number);
         add_frame(input_frame, type, group_number, is_checked);
