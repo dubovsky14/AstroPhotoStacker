@@ -1,14 +1,42 @@
 **How to install dependencies and compile Graphical User Interface**
 
-The GUI is based on ```wxwidgets``` library, so in order to use the framework you will have to install it first. The easiest way is to install it using pip:
+The GUI is based on ```wxwidgets``` library, so in order to use the framework you will have to install it first.
+
+Installing wxwidgets
+----------------------
+
+Installing wxwidgets is a bit tricky, but maybe this set of commands could work. If not, see the next chapter.
+
+Firstly go to a folder where you want to download and compile wxwidgets, then do:
+
 
 ```
-pip3 install wxwidgets
+sudo apt install libgtk-3-dev
+wget https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.7/wxWidgets-3.2.7.tar.bz2
+tar -xvzf wxWidgets-3.2.7.tar.bz2
+cd wxWidgets-3.2.7/
+mkdir gtk-build
+cd gtk-build
+../configure
+make -j3
+sudo make install
+sudo ldconfig
 ```
+
+If the instruction above did not work, follow the guide in one of the links bellow.
+
+https://wiki.wxwidgets.org/Compiling_and_getting_started
+
+https://docs.codelite.org/wxWidgets/repo320/#ubuntu-and-debian
+
+
+
+Compiling the GUI itself:
+-------------------------
 
 The GUI depends, of course, also on the rest of this package, so if you have not installed its dependencies and compiled it yet, please do so before compiling the GUI part.
 
-In order to compile the GUI part:
+In order to compile the GUI part go to ```GUI``` folder and then:
 
 ```
 mkdir bin
@@ -20,7 +48,7 @@ cmake ../.
 make # alternatively "make -j" to compile on all CPUs
 ```
 
-This will create an executable ```AstroPhotoStackerGUI```
+This will create an executable ```AstroPhotoStackerGUI```, you can then excute it (```./AstroPhotoStackerGUI```).
 
 **How to use GUI**
 

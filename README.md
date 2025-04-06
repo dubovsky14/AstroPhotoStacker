@@ -45,7 +45,7 @@ How to checkout and compile the code (on Linux):
 --------------------------------------
 
 ```
-git clone git@github.com:dubovsky14/AstroPhotoStacker.git
+git clone https://github.com/dubovsky14/AstroPhotoStacker.git
 
 cd AstroPhotoStacker
 
