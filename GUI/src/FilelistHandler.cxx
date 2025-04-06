@@ -22,7 +22,7 @@ std::ostream& operator<<(std::ostream& os, const AlignmentFileInfo& alignment_in
     return os;
 }
 
-const std::vector<FileTypes>  FilelistHandler::s_file_types_ordering = {FileTypes::LIGHT, FileTypes::FLAT, FileTypes::DARK, FileTypes::BIAS, FileTypes::UNKNOWN};
+const std::vector<FrameType>  FilelistHandler::s_file_types_ordering = {FrameType::LIGHT, FrameType::FLAT, FrameType::DARK, FrameType::BIAS, FrameType::UNKNOWN};
 
 FilelistHandler FilelistHandler::get_filelist_with_checked_frames() const {
     FilelistHandler filelist_with_checked_files;
@@ -40,7 +40,7 @@ FilelistHandler FilelistHandler::get_filelist_with_checked_frames() const {
     return filelist_with_checked_files;
 };
 
-void FilelistHandler::add_frame(const InputFrame &input_frame, FileTypes type, int group, bool checked, const AlignmentFileInfo& alignment_info, const Metadata &metadata) {
+void FilelistHandler::add_frame(const InputFrame &input_frame, FrameType type, int group, bool checked, const AlignmentFileInfo& alignment_info, const Metadata &metadata) {
     if (m_frames_list.find(group) == m_frames_list.end())   {
         add_empty_group(group);
     }
@@ -57,7 +57,7 @@ void FilelistHandler::add_frame(const InputFrame &input_frame, FileTypes type, i
     frames[input_frame] = frame_info;
 };
 
-void FilelistHandler::add_file(const std::string &file, FileTypes type, int group, bool checked, const AlignmentFileInfo& alignment_info, const AstroPhotoStacker::Metadata &metadata)    {
+void FilelistHandler::add_file(const std::string &file, FrameType type, int group, bool checked, const AlignmentFileInfo& alignment_info, const AstroPhotoStacker::Metadata &metadata)    {
     if (is_valid_video_file(file))   {
         const std::vector<InputFrame> video_frames = get_video_frames(file);
         for (const InputFrame &video_frame : video_frames)   {
@@ -69,7 +69,7 @@ void FilelistHandler::add_file(const std::string &file, FileTypes type, int grou
     }
 };
 
-void FilelistHandler::remove_frame(const InputFrame &input_frame, int group, FileTypes type)  {
+void FilelistHandler::remove_frame(const InputFrame &input_frame, int group, FrameType type)  {
     if (m_frames_list.find(group) == m_frames_list.end())   {
         return;
     }
@@ -80,10 +80,10 @@ void FilelistHandler::remove_frame(const InputFrame &input_frame, int group, Fil
     }
 };
 
-void FilelistHandler::keep_only_frames_satisfying_condition(const std::function<bool(FileTypes, int, const FrameInfo&)> &keep_condition)   {
-    std::map<int, std::map<FileTypes, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>> new_map;
+void FilelistHandler::keep_only_frames_satisfying_condition(const std::function<bool(FrameType, int, const FrameInfo&)> &keep_condition)   {
+    std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>> new_map;
     for (auto &group : m_frames_list)   {
-        new_map[group.first] = std::map<FileTypes, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>();
+        new_map[group.first] = std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>();
         for (auto &type : group.second)   {
             new_map[group.first][type.first] = std::map<AstroPhotoStacker::InputFrame,FrameInfo>();
             const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = type.second;
@@ -97,7 +97,7 @@ void FilelistHandler::keep_only_frames_satisfying_condition(const std::function<
 };
 
 
-const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &FilelistHandler::get_frames(FileTypes type, int group)    const  {
+const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &FilelistHandler::get_frames(FrameType type, int group)    const  {
     if (m_frames_list.find(group) == m_frames_list.end())   {
         throw std::runtime_error("FilelistHandler::get_frames: group not found");
     }
@@ -107,7 +107,7 @@ const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &FilelistHandler::get_fr
     return m_frames_list.at(group).at(type);
 };
 
-int FilelistHandler::get_number_of_checked_frames(FileTypes type) const  {
+int FilelistHandler::get_number_of_checked_frames(FrameType type) const  {
     int n_checked_frames = 0;
     for (const auto &group : m_frames_list)   {
         if (group.second.find(type) == group.second.end())   {
@@ -124,7 +124,7 @@ int FilelistHandler::get_number_of_checked_frames(FileTypes type) const  {
 };
 
 
-int FilelistHandler::get_number_of_all_frames(FileTypes type) const  {
+int FilelistHandler::get_number_of_all_frames(FrameType type) const  {
     int n_files = 0;
     for (const auto &group : m_frames_list)   {
         if (group.second.find(type) == group.second.end())   {
@@ -147,7 +147,7 @@ int FilelistHandler::get_number_of_all_frames() const    {
     return n_files;
 };
 
-bool FilelistHandler::frame_is_checked(int group, const AstroPhotoStacker::InputFrame &input_frame, FileTypes type) const {
+bool FilelistHandler::frame_is_checked(int group, const AstroPhotoStacker::InputFrame &input_frame, FrameType type) const {
     if (m_frames_list.find(group) == m_frames_list.end())   {
         return false;
     }
@@ -161,7 +161,7 @@ bool FilelistHandler::frame_is_checked(int group, const AstroPhotoStacker::Input
     return frames.at(input_frame).is_checked;
 };
 
-void FilelistHandler::set_frame_checked(int group, const AstroPhotoStacker::InputFrame &input_frame, FileTypes type, bool checked) {
+void FilelistHandler::set_frame_checked(int group, const AstroPhotoStacker::InputFrame &input_frame, FrameType type, bool checked) {
     if (m_frames_list.find(group) == m_frames_list.end())   {
         return;
     }
@@ -189,7 +189,7 @@ void FilelistHandler::set_checked_status_for_all_frames(bool checked)   {
 void FilelistHandler::set_alignment_info(const InputFrame &input_frame, const AlignmentFileInfo& alignment_info)    {
     // the frame might be in multiple groups
     for (auto &group : m_frames_list)   {
-        std::map<AstroPhotoStacker::InputFrame, FrameInfo> &light_frames = group.second[FileTypes::LIGHT];
+        std::map<AstroPhotoStacker::InputFrame, FrameInfo> &light_frames = group.second[FrameType::LIGHT];
         if (light_frames.find(input_frame) == light_frames.end())   {
             continue;
         }
@@ -199,11 +199,11 @@ void FilelistHandler::set_alignment_info(const InputFrame &input_frame, const Al
 
 bool FilelistHandler::all_checked_frames_are_aligned() const {
     for (const auto &group : m_frames_list)   {
-        if (group.second.find(FileTypes::LIGHT) == group.second.end())   {
+        if (group.second.find(FrameType::LIGHT) == group.second.end())   {
             continue;
         }
 
-        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &light_frames = group.second.at(FileTypes::LIGHT);
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &light_frames = group.second.at(FrameType::LIGHT);
         for (const auto &frame : light_frames)   {
             if (frame.second.is_checked && !frame.second.alignment_info.initialized)   {
                 return false;
@@ -226,11 +226,11 @@ void FilelistHandler::get_alignment_info_tabular_data(std::vector<std::vector<st
     tabular_data->clear();
 
     for (const auto &group : m_frames_list)   {
-        if (group.second.find(FileTypes::LIGHT) == group.second.end())   {
+        if (group.second.find(FrameType::LIGHT) == group.second.end())   {
             continue;
         }
 
-        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &light_frames = group.second.at(FileTypes::LIGHT);
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &light_frames = group.second.at(FrameType::LIGHT);
 
         for (const auto &frame : light_frames)   {
             const AlignmentFileInfo &info = frame.second.alignment_info;
@@ -246,23 +246,23 @@ const AlignmentFileInfo& FilelistHandler::get_alignment_info(int group, const As
     if (m_frames_list.find(group) == m_frames_list.end())   {
         throw std::runtime_error("FilelistHandler::get_alignment_info: group not found");
     }
-    if (m_frames_list.at(group).find(FileTypes::LIGHT) == m_frames_list.at(group).end())   {
+    if (m_frames_list.at(group).find(FrameType::LIGHT) == m_frames_list.at(group).end())   {
         throw std::runtime_error("FilelistHandler::get_alignment_info: frame type not found");
     }
-    if (m_frames_list.at(group).at(FileTypes::LIGHT).find(input_frame) == m_frames_list.at(group).at(FileTypes::LIGHT).end())   {
+    if (m_frames_list.at(group).at(FrameType::LIGHT).find(input_frame) == m_frames_list.at(group).at(FrameType::LIGHT).end())   {
         throw std::runtime_error("FilelistHandler::get_alignment_info: frame not found");
     }
-    return m_frames_list.at(group).at(FileTypes::LIGHT).at(input_frame).alignment_info;
+    return m_frames_list.at(group).at(FrameType::LIGHT).at(input_frame).alignment_info;
 };
 
 void FilelistHandler::save_alignment_to_file(const std::string &output_address)  {
     std::ofstream output_file(output_address);
     for (const auto &group : m_frames_list)   {
-        if (group.second.find(FileTypes::LIGHT) == group.second.end())   {
+        if (group.second.find(FrameType::LIGHT) == group.second.end())   {
             continue;
         }
 
-        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &light_frames = group.second.at(FileTypes::LIGHT);
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &light_frames = group.second.at(FrameType::LIGHT);
 
         for (const auto &frame : light_frames)   {
             const AlignmentFileInfo &info = frame.second.alignment_info;
@@ -311,7 +311,7 @@ void FilelistHandler::load_alignment_from_file(const std::string &input_address)
     }
 };
 
-void FilelistHandler::remove_all_frames_of_selected_type(FileTypes type)  {
+void FilelistHandler::remove_all_frames_of_selected_type(FrameType type)  {
     for (auto &group : m_frames_list)   {
         if (group.second.find(type) == group.second.end())   {
             continue;
@@ -323,10 +323,10 @@ void FilelistHandler::remove_all_frames_of_selected_type(FileTypes type)  {
 void FilelistHandler::keep_best_n_frames(unsigned int n)   {
     vector<FrameInfo> light_frames;
     for (const auto &group : m_frames_list)   {
-        if (group.second.find(FileTypes::LIGHT) == group.second.end())   {
+        if (group.second.find(FrameType::LIGHT) == group.second.end())   {
             continue;
         }
-        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames = group.second.at(FileTypes::LIGHT);
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames = group.second.at(FrameType::LIGHT);
         for (const auto &frame : frames)   {
             light_frames.push_back(frame.second);
         }
@@ -338,16 +338,16 @@ void FilelistHandler::keep_best_n_frames(unsigned int n)   {
 
     light_frames.resize(n);
 
-    remove_all_frames_of_selected_type(FileTypes::LIGHT);
+    remove_all_frames_of_selected_type(FrameType::LIGHT);
     for (const FrameInfo &frame : light_frames)   {
-        m_frames_list[frame.group_number][FileTypes::LIGHT][frame.input_frame] = frame;
+        m_frames_list[frame.group_number][FrameType::LIGHT][frame.input_frame] = frame;
     }
 };
 
 void FilelistHandler::set_local_shifts(const AstroPhotoStacker::InputFrame &input_frame, const std::vector<LocalShift> &shifts)   {
     // the frame might be in multiple groups
     for (auto &group : m_frames_list)   {
-        std::map<AstroPhotoStacker::InputFrame, FrameInfo> &light_frames = group.second[FileTypes::LIGHT];
+        std::map<AstroPhotoStacker::InputFrame, FrameInfo> &light_frames = group.second[FrameType::LIGHT];
         if (light_frames.find(input_frame) == light_frames.end())   {
             continue;
         }
@@ -357,10 +357,10 @@ void FilelistHandler::set_local_shifts(const AstroPhotoStacker::InputFrame &inpu
 
 void FilelistHandler::set_dummy_alignment_for_all_frames()  {
     for (auto &group : m_frames_list)   {
-        if (group.second.find(FileTypes::LIGHT) == group.second.end())   {
+        if (group.second.find(FrameType::LIGHT) == group.second.end())   {
             continue;
         }
-        std::map<AstroPhotoStacker::InputFrame, FrameInfo> &light_frames = group.second[FileTypes::LIGHT];
+        std::map<AstroPhotoStacker::InputFrame, FrameInfo> &light_frames = group.second[FrameType::LIGHT];
         for (auto &frame : light_frames)   {
             frame.second.alignment_info.shift_x = 0;
             frame.second.alignment_info.shift_y = 0;
@@ -381,7 +381,7 @@ std::vector<int> FilelistHandler::get_group_numbers() const {
     return group_numbers;
 };
 
-std::vector<FrameInfo> FilelistHandler::get_checked_frames_of_type(FileTypes type) const {
+std::vector<FrameInfo> FilelistHandler::get_checked_frames_of_type(FrameType type) const {
     std::vector<FrameInfo> frames;
     for (const auto &group : m_frames_list)   {
         if (group.second.find(type) == group.second.end())   {
@@ -397,7 +397,7 @@ std::vector<FrameInfo> FilelistHandler::get_checked_frames_of_type(FileTypes typ
     return frames;
 };
 
-void FilelistHandler::remove_all_frames_of_type_and_group(FileTypes type, int group)    {
+void FilelistHandler::remove_all_frames_of_type_and_group(FrameType type, int group)    {
     if (m_frames_list.find(group) == m_frames_list.end())   {
         return;
     }
@@ -417,9 +417,9 @@ void FilelistHandler::remove_group(int group_number)    {
 
 void FilelistHandler::add_empty_group(int group_number) {
     if (m_frames_list.find(group_number) == m_frames_list.end())   {
-        m_frames_list[group_number] = std::map<FileTypes, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>();
+        m_frames_list[group_number] = std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>();
     }
-    for (FileTypes type : s_file_types_ordering)   {
+    for (FrameType type : s_file_types_ordering)   {
         if (m_frames_list[group_number].find(type) == m_frames_list[group_number].end())   {
             m_frames_list[group_number][type] = std::map<AstroPhotoStacker::InputFrame,FrameInfo>();
         }
@@ -455,7 +455,7 @@ void FilelistHandler::load_filelist_from_file(const std::string &input_address) 
         }
         const std::string file_address = elements[0];
         const int frame_number         = std::stoi(elements[1]);
-        const FileTypes type           = string_to_filetype(elements[2]);
+        const FrameType type           = string_to_filetype(elements[2]);
         const int group_number         = std::stoi(elements[3]);
         const bool is_checked          = static_cast<bool>(std::stoi(elements[4]));
 

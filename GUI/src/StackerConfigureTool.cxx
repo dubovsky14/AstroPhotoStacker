@@ -18,7 +18,7 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
 
     vector<int> group_numbers = filelist_handler_only_checked.get_group_numbers();
     for (int group_number : group_numbers) {
-        const std::map<InputFrame, FrameInfo> &light_frames = filelist_handler_only_checked.get_frames(FileTypes::LIGHT, group_number);
+        const std::map<InputFrame, FrameInfo> &light_frames = filelist_handler_only_checked.get_frames(FrameType::LIGHT, group_number);
         if (light_frames.size() == 0) {
             continue;
         }
@@ -32,7 +32,7 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
 
         vector<shared_ptr<const CalibrationFrameBase>> calibration_frames_handlers;
 
-        const std::map<InputFrame, FrameInfo> &dark_frames = filelist_handler_only_checked.get_frames(FileTypes::DARK, group_number);
+        const std::map<InputFrame, FrameInfo> &dark_frames = filelist_handler_only_checked.get_frames(FrameType::DARK, group_number);
         if (dark_frames.size() > 0) {
             const InputFrame &dark_frame = dark_frames.begin()->first;
             if (!dark_frame.is_still_image()) {
@@ -43,7 +43,7 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
             cout << "Adding dark frame: " << dark_frame.to_string() << endl;
         }
 
-        const std::map<InputFrame, FrameInfo> &flat_frames = filelist_handler_only_checked.get_frames(FileTypes::FLAT, group_number);
+        const std::map<InputFrame, FrameInfo> &flat_frames = filelist_handler_only_checked.get_frames(FrameType::FLAT, group_number);
         if (flat_frames.size() > 0) {
             const InputFrame &flat_frame = flat_frames.begin()->first;
             if (!flat_frame.is_still_image()) {

@@ -124,7 +124,7 @@ class MyFrame : public wxFrame  {
         void add_input_numbers_overview();
         void add_histogram_and_rgb_sliders();
         void update_input_numbers_overview();
-        std::map<FileTypes, std::pair<wxStaticText*, wxStaticText*>>  m_frames_numbers_overview_texts;
+        std::map<FrameType, std::pair<wxStaticText*, wxStaticText*>>  m_frames_numbers_overview_texts;
 
         wxPanel     *m_panel_top        = nullptr;
         wxBoxSizer  *m_sizer_main_frame = nullptr;
@@ -166,7 +166,7 @@ class MyFrame : public wxFrame  {
         std::unique_ptr<AstroPhotoStacker::HotPixelIdentifier>  m_hot_pixel_identifier = nullptr;
         std::unique_ptr<AstroPhotoStacker::StackerBase>         m_stacker = nullptr;
 
-        void on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title);
+        void on_open_frames(wxCommandEvent& event, FrameType type, const std::string& title);
         void on_open_lights(wxCommandEvent& event);
         void on_open_flats (wxCommandEvent& event);
         void on_open_darks (wxCommandEvent& event);

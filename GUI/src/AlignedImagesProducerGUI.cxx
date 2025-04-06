@@ -131,7 +131,7 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
     *m_aligned_images_producer->get_timelapse_video_settings() = m_timelapse_video_settings;
 
     // Light frames
-    const vector<FrameInfo>    &light_frames = filelist_handler_gui_interface->get_checked_frames_of_type(FileTypes::LIGHT);
+    const vector<FrameInfo>    &light_frames = filelist_handler_gui_interface->get_checked_frames_of_type(FrameType::LIGHT);
 
     const std::map<int, std::vector<std::shared_ptr<const CalibrationFrameBase> > > calibration_handlers_map = get_calibration_frame_handlers_map();
 
@@ -200,7 +200,7 @@ InputFrame AlignedImagesProducerGUI::get_reference_frame() const  {
     const FilelistHandlerGUIInterface *filelist_handler_gui_interface = &m_parent->get_filelist_handler_gui_interface();
 
     // Light frames
-    const vector<FrameInfo>    light_frames = filelist_handler_gui_interface->get_checked_frames_of_type(FileTypes::LIGHT);
+    const vector<FrameInfo>    light_frames = filelist_handler_gui_interface->get_checked_frames_of_type(FrameType::LIGHT);
     for (const FrameInfo &frame_info : light_frames) {
         const InputFrame &frame                     = frame_info.input_frame;
         const AlignmentFileInfo &alignment_info_gui = frame_info.alignment_info;
@@ -412,15 +412,15 @@ std::map<int, std::vector<std::shared_ptr<const CalibrationFrameBase> > > Aligne
 
     for (const int group_index : group_indices) {
         calibration_frame_handlers_map[group_index] = std::vector<std::shared_ptr<const CalibrationFrameBase> >();
-        for (const FileTypes &file_type : {FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS}) {
+        for (const FrameType &file_type : {FrameType::DARK, FrameType::FLAT, FrameType::BIAS}) {
             const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &calibration_frames = filelist_handler_gui_interface->get_frames(file_type, group_index);
             if (calibration_frames.size() > 0) {
                 shared_ptr<const CalibrationFrameBase> calibration_frame_handler = nullptr;
                 switch (file_type) {
-                    case FileTypes::DARK:
+                    case FrameType::DARK:
                         calibration_frame_handler = make_shared<DarkFrameHandler>(calibration_frames.begin()->first);
                         break;
-                    case FileTypes::FLAT:
+                    case FrameType::FLAT:
                         calibration_frame_handler = make_shared<FlatFrameHandler>(calibration_frames.begin()->first);
                         break;
                     default:

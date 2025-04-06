@@ -9,7 +9,7 @@
 
 struct FrameID  {
     AstroPhotoStacker::InputFrame   input_frame;
-    FileTypes                       type;
+    FrameType                       type;
     int                             group_number;
 
     FrameID(const FrameInfo &frame_info) {

@@ -35,11 +35,11 @@ void FilelistHandlerGUIInterface::sort_by_group(bool ascending)  {
 std::string FilelistHandlerGUIInterface::get_gui_string(const FrameID &frame_id)    {
     const std::string group_info = "Group #" + std::to_string(frame_id.group_number);
     const string frame_description = frame_id.input_frame.to_gui_string();
-    const FileTypes type = frame_id.type;
+    const FrameType type = frame_id.type;
 
     // aperture, exposure time, ISO, and focal length
     std::string metadata_string = "";
-    if (type == FileTypes::LIGHT)   {
+    if (type == FrameType::LIGHT)   {
         const FrameInfo &frame_info = get_frames_list().at(frame_id.group_number).at(type).at(frame_id.input_frame);
         const AstroPhotoStacker::Metadata &metadata = frame_info.metadata;
         const AlignmentFileInfo &alignment_info     = frame_info.alignment_info;
@@ -93,7 +93,7 @@ FilelistHandlerGUIInterface FilelistHandlerGUIInterface::get_filelist_with_check
 
 void FilelistHandlerGUIInterface::update_shown_frames()      {
     m_shown_frames.clear();
-    const std::map<int, std::map<FileTypes, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>> &frames_list = get_frames_list();
+    const std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>> &frames_list = get_frames_list();
     for (const auto &group : frames_list)   {
         for (const auto &type : group.second)   {
             const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames = group.second.at(type.first);
@@ -124,10 +124,10 @@ void FilelistHandlerGUIInterface::sort_by_name_internal()   {
 
 void FilelistHandlerGUIInterface::sort_by_ranking_internal()    {
     const bool ascending = m_sort_ascending;
-    std::vector<std::tuple<size_t, float, FileTypes>> index_ranking_type_vector;
+    std::vector<std::tuple<size_t, float, FrameType>> index_ranking_type_vector;
     for (size_t i = 0; i < m_shown_frames.size(); ++i) {
-        const FileTypes type = m_shown_frames[i].second.type;
-        const float ranking = type == FileTypes::LIGHT ?
+        const FrameType type = m_shown_frames[i].second.type;
+        const float ranking = type == FrameType::LIGHT ?
                               get_alignment_info(m_shown_frames[i].second.group_number, m_shown_frames[i].second.input_frame).ranking : 0;
         index_ranking_type_vector.push_back({
             i,
@@ -136,7 +136,7 @@ void FilelistHandlerGUIInterface::sort_by_ranking_internal()    {
         });
     }
 
-    std::sort(index_ranking_type_vector.begin(), index_ranking_type_vector.end(), [ascending](const std::tuple<size_t, float, FileTypes> &a, const std::tuple<size_t, float, FileTypes> &b) {
+    std::sort(index_ranking_type_vector.begin(), index_ranking_type_vector.end(), [ascending](const std::tuple<size_t, float, FrameType> &a, const std::tuple<size_t, float, FrameType> &b) {
         if (std::get<2>(a) != std::get<2>(b)) {
             return std::get<2>(a) < std::get<2>(b);
         }

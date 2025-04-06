@@ -49,7 +49,7 @@ void AlignmentFrame::initialize_list_of_frames_to_align()   {
     std::vector<std::pair<std::string, FrameID>> checked_light_frames;
     for (size_t i = 0; i < all_frames.size(); ++i) {
         const pair<string,FrameID> &frame = all_frames[i];
-        if (frame.second.type != FileTypes::LIGHT)  continue;
+        if (frame.second.type != FrameType::LIGHT)  continue;
         const bool is_checked = m_filelist_handler_gui_interface->frame_is_checked(i);
         if (is_checked) {
             checked_light_frames.push_back(frame);
