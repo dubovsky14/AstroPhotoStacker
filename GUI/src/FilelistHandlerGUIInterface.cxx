@@ -159,10 +159,20 @@ void FilelistHandlerGUIInterface::sort_by_ranking_internal()    {
 void FilelistHandlerGUIInterface::sort_by_group_internal()  {
     const bool ascending = m_sort_ascending;
     const auto lambda = [ascending](const std::pair<std::string,FrameID> &a, const std::pair<std::string,FrameID> &b) {
+        if (a.second.group_number != b.second.group_number) {
+            if (ascending) {
+                return a.second.group_number < b.second.group_number;
+            } else {
+                return a.second.group_number > b.second.group_number;
+            }
+        }
+        if (a.second.type != b.second.type) {
+            return a.second.type < b.second.type;
+        }
         if (ascending) {
-            return a.second.group_number < b.second.group_number;
+            return a.second.input_frame < b.second.input_frame;
         } else {
-            return a.second.group_number > b.second.group_number;
+            return a.second.input_frame > b.second.input_frame;
         }
     };
     std::sort(m_shown_frames.begin(), m_shown_frames.end(), lambda);
