@@ -110,6 +110,38 @@ void MyFrame::add_file_menu()  {
 
 };
 
+
+void MyFrame::add_filelist_menu()    {
+    wxMenu *filelist_menu = new wxMenu;
+
+    int id = unique_counter();
+    filelist_menu->Append(id, "Save filelist", "Save filelist");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
+        wxFileDialog dialog(this, "Save filelist", "", default_path + "/filelist.txt", "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        if (dialog.ShowModal() == wxID_OK) {
+            const std::string file_address = dialog.GetPath().ToStdString();
+            m_filelist_handler_gui_interface.save_filelist_to_file(file_address);
+        }
+    }, id);
+
+    id = unique_counter();
+    filelist_menu->Append(id, "Load filelist", "Load filelist");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
+        wxFileDialog dialog(this, "Load filelist", "", default_path, "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        if (dialog.ShowModal() == wxID_OK) {
+            const std::string file_address = dialog.GetPath().ToStdString();
+            m_filelist_handler_gui_interface.load_filelist_from_file(file_address);
+            update_alignment_status();
+            update_files_to_stack_checkbox();
+            update_input_numbers_overview();
+        }
+    }, id);
+
+    m_menu_bar->Append(filelist_menu, "&Filelist");
+};
+
 void MyFrame::add_alignment_menu()  {
     wxMenu *alignment_menu = new wxMenu;
 
@@ -327,6 +359,7 @@ void MyFrame::add_menu_bar()    {
     m_menu_bar = new wxMenuBar;
 
     add_file_menu();
+    add_filelist_menu();
     add_alignment_menu();
     add_group_menu();
     add_hot_pixel_menu();

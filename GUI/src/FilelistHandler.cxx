@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -422,5 +423,45 @@ void FilelistHandler::add_empty_group(int group_number) {
         if (m_frames_list[group_number].find(type) == m_frames_list[group_number].end())   {
             m_frames_list[group_number][type] = std::map<AstroPhotoStacker::InputFrame,FrameInfo>();
         }
+    }
+};
+
+
+void FilelistHandler::save_filelist_to_file(const std::string &output_address)   {
+    std::ofstream output_file(output_address);
+    for (const auto &group : m_frames_list)   {
+        for (const auto &type : group.second)   {
+            const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
+            for (const auto &frame : frames)   {
+                const FrameInfo &frame_info = frame.second;
+                output_file << frame_info.input_frame.get_file_address() << " | "
+                            << frame_info.input_frame.get_frame_number() << " | "
+                            << to_string(frame_info.type) << " | "
+                            << frame_info.group_number << " | "
+                            << frame_info.is_checked << std::endl;
+            }
+        }
+    }
+};
+
+void FilelistHandler::load_filelist_from_file(const std::string &input_address)  {
+    m_frames_list.clear();
+    std::ifstream input_file(input_address);
+    std::string line;
+    while (std::getline(input_file, line))   {
+        vector<string> elements = split_string(line, " | ");
+        if (elements.size() < 5)   {
+            continue;
+        }
+        const std::string file_address = elements[0];
+        const int frame_number         = std::stoi(elements[1]);
+        const FileTypes type           = string_to_filetype(elements[2]);
+        const int group_number         = std::stoi(elements[3]);
+        const bool is_checked          = static_cast<bool>(std::stoi(elements[4]));
+
+        if (!std::filesystem::exists(file_address))   continue;
+
+        const InputFrame input_frame(file_address, frame_number);
+        add_frame(input_frame, type, group_number, is_checked);
     }
 };

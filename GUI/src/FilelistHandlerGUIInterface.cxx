@@ -99,9 +99,7 @@ void FilelistHandlerGUIInterface::update_shown_frames()      {
             const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames = group.second.at(type.first);
             for (const auto &frame : frames)   {
                 FrameID frame_id(frame.second);
-                if (frame.second.is_checked)   {
-                    m_shown_frames.push_back({get_gui_string(frame.second), frame_id});
-                }
+                m_shown_frames.push_back({get_gui_string(frame.second), frame_id});
             }
         }
     }

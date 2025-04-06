@@ -241,6 +241,10 @@ class FilelistHandler   {
 
         void remove_group(int group_number);
 
+        void save_filelist_to_file(const std::string &output_address);
+
+        void load_filelist_from_file(const std::string &input_address);
+
     protected:
         const std::map<int, std::map<FileTypes, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     &get_frames_list() const {
             return m_frames_list;
