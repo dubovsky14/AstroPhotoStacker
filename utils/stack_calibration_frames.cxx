@@ -49,7 +49,7 @@ int main(int argc, const char **argv) {
 
         // adding files to stacker and stacking them
         for (const string &file : input_files) {
-            stacker->add_photo(InputFrame(file), false);
+            stacker->add_photo(InputFrame(file), {}, false);
         }
         stacker->calculate_stacked_photo();
         stacker->save_stacked_photo(output_file, CV_16UC1);
@@ -68,11 +68,11 @@ int main(int argc, const char **argv) {
 void configure_stacker_with_optional_arguments(StackerBase *stacker, const InputArgumentsParser &input_parser, bool print_info)  {
     // flat frame
     const string flat_frame_file    = input_parser.get_optional_argument<string>("flat_frame", "");
-    if (flat_frame_file != "")  {
-        std::shared_ptr<const CalibrationFrameBase> flat_frame_handler = make_shared<FlatFrameHandler>(InputFrame(flat_frame_file));
-        stacker->add_calibration_frame_handler(flat_frame_handler);
-        if (print_info) cout << "Flat frame file: " << flat_frame_file << "\n";
-    }
+    //if (flat_frame_file != "")  {
+    //    std::shared_ptr<const CalibrationFrameBase> flat_frame_handler = make_shared<FlatFrameHandler>(InputFrame(flat_frame_file));
+    //    stacker->add_calibration_frame_handler(flat_frame_handler);
+    //    if (print_info) cout << "Flat frame file: " << flat_frame_file << "\n";
+    //}
 
     // hot pixels
     const string hot_pixels_file    = input_parser.get_optional_argument<string>("hot_pixels_file", "");

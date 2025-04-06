@@ -60,9 +60,18 @@ int main(int argc, const char **argv) {
         stacker->add_alignment_text_file(alignment_file);
         configure_stacker_with_optional_arguments(stacker.get(), input_arguments_parser);
 
+        // flat frame
+        const string flat_frame_file    = input_arguments_parser.get_optional_argument<string>("flat_frame", "");
+        vector<shared_ptr<const CalibrationFrameBase> > calibration_frame_handlers;
+        if (flat_frame_file != "")  {
+            std::shared_ptr<const CalibrationFrameBase> flat_frame_handler = make_shared<FlatFrameHandler>(InputFrame(flat_frame_file));
+            calibration_frame_handlers.push_back(flat_frame_handler);
+            cout << "Flat frame file: " << flat_frame_file << "\n";
+        }
+
         // adding files to stacker and stacking them
         for (const string &file : input_files) {
-            stacker->add_photo(InputFrame(file));
+            stacker->add_photo(InputFrame(file), calibration_frame_handlers, true);
         }
         stacker->calculate_stacked_photo();
         stacker->save_stacked_photo(output_file, CV_16UC3);
@@ -79,14 +88,6 @@ int main(int argc, const char **argv) {
 
 
 void configure_stacker_with_optional_arguments(StackerBase *stacker, const InputArgumentsParser &input_parser, bool print_info)  {
-    // flat frame
-    const string flat_frame_file    = input_parser.get_optional_argument<string>("flat_frame", "");
-    if (flat_frame_file != "")  {
-        std::shared_ptr<const CalibrationFrameBase> flat_frame_handler = make_shared<FlatFrameHandler>(InputFrame(flat_frame_file));
-        stacker->add_calibration_frame_handler(flat_frame_handler);
-        if (print_info) cout << "Flat frame file: " << flat_frame_file << "\n";
-    }
-
     // hot pixels
     const string hot_pixels_file    = input_parser.get_optional_argument<string>("hot_pixels_file", "");
     if (hot_pixels_file != "")  {

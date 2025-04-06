@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/FilelistHandler.h"
+#include "../headers/FilelistHandlerGUIInterface.h"
 #include "../headers/StackSettingsSaver.h"
 #include "../headers/ImagePreview.h"
 #include "../headers/RecentPathsHandler.h"
@@ -48,8 +48,8 @@ class MyFrame : public wxFrame  {
         void update_alignment_status();
         void update_files_to_stack_checkbox();
 
-        const FilelistHandler& get_filelist_handler() const {
-            return m_filelist_handler;
+        const FilelistHandlerGUIInterface& get_filelist_handler_gui_interface() const {
+            return m_filelist_handler_gui_interface;
         };
 
         const StackSettingsSaver *get_stack_settings() const {
@@ -68,7 +68,9 @@ class MyFrame : public wxFrame  {
     private:
 
         void add_file_menu();
+        void add_filelist_menu();
         void add_alignment_menu();
+        void add_group_menu();
         void add_hot_pixel_menu();
         void add_aligned_images_producer_menu();
         void add_postprocessing_menu();
@@ -90,7 +92,7 @@ class MyFrame : public wxFrame  {
 
         void add_upper_middle_panel();
         void add_image_preview();
-        void update_image_preview_file(const std::string& file_address);
+        void update_image_preview_file(size_t frame_index);
         void update_image_preview_with_stacked_image();
         void update_image_preview();
 
@@ -122,7 +124,7 @@ class MyFrame : public wxFrame  {
         void add_input_numbers_overview();
         void add_histogram_and_rgb_sliders();
         void update_input_numbers_overview();
-        std::map<FileTypes, std::pair<wxStaticText*, wxStaticText*>>  m_frames_numbers_overview_texts;
+        std::map<FrameType, std::pair<wxStaticText*, wxStaticText*>>  m_frames_numbers_overview_texts;
 
         wxPanel     *m_panel_top        = nullptr;
         wxBoxSizer  *m_sizer_main_frame = nullptr;
@@ -159,12 +161,12 @@ class MyFrame : public wxFrame  {
         wxCheckListBox *m_files_to_stack_checkbox = nullptr;
 
 
-        FilelistHandler m_filelist_handler;
+        FilelistHandlerGUIInterface m_filelist_handler_gui_interface;
         std::unique_ptr<StackSettingsSaver>    m_stack_settings = nullptr;
         std::unique_ptr<AstroPhotoStacker::HotPixelIdentifier>  m_hot_pixel_identifier = nullptr;
         std::unique_ptr<AstroPhotoStacker::StackerBase>         m_stacker = nullptr;
 
-        void on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title);
+        void on_open_frames(wxCommandEvent& event, FrameType type, const std::string& title);
         void on_open_lights(wxCommandEvent& event);
         void on_open_flats (wxCommandEvent& event);
         void on_open_darks (wxCommandEvent& event);
@@ -195,6 +197,7 @@ class MyFrame : public wxFrame  {
 
         std::vector<AstroPhotoStacker::AlignmentPointBox> m_alignment_box_vector_storage;
 
+        int m_current_group = 0;
 };
 
 inline int unique_counter()    {

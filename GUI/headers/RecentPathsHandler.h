@@ -24,7 +24,7 @@ class RecentPathsHandler    {
          * @param default_value default value to be returned if the path is not found
          * @return std::string path to the most recently used folder
         */
-        std::string get_recent_file_path(FileTypes frame_type, const std::string &default_value = "")  const;
+        std::string get_recent_file_path(FrameType frame_type, const std::string &default_value = "")  const;
 
         /**
          * @brief Set the recent file path
@@ -32,7 +32,7 @@ class RecentPathsHandler    {
          * @param frame_type type of the frame
          * @param recent_path path to the most recently used folder
         */
-        void set_recent_file_path(FileTypes frame_type, const std::string &recent_path) const;
+        void set_recent_file_path(FrameType frame_type, const std::string &recent_path) const;
 
         /**
          * @brief Set the recent file path from file
@@ -40,16 +40,16 @@ class RecentPathsHandler    {
          * @param frame_type type of the frame
          * @param recent_file_path path to the most recently use file
         */
-        void set_recent_file_path_from_file(FileTypes frame_type, const std::string &recent_file_path) const;
+        void set_recent_file_path_from_file(FrameType frame_type, const std::string &recent_file_path) const;
 
     private:
         std::string m_storage_path;
 
-        std::map<FileTypes, std::string> m_frame_type_to_txt_file = std::map<FileTypes, std::string>({
-            {FileTypes::FLAT ,       "recent_flat_paths.txt"},
-            {FileTypes::LIGHT ,      "recent_lights_paths.txt"},
-            {FileTypes::DARK ,       "recent_dark_paths.txt"},
-            {FileTypes::BIAS ,       "recent_bias_paths.txt"},
-            {FileTypes::UNKNOWN ,    "recent_unknown_paths.txt"},
+        std::map<FrameType, std::string> m_frame_type_to_txt_file = std::map<FrameType, std::string>({
+            {FrameType::FLAT ,       "recent_flat_paths.txt"},
+            {FrameType::LIGHT ,      "recent_lights_paths.txt"},
+            {FrameType::DARK ,       "recent_dark_paths.txt"},
+            {FrameType::BIAS ,       "recent_bias_paths.txt"},
+            {FrameType::UNKNOWN ,    "recent_unknown_paths.txt"},
         });
 };

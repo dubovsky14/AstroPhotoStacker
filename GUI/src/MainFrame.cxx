@@ -110,28 +110,60 @@ void MyFrame::add_file_menu()  {
 
 };
 
+
+void MyFrame::add_filelist_menu()    {
+    wxMenu *filelist_menu = new wxMenu;
+
+    int id = unique_counter();
+    filelist_menu->Append(id, "Save filelist", "Save filelist");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
+        wxFileDialog dialog(this, "Save filelist", "", default_path + "/filelist.txt", "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        if (dialog.ShowModal() == wxID_OK) {
+            const std::string file_address = dialog.GetPath().ToStdString();
+            m_filelist_handler_gui_interface.save_filelist_to_file(file_address);
+        }
+    }, id);
+
+    id = unique_counter();
+    filelist_menu->Append(id, "Load filelist", "Load filelist");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
+        wxFileDialog dialog(this, "Load filelist", "", default_path, "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        if (dialog.ShowModal() == wxID_OK) {
+            const std::string file_address = dialog.GetPath().ToStdString();
+            m_filelist_handler_gui_interface.load_filelist_from_file(file_address);
+            update_alignment_status();
+            update_files_to_stack_checkbox();
+            update_input_numbers_overview();
+        }
+    }, id);
+
+    m_menu_bar->Append(filelist_menu, "&Filelist");
+};
+
 void MyFrame::add_alignment_menu()  {
     wxMenu *alignment_menu = new wxMenu;
 
     int id = unique_counter();
     alignment_menu->Append(id, "Save alignment info", "Save alignment info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
         wxFileDialog dialog(this, "Save alignment info", "", default_path + "/alignment.txt", "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
-            m_filelist_handler.save_alignment_to_file(file_address);
+            m_filelist_handler_gui_interface.save_alignment_to_file(file_address);
         }
     }, id);
 
     id = unique_counter();
     alignment_menu->Append(id, "Load alignment info", "Load alignment info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
         wxFileDialog dialog(this, "Load alignment info", "", default_path, "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
-            m_filelist_handler.load_alignment_from_file(file_address);
+            m_filelist_handler_gui_interface.load_alignment_from_file(file_address);
             update_alignment_status();
         }
     }, id);
@@ -140,19 +172,8 @@ void MyFrame::add_alignment_menu()  {
     id = unique_counter();
     alignment_menu->Append(id, "Enable stack without alignment", "Enable stack without alignment");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        const vector<InputFrame> &light_frames = m_filelist_handler.get_frames(FileTypes::LIGHT);
-        for (unsigned int i_frame= 0; i_frame< light_frames.size(); ++i_frame) {
-            AlignmentFileInfo alignment_file_info;
-            alignment_file_info.shift_x = 0;
-            alignment_file_info.shift_y = 0;
-            alignment_file_info.rotation_center_x = 0;
-            alignment_file_info.rotation_center_y = 0;
-            alignment_file_info.rotation = 0;
-            alignment_file_info.ranking = 0;
-            alignment_file_info.initialized = true;
-            m_filelist_handler.set_alignment_info(i_frame, alignment_file_info);
-            update_alignment_status();
-        }
+        m_filelist_handler_gui_interface.set_dummy_alignment_for_all_frames();
+        update_alignment_status();
     }, id);
 
 
@@ -183,6 +204,70 @@ void MyFrame::add_alignment_menu()  {
     m_menu_bar->Append(alignment_menu, "&Alignment");
 };
 
+void MyFrame::add_group_menu()   {
+    wxMenu *group_menu = new wxMenu;
+
+    int id = unique_counter();
+    group_menu->Append(id, "Show current group", "Show current group");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const std::string current_group_string = "Current group number: " + std::to_string(m_current_group);
+        wxMessageDialog dialog(this, current_group_string, "Current group");
+        dialog.ShowModal();
+    }, id);
+
+    id = unique_counter();
+    group_menu->Append(id, "Create new group", "Create new group");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        m_current_group++;
+    }, id);
+
+    id = unique_counter();
+    group_menu->Append(id, "Change current group", "Change current group");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const vector<int> group_numbers = m_filelist_handler_gui_interface.get_group_numbers();
+        wxArrayString group_names;
+        for (const int group_number : group_numbers) {
+            group_names.Add(std::to_string(group_number));
+        }
+        wxSingleChoiceDialog dialog(this, "Select group number", "Group number", group_names);
+        if (dialog.ShowModal() == wxID_OK) {
+            const int selection = dialog.GetSelection();
+            if (selection != -1) {
+                m_current_group = group_numbers[selection];
+            }
+        }
+    }, id);
+
+    id = unique_counter();
+    group_menu->Append(id, "Remove group", "Remove group");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const vector<int> group_numbers = m_filelist_handler_gui_interface.get_group_numbers();
+        wxArrayString group_names;
+        for (const int group_number : group_numbers) {
+            group_names.Add(std::to_string(group_number));
+        }
+        wxSingleChoiceDialog dialog(this, "Select group to delete", "Group number", group_names);
+        if (dialog.ShowModal() == wxID_OK) {
+            const int selection = dialog.GetSelection();
+            if (selection != -1) {
+                m_filelist_handler_gui_interface.remove_group(group_numbers[selection]);
+            }
+            update_files_to_stack_checkbox();
+        }
+    }, id);
+
+    id = unique_counter();
+    group_menu->Append(id, "What are groups?", "What are groups?");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        string message = "Groups allow a user to combine light frames taken in different conditions, ";
+        message += " where different calibration frames are used for different groups.";
+        wxMessageDialog dialog(this, message, "");
+        dialog.ShowModal();
+    }, id);
+
+    m_menu_bar->Append(group_menu, "&Groups");
+};
+
 void MyFrame::add_hot_pixel_menu()  {
     wxMenu *hot_pixel_menu = new wxMenu;
 
@@ -192,7 +277,7 @@ void MyFrame::add_hot_pixel_menu()  {
         if (m_hot_pixel_identifier == nullptr)  {
             return;
         }
-        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
         wxFileDialog dialog(this, "Save hot pixel info", "", default_path, "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
@@ -203,7 +288,7 @@ void MyFrame::add_hot_pixel_menu()  {
     id = unique_counter();
     hot_pixel_menu->Append(id, "Load hot pixel info", "Load hot pixel info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
         wxFileDialog dialog(this, "Load hot pixel info", "", default_path, "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
@@ -225,12 +310,12 @@ void MyFrame::add_aligned_images_producer_menu()  {
     int id = unique_counter();
     produce_aligned_images_menu->Append(id, "Produce aligned images", "Produce aligned images");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        const bool frames_aligned = m_filelist_handler.all_checked_frames_are_aligned();
+        const bool frames_aligned = m_filelist_handler_gui_interface.all_checked_frames_are_aligned();
         stack_calibration_frames();
         if (!frames_aligned) {
             wxMessageDialog dialog(this, "Please align the frames first!", "Frames not aligned");
             if (dialog.ShowModal() == wxID_YES) {
-                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, static_cast<StackSettings *>(m_stack_settings.get()), &m_alignment_box_vector_storage);
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, static_cast<StackSettings *>(m_stack_settings.get()), &m_alignment_box_vector_storage);
                 select_alignment_window->Show(true);
             }
             else {
@@ -274,7 +359,9 @@ void MyFrame::add_menu_bar()    {
     m_menu_bar = new wxMenuBar;
 
     add_file_menu();
+    add_filelist_menu();
     add_alignment_menu();
+    add_group_menu();
     add_hot_pixel_menu();
     add_aligned_images_producer_menu();
     add_postprocessing_menu();
@@ -283,72 +370,58 @@ void MyFrame::add_menu_bar()    {
 };
 
 void MyFrame::add_files_to_stack_checkbox()  {
-    wxPanel* headerPanel = new wxPanel(this, wxID_ANY);
+    wxPanel* header_panel = new wxPanel(this, wxID_ANY);
 
     // Create a sizer for the panel
-    wxBoxSizer* headerSizer = new wxBoxSizer(wxHORIZONTAL);
-    headerPanel->SetSizer(headerSizer);
-
-    // Create the static texts
-    wxStaticText* sortByNameText = new wxStaticText(headerPanel, wxID_ANY, "Sort by Name",wxDefaultPosition);
-    wxStaticText* sortByScoreText = new wxStaticText(headerPanel, wxID_ANY, "Sort by Score",wxDefaultPosition);
+    wxBoxSizer* header_sizer = new wxBoxSizer(wxHORIZONTAL);
+    header_panel->SetSizer(header_sizer);
 
     wxBitmap arrow_down_bitmap(s_gui_folder_path + "data/png/arrows/arrow_down_20x10.png", wxBITMAP_TYPE_PNG);
     wxBitmap arrow_up_bitmap(s_gui_folder_path + "data/png/arrows/arrow_up_20x10.png", wxBITMAP_TYPE_PNG);
-    wxSize arrow_size(40, 20);
-    wxBitmapButton* sortByNameArrowUpButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, arrow_size);
-    wxBitmapButton* sortByNameArrowDownButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, arrow_size);
-    wxBitmapButton* sortByScoreArrowUpButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, arrow_size);
-    wxBitmapButton* sortByScoreArrowDownButton = new wxBitmapButton(headerPanel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, arrow_size);
 
-    // Create a vertical sizer for the name arrows
-    wxBoxSizer* nameArrowSizer = new wxBoxSizer(wxVERTICAL);
-    nameArrowSizer->Add(sortByNameArrowUpButton, 0, wxTOP | wxLEFT | wxRIGHT, 5);
-    nameArrowSizer->Add(sortByNameArrowDownButton, 0, wxBOTTOM | wxLEFT | wxRIGHT, 5);
+    auto add_sorting_option = [this, &arrow_down_bitmap, &arrow_up_bitmap, header_panel, header_sizer]
+        (const std::string &text, void (FilelistHandlerGUIInterface::*sorting_method)(bool)) {
+        wxStaticText* static_text = new wxStaticText(header_panel, wxID_ANY, text, wxDefaultPosition);
+        wxBitmapButton* arrow_up_button = new wxBitmapButton(header_panel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, wxSize(40, 20));
+        wxBitmapButton* arrow_down_button = new wxBitmapButton(header_panel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, wxSize(40, 20));
 
-    // Create a vertical sizer for the score arrows
-    wxBoxSizer* scoreArrowSizer = new wxBoxSizer(wxVERTICAL);
-    scoreArrowSizer->Add(sortByScoreArrowUpButton, 0, wxTOP | wxLEFT | wxRIGHT, 5);
-    scoreArrowSizer->Add(sortByScoreArrowDownButton, 0, wxBOTTOM | wxLEFT | wxRIGHT, 5);
+        // Create a vertical sizer for the arrows
+        wxBoxSizer* arrow_sizer = new wxBoxSizer(wxVERTICAL);
+        arrow_sizer->Add(arrow_up_button,   0, wxTOP    | wxLEFT | wxRIGHT, 5);
+        arrow_sizer->Add(arrow_down_button, 0, wxBOTTOM | wxLEFT | wxRIGHT, 5);
+
+        arrow_up_button->Bind(wxEVT_BUTTON, [this, sorting_method](wxCommandEvent&) {
+            (m_filelist_handler_gui_interface.*sorting_method)(true);
+            update_files_to_stack_checkbox();
+        });
+        arrow_down_button->Bind(wxEVT_BUTTON, [this, sorting_method](wxCommandEvent&) {
+            (m_filelist_handler_gui_interface.*sorting_method)(false);
+            update_files_to_stack_checkbox();
+        });
+
+        // Add the static texts and arrow sizers to the header sizer
+        header_sizer->Add(static_text, 0, wxTOP, 5);
+        header_sizer->Add(arrow_sizer, 0, wxTOP, 5);
+    };
+    add_sorting_option("Sort by Name",  &FilelistHandlerGUIInterface::sort_by_name);
+    add_sorting_option("Sort by Score", &FilelistHandlerGUIInterface::sort_by_ranking);
+    add_sorting_option("Sort by Group", &FilelistHandlerGUIInterface::sort_by_group);
 
     // button for keeping only best N files
-    wxButton *button_keep_best = new wxButton(headerPanel, wxID_ANY, "Keep best N", wxDefaultPosition, wxDefaultSize);
+    wxButton *button_keep_best = new wxButton(header_panel, wxID_ANY, "Keep best N", wxDefaultPosition, wxDefaultSize);
     button_keep_best->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
-        const int n_files = m_filelist_handler.get_number_of_all_frames();
+        const int n_files = m_filelist_handler_gui_interface.get_number_of_all_frames();
         const wxString default_value = wxString::Format(wxT("%d"), n_files);
         wxTextEntryDialog dialog(this, "Enter the number of best files to keep", "Keep best N files", default_value);
         if (dialog.ShowModal() == wxID_OK) {
             const wxString value = dialog.GetValue();
             const int n_files_to_keep = stoi(value.ToStdString());
-            m_filelist_handler.keep_best_n_frames(n_files_to_keep);
+            m_filelist_handler_gui_interface.keep_best_n_frames(n_files_to_keep);
             update_files_to_stack_checkbox();
         }
     });
 
-    // Add the static texts and arrow sizers to the header sizer
-    headerSizer->Add(sortByNameText, 0, wxTOP, 5);
-    headerSizer->Add(nameArrowSizer, 0, wxTOP, 5);
-    headerSizer->Add(sortByScoreText, 0, wxTOP, 5);
-    headerSizer->Add(scoreArrowSizer, 0, wxTOP, 5);
-    headerSizer->Add(button_keep_best, 0, wxTOP, 5);
-
-    sortByScoreArrowUpButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-        this->m_filelist_handler.sort_by_alignment_ranking(true);
-        update_files_to_stack_checkbox();
-    });
-    sortByScoreArrowDownButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-        this->m_filelist_handler.sort_by_alignment_ranking(false);
-        update_files_to_stack_checkbox();
-    });
-
-    sortByNameArrowUpButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-        this->m_filelist_handler.sort_by_filename(true);
-        update_files_to_stack_checkbox();
-    });
-    sortByNameArrowDownButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-        this->m_filelist_handler.sort_by_filename(false);
-        update_files_to_stack_checkbox();
-    });
+    header_sizer->Add(button_keep_best, 0, wxTOP, 5);
 
 
     wxArrayString files;
@@ -356,7 +429,7 @@ void MyFrame::add_files_to_stack_checkbox()  {
 
     // Create a new sizer for the header and the checkbox list
     wxBoxSizer* checkboxSizer = new wxBoxSizer(wxVERTICAL);
-    checkboxSizer->Add(headerPanel, 0, wxEXPAND | wxALL, 5);
+    checkboxSizer->Add(header_panel, 0, wxEXPAND | wxALL, 5);
     checkboxSizer->Add(m_files_to_stack_checkbox, 1, wxEXPAND | wxALL, 5);
 
     // Add the new sizer to the main frame's sizer
@@ -364,12 +437,11 @@ void MyFrame::add_files_to_stack_checkbox()  {
 
     m_files_to_stack_checkbox->Bind(wxEVT_LISTBOX, [this](wxCommandEvent &event){
         int index = event.GetSelection();
-        const string text = m_files_to_stack_checkbox->GetString(index).ToStdString();
         const bool update_needed = update_checked_files_in_filelist();
 
         // Do not update the preview if the files was just checked/unchecked - it is slow
         if (!update_needed) {
-            update_image_preview_file(text);
+            update_image_preview_file(index);
         }
     });
 };
@@ -378,29 +450,14 @@ void MyFrame::update_files_to_stack_checkbox()   {
     m_files_to_stack_checkbox->Clear();
     vector<string> rows;
     vector<bool>   rows_checked;
-    for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
-        const vector<InputFrame> &frames = m_filelist_handler.get_frames(type);
-        for (unsigned int i_file = 0; i_file < frames.size(); i_file++) {
-            const string frame_description = frames[i_file].to_gui_string();
-            // aperture, exposure time, ISO, and focal length
-            std::string metadata_string = "";
-            if (type == FileTypes::LIGHT)   {
-                const AstroPhotoStacker::Metadata metadata = m_filelist_handler.get_metadata()[i_file];
-                const AlignmentFileInfo alignment_info = m_filelist_handler.get_alignment_info()[i_file];
-                const float alignment_score = alignment_info.ranking;
-                const std::string exposure_string = metadata.exposure_time > 0.5 ?
-                                                    AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s" :
-                                                    AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time * 1000) + " ms";
-                metadata_string =   "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture) +
-                                    "\t\t" + exposure_string +
-                                    "\t\t" + to_string(metadata.iso) + " ISO" +
-                                    "\t\t\tscore: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3);
-            }
-            const std::string file_string = to_string(type) + "\t\t" + frame_description + metadata_string;
-            rows.push_back(file_string);
 
-            rows_checked.push_back(m_filelist_handler.get_frames_checked(type).at(i_file));
-        }
+    m_filelist_handler_gui_interface.update_shown_frames();
+    const vector<std::pair<std::string, FrameID>> &shown_frames = m_filelist_handler_gui_interface.get_shown_frames();
+    for (const auto &frame : shown_frames)   {
+        const std::string file_string = frame.first;
+        const bool is_checked = m_filelist_handler_gui_interface.frame_is_checked(frame.second);
+        rows.push_back(file_string);
+        rows_checked.push_back(is_checked);
     }
 
     wxArrayString rows_wx;
@@ -418,11 +475,11 @@ bool MyFrame::update_checked_files_in_filelist() {
     wxArrayInt checked_indices;
     m_files_to_stack_checkbox->GetCheckedItems(checked_indices);
     bool updated = false;
-    for (int i = 0; i < m_filelist_handler.get_number_of_all_frames(); i++) {
+    for (int i = 0; i < m_filelist_handler_gui_interface.get_number_of_all_frames(); i++) {
         const bool file_checked_in_checkbox = m_files_to_stack_checkbox->IsChecked(i);
-        const bool file_checked_in_filelist = m_filelist_handler.frame_is_checked(i);
+        const bool file_checked_in_filelist = m_filelist_handler_gui_interface.frame_is_checked(i);
         if (file_checked_in_checkbox != file_checked_in_filelist) {
-            m_filelist_handler.set_frame_checked(i, file_checked_in_checkbox);
+            m_filelist_handler_gui_interface.set_frame_checked(i, file_checked_in_checkbox);
             updated = true;
         }
     }
@@ -458,13 +515,12 @@ void MyFrame::add_button_bar()   {
     button_align_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         // pop-up window with wxChoice of added light frames
         update_checked_files_in_filelist();
-        FilelistHandler checked_filelist = this->m_filelist_handler.get_filelist_with_checked_frames();
-        if (checked_filelist.get_frames(FileTypes::LIGHT).empty()) {
+        if (m_filelist_handler_gui_interface.get_number_of_checked_frames(FrameType::LIGHT) == 0) {
             wxMessageDialog *dialog = new wxMessageDialog(this, "No light frames have been checked. Please check them first!", "Frames alignment warning.");
             dialog->ShowModal();
             return;
         }
-        AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, m_stack_settings.get(), &m_alignment_box_vector_storage);
+        AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, m_stack_settings.get(), &m_alignment_box_vector_storage);
         select_alignment_window->Show(true);
     });
 
@@ -473,10 +529,10 @@ void MyFrame::add_button_bar()   {
         wxArrayInt checked_indices;
         m_files_to_stack_checkbox->GetCheckedItems(checked_indices);
 
-        // remove checked files from m_filelist_handler
+        // remove checked files from m_filelist_handler_gui_interface
         for (int i = checked_indices.GetCount() - 1; i >= 0; --i) {
             const std::string option = m_files_to_stack_checkbox->GetString(checked_indices[i]).ToStdString();
-            m_filelist_handler.remove_frame(checked_indices[i]);
+            m_filelist_handler_gui_interface.remove_frame(checked_indices[i]);
         }
 
         // update m_files_to_stack_checkbox
@@ -486,10 +542,15 @@ void MyFrame::add_button_bar()   {
     button_hot_pixel_id->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         update_checked_files_in_filelist();
         vector<InputFrame> frames;
-        for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
-            for (unsigned int i = 0; i < m_filelist_handler.get_frames(type).size(); i++)   {
-                if (m_filelist_handler.get_frames_checked(type)[i]) {
-                    frames.push_back(m_filelist_handler.get_frames(type)[i]);
+
+        const vector<int> group_indices = m_filelist_handler_gui_interface.get_group_numbers();
+        for (int group_index : group_indices) {
+            for (FrameType type : {FrameType::LIGHT, FrameType::DARK, FrameType::FLAT, FrameType::BIAS})   {
+                const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames_map = m_filelist_handler_gui_interface.get_frames(type, group_index);
+                for (const auto &frame : frames_map)   {
+                    if (frame.second.is_checked)   {
+                        frames.push_back(frame.first);
+                    }
                 }
             }
         }
@@ -523,12 +584,12 @@ void MyFrame::add_button_bar()   {
 
     button_stack_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         update_checked_files_in_filelist();
-        const bool frames_aligned = m_filelist_handler.all_checked_frames_are_aligned();
+        const bool frames_aligned = m_filelist_handler_gui_interface.all_checked_frames_are_aligned();
         stack_calibration_frames();
         if (!frames_aligned) {
             wxMessageDialog dialog(this, "Please align the files first!", "Files not aligned");
             if (dialog.ShowModal() == wxID_YES) {
-                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler, static_cast<StackSettings *>(m_stack_settings.get()), &m_alignment_box_vector_storage);
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, static_cast<StackSettings *>(m_stack_settings.get()), &m_alignment_box_vector_storage);
                 select_alignment_window->Show(true);
             }
             else {
@@ -536,8 +597,8 @@ void MyFrame::add_button_bar()   {
             }
         }
 
-        FilelistHandler filelist_handler_only_checked = m_filelist_handler.get_filelist_with_checked_frames();
-        if (filelist_handler_only_checked.get_frames(FileTypes::LIGHT).empty()) {
+
+        if (m_filelist_handler_gui_interface.get_number_of_checked_frames(FrameType::LIGHT) == 0) {
             wxMessageDialog dialog(this, "No light frames have been checked. Please check them first!", "No frames checked.");
             if (dialog.ShowModal() == wxID_YES) {
                 return;
@@ -546,7 +607,8 @@ void MyFrame::add_button_bar()   {
                 return;
             }
         }
-        m_stacker = get_configured_stacker(*m_stack_settings, m_filelist_handler);
+
+        m_stacker = get_configured_stacker(*m_stack_settings, m_filelist_handler_gui_interface);
         if (this->m_stack_settings->use_hot_pixel_correction()) {
             m_stacker->set_hot_pixels(m_hot_pixel_identifier->get_hot_pixels());
         }
@@ -829,8 +891,8 @@ void MyFrame::add_image_preview()    {
     m_image_preview_size->Add(m_current_preview->get_image_preview_bitmap(), 1, wxCENTER, 0);
 };
 
-void MyFrame::update_image_preview_file(const std::string& file_description)  {
-    InputFrame frame = m_filelist_handler.get_input_frame_by_gui_string(file_description);
+void MyFrame::update_image_preview_file(size_t frame_index)  {
+    const InputFrame frame = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).input_frame;
     m_current_preview->read_preview_from_frame(frame);
     update_image_preview();
     update_alignment_status();
@@ -875,7 +937,7 @@ void MyFrame::add_step_control_part()    {
     auto on_button_show_alignment = [this](wxCommandEvent&){
         vector<vector<string>> tabular_data;
         vector<string> description;
-        m_filelist_handler.get_alignment_info_tabular_data(&tabular_data, &description);
+        m_filelist_handler_gui_interface.get_alignment_info_tabular_data(&tabular_data, &description);
         if (tabular_data.empty())   {
             return;
         }
@@ -915,7 +977,7 @@ void MyFrame::add_step_control_part()    {
 };
 
 void MyFrame::update_alignment_status()  {
-    update_status_icon(m_alignment_status_icon, m_filelist_handler.all_checked_frames_are_aligned());
+    update_status_icon(m_alignment_status_icon, m_filelist_handler_gui_interface.all_checked_frames_are_aligned());
 };
 
 void MyFrame::add_exposure_correction_spin_ctrl()   {
@@ -946,10 +1008,10 @@ void MyFrame::add_input_numbers_overview()  {
     grid_sizer->Add(text_total, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
     grid_sizer->Add(text_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-    auto add_summary_text = [this, grid_sizer](FileTypes type, const std::string& label) {
+    auto add_summary_text = [this, grid_sizer](FrameType type, const std::string& label) {
         wxStaticText* text = new wxStaticText(this, wxID_ANY, label);
-        wxStaticText* text_number = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_frames(type).size()));
-        wxStaticText* text_checked = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler.get_number_of_checked_frames(type)));
+        wxStaticText* text_number = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler_gui_interface.get_number_of_all_frames(type)));
+        wxStaticText* text_checked = new wxStaticText(this, wxID_ANY, std::to_string(m_filelist_handler_gui_interface.get_number_of_checked_frames(type)));
         m_frames_numbers_overview_texts[type] = {text_number, text_checked};
 
         grid_sizer->Add(text, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
@@ -957,10 +1019,10 @@ void MyFrame::add_input_numbers_overview()  {
         grid_sizer->Add(text_checked, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
     };
 
-    add_summary_text(FileTypes::LIGHT, "Light frames: ");
-    add_summary_text(FileTypes::FLAT, "Flat frames: ");
-    add_summary_text(FileTypes::BIAS, "Bias frames: ");
-    add_summary_text(FileTypes::DARK, "Dark frames: ");
+    add_summary_text(FrameType::LIGHT, "Light frames: ");
+    add_summary_text(FrameType::FLAT, "Flat frames: ");
+    add_summary_text(FrameType::BIAS, "Bias frames: ");
+    add_summary_text(FrameType::DARK, "Dark frames: ");
 
     m_sizer_top_right->Add(grid_sizer, 0, wxEXPAND, 5);
 
@@ -1010,9 +1072,9 @@ void MyFrame::add_histogram_and_rgb_sliders()    {
 };
 
 void MyFrame::update_input_numbers_overview()   {
-    for (FileTypes type : {FileTypes::LIGHT, FileTypes::DARK, FileTypes::FLAT, FileTypes::BIAS})   {
-        m_frames_numbers_overview_texts[type].first->SetLabel(std::to_string(m_filelist_handler.get_frames(type).size()));
-        m_frames_numbers_overview_texts[type].second->SetLabel(std::to_string(m_filelist_handler.get_number_of_checked_frames(type)));
+    for (FrameType type : {FrameType::LIGHT, FrameType::DARK, FrameType::FLAT, FrameType::BIAS})   {
+        m_frames_numbers_overview_texts[type].first->SetLabel(std::to_string(m_filelist_handler_gui_interface.get_number_of_all_frames(type)));
+        m_frames_numbers_overview_texts[type].second->SetLabel(std::to_string(m_filelist_handler_gui_interface.get_number_of_checked_frames(type)));
     }
 };
 
@@ -1032,10 +1094,10 @@ void MyFrame::update_histogram()    {
     m_histogram_data_tool_gui->set_histogram_data_colors(*m_histogram_data_tool);
 };
 
-void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::string& title)    {
+void MyFrame::on_open_frames(wxCommandEvent& event, FrameType type, const std::string& title)    {
     const std::string default_path = m_recent_paths_handler->get_recent_file_path(type, "");
     std::vector<string> allowed_extensions = {"cr2", "cr3", "jpg", "jpeg", "png", "fit", "tif", "tiff", "nef", "dng"};
-    if (type == FileTypes::LIGHT) {
+    if (type == FrameType::LIGHT) {
         allowed_extensions.push_back("avi");
         allowed_extensions.push_back("mov");
         allowed_extensions.push_back("mp4");
@@ -1055,7 +1117,7 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
         for (auto path : paths) {
             const AstroPhotoStacker::Metadata metadata = metadata_manager.get_metadata(InputFrame(path.ToStdString()));
             const string str_path = path.ToStdString();
-            m_filelist_handler.add_file(path.ToStdString(), type, true, AlignmentFileInfo(), metadata);
+            m_filelist_handler_gui_interface.add_file(path.ToStdString(), type, m_current_group, true, AlignmentFileInfo(), metadata);
             m_recent_paths_handler->set_recent_file_path_from_file(type, path.ToStdString());
         }
     }
@@ -1065,15 +1127,15 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FileTypes type, const std::s
 };
 
 void MyFrame::on_open_lights(wxCommandEvent& event)    {
-    on_open_frames(event, FileTypes::LIGHT, "Open light frames");
+    on_open_frames(event, FrameType::LIGHT, "Open light frames");
 }
 
 void MyFrame::on_open_flats(wxCommandEvent& event)    {
-    on_open_frames(event, FileTypes::FLAT, "Open flat frames");
+    on_open_frames(event, FrameType::FLAT, "Open flat frames");
 }
 
 void MyFrame::on_open_darks(wxCommandEvent& event)    {
-    on_open_frames(event, FileTypes::DARK, "Open dark frames");
+    on_open_frames(event, FrameType::DARK, "Open dark frames");
 }
 
 void MyFrame::on_save_stacked(wxCommandEvent& event) {
@@ -1087,7 +1149,7 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
             return;
         }
     }
-    const std::string default_path = m_recent_paths_handler->get_recent_file_path(FileTypes::LIGHT, "");
+    const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
     wxFileDialog dialog(this, "Save stacked file", "", default_path, "*['.tif']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
     if (dialog.ShowModal() == wxID_OK) {
         std::string file_address = dialog.GetPath().ToStdString();
@@ -1144,55 +1206,59 @@ void MyFrame::update_color_channels_mean_and_median_values_text()   {
 };
 
 void MyFrame::stack_calibration_frames() {
-    for (FileTypes type : {FileTypes::BIAS, FileTypes::DARK, FileTypes::FLAT}) {
-        // get vector of checked files
-        const vector<InputFrame> &all_frames        = m_filelist_handler.get_frames(type);
-        const vector<bool>   &frames_checked_flags  = m_filelist_handler.get_frames_checked(type);
-        vector<InputFrame> frames_to_stack;
-        for (unsigned int i_file = 0; i_file < all_frames.size(); ++i_file) {
-            if (frames_checked_flags[i_file]) {
-                frames_to_stack.push_back(all_frames[i_file]);
+    const vector<int> calibration_group_numbers = m_filelist_handler_gui_interface.get_group_numbers();
+
+    for (int group_number : calibration_group_numbers) {
+        for (FrameType type : {FrameType::BIAS, FrameType::DARK, FrameType::FLAT}) {
+            // get vector of checked files
+
+            const std::map<InputFrame, FrameInfo> &calibrationf_frame_map = m_filelist_handler_gui_interface.get_frames(type, group_number);
+            vector<InputFrame> frames_to_stack;
+            for (const auto &frame : calibrationf_frame_map) {
+                if (frame.second.is_checked) {
+                    frames_to_stack.push_back(frame.first);
+                }
             }
+
+            // nothing to stack
+            if (frames_to_stack.size() < 2) {
+                continue;
+            }
+
+            // add frames to new filelist handler
+            FilelistHandler calibration_frames_handler;
+            for (const auto &frame : frames_to_stack) {
+                // LIGHT is not a bug - we do not use frames as correction here, we are stacking them
+                calibration_frames_handler.add_frame(frame, FrameType::LIGHT, 0, true);
+            }
+
+            // create a separate stacker
+            StackSettings calibration_frames_settings = *m_stack_settings;
+            calibration_frames_settings.set_use_color_interpolation(false);
+            std::unique_ptr<AstroPhotoStacker::StackerBase> calibration_stacker = get_configured_stacker(calibration_frames_settings, calibration_frames_handler);
+
+            const string file_type_name = to_string(type);
+            const int tasks_total = calibration_stacker->get_tasks_total();
+            const std::atomic<int> &tasks_processed = calibration_stacker->get_tasks_processed();
+
+            run_task_with_progress_dialog(  "File stacking",
+                                    "Stacking " + file_type_name + " frames:",
+                                    "",
+                                    tasks_processed,
+                                    tasks_total,
+                                    [this, &calibration_stacker](){
+                                        calibration_stacker->calculate_stacked_photo();
+                                    },
+                                    "Calculating final "  + file_type_name + " frame ...");
+
+            const std::string last_frame_name = frames_to_stack.back().get_file_address();
+            const string master_frame_name = last_frame_name.substr(0, last_frame_name.find_last_of('.')) + "_master" + file_type_name + ".tif";
+            calibration_stacker->save_stacked_photo(master_frame_name, CV_16U);
+
+            // remove original calibration frames from filelist handler
+            m_filelist_handler_gui_interface.remove_all_frames_of_type_and_group(type, group_number);
+            m_filelist_handler_gui_interface.add_file(master_frame_name, type, group_number, true);
+            update_files_to_stack_checkbox();
         }
-
-        // nothing to stack
-        if (frames_to_stack.size() < 2) {
-            continue;
-        }
-
-        // add frames to new filelist handler
-        FilelistHandler calibration_frames_handler;
-        for (const auto &frame : frames_to_stack) {
-            // LIGHT is not a bug - we do not use frames as correction here, we are stacking them
-            calibration_frames_handler.add_frame(frame, FileTypes::LIGHT, true);
-        }
-
-        // create a separate stacker
-        StackSettings calibration_frames_settings = *m_stack_settings;
-        calibration_frames_settings.set_use_color_interpolation(false);
-        std::unique_ptr<AstroPhotoStacker::StackerBase> calibration_stacker = get_configured_stacker(calibration_frames_settings, calibration_frames_handler);
-
-        const string file_type_name = to_string(type);
-        const int tasks_total = calibration_stacker->get_tasks_total();
-        const std::atomic<int> &tasks_processed = calibration_stacker->get_tasks_processed();
-
-        run_task_with_progress_dialog(  "File stacking",
-                                "Stacking " + file_type_name + " frames:",
-                                "",
-                                tasks_processed,
-                                tasks_total,
-                                [this, &calibration_stacker](){
-                                    calibration_stacker->calculate_stacked_photo();
-                                },
-                                "Calculating final "  + file_type_name + " frame ...");
-
-        const std::string last_frame_name = frames_to_stack.back().get_file_address();
-        const string master_frame_name = last_frame_name.substr(0, last_frame_name.find_last_of('.')) + "_master" + file_type_name + ".tif";
-        calibration_stacker->save_stacked_photo(master_frame_name, CV_16U);
-
-        // remove original calibration frames from filelist handler
-        m_filelist_handler.remove_all_frames_of_selected_type(type);
-        m_filelist_handler.add_file(master_frame_name, type, true);
-        update_files_to_stack_checkbox();
     }
 };

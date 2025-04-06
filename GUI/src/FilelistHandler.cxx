@@ -5,44 +5,10 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
 using namespace AstroPhotoStacker;
 using namespace std;
-
-
-std::string to_string(FileTypes type)   {
-    switch (type)   {
-        case FileTypes::FLAT:
-            return "FLAT";
-        case FileTypes::LIGHT:
-            return "LIGHT";
-        case FileTypes::DARK:
-            return "DARK";
-        case FileTypes::BIAS:
-            return "BIAS";
-        case FileTypes::UNKNOWN:
-            return "UNKNOWN";
-    }
-    return "UNKNOWN";
-};
-
-FileTypes string_to_filetype(const std::string& type)   {
-    if (type == "FLAT")     {
-        return FileTypes::FLAT;
-    }
-    else if (type == "LIGHT")   {
-        return FileTypes::LIGHT;
-    }
-    else if (type == "DARK")    {
-        return FileTypes::DARK;
-    }
-    else if (type == "BIAS")    {
-        return FileTypes::BIAS;
-    }
-    else    {
-        return FileTypes::UNKNOWN;
-    }
-};
 
 std::ostream& operator<<(std::ostream& os, const AlignmentFileInfo& alignment_info) {
     os <<   "(" << alignment_info.shift_x <<
@@ -56,182 +22,192 @@ std::ostream& operator<<(std::ostream& os, const AlignmentFileInfo& alignment_in
     return os;
 }
 
-const std::vector<FileTypes>  FilelistHandler::s_file_types_ordering = {FileTypes::LIGHT, FileTypes::FLAT, FileTypes::DARK, FileTypes::BIAS, FileTypes::UNKNOWN};
-
-FilelistHandler::FilelistHandler()   {
-    for (FileTypes type : s_file_types_ordering)   {
-        m_filelist_checked[type] = std::vector<bool>();
-        m_filelist[type]         = std::vector<InputFrame>();
-    }
-};
+const std::vector<FrameType>  FilelistHandler::s_file_types_ordering = {FrameType::LIGHT, FrameType::FLAT, FrameType::DARK, FrameType::BIAS, FrameType::UNKNOWN};
 
 FilelistHandler FilelistHandler::get_filelist_with_checked_frames() const {
     FilelistHandler filelist_with_checked_files;
-    for (FileTypes type : s_file_types_ordering)   {
-        const std::vector<InputFrame>       &input_frames  = m_filelist.at(type);
-        const std::vector<bool>             &files_checked = m_filelist_checked.at(type);
-        for (unsigned int i = 0; i < input_frames.size(); ++i)   {
-            if (files_checked[i])   {
-                filelist_with_checked_files.add_frame(input_frames[i], type, true, m_filelist_alignment_info[i]);
+    for (const auto &group : m_frames_list)   {
+        filelist_with_checked_files.add_empty_group(group.first);
+        for (const auto &type : group.second)   {
+            const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
+            for (const auto &frame : frames)   {
+                if (frame.second.is_checked)   {
+                    filelist_with_checked_files.add_frame(frame.second.input_frame, type.first, group.first, true, frame.second.alignment_info, frame.second.metadata);
+                }
             }
         }
     }
     return filelist_with_checked_files;
 };
 
-void FilelistHandler::add_frame(const InputFrame &input_frame, FileTypes type, bool checked, const AlignmentFileInfo& alignment_info, const Metadata &metadata) {
-    m_filelist[type].push_back(input_frame);
-    m_filelist_checked[type].push_back(checked);
-    if (type == FileTypes::LIGHT)   {
-        m_filelist_alignment_info.push_back(alignment_info);
-        m_filelist_metadata.push_back(metadata);
+void FilelistHandler::add_frame(const InputFrame &input_frame, FrameType type, int group, bool checked, const AlignmentFileInfo& alignment_info, const Metadata &metadata) {
+    if (m_frames_list.find(group) == m_frames_list.end())   {
+        add_empty_group(group);
     }
+
+    std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = m_frames_list[group][type];
+    FrameInfo frame_info;
+    frame_info.input_frame = input_frame;
+    frame_info.type = type;
+    frame_info.group_number = group;
+    frame_info.alignment_info = alignment_info;
+    frame_info.metadata = metadata;
+    frame_info.is_checked = checked;
+
+    frames[input_frame] = frame_info;
 };
 
-void FilelistHandler::add_file(const std::string &file, FileTypes type, bool checked, const AlignmentFileInfo& alignment_info, const AstroPhotoStacker::Metadata &metadata)    {
+void FilelistHandler::add_file(const std::string &file, FrameType type, int group, bool checked, const AlignmentFileInfo& alignment_info, const AstroPhotoStacker::Metadata &metadata)    {
     if (is_valid_video_file(file))   {
         const std::vector<InputFrame> video_frames = get_video_frames(file);
         for (const InputFrame &video_frame : video_frames)   {
-            add_frame(video_frame, type, checked, alignment_info, metadata);
+            add_frame(video_frame, type, group, checked, alignment_info, metadata);
         }
     }
     else    {
-        add_frame(InputFrame(file), type, checked, alignment_info, metadata);
+        add_frame(InputFrame(file), type, group, checked, alignment_info, metadata);
     }
 };
 
-void FilelistHandler::remove_frame(const InputFrame &input_frame, FileTypes type)  {
-    std::vector<InputFrame> &input_frames   = m_filelist[type];
-    std::vector<bool>        &files_checked = m_filelist_checked[type];
+void FilelistHandler::remove_frame(const InputFrame &input_frame, int group, FrameType type)  {
+    if (m_frames_list.find(group) == m_frames_list.end())   {
+        return;
+    }
 
-    const unsigned int n_files = input_frames.size();
+    std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = m_frames_list[group][type];
+    if (frames.find(input_frame) != frames.end())   {
+        frames.erase(input_frame);
+    }
+};
 
-    for (int i = n_files-1; i >= 0; i--)   {
-        if (input_frames[i] == input_frame)   {
-            input_frames.erase(input_frames.begin() + i);
-            files_checked.erase(files_checked.begin() + i);
-            if (type == FileTypes::LIGHT)   {
-                m_filelist_alignment_info.erase(m_filelist_alignment_info.begin() + i);
-                m_filelist_metadata.erase(m_filelist_metadata.begin() + i);
+void FilelistHandler::keep_only_frames_satisfying_condition(const std::function<bool(FrameType, int, const FrameInfo&)> &keep_condition)   {
+    std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>> new_map;
+    for (auto &group : m_frames_list)   {
+        new_map[group.first] = std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>();
+        for (auto &type : group.second)   {
+            new_map[group.first][type.first] = std::map<AstroPhotoStacker::InputFrame,FrameInfo>();
+            const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = type.second;
+            for (const auto &frame : frames)   {
+                if (keep_condition(type.first, group.first, frame.second))   {
+                    new_map[group.first][type.first][frame.first] = frame.second;
+                }
             }
         }
     }
 };
 
-void FilelistHandler::remove_frame(int file_index)   {
-    int files_previous = 0;
-    for (FileTypes type : s_file_types_ordering)   {
-        const int n_files = m_filelist.at(type).size();
-        if (file_index < files_previous + n_files)   {
-            m_filelist[type].erase(m_filelist[type].begin() + file_index - files_previous);
-            m_filelist_checked[type].erase(m_filelist_checked[type].begin() + file_index - files_previous);
-            if (type == FileTypes::LIGHT)   {
-                m_filelist_alignment_info.erase(m_filelist_alignment_info.begin() + file_index - files_previous);
-                m_filelist_metadata.erase(m_filelist_metadata.begin() + file_index - files_previous);
-            }
-            return;
-        }
-        files_previous += n_files;
+
+const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &FilelistHandler::get_frames(FrameType type, int group)    const  {
+    if (m_frames_list.find(group) == m_frames_list.end())   {
+        throw std::runtime_error("FilelistHandler::get_frames: group not found");
     }
-};
-
-const std::vector<InputFrame>& FilelistHandler::get_frames(FileTypes type)    const  {
-    return m_filelist.at(type);
-};
-
-const std::vector<bool>& FilelistHandler::get_frames_checked(FileTypes type)   const   {
-    return m_filelist_checked.at(type);
-};
-
-std::vector<InputFrame> FilelistHandler::get_checked_frames(FileTypes type) const    {
-    const std::vector<InputFrame>  &input_frames  = m_filelist.at(type);
-    const std::vector<bool>        &files_checked = m_filelist_checked.at(type);
-    std::vector<InputFrame> checked_frames;
-    for (unsigned int i = 0; i < input_frames.size(); ++i)   {
-        if (files_checked[i])   {
-            checked_frames.push_back(input_frames[i]);
-        }
+    if (m_frames_list.at(group).find(type) == m_frames_list.at(group).end())   {
+        throw std::runtime_error("FilelistHandler::get_frames: type not found");
     }
-    return checked_frames;
+    return m_frames_list.at(group).at(type);
 };
 
-int FilelistHandler::get_number_of_checked_frames(FileTypes type) const  {
-    const std::vector<bool> &frames_checked = m_filelist_checked.at(type);
+int FilelistHandler::get_number_of_checked_frames(FrameType type) const  {
     int n_checked_frames = 0;
-    for (bool checked : frames_checked)   {
-        if (checked)    {
-            n_checked_frames++;
+    for (const auto &group : m_frames_list)   {
+        if (group.second.find(type) == group.second.end())   {
+            continue;
+        }
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames = group.second.at(type);
+        for (const auto &frame : frames)   {
+            if (frame.second.is_checked)   {
+                n_checked_frames++;
+            }
         }
     }
     return n_checked_frames;
 };
 
-int FilelistHandler::get_number_of_all_frames() const    {
+
+int FilelistHandler::get_number_of_all_frames(FrameType type) const  {
     int n_files = 0;
-    for (FileTypes type : s_file_types_ordering)   {
-        n_files += m_filelist.at(type).size();
+    for (const auto &group : m_frames_list)   {
+        if (group.second.find(type) == group.second.end())   {
+            continue;
+        }
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames = group.second.at(type);
+        n_files += frames.size();
     }
     return n_files;
 };
 
-bool FilelistHandler::frame_is_checked(int frame_index) const {
-    int files_previous = 0;
-    for (FileTypes type : s_file_types_ordering)   {
-        const int n_files = m_filelist.at(type).size();
-        if (frame_index < files_previous + n_files)   {
-            return m_filelist_checked.at(type)[frame_index - files_previous];
+int FilelistHandler::get_number_of_all_frames() const    {
+    int n_files = 0;
+    for (const auto &group : m_frames_list)   {
+        for (const auto &type : group.second)   {
+            const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames = group.second.at(type.first);
+            n_files += frames.size();
         }
-        files_previous += n_files;
     }
-    return false;
+    return n_files;
 };
 
-void FilelistHandler::set_frame_checked(int frame_index, bool checked, FileTypes type) {
-    m_filelist_checked[type][frame_index] = checked;
+bool FilelistHandler::frame_is_checked(int group, const AstroPhotoStacker::InputFrame &input_frame, FrameType type) const {
+    if (m_frames_list.find(group) == m_frames_list.end())   {
+        return false;
+    }
+    if (m_frames_list.at(group).find(type) == m_frames_list.at(group).end())   {
+        return false;
+    }
+    const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = m_frames_list.at(group).at(type);
+    if (frames.find(input_frame) == frames.end())   {
+        return false;
+    }
+    return frames.at(input_frame).is_checked;
 };
 
-void FilelistHandler::set_frame_checked(int frame_index, bool checked) {
-    int files_previous = 0;
-    for (FileTypes type : s_file_types_ordering)   {
-        const int n_frames = m_filelist[type].size();
-        if (frame_index < files_previous + n_frames)   {
-            m_filelist_checked[type][frame_index - files_previous] = checked;
-            return;
-        }
-        files_previous += n_frames;
+void FilelistHandler::set_frame_checked(int group, const AstroPhotoStacker::InputFrame &input_frame, FrameType type, bool checked) {
+    if (m_frames_list.find(group) == m_frames_list.end())   {
+        return;
     }
+    if (m_frames_list[group].find(type) == m_frames_list[group].end())   {
+        return;
+    }
+    std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = m_frames_list[group][type];
+    if (frames.find(input_frame) == frames.end())   {
+        return;
+    }
+    frames[input_frame].is_checked = checked;
 };
 
 void FilelistHandler::set_checked_status_for_all_frames(bool checked)   {
-    for (FileTypes type : s_file_types_ordering)   {
-        std::vector<bool> &files_checked = m_filelist_checked[type];
-        for (unsigned int i = 0; i < files_checked.size(); ++i)   {
-            files_checked[i] = checked;
+    for (auto &group : m_frames_list)   {
+        for (auto &type : group.second)   {
+            std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
+            for (auto &frame : frames)   {
+                frame.second.is_checked = checked;
+            }
         }
     }
 };
 
-const std::vector<AlignmentFileInfo>& FilelistHandler::get_alignment_info()   const    {
-    return m_filelist_alignment_info;
-};
-
-const std::vector<Metadata>& FilelistHandler::get_metadata()   const   {
-    return m_filelist_metadata;
-};
-
-void FilelistHandler::set_alignment_info(int frame_index, const AlignmentFileInfo& alignment_info)    {
-    m_filelist_alignment_info[frame_index] = alignment_info;
+void FilelistHandler::set_alignment_info(const InputFrame &input_frame, const AlignmentFileInfo& alignment_info)    {
+    // the frame might be in multiple groups
+    for (auto &group : m_frames_list)   {
+        std::map<AstroPhotoStacker::InputFrame, FrameInfo> &light_frames = group.second[FrameType::LIGHT];
+        if (light_frames.find(input_frame) == light_frames.end())   {
+            continue;
+        }
+        light_frames[input_frame].alignment_info = alignment_info;
+    }
 };
 
 bool FilelistHandler::all_checked_frames_are_aligned() const {
-    const std::vector<bool> &light_frames_checked = m_filelist_checked.at(FileTypes::LIGHT);
-    if (light_frames_checked.size() == 0)    {
-        return false;
-    }
-    const std::vector<AlignmentFileInfo> &alignment_info = m_filelist_alignment_info;
-    for (unsigned int i = 0; i < light_frames_checked.size(); ++i)   {
-        if (light_frames_checked[i] && !alignment_info[i].initialized)   {
-            return false;
+    for (const auto &group : m_frames_list)   {
+        if (group.second.find(FrameType::LIGHT) == group.second.end())   {
+            continue;
+        }
+
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &light_frames = group.second.at(FrameType::LIGHT);
+        for (const auto &frame : light_frames)   {
+            if (frame.second.is_checked && !frame.second.alignment_info.initialized)   {
+                return false;
+            }
         }
     }
     return true;
@@ -248,36 +224,61 @@ void FilelistHandler::get_alignment_info_tabular_data(std::vector<std::vector<st
     description->push_back("Ranking");
 
     tabular_data->clear();
-    const std::vector<InputFrame> &light_frames = m_filelist.at(FileTypes::LIGHT);
-    const std::vector<AlignmentFileInfo> &alignment_info = m_filelist_alignment_info;
 
-    for (unsigned int i = 0; i < light_frames.size(); ++i)   {
-        const AlignmentFileInfo &info = alignment_info[i];
-        const std::string file_description = light_frames[i].is_video_frame() ?
-                light_frames[i].get_file_address() + " #frame: " + std::to_string(light_frames[i].get_frame_number()) :
-                light_frames[i].get_file_address();
-        tabular_data->push_back({file_description, std::to_string(info.shift_x), std::to_string(info.shift_y), std::to_string(info.rotation_center_x), std::to_string(info.rotation_center_y), std::to_string(info.rotation), std::to_string(info.ranking)});
+    for (const auto &group : m_frames_list)   {
+        if (group.second.find(FrameType::LIGHT) == group.second.end())   {
+            continue;
+        }
+
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &light_frames = group.second.at(FrameType::LIGHT);
+
+        for (const auto &frame : light_frames)   {
+            const AlignmentFileInfo &info = frame.second.alignment_info;
+            const std::string file_description = frame.second.input_frame.is_video_frame() ?
+                    frame.second.input_frame.get_file_address() + " #frame: " + std::to_string(frame.second.input_frame.get_frame_number()) :
+                    frame.second.input_frame.get_file_address();
+            tabular_data->push_back({file_description, std::to_string(info.shift_x), std::to_string(info.shift_y), std::to_string(info.rotation_center_x), std::to_string(info.rotation_center_y), std::to_string(info.rotation), std::to_string(info.ranking)});
+        }
     }
 };
 
+const AlignmentFileInfo& FilelistHandler::get_alignment_info(int group, const AstroPhotoStacker::InputFrame &input_frame) const {
+    if (m_frames_list.find(group) == m_frames_list.end())   {
+        throw std::runtime_error("FilelistHandler::get_alignment_info: group not found");
+    }
+    if (m_frames_list.at(group).find(FrameType::LIGHT) == m_frames_list.at(group).end())   {
+        throw std::runtime_error("FilelistHandler::get_alignment_info: frame type not found");
+    }
+    if (m_frames_list.at(group).at(FrameType::LIGHT).find(input_frame) == m_frames_list.at(group).at(FrameType::LIGHT).end())   {
+        throw std::runtime_error("FilelistHandler::get_alignment_info: frame not found");
+    }
+    return m_frames_list.at(group).at(FrameType::LIGHT).at(input_frame).alignment_info;
+};
+
 void FilelistHandler::save_alignment_to_file(const std::string &output_address)  {
-    const std::vector<AlignmentFileInfo> &alignment_info = get_alignment_info();
-    const std::vector<InputFrame> &light_frames = get_frames(FileTypes::LIGHT);
     std::ofstream output_file(output_address);
-    for (unsigned int i_file = 0; i_file < alignment_info.size(); ++i_file)   {
-        const AlignmentFileInfo &info = alignment_info[i_file];
-        if (!info.initialized)  {
+    for (const auto &group : m_frames_list)   {
+        if (group.second.find(FrameType::LIGHT) == group.second.end())   {
             continue;
         }
-        output_file << light_frames[i_file].get_file_address() << " | "
-                    << light_frames[i_file].get_frame_number() << " | "
-                    << info.shift_x << " | "
-                    << info.shift_y << " | "
-                    << info.rotation_center_x << " | "
-                    << info.rotation_center_y << " | "
-                    << info.rotation << " | "
-                    << info.ranking << " | "
-                    << info.local_shifts_handler.to_string() << std::endl;
+
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &light_frames = group.second.at(FrameType::LIGHT);
+
+        for (const auto &frame : light_frames)   {
+            const AlignmentFileInfo &info = frame.second.alignment_info;
+            if (!info.initialized)  {
+                continue;
+            }
+            output_file << frame.second.input_frame.get_file_address() << " | "
+                        << frame.second.input_frame.get_frame_number() << " | "
+                        << info.shift_x << " | "
+                        << info.shift_y << " | "
+                        << info.rotation_center_x << " | "
+                        << info.rotation_center_y << " | "
+                        << info.rotation << " | "
+                        << info.ranking << " | "
+                        << info.local_shifts_handler.to_string() << std::endl;
+        }
     }
 };
 
@@ -306,120 +307,162 @@ void FilelistHandler::load_alignment_from_file(const std::string &input_address)
             alignment_info.local_shifts_handler = LocalShiftsHandler(elements[8]);
         }
 
-        const std::vector<InputFrame> &light_files = get_frames(FileTypes::LIGHT);
-        for (unsigned int i_file = 0; i_file < light_files.size(); ++i_file)   {
-            if (light_files[i_file] == input_frame)   {
-                set_alignment_info(i_file, alignment_info);
-                break;
-            }
+        set_alignment_info(input_frame, alignment_info);
+    }
+};
+
+void FilelistHandler::remove_all_frames_of_selected_type(FrameType type)  {
+    for (auto &group : m_frames_list)   {
+        if (group.second.find(type) == group.second.end())   {
+            continue;
         }
-
-    }
-};
-
-void FilelistHandler::sort_by_alignment_ranking(bool ascending)   {
-    vector<pair<float, unsigned int>> ranking_index;
-    for (unsigned int i = 0; i < m_filelist_alignment_info.size(); ++i)   {
-        ranking_index.push_back({m_filelist_alignment_info[i].ranking, i});
-    }
-
-    if (ascending)  {
-        sort(ranking_index.begin(), ranking_index.end());
-    }
-    else    {
-        sort(ranking_index.begin(), ranking_index.end(), greater<pair<float, int>>());
-    }
-
-    vector<unsigned int> indices(ranking_index.size());
-    for (unsigned int i = 0; i < ranking_index.size(); ++i)   {
-        indices[i] = ranking_index[i].second;
-    }
-
-    rearange_vector(&m_filelist.at(FileTypes::LIGHT), indices.data());
-    rearange_vector(&m_filelist_checked.at(FileTypes::LIGHT), indices.data());
-    rearange_vector(&m_filelist_alignment_info, indices.data());
-    rearange_vector(&m_filelist_metadata, indices.data());
-};
-
-void FilelistHandler::sort_by_filename(bool ascending)    {
-    vector<pair<InputFrame, unsigned int>> input_frames_and_indices;
-    for (unsigned int i = 0; i < m_filelist_alignment_info.size(); ++i)   {
-        input_frames_and_indices.push_back({m_filelist.at(FileTypes::LIGHT)[i], i});
-    }
-
-    if (ascending)  {
-        sort(input_frames_and_indices.begin(), input_frames_and_indices.end());
-    }
-    else    {
-        sort(input_frames_and_indices.begin(), input_frames_and_indices.end(), greater<pair<InputFrame, int>>());
-    }
-
-    vector<unsigned int> indices(input_frames_and_indices.size());
-    for (unsigned int i = 0; i < input_frames_and_indices.size(); ++i)   {
-        indices[i] = input_frames_and_indices[i].second;
-    }
-
-    rearange_vector(&m_filelist.at(FileTypes::LIGHT), indices.data());
-    rearange_vector(&m_filelist_checked.at(FileTypes::LIGHT), indices.data());
-    rearange_vector(&m_filelist_alignment_info, indices.data());
-    rearange_vector(&m_filelist_metadata, indices.data());
-};
-
-void FilelistHandler::remove_all_frames_of_selected_type(FileTypes type)  {
-    m_filelist[type].clear();
-    m_filelist_checked[type].clear();
-    if (type == FileTypes::LIGHT)   {
-        m_filelist_alignment_info.clear();
+        group.second[type].clear();
     }
 };
 
 void FilelistHandler::keep_best_n_frames(unsigned int n)   {
-    if (m_filelist[FileTypes::LIGHT].size() <= n) {
-        return;
-    }
-
-    vector<pair<float, unsigned int>> ranking_index;
-    for (unsigned int i = 0; i < m_filelist_alignment_info.size(); ++i)   {
-        ranking_index.push_back({m_filelist_alignment_info[i].ranking, i});
-    }
-
-    sort(ranking_index.begin(), ranking_index.end(), [](const pair<float, unsigned int> &a, const pair<float, unsigned int> &b) {
-        return a.first < b.first;
-    });
-
-    vector<unsigned int> indices(ranking_index.size());
-    for (unsigned int i = 0; i < ranking_index.size(); ++i)   {
-        indices[i] = ranking_index[i].second;
-    }
-
-    if (n > indices.size()) {
-        n = indices.size();
-    }
-
-    rearange_vector(&m_filelist.at(FileTypes::LIGHT), indices.data());
-    rearange_vector(&m_filelist_checked.at(FileTypes::LIGHT), indices.data());
-    rearange_vector(&m_filelist_alignment_info, indices.data());
-    rearange_vector(&m_filelist_metadata, indices.data());
-
-    m_filelist.at(FileTypes::LIGHT).resize(n);
-    m_filelist_checked.at(FileTypes::LIGHT).resize(n);
-    m_filelist_alignment_info.resize(n);
-    m_filelist_metadata.resize(n);
-};
-
-void FilelistHandler::set_local_shifts(int i_file, const std::vector<LocalShift> &shifts)   {
-    m_filelist_alignment_info[i_file].local_shifts_handler = LocalShiftsHandler(shifts);
-};
-
-InputFrame FilelistHandler::get_input_frame_by_gui_string(const std::string &gui_string) const  {
-    const vector<string> elements = split_string(gui_string, "\t\t");
-    const string file_description = elements[1];
-    const FileTypes type = string_to_filetype(elements[0]);
-    const vector<InputFrame> &frames = m_filelist.at(type);
-    for (const InputFrame &frame : frames)   {
-        if (frame.to_gui_string() == file_description)   {
-            return frame;
+    vector<FrameInfo> light_frames;
+    for (const auto &group : m_frames_list)   {
+        if (group.second.find(FrameType::LIGHT) == group.second.end())   {
+            continue;
+        }
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames = group.second.at(FrameType::LIGHT);
+        for (const auto &frame : frames)   {
+            light_frames.push_back(frame.second);
         }
     }
-    throw runtime_error("FilelistHandler::get_input_frame_by_gui_string: file not found");
+
+    std::sort(light_frames.begin(), light_frames.end(), [](const FrameInfo &a, const FrameInfo &b) {
+        return a.alignment_info.ranking < b.alignment_info.ranking;
+    });
+
+    light_frames.resize(n);
+
+    remove_all_frames_of_selected_type(FrameType::LIGHT);
+    for (const FrameInfo &frame : light_frames)   {
+        m_frames_list[frame.group_number][FrameType::LIGHT][frame.input_frame] = frame;
+    }
+};
+
+void FilelistHandler::set_local_shifts(const AstroPhotoStacker::InputFrame &input_frame, const std::vector<LocalShift> &shifts)   {
+    // the frame might be in multiple groups
+    for (auto &group : m_frames_list)   {
+        std::map<AstroPhotoStacker::InputFrame, FrameInfo> &light_frames = group.second[FrameType::LIGHT];
+        if (light_frames.find(input_frame) == light_frames.end())   {
+            continue;
+        }
+        light_frames[input_frame].alignment_info.local_shifts_handler = LocalShiftsHandler(shifts);
+    }
+};
+
+void FilelistHandler::set_dummy_alignment_for_all_frames()  {
+    for (auto &group : m_frames_list)   {
+        if (group.second.find(FrameType::LIGHT) == group.second.end())   {
+            continue;
+        }
+        std::map<AstroPhotoStacker::InputFrame, FrameInfo> &light_frames = group.second[FrameType::LIGHT];
+        for (auto &frame : light_frames)   {
+            frame.second.alignment_info.shift_x = 0;
+            frame.second.alignment_info.shift_y = 0;
+            frame.second.alignment_info.rotation_center_x = 0;
+            frame.second.alignment_info.rotation_center_y = 0;
+            frame.second.alignment_info.rotation = 0;
+            frame.second.alignment_info.ranking = 0;
+            frame.second.alignment_info.initialized = true;
+        }
+    }
+};
+
+std::vector<int> FilelistHandler::get_group_numbers() const {
+    std::vector<int> group_numbers;
+    for (const auto &group : m_frames_list) {
+        group_numbers.push_back(group.first);
+    }
+    return group_numbers;
+};
+
+std::vector<FrameInfo> FilelistHandler::get_checked_frames_of_type(FrameType type) const {
+    std::vector<FrameInfo> frames;
+    for (const auto &group : m_frames_list)   {
+        if (group.second.find(type) == group.second.end())   {
+            continue;
+        }
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames_map = group.second.at(type);
+        for (const auto &frame : frames_map)   {
+            if (frame.second.is_checked)   {
+                frames.push_back(frame.second);
+            }
+        }
+    }
+    return frames;
+};
+
+void FilelistHandler::remove_all_frames_of_type_and_group(FrameType type, int group)    {
+    if (m_frames_list.find(group) == m_frames_list.end())   {
+        return;
+    }
+    if (m_frames_list[group].find(type) == m_frames_list[group].end())   {
+        return;
+    }
+    m_frames_list[group][type].clear();
+};
+
+void FilelistHandler::remove_group(int group_number)    {
+    if (m_frames_list.find(group_number) == m_frames_list.end())   {
+        return;
+    }
+    m_frames_list.erase(group_number);
+};
+
+
+void FilelistHandler::add_empty_group(int group_number) {
+    if (m_frames_list.find(group_number) == m_frames_list.end())   {
+        m_frames_list[group_number] = std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>();
+    }
+    for (FrameType type : s_file_types_ordering)   {
+        if (m_frames_list[group_number].find(type) == m_frames_list[group_number].end())   {
+            m_frames_list[group_number][type] = std::map<AstroPhotoStacker::InputFrame,FrameInfo>();
+        }
+    }
+};
+
+
+void FilelistHandler::save_filelist_to_file(const std::string &output_address)   {
+    std::ofstream output_file(output_address);
+    for (const auto &group : m_frames_list)   {
+        for (const auto &type : group.second)   {
+            const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
+            for (const auto &frame : frames)   {
+                const FrameInfo &frame_info = frame.second;
+                output_file << frame_info.input_frame.get_file_address() << " | "
+                            << frame_info.input_frame.get_frame_number() << " | "
+                            << to_string(frame_info.type) << " | "
+                            << frame_info.group_number << " | "
+                            << frame_info.is_checked << std::endl;
+            }
+        }
+    }
+};
+
+void FilelistHandler::load_filelist_from_file(const std::string &input_address)  {
+    m_frames_list.clear();
+    std::ifstream input_file(input_address);
+    std::string line;
+    while (std::getline(input_file, line))   {
+        vector<string> elements = split_string(line, " | ");
+        if (elements.size() != 5)   {
+            continue;
+        }
+        const std::string file_address = elements[0];
+        const int frame_number         = std::stoi(elements[1]);
+        const FrameType type           = string_to_filetype(elements[2]);
+        const int group_number         = std::stoi(elements[3]);
+        const bool is_checked          = static_cast<bool>(std::stoi(elements[4]));
+
+        if (!std::filesystem::exists(file_address))     continue;
+        if (type == FrameType::UNKNOWN)                 continue;
+
+        const InputFrame input_frame(file_address, frame_number);
+        add_frame(input_frame, type, group_number, is_checked);
+    }
 };
