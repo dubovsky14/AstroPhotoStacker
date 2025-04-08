@@ -5,7 +5,7 @@
 #include "../headers/PlateSolver.h"
 #include "../headers/MonochromeImageData.h"
 #include "../headers/InputFrame.h"
-
+#include "../headers/PlateSolvingResult.h"
 
 #include <memory>
 #include <string>
@@ -60,16 +60,11 @@ namespace AstroPhotoStacker   {
              * @brief Calculate how the photo should be rotated and shifted to match the reference photo
              *
              * @param file_address - path to the file to be plate-solved
-             * @param shift_x - pointer to the variable where the horizontal shift will be stored
-             * @param shift_y - pointer to the variable where the vertical shift will be stored
-             * @param rot_center_x - pointer to the variable where the x coordinate of the rotation center will be stored
-             * @param rot_center_y - pointer to the variable where the y coordinate of the rotation center will be stored
-             * @param rotation - pointer to the variable where the rotation angle will be stored
              * @param ranking - pointer to the variable where the ranking of the plate will be stored
              *
-             * @return bool - was plate solving successful?
+             * @return PlateSolvingResult
             */
-            virtual bool calculate_alignment(const InputFrame &input_frame, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking = nullptr) const = 0;
+            virtual PlateSolvingResult calculate_alignment(const InputFrame &input_frame, float *ranking = nullptr) const = 0;
 
         protected:
             ReferencePhotoHandlerBase() {};

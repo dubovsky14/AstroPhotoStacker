@@ -116,20 +116,21 @@ void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const
     m_alignment_information_vector.resize(n_files);
     m_local_shifts_vector.resize(n_files);
     auto align_file_multicore = [this](const InputFrame &input_frame, unsigned int file_index) {
-        float shift_x, shift_y, rot_center_x, rot_center_y, rotation, ranking;
-        if (m_reference_photo_handler->calculate_alignment(input_frame, &shift_x, &shift_y, &rot_center_x, &rot_center_y, &rotation, &ranking)) {
+        float ranking = 0;
+        const PlateSolvingResult plate_solving_result = m_reference_photo_handler->calculate_alignment(input_frame, &ranking);
+        if (plate_solving_result.is_valid) {
             FileAlignmentInformation &alignment_info = m_alignment_information_vector[file_index];
-            alignment_info.input_frame = input_frame;
-            alignment_info.shift_x = shift_x;
-            alignment_info.shift_y = shift_y;
-            alignment_info.rotation_center_x = rot_center_x;
-            alignment_info.rotation_center_y = rot_center_y;
-            alignment_info.rotation = rotation;
-            alignment_info.ranking = ranking;
+            alignment_info.input_frame          = input_frame;
+            alignment_info.shift_x              = plate_solving_result.shift_x;
+            alignment_info.shift_y              = plate_solving_result.shift_y;
+            alignment_info.rotation_center_x    = plate_solving_result.rotation_center_x;
+            alignment_info.rotation_center_y    = plate_solving_result.rotation_center_y;
+            alignment_info.rotation             = plate_solving_result.rotation;
+            alignment_info.ranking              = ranking;
 
             const ReferencePhotoHandlerSurface *surface_handler = dynamic_cast<const ReferencePhotoHandlerSurface*>(m_reference_photo_handler.get());
             if (surface_handler != nullptr) {
-                vector<LocalShift> local_shifts = surface_handler->get_local_shifts(input_frame, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+                vector<LocalShift> local_shifts = surface_handler->get_local_shifts(input_frame, plate_solving_result);
                 m_local_shifts_vector[file_index] = local_shifts;
                 alignment_info.local_shifts_handler = LocalShiftsHandler(local_shifts);
             }

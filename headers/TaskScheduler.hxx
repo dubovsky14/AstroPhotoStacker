@@ -1,3 +1,5 @@
+#pragma once
+
 #include <mutex>
 #include <future>
 #include <vector>

@@ -49,33 +49,23 @@ namespace AstroPhotoStacker   {
             unsigned int get_number_of_hashes() const { return m_kd_tree->get_n_nodes(); };
 
             /**
-             * @brief Plate-solve a photo - calculate how it should be rotated and shifted to match the reference photo
+             * @brief Calculate how the photo should be rotated and shifted to match the reference photo
              *
              * @param file_address - path to the file to be plate-solved
-             * @param shift_x - pointer to the variable where the horizontal shift will be stored
-             * @param shift_y - pointer to the variable where the vertical shift will be stored
-             * @param rot_center_x - pointer to the variable where the x coordinate of the rotation center will be stored
-             * @param rot_center_y - pointer to the variable where the y coordinate of the rotation center will be stored
-             * @param rotation - pointer to the variable where the rotation angle will be stored
-             * @return true - if the plate was solved
-             * @return false - if the plate was not solved
+             * @param ranking - pointer to the variable where the ranking of the plate will be stored
+             *
+             * @return PlateSolvingResult
             */
-            virtual bool calculate_alignment(const InputFrame &input_frame, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking = nullptr) const override;
+           virtual PlateSolvingResult calculate_alignment(const InputFrame &input_frame, float *ranking = nullptr) const override;
 
             /**
              * @brief Plate-solve a photo - calculate how it should be rotated and shifted to match the reference photo
              *
-             * @param brightness - pointer to the array containing the brightness of the pixels
-             * @param shift_x - pointer to the variable where the horizontal shift will be stored
-             * @param shift_y - pointer to the variable where the vertical shift will be stored
-             * @param rot_center_x - pointer to the variable where the x coordinate of the rotation center will be stored
-             * @param rot_center_y - pointer to the variable where the y coordinate of the rotation center will be stored
-             * @param rotation - pointer to the variable where the rotation angle will be stored
-             * @param ranking - pointer to the variable where the ranking of the plate will be stored
+             * @param std::vector<std::tuple<float, float, int> > stars - x-coordinate, y-coordinate, number of pixels forming the star
              *
-             * @return bool - was plate solving successful?
+             * @return PlateSolvingResult
             */
-            bool plate_solve(const std::vector<std::tuple<float, float, int> > &stars, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation) const;
+           PlateSolvingResult plate_solve(const std::vector<std::tuple<float, float, int> > &stars) const;
 
         private:
 

@@ -66,14 +66,14 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
 };
 
 std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const InputFrame &input_frame,
-                                                                        float shift_x,
-                                                                        float shift_y,
-                                                                        float rotation_center_x,
-                                                                        float rotation_center_y,
-                                                                        float rotation) const   {
+                                                                        const PlateSolvingResult &plate_solving_result) const   {
 
     CalibratedPhotoHandler calibrated_photo_handler(input_frame, true);
-    calibrated_photo_handler.define_alignment(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation);
+    calibrated_photo_handler.define_alignment(plate_solving_result.shift_x,
+                                              plate_solving_result.shift_y,
+                                              plate_solving_result.rotation_center_x,
+                                              plate_solving_result.rotation_center_y,
+                                              plate_solving_result.rotation);
     calibrated_photo_handler.calibrate();
 
     const int width  = calibrated_photo_handler.get_width();
