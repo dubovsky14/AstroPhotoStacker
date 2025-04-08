@@ -73,8 +73,8 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
 
     // add individual frames
     for (int i_file = 0; i_file < n_frames; i_file++) {
-        const string output_file_address = output_folder_address + "/" + get_output_file_name(m_frames_to_align[i_file]);
-        const FileAlignmentInformation alignment_info = m_alignment_info[i_file];
+        const string &output_file_address = output_folder_address + "/" + get_output_file_name(m_frames_to_align[i_file]);
+        const FileAlignmentInformation &alignment_info = m_alignment_info[i_file];
         const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers = m_calibration_frame_handlers[i_file];
         auto submit_alignment = [this, i_file, output_file_address, alignment_info, &calibration_frame_handlers]() {
             produce_aligned_image(m_frames_to_align[i_file], output_file_address, alignment_info, calibration_frame_handlers);
@@ -129,6 +129,19 @@ string AlignedImagesProducer::get_output_file_name(const InputFrame &input_frame
 };
 
 
+std::pair<int,int> AlignedImagesProducer::calculate_cropped_width_and_height(int width_original, int height_original) const {
+    int width = width_original - m_top_left_corner_x;
+    if (m_width != -1) {
+        width = std::min(width, m_width);
+    }
+
+    int height = height_original - m_top_left_corner_y;
+    if (m_height != -1) {
+        height = std::min(height, m_height);
+    }
+    return {width, height};
+};
+
 void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_stack, const std::string &output_file_address)  {
     if (group_to_stack.input_frames.size() == 0) {
         cout << "No frames to stack\n";
@@ -163,37 +176,19 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
     stacker->calculate_stacked_photo();
     const std::vector<std::vector<double>> &stacked_image_double = stacker->get_stacked_image();
 
-    int width = width_original - m_top_left_corner_x;
-    if (m_width != -1) {
-        width = min(width, m_width);
-    }
-
-    int height = height_original - m_top_left_corner_y;
-    if (m_height != -1) {
-        height = min(height, m_height);
-    }
-
-
-    std::vector<vector<unsigned short>> output_image(3, vector<unsigned short>(width*height, 0));
+    const auto [width_crop, height_crop] = calculate_cropped_width_and_height(width_original, height_original);
+    std::vector<vector<unsigned short>> output_image(3, vector<unsigned short>(width_crop*height_crop, 0));
     for (int color = 0; color < 3; color++) {
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+        for (int y = 0; y < height_crop; y++) {
+            for (int x = 0; x < width_crop; x++) {
                 const int x_original = x + m_top_left_corner_x;
                 const int y_original = y + m_top_left_corner_y;
-                output_image[color][x + width*y] = stacked_image_double[color][x_original + width_original*y_original];
+                output_image[color][x + width_crop*y] = stacked_image_double[color][x_original + width_original*y_original];
             }
         }
     }
 
-    const Metadata metadata = read_metadata(first_frame);
-    const int unix_time = metadata.timestamp + m_timestamp_offset;
-
-    process_and_save_image(&output_image, width, height, output_file_address, unix_time);
-
-    std::scoped_lock lock(m_output_addresses_and_unix_times_mutex);
-    m_output_addresses_and_unix_times.emplace_back(output_file_address, unix_time);
-
-    m_n_tasks_processed++;
+    process_save_and_update_counter_and_image_list(&output_image, width_crop, height_crop, output_file_address, first_frame);
 };
 
 void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_frame,
@@ -215,16 +210,7 @@ void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_fram
 
     const int width_original = photo_handler.get_width();
     const int height_original = photo_handler.get_height();
-
-    int width = width_original - m_top_left_corner_x;
-    if (m_width != -1) {
-        width = min(width, m_width);
-    }
-
-    int height = height_original - m_top_left_corner_y;
-    if (m_height != -1) {
-        height = min(height, m_height);
-    }
+    const auto [width, height] = calculate_cropped_width_and_height(width_original, height_original);
 
     std::vector<vector<unsigned short>> output_image(3, vector<unsigned short>(width*height, 0));
 
@@ -241,10 +227,20 @@ void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_fram
         }
     }
 
+    process_save_and_update_counter_and_image_list(&output_image, width, height, output_file_address, input_frame);
+};
+
+void AlignedImagesProducer::process_save_and_update_counter_and_image_list(
+                                std::vector<std::vector<unsigned short>> *stacked_image,
+                                int width,
+                                int height,
+                                const std::string &output_file_address,
+                                const InputFrame &input_frame)     {
+
     const Metadata metadata = read_metadata(input_frame);
     const int unix_time = metadata.timestamp + m_timestamp_offset;
 
-    process_and_save_image(&output_image, width, height, output_file_address, unix_time);
+    process_and_save_image(stacked_image, width, height, output_file_address, unix_time);
 
     std::scoped_lock lock(m_output_addresses_and_unix_times_mutex);
     m_output_addresses_and_unix_times.emplace_back(output_file_address, unix_time);
