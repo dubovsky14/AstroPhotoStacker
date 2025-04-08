@@ -50,7 +50,7 @@ PlateSolvingResult PlateSolver::plate_solve(  const std::vector<std::tuple<float
                         plate_solving_result.rotation_center_y = get<1>(this_photo_star_A);
                         plate_solving_result.rotation = atan2(get<1>(reference_star_B) - get<1>(reference_star_A), get<0>(reference_star_B) - get<0>(reference_star_A)) -
                             atan2(get<1>(this_photo_star_B) - get<1>(this_photo_star_A), get<0>(this_photo_star_B) - get<0>(this_photo_star_A));
-                        plate_solving_result.is_valid = false;
+                        plate_solving_result.is_valid = true;
 
                         if (validate_hypothesis(stars, plate_solving_result))   {
                             return plate_solving_result;
