@@ -6,6 +6,12 @@
 #include "../headers/AlignmentWindow.h"
 
 namespace AstroPhotoStacker {
+
+    /**
+     * @brief Class representing a box of pixels in the alignment window. It is used to find patterns in the image
+     *        by comparing the brightness values of the pixels in the box (reference image) and the pixels in the
+     *        input image which is being alifned..
+     */
     class AlignmentPointBox    {
         public:
             AlignmentPointBox() = delete;
