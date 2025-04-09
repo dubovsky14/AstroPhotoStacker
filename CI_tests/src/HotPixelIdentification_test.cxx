@@ -46,22 +46,18 @@ bool AstroPhotoStacker::compare_files(const std::string &file1, const std::strin
     return true;
 };
 
-void AstroPhotoStacker::hot_pixel_identification_test(const std::string &raw_files_folder, const std::string &output_file, const std::string &reference_output_file)   {
+TestResult AstroPhotoStacker::hot_pixel_identification_test(const std::string &raw_files_folder, const std::string &output_file, const std::string &reference_output_file)   {
     produce_hot_pixel_file(raw_files_folder, output_file);
     if (!compare_files(output_file, reference_output_file)) {
-        throw runtime_error("Hot pixel identification test failed. Produced hot pixel file does not match reference output file.");
+        return TestResult(false, "Hot pixel identification test failed. Produced hot pixel file does not match reference output file.");
     }
-    cout << "Hot pixel identification test passed." << endl;
+    return TestResult(true, "Hot pixel identification test passed.");
 };
 
-void AstroPhotoStacker::hot_pixel_identification_test(int argc, const char **argv)  {
-    if (argc < 4) {
-        throw runtime_error("Invalid input! Four input arguments are required: test type, raw files folder, output file, reference output file");
-    }
-
-    const string raw_files_folder = argv[2];
-    const string output_file = argv[3];
-    const string reference_output_file = argv[4];
-
-    hot_pixel_identification_test(raw_files_folder, output_file, reference_output_file);
-};
+//void AstroPhotoStacker::hot_pixel_identification_test1()   {
+//    const string raw_files_folder       = "AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/";
+//    const string output_file            = "temp_hot_pixel_file.txt";
+//    const string reference_output_file  = "AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/reference_files/hot_pixels.txt";
+//
+//    hot_pixel_identification_test(raw_files_folder, output_file, reference_output_file);
+//};

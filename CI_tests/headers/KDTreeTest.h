@@ -1,7 +1,9 @@
 #pragma once
 
+#include "../headers/TestUtils.h"
+
 namespace AstroPhotoStacker {
     float random_uniform(float min, float max);
 
-    void test_kd_tree();
+    TestResult test_kd_tree();
 }
