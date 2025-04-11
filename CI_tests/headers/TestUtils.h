@@ -26,9 +26,12 @@ namespace AstroPhotoStacker {
                 } catch (const std::exception &e) {
                     m_test_results.emplace_back(test_name, TestResult(false, e.what()));
                 }
+                catch (...) {
+                    m_test_results.emplace_back(test_name, TestResult(false, "Unknown exception occured"));
+                }
             };
 
-            void summarize_tests()   const;
+            void summarize_tests() const;
 
         private:
             std::vector<std::pair<std::string,TestResult>> m_test_results;

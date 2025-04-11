@@ -12,14 +12,6 @@
 #include <vector>
 
 namespace AstroPhotoStacker {
-    enum class InputFileType {
-        RAW_RGB,
-        RAW_MONO,
-        IMAGE_RGB,
-        LUMINANCE,
-    };
-
-
     /**
      * @class CalibratedPhotoHandler
      *
@@ -119,15 +111,6 @@ namespace AstroPhotoStacker {
                 return m_data_shifted_color_interpolation[color][index];
             };
 
-            /**
-             * @brief Get type of the input image
-             *
-             * @return InputFileType - type of the input image
-             */
-            InputFileType get_input_file_type() const {
-                return m_input_file_type;
-            };
-
             int get_width() const {
                 return m_width;
             };
@@ -158,8 +141,6 @@ namespace AstroPhotoStacker {
             int m_height;
 
             bool m_is_raw_file = false;
-
-            InputFileType m_input_file_type;
 
             int m_y_min = -1;
             int m_y_max = -1;

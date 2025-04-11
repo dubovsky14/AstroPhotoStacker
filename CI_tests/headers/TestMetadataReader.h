@@ -9,5 +9,6 @@ namespace AstroPhotoStacker {
                                         float expected_aperture,
                                         float expected_exposure_time,
                                         int expected_iso,
-                                        float expected_focal_length);
+                                        float expected_focal_length,
+                                        const std::string &expected_date_time);
 }
