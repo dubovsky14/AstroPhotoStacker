@@ -23,7 +23,7 @@ int main(int argc, const char **argv)   {
 
     test_runner.run_test("Metadata reading - Canon 6D MarkII",    test_metadata_reading,
                         "AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2",
-                        6.3, 180.80f, 1600, 600.f, 1694202974);
+                        6.3, 180.80f, 1600, 600.f);
 
     test_runner.run_test("Metadata reading ZWO678MC",    test_metadata_reading,
                             "AstroPhotoStacker_test_files/data/ZWO678MC_horse_head/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001.fit",
