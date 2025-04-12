@@ -20,13 +20,13 @@ int main(int argc, const char **argv)   {
 
     test_runner.run_test("kd_tree",                 test_kd_tree);
 
-    test_runner.run_test("metadata_reading_CanonR7",    test_metadata_reading,
+    test_runner.run_test("metadata_reading_Canon 6D MarkII",    test_metadata_reading,
                         "AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2",
-                        6.3, 180.80f, 1600, 600.f, "2023-09-08 07:56:14 PM");
+                        6.3, 180.80f, 1600, 600.f, 1694202974);
 
     test_runner.run_test("metadata_reading_ZWO678MC",    test_metadata_reading,
                             "AstroPhotoStacker_test_files/data/ZWO678MC_horse_head/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001.fit",
-                            0, 180.0f, 100, 1197.f, "2024-12-25T23:09:37.105251");
+                            0, 180.0f, 100, 1197.f, 1735095619);
 
     test_runner.summarize_tests();
 

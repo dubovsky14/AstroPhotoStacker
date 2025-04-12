@@ -51,7 +51,7 @@ jobs:
       - run:  |
               chmod u+x bin/tests
               ./bin/tests
-        name: hot-pixel-identification
+        name: unit-tests
 
   produce-alignment-file:
     runs-on: ubuntu-latest
