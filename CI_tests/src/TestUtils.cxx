@@ -26,7 +26,7 @@ void TestRunner::summarize_tests()   const {
         const TestResult &result = name_and_result.second;
         if (!result.passed) {
             std::cout << "Test: "           << test_name << " - Failed" << std::endl;
-            std::cout << "Error message: "  << result.error_message << std::endl;
+            std::cout << "Error message:\n" << result.error_message << std::endl;
         }
     }
 
