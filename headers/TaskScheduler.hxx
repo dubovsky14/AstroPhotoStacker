@@ -20,6 +20,10 @@ namespace AstroPhotoStacker {
                 m_resource_usage(resource_limits.size(), 0)   {
             };
 
+            ~TaskScheduler()     {
+                wait_for_tasks();
+            }
+
             TaskScheduler()                     = delete;
             TaskScheduler(const TaskScheduler&) = delete;
 
