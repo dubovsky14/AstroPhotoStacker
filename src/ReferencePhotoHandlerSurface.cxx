@@ -3,6 +3,7 @@
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/MonochromeImageData.h"
 #include "../headers/ImageFilesInputOutput.h"
+#include "../headers/Common.h"
 
 #include "../headers/AlignmentSettingsSurface.h"
 
@@ -80,19 +81,7 @@ std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const In
     const int height = calibrated_photo_handler.get_height();
     const vector<vector<short int>> &calibrated_data = calibrated_photo_handler.get_calibrated_data_after_color_interpolation();
 
-    vector<unsigned short int> brightness(width*height);
-    for (int i_pixel = 0; i_pixel < width*height; i_pixel++) {
-        float value = 0;
-        int n_points = 0;
-        for (unsigned int color = 0; color < calibrated_data.size(); color++) {
-            if (calibrated_data[color][i_pixel] >= 0) {
-                value += calibrated_data[color][i_pixel];
-                n_points++;
-            }
-        }
-        value /= n_points;
-        brightness.at(i_pixel) = value;
-    }
+    const vector<unsigned short int> brightness = convert_color_to_monochrome<short, unsigned short>(calibrated_data, width, height);
 
     MonochromeImageData calibrated_image_data;
     calibrated_image_data.brightness = brightness.data();

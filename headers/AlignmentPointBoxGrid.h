@@ -46,6 +46,17 @@ namespace AstroPhotoStacker {
                                     unsigned int n_boxes,
                                     float maximal_allowed_overlap);
 
+                                    /**
+             * @brief Construct a new Alignment Point Box Grid object with square boxes and uniform spacing
+             *
+             * @param image_data The image data
+             * @param alignment_points The alignment points - std::vector<std::tuple<int,int,int,int>> - x (center), y (center), box_width, box_height
+             */
+            AlignmentPointBoxGrid(  const MonochromeImageData &image_data,
+                                    const AlignmentWindow &alignment_window,
+                                    const std::vector<std::tuple<int,int,int,int>> &alignment_points);
+
+
             /**
              * @brief Get the local shifts of the alignment point boxes.
              *

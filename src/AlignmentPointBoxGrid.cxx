@@ -30,6 +30,10 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
     const std::pair<int,int> box_width_range = {min_box_width, max_box_width};
     const std::pair<int,int> box_height_range = {min_box_height, max_box_height};
 
+    const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
+    m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
+    const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
+
     if (regular_grid)   {
         const int alignment_window_area = (alignment_window.x_max - alignment_window.x_min)*(alignment_window.y_max - alignment_window.y_min);
 
@@ -56,10 +60,6 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
         const unsigned int alignment_window_width = alignment_window.x_max - alignment_window.x_min;
         const unsigned int alignment_window_height = alignment_window.y_max - alignment_window.y_min;
         m_alignment_window = alignment_window;
-
-        const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
-        m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
-        const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
 
         // not all boxes will be valid -> let's try to get n_boxes valid boxes, but also don't wanna get stuck in an infinite loop
         for (unsigned int i = 0; i < n_boxes*10; i++) {
@@ -139,6 +139,27 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
     sort_alignment_boxes();
 };
 
+AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image_data,
+                                                const AlignmentWindow &alignment_window,
+                                                const std::vector<std::tuple<int,int,int,int>> &alignment_points)   {
+
+    m_alignment_window = alignment_window;
+    const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
+    m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
+    const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
+
+    for (const auto &alignment_point : alignment_points) {
+        const int x = std::get<0>(alignment_point);
+        const int y = std::get<1>(alignment_point);
+        const int box_width = std::get<2>(alignment_point);
+        const int box_height = std::get<3>(alignment_point);
+
+        if (AlignmentPointBox::is_valid_ap(&m_scaled_data_reference_image_in_alignment_window, alignment_window, x, y, box_width, box_height, max_value)) {
+            m_boxes.emplace_back(&m_scaled_data_reference_image_in_alignment_window, alignment_window, x, y, box_width, box_height, max_value);
+        }
+    }
+    //sort_alignment_boxes();
+};
 
 
 void AlignmentPointBoxGrid::sort_alignment_boxes()    {

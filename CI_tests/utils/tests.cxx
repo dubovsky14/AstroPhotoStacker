@@ -2,6 +2,8 @@
 #include "../headers/KDTreeTest.h"
 #include "../headers/TestMetadataReader.h"
 #include "../headers/ImageReadingTest.h"
+#include "../headers/TestLocalShifts.h"
+
 #include "../headers/TestUtils.h"
 
 
@@ -53,6 +55,24 @@ int main(int argc, const char **argv)   {
                                {2908, 1944, 2400, 0},
                                {2212, 2013, 1968, 1},
                            });
+
+
+    test_runner.run_test(   "Local shifts calculation: Moon", test_predifened_alignment_boxes,
+        InputFrame("AstroPhotoStacker_test_files/data/moon_jpg/original.jpg"),
+        InputFrame("AstroPhotoStacker_test_files/data/moon_jpg/shifted.jpg"),
+        std::vector<std::tuple<int,int,int,int>>{
+            {589,586, 50,50},
+            {1052, 274, 50, 50},
+            {1546, 237, 50, 50},
+            {554,  991, 30, 30},
+        },
+        std::vector<std::pair<int,int>>{
+            {7, 12},
+            {0, 0},
+            {-7,2},
+            {0,-7},
+        });
+
     test_runner.summarize_tests();
 
 }
