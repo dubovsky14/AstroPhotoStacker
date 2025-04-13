@@ -38,13 +38,13 @@ namespace AstroPhotoStacker {
              * @param PlateSolvingResult
             */
             GeometricTransformer(const PlateSolvingResult &plate_solving_result) :
-            m_shift_x           (plate_solving_result.shift_x),
-            m_shift_y           (plate_solving_result.shift_y),
-            m_rotation          (plate_solving_result.rotation),
-            m_rotation_center_x (plate_solving_result.rotation_center_x),
-            m_rotation_center_y (plate_solving_result.rotation_center_y) {
-                cosx = cos(m_rotation);
-                sinx = sin(m_rotation);
+                m_shift_x           (plate_solving_result.shift_x),
+                m_shift_y           (plate_solving_result.shift_y),
+                m_rotation          (plate_solving_result.rotation),
+                m_rotation_center_x (plate_solving_result.rotation_center_x),
+                m_rotation_center_y (plate_solving_result.rotation_center_y) {
+                    cosx = cos(m_rotation);
+                    sinx = sin(m_rotation);
             };
 
 

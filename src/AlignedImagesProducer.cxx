@@ -73,7 +73,7 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
 
     // add individual frames
     for (int i_file = 0; i_file < n_frames; i_file++) {
-        const string &output_file_address = output_folder_address + "/" + get_output_file_name(m_frames_to_align[i_file]);
+        const string output_file_address = output_folder_address + "/" + get_output_file_name(m_frames_to_align[i_file]);
         const FileAlignmentInformation &alignment_info = m_alignment_info[i_file];
         const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers = m_calibration_frame_handlers[i_file];
         auto submit_alignment = [this, i_file, output_file_address, alignment_info, &calibration_frame_handlers]() {
