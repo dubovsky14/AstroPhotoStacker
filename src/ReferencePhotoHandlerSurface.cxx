@@ -52,11 +52,7 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
     image_data.height = m_height;
 
     const AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
-    const vector<unsigned short> blurred_brightness = gaussian_blur(image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
-    MonochromeImageData blurred_image_data;
-    blurred_image_data.brightness = blurred_brightness.data();
-    blurred_image_data.width = m_width;
-    blurred_image_data.height = m_height;
+    const MonochromeImageDataWithStorage blurred_image_data = gaussian_blur(image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
 
     m_alignment_point_box_grid = make_unique<AlignmentPointBoxGrid>(
         blurred_image_data,
@@ -88,11 +84,7 @@ std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const In
     calibrated_image_data.width = width;
     calibrated_image_data.height = height;
 
-    const vector<unsigned short int> smeared_data = gaussian_blur(calibrated_image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
-    MonochromeImageData blurred_image;
+    MonochromeImageDataWithStorage blurred_image = gaussian_blur(calibrated_image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
 
-    blurred_image.brightness = smeared_data.data();
-    blurred_image.width = width;
-    blurred_image.height = height;
     return m_alignment_point_box_grid->get_local_shifts(blurred_image);
 };

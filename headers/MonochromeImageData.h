@@ -1,10 +1,33 @@
 #pragma once
 
+#include <vector>
+#include <memory>
+
 
 namespace AstroPhotoStacker {
+
+    /**
+     * @brief Struct holding pointer to brightness data and image resolution for monochrome images. It does not own the data.
+     */
     struct MonochromeImageData {
         const unsigned short *brightness = nullptr;
         int width  = 0;
         int height = 0;
     };
+
+    /**
+     * @brief Struct holding pointer to brightness data and image resolution for monochrome images. It owns the data.
+     */
+    struct MonochromeImageDataWithStorage : public MonochromeImageData {
+        std::unique_ptr<std::vector<unsigned short>> brightness_storage = nullptr;
+
+        MonochromeImageDataWithStorage(int width, int height) {
+            this->width = width;
+            this->height = height;
+            brightness_storage = std::make_unique<std::vector<unsigned short>>(width * height);
+            brightness = brightness_storage->data();
+        }
+    };
+
+
 }

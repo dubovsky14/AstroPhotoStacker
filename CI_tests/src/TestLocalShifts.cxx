@@ -31,18 +31,16 @@ TestResult AstroPhotoStacker::test_predifened_alignment_boxes(  const InputFrame
     image_data_reference.brightness = reference_image_data_monochrome.data();
     image_data_reference.width = width_reference;
     image_data_reference.height = height_reference;
-    const vector<unsigned short> reference_brightness_blurred = gaussian_blur(image_data_reference, 5, 5, 1);
+    const MonochromeImageDataWithStorage blurred_image_reference = gaussian_blur(image_data_reference, 5, 5, 1);
 
-    MonochromeImageData blurred_image_reference;
-    blurred_image_reference.brightness = reference_brightness_blurred.data();
-    blurred_image_reference.width = width_reference;
-    blurred_image_reference.height = height_reference;
     const AlignmentWindow alignment_window{0,0,width_reference-1, height_reference-1};
 
     AlignmentPointBoxGrid alignment_point_box_grid(
         blurred_image_reference,
         alignment_window,
-        alignment_points);
+        alignment_points,
+        false // do not sort alignment points - this would make it harder to compare
+    );
 
 
     const int width_alternative = alternative_frame_data.get_width();
@@ -55,11 +53,8 @@ TestResult AstroPhotoStacker::test_predifened_alignment_boxes(  const InputFrame
     image_data_alternative.height = height_alternative;
 
 
-    const vector<unsigned short int> smeared_data = gaussian_blur(image_data_alternative, 5, 5, 1);
-    MonochromeImageData blurred_image_alternative;
-    blurred_image_alternative.brightness = smeared_data.data();
-    blurred_image_alternative.width = width_alternative;
-    blurred_image_alternative.height = height_alternative;
+    const MonochromeImageDataWithStorage blurred_image_alternative = gaussian_blur(image_data_alternative, 5, 5, 1);
+
 
     const vector<LocalShift> local_shifts = alignment_point_box_grid.get_local_shifts(blurred_image_alternative);
     if (local_shifts.size() != expected_shifts.size()) {

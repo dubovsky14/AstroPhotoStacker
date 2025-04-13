@@ -141,7 +141,8 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
 
 AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image_data,
                                                 const AlignmentWindow &alignment_window,
-                                                const std::vector<std::tuple<int,int,int,int>> &alignment_points)   {
+                                                const std::vector<std::tuple<int,int,int,int>> &alignment_points,
+                                                bool sort_alignment_points)   {
 
     m_alignment_window = alignment_window;
     const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
@@ -158,7 +159,10 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
             m_boxes.emplace_back(&m_scaled_data_reference_image_in_alignment_window, alignment_window, x, y, box_width, box_height, max_value);
         }
     }
-    //sort_alignment_boxes();
+
+    if (sort_alignment_points) {
+        sort_alignment_boxes();
+    }
 };
 
 
