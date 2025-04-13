@@ -27,7 +27,7 @@ namespace AstroPhotoStacker {
                     m_test_results.emplace_back(test_name, TestResult(false, e.what()));
                 }
                 catch (...) {
-                    m_test_results.emplace_back(test_name, TestResult(false, "Unknown exception occured"));
+                    m_test_results.emplace_back(test_name, TestResult(false, "Unknown exception occurred"));
                 }
             };
 

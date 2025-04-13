@@ -57,7 +57,7 @@ int main(int argc, const char **argv)   {
                            });
 
 
-    test_runner.run_test(   "Local shifts calculation: Moon", test_predifened_alignment_boxes,
+    test_runner.run_test(   "Local shifts calculation: Moon", test_predefined_alignment_boxes,
         InputFrame("AstroPhotoStacker_test_files/data/moon_jpg/original.jpg"),
         InputFrame("AstroPhotoStacker_test_files/data/moon_jpg/shifted.jpg"),
         std::vector<std::tuple<int,int,int,int>>{
