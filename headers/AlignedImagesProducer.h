@@ -121,9 +121,18 @@ namespace AstroPhotoStacker {
             const HotPixelIdentifier *m_hot_pixel_identifier = nullptr;
             TimeLapseVideoSettings m_timelapse_video_settings;
 
+            std::pair<int,int> calculate_cropped_width_and_height(int width_original, int height_original) const;
+
             void produce_aligned_image( const InputFrame &input_frame, const std::string &output_file_address, const FileAlignmentInformation &alignment_info, const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers);
 
             void produce_aligned_image( const GroupToStack &group_to_stack, const std::string &output_file_address);
+
+            void process_save_and_update_counter_and_image_list(
+                                                    std::vector<std::vector<unsigned short>> *stacked_image,
+                                                    int width,
+                                                    int height,
+                                                    const std::string &output_file_address,
+                                                    const InputFrame &input_frame);
 
             void process_and_save_image(std::vector<std::vector<unsigned short>> *stacked_image,
                                         int width,

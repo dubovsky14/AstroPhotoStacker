@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../headers/KDTree.h"
+#include "../headers/PlateSolvingResult.h"
 
 #include <vector>
 #include <tuple>
@@ -30,17 +31,9 @@ namespace AstroPhotoStacker {
              * @brief Calculate the shift, rotation and rotation center of the photo to match the reference photo
              *
              * @param stars - vector of tuples containing the x and y coordinates of the stars and number of their pixels
-             * @param shift_x - pointer to the variable where the horizontal shift will be stored
-             * @param shift_y - pointer to the variable where the vertical shift will be stored
-             * @param rot_center_x - pointer to the variable where the x coordinate of the rotation center will be stored
-             * @param rot_center_y - pointer to the variable where the y coordinate of the rotation center will be stored
-             * @param rotation - pointer to the variable where the rotation angle will be stored
-             * @return true - if the plate was solved
-             * @return false - if the plate was not solved
+             * @return PlateSolvingResult - struct containing the shift, rotation and rotation center of the photo to match the reference photo
             */
-            bool plate_solve(   const std::vector<std::tuple<float,float,int> > &stars,
-                                float *shift_x, float *shift_y,
-                                float *rot_center_x, float *rot_center_y, float *rotation) const;
+            PlateSolvingResult plate_solve(const std::vector<std::tuple<float,float,int> > &stars) const;
 
 
         private:
@@ -50,8 +43,7 @@ namespace AstroPhotoStacker {
             unsigned int m_reference_photo_height;
 
             bool validate_hypothesis(   const std::vector<std::tuple<float,float,int> > &stars,
-                                        float shift_x, float shift_y,
-                                        float rot_center_x, float rot_center_y, float rotation) const;
+                                        const PlateSolvingResult &plate_solving_result) const;
 
             bool has_paired_star(float x, float y, float position_error = 3)    const;
     };

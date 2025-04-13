@@ -1,3 +1,5 @@
+#pragma once
+
 #include <mutex>
 #include <future>
 #include <vector>
@@ -17,6 +19,10 @@ namespace AstroPhotoStacker {
                 m_resource_limits(resource_limits),
                 m_resource_usage(resource_limits.size(), 0)   {
             };
+
+            ~TaskScheduler()     {
+                wait_for_tasks();
+            }
 
             TaskScheduler()                     = delete;
             TaskScheduler(const TaskScheduler&) = delete;

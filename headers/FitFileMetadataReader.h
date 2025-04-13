@@ -12,6 +12,12 @@
 #include <limits>
 
 namespace AstroPhotoStacker {
+    /**
+     * @class FitFileMetadataReader
+     *
+     * @brief A class for reading metadata from FITS files.
+     *        For more info about the format see: https://fits.gsfc.nasa.gov/standard40/fits_standard40aa-le.pdf
+     */
     class FitFileMetadataReader {
         public:
             FitFileMetadataReader() = delete;

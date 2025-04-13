@@ -59,8 +59,8 @@ namespace AstroPhotoStacker   {
         raw_processor.subtract_black();
         raw_processor.dcraw_process();
 
-        int col, bps;
-        raw_processor.get_mem_image_format(width, height, &col, &bps);
+        int num_colors, bps;
+        raw_processor.get_mem_image_format(width, height, &num_colors, &bps);
 
         if (*width < *height)   {
             std::swap(*width, *height);

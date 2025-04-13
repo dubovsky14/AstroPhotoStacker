@@ -29,7 +29,7 @@ ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const unsigned sh
     initialize(brightness, width, height, threshold_fraction);
 };
 
-bool ReferencePhotoHandlerPlanetary::calculate_alignment(const InputFrame &input_frame, float *shift_x, float *shift_y, float *rot_center_x, float *rot_center_y, float *rotation, float *ranking) const{
+PlateSolvingResult ReferencePhotoHandlerPlanetary::calculate_alignment(const InputFrame &input_frame, float *ranking) const{
     int width, height;
     const vector<unsigned short int> brightness = read_image_monochrome<unsigned short>(input_frame, &width, &height);
 
@@ -40,27 +40,26 @@ bool ReferencePhotoHandlerPlanetary::calculate_alignment(const InputFrame &input
 
     AlignmentWindow alignment_window;
     const auto [center_of_mass_x, center_of_mass_y, eigenvec, eigenval] = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, m_threshold_fraction, &alignment_window);
-
-    *shift_x = m_center_of_mass_x - center_of_mass_x;
-    *shift_y = m_center_of_mass_y - center_of_mass_y;
-
-    *rot_center_x = center_of_mass_x;
-    *rot_center_y = center_of_mass_y;
-
     const double sin_angle = m_covariance_eigen_vectors[0][0]*eigenvec[0][1] - m_covariance_eigen_vectors[0][1]*eigenvec[0][0];
 
-    *rotation = std::asin(sin_angle);
+    PlateSolvingResult plate_solving_result;
+    plate_solving_result.shift_x = m_center_of_mass_x - center_of_mass_x;
+    plate_solving_result.shift_y = m_center_of_mass_y - center_of_mass_y;
+    plate_solving_result.rotation_center_x = center_of_mass_x;
+    plate_solving_result.rotation_center_y = center_of_mass_y;
+    plate_solving_result.rotation = std::asin(sin_angle);
+    plate_solving_result.is_valid = true;
 
     if (ranking != nullptr) {
         const double sharpness = get_sharpness_factor(brightness.data(), width, height, alignment_window);
         *ranking = 100./sharpness;
     }
 
-    return true;
+    return plate_solving_result;
 };
 
 AlignmentWindow ReferencePhotoHandlerPlanetary::get_alignment_window(   const MonochromeImageData &image_data,
-                                                                                    unsigned short threshold) const    {
+                                                                        unsigned short threshold) const    {
 
     const unsigned short *brightness = image_data.brightness;
     const int width = image_data.width;

@@ -70,11 +70,13 @@ void FitFileMetadataReader::parse_header(const std::string &header)    {
             previous_was_space = true;
             continue;
         }
+        // starting to read key
         if (header[i] != ' ' && previous_was_space && !reading_value && header[i] != '=') {
             first_non_whitespace = i;
             last_non_whitespace = i;
             previous_was_space = false;
         }
+        // reading key
         else if (header[i] != '=' && !reading_value){
             if (first_non_whitespace == -1) {
                 first_non_whitespace = i;

@@ -321,4 +321,24 @@ namespace AstroPhotoStacker {
     }
 
     std::string unix_time_to_string(int unix_time);
+
+    template <typename PixelValueTypeInput, typename PixelValueTypeOutput = PixelValueTypeInput>
+    std::vector<PixelValueTypeOutput> convert_color_to_monochrome(const std::vector<std::vector<PixelValueTypeInput>> &color_image, int width, int height) {
+        const unsigned int n_pixels = width * height;
+        const unsigned int n_colors = color_image.size();
+
+        std::vector<float> temp_result(n_pixels,0);
+        for (unsigned int i_color = 0; i_color < n_colors; i_color++) {
+            const std::vector<PixelValueTypeInput> &color_channel = color_image[i_color];
+            for (unsigned int i_pixel = 0; i_pixel < n_pixels; i_pixel++) {
+                temp_result[i_pixel] += color_channel[i_pixel];
+            }
+        }
+
+        std::vector<PixelValueTypeOutput> result(n_pixels);
+        for (unsigned int i_pixel = 0; i_pixel < n_pixels; i_pixel++) {
+            result[i_pixel] = static_cast<PixelValueTypeOutput>(temp_result[i_pixel] / n_colors);
+        }
+        return result;
+    }
 }

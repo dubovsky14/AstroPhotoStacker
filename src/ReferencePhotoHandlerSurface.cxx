@@ -3,6 +3,7 @@
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/MonochromeImageData.h"
 #include "../headers/ImageFilesInputOutput.h"
+#include "../headers/Common.h"
 
 #include "../headers/AlignmentSettingsSurface.h"
 
@@ -51,11 +52,7 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
     image_data.height = m_height;
 
     const AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
-    const vector<unsigned short> blurred_brightness = gaussian_blur(image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
-    MonochromeImageData blurred_image_data;
-    blurred_image_data.brightness = blurred_brightness.data();
-    blurred_image_data.width = m_width;
-    blurred_image_data.height = m_height;
+    const MonochromeImageDataWithStorage blurred_image_data = gaussian_blur(image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
 
     m_alignment_point_box_grid = make_unique<AlignmentPointBoxGrid>(
         blurred_image_data,
@@ -66,44 +63,28 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
 };
 
 std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const InputFrame &input_frame,
-                                                                        float shift_x,
-                                                                        float shift_y,
-                                                                        float rotation_center_x,
-                                                                        float rotation_center_y,
-                                                                        float rotation) const   {
+                                                                        const PlateSolvingResult &plate_solving_result) const   {
 
     CalibratedPhotoHandler calibrated_photo_handler(input_frame, true);
-    calibrated_photo_handler.define_alignment(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation);
+    calibrated_photo_handler.define_alignment(plate_solving_result.shift_x,
+                                              plate_solving_result.shift_y,
+                                              plate_solving_result.rotation_center_x,
+                                              plate_solving_result.rotation_center_y,
+                                              plate_solving_result.rotation);
     calibrated_photo_handler.calibrate();
 
     const int width  = calibrated_photo_handler.get_width();
     const int height = calibrated_photo_handler.get_height();
     const vector<vector<short int>> &calibrated_data = calibrated_photo_handler.get_calibrated_data_after_color_interpolation();
 
-    vector<unsigned short int> brightness(width*height);
-    for (int i_pixel = 0; i_pixel < width*height; i_pixel++) {
-        float value = 0;
-        int n_points = 0;
-        for (unsigned int color = 0; color < calibrated_data.size(); color++) {
-            if (calibrated_data[color][i_pixel] >= 0) {
-                value += calibrated_data[color][i_pixel];
-                n_points++;
-            }
-        }
-        value /= n_points;
-        brightness.at(i_pixel) = value;
-    }
+    const vector<unsigned short int> brightness = convert_color_to_monochrome<short, unsigned short>(calibrated_data, width, height);
 
     MonochromeImageData calibrated_image_data;
     calibrated_image_data.brightness = brightness.data();
     calibrated_image_data.width = width;
     calibrated_image_data.height = height;
 
-    const vector<unsigned short int> smeared_data = gaussian_blur(calibrated_image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
-    MonochromeImageData blurred_image;
+    MonochromeImageDataWithStorage blurred_image = gaussian_blur(calibrated_image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
 
-    blurred_image.brightness = smeared_data.data();
-    blurred_image.width = width;
-    blurred_image.height = height;
     return m_alignment_point_box_grid->get_local_shifts(blurred_image);
 };

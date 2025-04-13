@@ -8,6 +8,9 @@
 
 namespace AstroPhotoStacker {
 
+    /**
+     * @brief Class for reading and storing data from input image files - raw files, RGB files, video frames.
+     */
     template<typename PixelType = short int>
     class InputFrameData    {
         public:

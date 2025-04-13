@@ -36,14 +36,11 @@ void ReferencePhotoHandlerStars::initialize(const std::vector<std::tuple<float, 
     m_plate_solver = make_unique<PlateSolver>(m_kd_tree.get(), &m_stars, m_width, m_height);
 };
 
-bool ReferencePhotoHandlerStars::calculate_alignment(const InputFrame &input_frame,
-                                        float *shift_x, float *shift_y,
-                                        float *rot_center_x, float *rot_center_y, float *rotation, float *ranking) const    {
+PlateSolvingResult ReferencePhotoHandlerStars::calculate_alignment(const InputFrame &input_frame, float *ranking)   const    {
     try {
         int width, height;
         const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(input_frame, &width, &height);
         const unsigned short threshold = get_threshold_value<unsigned short>(brightness.data(), width*height, 0.0005);
-
 
         vector<tuple<float,float,int> > stars = get_stars(brightness.data(), width, height, threshold);
         keep_only_stars_above_size(&stars, 9);
@@ -54,19 +51,19 @@ bool ReferencePhotoHandlerStars::calculate_alignment(const InputFrame &input_fra
             *ranking = PhotoRanker::calculate_frame_ranking(input_frame);
         }
 
-        return plate_solve(stars, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+        return plate_solve(stars);
     }
     catch (runtime_error &e)    {
         cout << "Error: " << e.what() << endl;
-        return false;
+        PlateSolvingResult plate_solving_result;
+        plate_solving_result.is_valid = false;
+        return plate_solving_result;
     }
 };
 
 
-bool ReferencePhotoHandlerStars::plate_solve(const std::vector<std::tuple<float, float, int> > &stars,
-                                        float *shift_x, float *shift_y,
-                                        float *rot_center_x, float *rot_center_y, float *rotation) const    {
-    return m_plate_solver->plate_solve(stars, shift_x, shift_y, rot_center_x, rot_center_y, rotation);
+PlateSolvingResult ReferencePhotoHandlerStars::plate_solve(const std::vector<std::tuple<float, float, int> > &stars) const    {
+    return m_plate_solver->plate_solve(stars);
 };
 
 void ReferencePhotoHandlerStars::calculate_and_store_hashes()  {

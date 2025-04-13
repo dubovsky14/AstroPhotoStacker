@@ -39,11 +39,7 @@ namespace AstroPhotoStacker   {
             ReferencePhotoHandlerSurface(const unsigned short *brightness, int width, int height, float threshold_fraction);
 
             std::vector<LocalShift> get_local_shifts(   const InputFrame &input_frame,
-                                                        float shift_x,
-                                                        float shift_y,
-                                                        float rotation_center_x,
-                                                        float rotation_center_y,
-                                                        float rotation) const;
+                                                        const PlateSolvingResult &plate_solving_result) const;
 
             const std::vector<AlignmentPointBox> &get_alignment_boxes() const {return m_alignment_point_box_grid->get_alignment_boxes();};
 

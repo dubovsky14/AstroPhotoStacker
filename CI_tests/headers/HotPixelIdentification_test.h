@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../headers/TestUtils.h"
+
 #include <string>
 
 namespace AstroPhotoStacker {
@@ -7,7 +9,6 @@ namespace AstroPhotoStacker {
 
     bool compare_files(const std::string &file1, const std::string &file2);
 
-    void hot_pixel_identification_test(const std::string &raw_files_folder, const std::string &output_file, const std::string &reference_output_file);
+    TestResult hot_pixel_identification_test(const std::string &raw_files_folder, const std::string &output_file, const std::string &reference_output_file);
 
-    void hot_pixel_identification_test(int argc, const char **argv);
 }

@@ -7,6 +7,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${OpenCV_INCLUDE_DIRS})
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS "-Wall -O3")
+#set(CMAKE_CXX_FLAGS "-Wall -fsanitize=undefined -Wextra -Wshadow -pedantic -O3")
 
 
 file(GLOB SOURCES "src/*.cxx")
