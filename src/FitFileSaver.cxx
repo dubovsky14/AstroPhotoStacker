@@ -1,6 +1,7 @@
 #include "../headers/FitFileSaver.h"
 
 #include "../headers/Metadata.h"
+#include "../headers/MetadataCommon.h" // get_string_timestamp_from_unix_time
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -36,6 +37,8 @@ std::string FitFileSaver::get_header_string() const {
     header_string += get_header_line("BZERO", std::to_string(m_b_zero), "Zero level");
     header_string += get_header_line("BSCALE", "1", "default scaling factor");
     header_string += get_header_line("BAYERPAT", "\'RGGB    \'", "Bayer pattern");
+
+    header_string += get_metadata_header_string();
 
     add_final_header_padding(&header_string);
 
@@ -76,6 +79,23 @@ std::string FitFileSaver::get_padded_text(const std::string &text, int padded_le
 std::string FitFileSaver::get_header_line(const std::string &key, const std::string &value, const std::string &comment)  const  {
     std::string header_line = get_padded_key(key) + "=" + get_padded_value(value) + "/" + get_padded_comment(comment);
     return header_line;
+};
+
+std::string FitFileSaver::get_metadata_header_string() const  {
+    if (!m_metadata.has_value()) return "";
+
+    std::string metadata_string;
+
+    const float exposure_time = m_metadata->exposure_time;
+    const std::string exposure_time_str = std::to_string(exposure_time);
+    metadata_string += get_header_line("EXPOSURE", exposure_time_str,               "Exposure time in seconds");
+    metadata_string += get_header_line("EXPTIME",  exposure_time_str,               "Exposure time in seconds");
+    metadata_string += get_header_line("GAIN",     std::to_string(m_metadata->iso), "Gain (ISO) value");
+
+    const std::string date_time_str = get_string_timestamp_from_unix_time(m_metadata->timestamp, "%Y-%m-%dT%H:%M:%S");
+    metadata_string += get_header_line("DATE-OBS", date_time_str,           "Image exposure start time");
+
+    return metadata_string;
 };
 
 void FitFileSaver::add_final_header_padding(std::string *header_string)  const  {

@@ -29,7 +29,7 @@ int FitFileMetadataReader::get_unix_timestamp(const std::string &time_string)   
         }
     }
 
-    strptime(time_string.c_str(), "%Y-%m-%d %H:%M:%S", &tm);
+    strptime(time_string_adjusted.c_str(), "%Y-%m-%d %H:%M:%S", &tm);
     return mktime(&tm);
 };
 

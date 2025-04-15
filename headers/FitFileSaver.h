@@ -7,6 +7,7 @@
 #include <map>
 #include <fstream>
 #include <stdexcept>
+#include <optional>
 
 #include <iostream>
 namespace AstroPhotoStacker {
@@ -18,7 +19,7 @@ namespace AstroPhotoStacker {
                 m_metadata = metadata;
             };
 
-            const Metadata &get_metadata() const    {
+            const std::optional<Metadata> &get_metadata() const    {
                 return m_metadata;
             };
 
@@ -55,6 +56,8 @@ namespace AstroPhotoStacker {
             std::string get_padded_text(const std::string &text, int padded_length, bool padding_on_left)  const;
 
             std::string get_header_line(const std::string &key, const std::string &value, const std::string &comment = "no comment")  const;
+
+            std::string get_metadata_header_string() const;
 
             void add_final_header_padding(std::string *header_string)  const;
 
@@ -94,7 +97,7 @@ namespace AstroPhotoStacker {
             int m_width = 0;
             int m_height = 0;
 
-            Metadata m_metadata;
+            std::optional<Metadata> m_metadata;
             std::map<std::string, std::string> m_additional_header_data;
 
     };
