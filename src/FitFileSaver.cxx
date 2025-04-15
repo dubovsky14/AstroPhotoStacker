@@ -38,6 +38,9 @@ std::string FitFileSaver::get_header_string() const {
     header_string += get_header_line("BUNIT", "ADU", "Units of data");
     header_string += get_header_line("BAYERPAT", "\'RGGB    \'", "Bayer pattern");
 
+    header_string += get_header_line("IMAGEW", std::to_string(m_width), "Width of image");
+    header_string += get_header_line("IMAGEH", std::to_string(m_height), "Height of image");
+
     add_final_header_padding(&header_string);
     return header_string;
 };

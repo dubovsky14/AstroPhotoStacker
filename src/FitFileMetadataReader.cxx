@@ -118,7 +118,7 @@ std::string FitFileMetadataReader::get_header_string(std::ifstream &file)    {
 void FitFileMetadataReader::fill_metadata()    {
     m_width  = std::stoi(get_with_default<string,string>(m_metadata, "NAXIS1", "0"));
     m_height = std::stoi(get_with_default<string,string>(m_metadata, "NAXIS2", "0"));
-    m_bit_depth = std::stoi(get_with_default<string,string>(m_metadata, "BITPIX", "0"));
+    m_bit_depth = std::stoi(get_with_default<string,string>(m_metadata, "BITPIX", "16"));
     m_exposure_time = std::stof(get_with_default<string,string>(m_metadata, "EXPTIME", "0"));
 
     const string bayer_matrix = get_with_default<string,string>(m_metadata, "BAYERPAT", "");

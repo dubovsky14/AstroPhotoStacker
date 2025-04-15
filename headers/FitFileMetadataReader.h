@@ -70,7 +70,7 @@ namespace AstroPhotoStacker {
             int m_width;
             int m_height;
             bool m_is_rgb = false;
-            int m_bit_depth;
+            int m_bit_depth = 16;
             unsigned int m_zero_point;
             float m_exposure_time;
 

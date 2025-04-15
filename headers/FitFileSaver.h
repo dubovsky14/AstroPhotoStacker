@@ -8,6 +8,7 @@
 #include <fstream>
 #include <stdexcept>
 
+#include <iostream>
 namespace AstroPhotoStacker {
     class FitFileSaver {
         public:
@@ -62,7 +63,7 @@ namespace AstroPhotoStacker {
                 if (m_bits_per_pixel == 8) {
                     std::vector<char> buffer(image.size());
                     for (size_t i = 0; i < image.size(); ++i) {
-                        buffer[i] = static_cast<char>(static_cast<unsigned char>(image[i]) - m_b_zero); // minus here, because plus would give signed int and it would overflow (undefined behavior)
+                        buffer[i] = static_cast<char>(static_cast<unsigned short>(image[i]) - m_b_zero); // minus here, because plus would give signed int and it would overflow (undefined behavior)
                     }
                     file->write(buffer.data(), buffer.size());
                 }
