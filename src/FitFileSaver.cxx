@@ -35,13 +35,10 @@ std::string FitFileSaver::get_header_string() const {
     header_string += get_header_line("NAXIS2", std::to_string(m_height), "Height of image");
     header_string += get_header_line("BZERO", std::to_string(m_b_zero), "Zero level");
     header_string += get_header_line("BSCALE", "1", "default scaling factor");
-    header_string += get_header_line("BUNIT", "ADU", "Units of data");
     header_string += get_header_line("BAYERPAT", "\'RGGB    \'", "Bayer pattern");
 
-    header_string += get_header_line("IMAGEW", std::to_string(m_width), "Width of image");
-    header_string += get_header_line("IMAGEH", std::to_string(m_height), "Height of image");
-
     add_final_header_padding(&header_string);
+
     return header_string;
 };
 
@@ -87,5 +84,4 @@ void FitFileSaver::add_final_header_padding(std::string *header_string)  const  
     if (padding_length > 0) {
         header_string->append(padding_length, ' ');
     }
-    header_string->append(std::string(padding_length, ' '));
 };

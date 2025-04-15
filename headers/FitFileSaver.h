@@ -60,12 +60,14 @@ namespace AstroPhotoStacker {
 
             template<typename PixelType>
             void dump_image_into_data_block(std::ofstream *file, const std::vector<PixelType> &image)  const    {
+                int end_of_file_padding_length = 0;
                 if (m_bits_per_pixel == 8) {
                     std::vector<char> buffer(image.size());
                     for (size_t i = 0; i < image.size(); ++i) {
                         buffer[i] = static_cast<char>(static_cast<unsigned short>(image[i]) - m_b_zero); // minus here, because plus would give signed int and it would overflow (undefined behavior)
                     }
                     file->write(buffer.data(), buffer.size());
+                    end_of_file_padding_length = 2880 - buffer.size() % 2880;
                 }
                 else if (m_bits_per_pixel == 16) {
                     std::vector<unsigned short> buffer(image.size());
@@ -75,9 +77,15 @@ namespace AstroPhotoStacker {
                         buffer[i] = pixel_shifted;
                     }
                     file->write(reinterpret_cast<const char *>(buffer.data()), buffer.size() * sizeof(unsigned short));
+                    end_of_file_padding_length = 2880 - buffer.size() * sizeof(unsigned short) % 2880;
                 }
                 else {
                     throw std::runtime_error("Unsupported bits per pixel value.");
+                }
+
+                if (end_of_file_padding_length > 0) {
+                    std::vector<unsigned char> buffer(end_of_file_padding_length, 0);
+                    file->write(reinterpret_cast<const char *>(buffer.data()), end_of_file_padding_length);
                 }
             };
 
