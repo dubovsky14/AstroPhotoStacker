@@ -36,7 +36,7 @@ std::string FitFileSaver::get_header_string() const {
     header_string += get_header_line("NAXIS2", std::to_string(m_height), "Height of image");
     header_string += get_header_line("BZERO", std::to_string(m_b_zero), "Zero level");
     header_string += get_header_line("BSCALE", "1", "default scaling factor");
-    header_string += get_header_line("BAYERPAT", "\'RGGB    \'", "Bayer pattern");
+    header_string += get_header_line("BAYERPAT", "\'RGGB\'", "Bayer pattern");
 
     header_string += get_metadata_header_string();
 

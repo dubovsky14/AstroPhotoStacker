@@ -25,6 +25,8 @@ Metadata AstroPhotoStacker::read_metadata_from_raw_file_dslr_slr(const std::stri
     result.focal_length  = raw_processor.imgdata.other.focal_len;
     result.max_value     = raw_processor.imgdata.color.maximum;
     result.timestamp     = raw_processor.imgdata.other.timestamp;
+    result.is_raw        = true;
+
 
     // it's a bit tricky with timestamp
     std::tm* t = std::gmtime(&raw_processor.imgdata.other.timestamp);

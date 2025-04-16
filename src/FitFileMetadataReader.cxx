@@ -139,6 +139,8 @@ void FitFileMetadataReader::fill_metadata()    {
     m_metadata_struct.date_time = get_with_default<string,string>(m_metadata, "DATE-OBS", "");
     m_metadata_struct.timestamp = FitFileMetadataReader::get_unix_timestamp(m_metadata_struct.date_time);
     m_metadata_struct.monochrome = bayer_matrix == "";
+    m_metadata_struct.bayer_matrix = m_bayer_matrix;
+    m_metadata_struct.is_raw = true;
 };
 
 void FitFileMetadataReader::process_bayer_matrix(const std::string &bayer_matrix)  {

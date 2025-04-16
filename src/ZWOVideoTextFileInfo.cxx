@@ -25,6 +25,12 @@ Metadata ZWOVideoTextFileInfo::get_metadata() const {
     metadata.iso = m_gain;
     metadata.timestamp = m_unix_time;
     metadata.date_time = m_timestamp_string;
+    metadata.is_raw = true;
+
+    if (m_bayer_matrix[0] >= 0) {
+        metadata.bayer_matrix = m_bayer_matrix;
+    }
+
     return metadata;
 };
 

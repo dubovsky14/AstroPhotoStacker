@@ -9,7 +9,6 @@
 #include <stdexcept>
 #include <optional>
 
-#include <iostream>
 namespace AstroPhotoStacker {
     class FitFileSaver {
         public:
@@ -33,7 +32,8 @@ namespace AstroPhotoStacker {
                 return m_additional_header_data;
             }
 
-            void save(const std::string &filename, const std::vector<unsigned short> &image)  const  {
+            template<typename PixelType>
+            void save(const std::string &filename, const std::vector<PixelType> &image)  const  {
                 std::ofstream file(filename, std::ios::binary);
                 if (!file) {
                     throw std::runtime_error("Could not open file for writing.");

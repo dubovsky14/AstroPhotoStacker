@@ -23,6 +23,14 @@ std::vector<InputFrame> AstroPhotoStacker::get_video_frames(const std::string &v
     return result;
 }
 
+float AstroPhotoStacker::get_fps_of_video(const std::string &video_address)    {
+    cv::VideoCapture video(video_address);
+    if (!video.isOpened()) {
+        throw std::runtime_error("Unable to open video file: " + video_address);
+    }
+    return video.get(cv::CAP_PROP_FPS);
+};
+
 bool AstroPhotoStacker::is_valid_video_file(const std::string &video_address)   {
     const string extension = to_upper_copy(video_address.substr(video_address.find_last_of(".") + 1));
     const vector<string> supported_extensions = {"AVI", "MP4", "MOV", "SER"};

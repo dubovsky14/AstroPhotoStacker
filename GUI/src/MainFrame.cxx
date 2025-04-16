@@ -6,6 +6,7 @@
 #include "../headers/AlignedImagesProducerGUI.h"
 #include "../headers/ProgressBarWindow.h"
 #include "../headers/PostProcessingToolGUI.h"
+#include "../headers/MetadataManager.h"
 
 
 #include "../headers/IndividualColorStretchingBlackMidtoneWhite.h"
@@ -13,7 +14,6 @@
 
 #include "../../headers/Common.h"
 #include "../../headers/raw_file_reader.h"
-#include "../../headers/MetadataManager.h"
 #include "../../headers/thread_pool.h"
 #include "../../headers/StackerBase.h"
 #include "../../headers/VideoReader.h"
@@ -1113,7 +1113,7 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FrameType type, const std::s
     if (dialog.ShowModal() == wxID_OK) {
         wxArrayString paths;
         dialog.GetPaths(paths);
-        AstroPhotoStacker::MetadataManager metadata_manager;
+        MetadataManager metadata_manager;
         for (auto path : paths) {
             const AstroPhotoStacker::Metadata metadata = metadata_manager.get_metadata(InputFrame(path.ToStdString()));
             const string str_path = path.ToStdString();
