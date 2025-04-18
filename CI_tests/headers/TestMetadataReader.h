@@ -10,5 +10,6 @@ namespace AstroPhotoStacker {
                                         float expected_exposure_time,
                                         int expected_iso,
                                         float expected_focal_length,
+                                        const std::string &expected_bayer_matrix,
                                         int expected_unix_time = -1);
 }

@@ -3,6 +3,7 @@
 #include <libraw/libraw.h>
 #include <iomanip>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -26,6 +27,18 @@ Metadata AstroPhotoStacker::read_metadata_from_raw_file_dslr_slr(const std::stri
     result.max_value     = raw_processor.imgdata.color.maximum;
     result.timestamp     = raw_processor.imgdata.other.timestamp;
     result.is_raw        = true;
+
+    raw_processor.unpack();
+
+    // 0th element ir 'R', 1st is 'G', 2nd is 'B', 3rd is 'G'
+    const char* color_description = raw_processor.imgdata.idata.cdesc;
+    const int bayer_matrix_numbers[4] = {raw_processor.COLOR(0,0), raw_processor.COLOR(0,1), raw_processor.COLOR(1,0), raw_processor.COLOR(1,1)};
+    char bayer_matrix_names[4];
+    std::transform(bayer_matrix_numbers, bayer_matrix_numbers + 4, bayer_matrix_names, [color_description](int c) {
+        return color_description[c];
+    });
+    std::string bayer_matrix(bayer_matrix_names, 4);
+    result.bayer_matrix = bayer_matrix;
 
 
     // it's a bit tricky with timestamp
