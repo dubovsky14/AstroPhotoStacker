@@ -107,6 +107,21 @@ const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &FilelistHandler::get_fr
     return m_frames_list.at(group).at(type);
 };
 
+vector<AstroPhotoStacker::InputFrame> FilelistHandler::get_selected_frames() const {
+    std::vector<AstroPhotoStacker::InputFrame> selected_frames;
+    for (const auto &group : m_frames_list)   {
+        for (const auto &type : group.second)   {
+            const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
+            for (const auto &frame : frames)   {
+                if (frame.second.is_checked)   {
+                    selected_frames.push_back(frame.first);
+                }
+            }
+        }
+    }
+    return selected_frames;
+};
+
 int FilelistHandler::get_number_of_checked_frames(FrameType type) const  {
     int n_checked_frames = 0;
     for (const auto &group : m_frames_list)   {

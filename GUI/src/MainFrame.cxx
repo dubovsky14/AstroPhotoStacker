@@ -18,6 +18,7 @@
 #include "../../headers/StackerBase.h"
 #include "../../headers/VideoReader.h"
 #include "../../headers/AlignmentPointBoxGrid.h"
+#include "../../headers/ConvertToFitFile.h"
 
 #include <wx/spinctrl.h>
 #include <wx/progdlg.h>
@@ -102,6 +103,10 @@ void MyFrame::add_file_menu()  {
     id = unique_counter();
     m_file_menu->Append(id, "Save stacked file", "Save stacked file");
     Bind(wxEVT_MENU, &MyFrame::on_save_stacked, this, id);
+
+    id = unique_counter();
+    m_file_menu->Append(id, "Save selected files as FIT", "Save selected files as FIT");
+    Bind(wxEVT_MENU, &MyFrame::on_save_selected_as_fit, this, id);
 
     m_file_menu->Append(wxID_EXIT);
     Bind(wxEVT_MENU, &MyFrame::on_exit,  this, wxID_EXIT);
@@ -1174,6 +1179,55 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
                                         m_stacker->get_height(),
                                         CV_16UC3);
     }
+};
+
+
+void MyFrame::on_save_selected_as_fit(wxCommandEvent& event) {
+
+    // ask user for bit depth
+    wxString choices[] = {"8", "16"};
+    int output_bit_depth = 16;
+    wxSingleChoiceDialog dialog_bit_depth(this, "Select bit depth", "Bit depth", 2, choices);
+    if (dialog_bit_depth.ShowModal() == wxID_OK) {
+        wxString selected = dialog_bit_depth.GetStringSelection();
+        output_bit_depth = std::stoi(selected.ToStdString());
+    }
+
+    wxDirDialog dialog_folder(this, "Select folder for output images", "");
+    string output_folder = ".";
+    if (dialog_folder.ShowModal() == wxID_OK) {
+        output_folder = dialog_folder.GetPath().ToStdString();
+    }
+
+    const vector<InputFrame> selected_frames = m_filelist_handler_gui_interface.get_selected_frames();
+    vector<string> output_names;
+    for (const InputFrame &frame : selected_frames) {
+        const string file_address = frame.get_file_address();
+        const string frame_number_part = !frame.is_video_frame() ? "" : "_frame_" + std::to_string(frame.get_frame_number());
+        const string output_file_name = get_filename_without_extension(file_address) + frame_number_part + ".fit";
+        output_names.push_back(output_file_name);
+    }
+
+    std::atomic<int> tasks_processed = 0;
+    auto convert_selected_to_fit = [this, selected_frames, output_names, output_folder, output_bit_depth, &tasks_processed](){
+        for (size_t i = 0; i < selected_frames.size(); ++i) {
+            const InputFrame &frame = selected_frames[i];
+            const string output_file_address = output_folder + "/" + output_names[i];
+            convert_to_fit_file(frame, output_file_address, output_bit_depth);
+            tasks_processed++;
+        }
+    };
+
+
+    run_task_with_progress_dialog(  "Saving into FIT",
+        "Saving selected files as FIT:",
+        "",
+        tasks_processed,
+        selected_frames.size(),
+        convert_selected_to_fit,
+        "Saving selected files as FIT ...");
+
+
 };
 
 void MyFrame::update_status_icon(wxGenericStaticBitmap *status_icon, bool is_ok)   {

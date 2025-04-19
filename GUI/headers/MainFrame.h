@@ -173,6 +173,7 @@ class MyFrame : public wxFrame  {
         std::unique_ptr<RecentPathsHandler> m_recent_paths_handler = nullptr;
 
         void on_save_stacked(wxCommandEvent& event);
+        void on_save_selected_as_fit(wxCommandEvent& event);
         void on_exit(wxCommandEvent& event);
 
         std::vector<std::shared_ptr<wxSizer>> m_sizers;  // this is such a mess ...
