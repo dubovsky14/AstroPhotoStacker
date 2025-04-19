@@ -74,15 +74,21 @@ int main(int argc, const char **argv)   {
             {0,-7},
         });
 
-    test_runner.run_test("Saving 6D Mark II into raw file", test_metadata_fit_file_saver,
+    test_runner.run_test("Saving 6D Mark II raw file into into file", test_metadata_fit_file_saver,
         InputFrame("AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2"),
         "output_tests/IMG_9138_test.fit",
         16);
 
-    test_runner.run_test("Saving ZWO 678MC into raw file", test_metadata_fit_file_saver,
+    test_runner.run_test("Saving ZWO 678MC fit file into fit file", test_metadata_fit_file_saver,
         InputFrame("AstroPhotoStacker_test_files/data/ZWO678MC_horse_head/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001.fit"),
         "output_tests/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001_test.fit",
         16);
+
+    test_runner.run_test("Saving ZWO 678MC video frame into 8-bit fit file", test_metadata_fit_file_saver,
+        InputFrame("AstroPhotoStacker_test_files/data/Jupiter_video/shortened_jupiter.avi", 3),
+        //InputFrame("bin/Jup_182523.avi", 3),
+        "output_tests/jupiter_video_frame3.fit",
+        8);
 
     test_runner.summarize_tests();
 

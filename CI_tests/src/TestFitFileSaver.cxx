@@ -7,6 +7,45 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
+TestResult AstroPhotoStacker::test_if_two_light_input_frames_match(const InputFrame &original_frame, const InputFrame &fit_frame)  {
+    string error_message;
+
+    int width_original, height_original;
+    const vector<unsigned short> image_data_original = read_raw_file(original_frame, &width_original, &height_original);
+    const Metadata metadata_original = read_metadata(original_frame);
+
+
+    int width_fit, height_fit;
+    const vector<unsigned short> image_data_fit = read_raw_file(fit_frame, &width_fit, &height_fit);
+    const Metadata metadata_fit = read_metadata(fit_frame);
+
+    if (width_original != width_fit)    {
+        error_message += "Width mismatch: original = " + std::to_string(width_original) + ", fit = " + std::to_string(width_fit) + "\n";
+    }
+    if (height_original != height_fit)   {
+        error_message += "Height mismatch: original = " + std::to_string(height_original) + ", fit = " + std::to_string(height_fit) + "\n";
+    }
+    if (image_data_original.size() != image_data_fit.size())   {
+        error_message += "Image data size mismatch: original = " + std::to_string(image_data_original.size()) + ", fit = " + std::to_string(image_data_fit.size()) + "\n";
+    }
+    else    {
+        for (size_t i = 0; i < image_data_original.size(); i++)   {
+            if (image_data_original[i] != image_data_fit[i])   {
+                error_message += "Image data mismatch at index " + std::to_string(i) + ": original = " + std::to_string(image_data_original[i]) + ", fit = " + std::to_string(image_data_fit[i]) + "\n";
+                break;
+            }
+        }
+    }
+
+    const TestResult metadata_test_result = test_metadata_match(metadata_original, metadata_fit);
+
+    if (error_message.empty())   {
+        return metadata_test_result + TestResult(true, "");
+    }
+    else    {
+        return metadata_test_result + TestResult(false, error_message);
+    }
+};
 
 TestResult AstroPhotoStacker::test_metadata_match(const Metadata &metadata_original, const Metadata &metadata_fit)  {
     string error_message;
@@ -42,43 +81,7 @@ TestResult AstroPhotoStacker::test_metadata_fit_file_saver( const InputFrame &in
                                                             const std::string &output_file,
                                                             int output_bit_depth) {
 
-    string error_message;
     convert_to_fit_file(input_frame, output_file, output_bit_depth);
 
-    int width_original, height_original;
-    vector<unsigned short> image_data_original = read_raw_file(input_frame, &width_original, &height_original);
-    const Metadata metadata_original = read_metadata(input_frame);
-
-
-    int width_fit, height_fit;
-    vector<unsigned short> image_data_fit = read_raw_file(InputFrame(output_file), &width_fit, &height_fit);
-    const Metadata metadata_fit = read_metadata(InputFrame(output_file));
-
-    if (width_original != width_fit)    {
-        error_message += "Width mismatch: original = " + std::to_string(width_original) + ", fit = " + std::to_string(width_fit) + "\n";
-    }
-    if (height_original != height_fit)   {
-        error_message += "Height mismatch: original = " + std::to_string(height_original) + ", fit = " + std::to_string(height_fit) + "\n";
-    }
-
-    if (image_data_original.size() != image_data_fit.size())   {
-        error_message += "Image data size mismatch: original = " + std::to_string(image_data_original.size()) + ", fit = " + std::to_string(image_data_fit.size()) + "\n";
-    }
-    else    {
-        for (size_t i = 0; i < image_data_original.size(); i++)   {
-            if (image_data_original[i] != image_data_fit[i])   {
-                error_message += "Image data mismatch at index " + std::to_string(i) + ": original = " + std::to_string(image_data_original[i]) + ", fit = " + std::to_string(image_data_fit[i]) + "\n";
-                break;
-            }
-        }
-    }
-
-    const TestResult metadata_test_result = test_metadata_match(metadata_original, metadata_fit);
-
-    if (error_message.empty())   {
-        return metadata_test_result + TestResult(true, "");
-    }
-    else    {
-        return metadata_test_result + TestResult(false, error_message);
-    }
+    return test_if_two_light_input_frames_match(input_frame, InputFrame(output_file));
 };

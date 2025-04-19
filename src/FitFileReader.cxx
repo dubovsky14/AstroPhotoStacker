@@ -56,6 +56,6 @@ void FitFileReader::read_data_8bit(std::ifstream &file) {
     file.read(reinterpret_cast<char*>(signed_char_buffer.data()), signed_char_buffer.size());
 
     std::transform(signed_char_buffer.begin(), signed_char_buffer.end(), m_data.begin(), [this](char pixel_value) -> unsigned short int {
-        return static_cast<short unsigned int>(static_cast<short int>(pixel_value) + m_zero_point) << 7;
+        return static_cast<short unsigned int>(static_cast<short int>(pixel_value) + m_zero_point);
     });
 };
