@@ -49,6 +49,7 @@ jobs:
           name: artifact-linux-build
           path: bin/.
       - run:  |
+              mkdir -p output_tests
               chmod u+x bin/tests
               ./bin/tests
         name: unit-tests

@@ -3,6 +3,7 @@
 #include "../headers/TestMetadataReader.h"
 #include "../headers/ImageReadingTest.h"
 #include "../headers/TestLocalShifts.h"
+#include "../headers/TestFitFileSaver.h"
 
 #include "../headers/TestUtils.h"
 
@@ -72,6 +73,16 @@ int main(int argc, const char **argv)   {
             {-7,2},
             {0,-7},
         });
+
+    test_runner.run_test("Saving 6D Mark II into raw file", test_metadata_fit_file_saver,
+        InputFrame("AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2"),
+        "output_tests/IMG_9138_test.fit",
+        16);
+
+    test_runner.run_test("Saving ZWO 678MC into raw file", test_metadata_fit_file_saver,
+        InputFrame("AstroPhotoStacker_test_files/data/ZWO678MC_horse_head/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001.fit"),
+        "output_tests/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001_test.fit",
+        16);
 
     test_runner.summarize_tests();
 
