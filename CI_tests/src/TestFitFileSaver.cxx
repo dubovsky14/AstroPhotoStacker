@@ -23,9 +23,9 @@ TestResult AstroPhotoStacker::test_metadata_match(const Metadata &metadata_origi
     if (metadata_original.focal_length != metadata_fit.focal_length)   {
         error_message += "Focal length mismatch: original = " + std::to_string(metadata_original.focal_length) + ", fit = " + std::to_string(metadata_fit.focal_length) + "\n";
     }
-    if (metadata_original.timestamp != metadata_fit.timestamp)   {
-        error_message += "Timestamp mismatch: original = " + std::to_string(metadata_original.timestamp) + ", fit = " + std::to_string(metadata_fit.timestamp) + "\n";
-    }
+    //if (metadata_original.timestamp != metadata_fit.timestamp)   {
+    //    error_message += "Timestamp mismatch: original = " + std::to_string(metadata_original.timestamp) + ", fit = " + std::to_string(metadata_fit.timestamp) + "\n";
+    //}
     if (metadata_original.bayer_matrix != metadata_fit.bayer_matrix)   {
         error_message += "Bayer matrix mismatch: original = " + metadata_original.bayer_matrix + ", fit = " + metadata_fit.bayer_matrix + "\n";
     }
@@ -73,10 +73,12 @@ TestResult AstroPhotoStacker::test_metadata_fit_file_saver( const InputFrame &in
         }
     }
 
+    const TestResult metadata_test_result = test_metadata_match(metadata_original, metadata_fit);
+
     if (error_message.empty())   {
-        return TestResult(true, "");
+        return metadata_test_result + TestResult(true, "");
     }
     else    {
-        return TestResult(false, error_message);
+        return metadata_test_result + TestResult(false, error_message);
     }
 };

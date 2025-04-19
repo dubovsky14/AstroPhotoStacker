@@ -100,6 +100,14 @@ std::string FitFileSaver::get_metadata_header_string() const  {
     const std::string date_time_str = get_string_timestamp_from_unix_time(m_metadata->timestamp, "%Y-%m-%dT%H:%M:%S");
     metadata_string += get_header_line("DATE-OBS", date_time_str,           "Image exposure start time");
 
+    if (m_metadata->focal_length > 0) {
+        metadata_string += get_header_line("FOCALLEN", std::to_string(m_metadata->focal_length), "Focal length in mm");
+    }
+
+    if (m_metadata->aperture > 0) {
+        metadata_string += get_header_line("APERTURE", std::to_string(m_metadata->aperture), "Aperture in mm");
+    }
+
     return metadata_string;
 };
 

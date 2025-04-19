@@ -17,7 +17,7 @@ int AstroPhotoStacker::get_unix_timestamp(const std::string &time_string, const 
 
 std::string AstroPhotoStacker::get_string_timestamp_from_unix_time(int unix_time, const std::string timestamp_format)    {
     std::time_t time = static_cast<std::time_t>(unix_time);
-    std::tm *tm = std::localtime(&time);
+    std::tm *tm = std::gmtime(&time);
     char buffer[80];
     strftime(buffer, sizeof(buffer), timestamp_format.c_str(), tm);
     return std::string(buffer);
