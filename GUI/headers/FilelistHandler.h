@@ -122,6 +122,8 @@ class FilelistHandler   {
         */
         const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &get_frames(FrameType type, int group)   const;
 
+        std::vector<AstroPhotoStacker::InputFrame> get_selected_frames()  const;
+
         /**
          * @brief Get the number of checked frames of a given type
          *

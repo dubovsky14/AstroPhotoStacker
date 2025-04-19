@@ -41,6 +41,10 @@ namespace AstroPhotoStacker {
         private:
             void read_data(std::ifstream &file);
 
+            void read_data_16bit(std::ifstream &file);
+
+            void read_data_8bit(std::ifstream &file);
+
             std::vector<unsigned short int> m_data;
 
     };

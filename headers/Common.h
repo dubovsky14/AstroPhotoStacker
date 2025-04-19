@@ -341,4 +341,8 @@ namespace AstroPhotoStacker {
         }
         return result;
     }
+
+    std::string get_filename_from_path(const std::string &path);
+
+    std::string get_filename_without_extension(const std::string &path);
 }

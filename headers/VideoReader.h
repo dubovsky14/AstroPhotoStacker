@@ -117,6 +117,8 @@ namespace AstroPhotoStacker {
 
     int get_number_of_frames_in_video(const std::string &video_address);
 
+    float get_fps_of_video(const std::string &video_address);
+
     std::vector<InputFrame> get_video_frames(const std::string &video_address);
 
     bool is_valid_video_file(const std::string &video_address);

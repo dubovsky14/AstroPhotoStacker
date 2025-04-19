@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <array>
 
 namespace AstroPhotoStacker {
     struct Metadata {
@@ -12,5 +13,9 @@ namespace AstroPhotoStacker {
         int timestamp           = 0;
         int max_value           = 0;
         bool monochrome         = false;
+
+        bool is_raw             = false;
+        std::string bayer_matrix = "";
+
     };
 }

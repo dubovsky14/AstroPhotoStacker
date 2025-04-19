@@ -1,5 +1,6 @@
 #include "../headers/FitFileMetadataReader.h"
 #include "../headers/Common.h"
+#include "../headers/MetadataCommon.h"
 
 #include <iostream>
 #include <algorithm>
@@ -29,7 +30,7 @@ int FitFileMetadataReader::get_unix_timestamp(const std::string &time_string)   
         }
     }
 
-    strptime(time_string.c_str(), "%Y-%m-%d %H:%M:%S", &tm);
+    strptime(time_string_adjusted.c_str(), "%Y-%m-%d %H:%M:%S", &tm);
     return mktime(&tm);
 };
 
@@ -118,7 +119,7 @@ std::string FitFileMetadataReader::get_header_string(std::ifstream &file)    {
 void FitFileMetadataReader::fill_metadata()    {
     m_width  = std::stoi(get_with_default<string,string>(m_metadata, "NAXIS1", "0"));
     m_height = std::stoi(get_with_default<string,string>(m_metadata, "NAXIS2", "0"));
-    m_bit_depth = std::stoi(get_with_default<string,string>(m_metadata, "BITPIX", "0"));
+    m_bit_depth = std::stoi(get_with_default<string,string>(m_metadata, "BITPIX", "16"));
     m_exposure_time = std::stof(get_with_default<string,string>(m_metadata, "EXPTIME", "0"));
 
     const string bayer_matrix = get_with_default<string,string>(m_metadata, "BAYERPAT", "");
@@ -139,6 +140,8 @@ void FitFileMetadataReader::fill_metadata()    {
     m_metadata_struct.date_time = get_with_default<string,string>(m_metadata, "DATE-OBS", "");
     m_metadata_struct.timestamp = FitFileMetadataReader::get_unix_timestamp(m_metadata_struct.date_time);
     m_metadata_struct.monochrome = bayer_matrix == "";
+    m_metadata_struct.bayer_matrix = convert_bayer_int_array_to_string(m_bayer_matrix);
+    m_metadata_struct.is_raw = true;
 };
 
 void FitFileMetadataReader::process_bayer_matrix(const std::string &bayer_matrix)  {

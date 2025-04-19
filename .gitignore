@@ -2,3 +2,4 @@
 bin
 GUI/data/stack_settings.txt
 output/
+output_tests/

@@ -154,3 +154,13 @@ std::string AstroPhotoStacker::unix_time_to_string(int unix_time)  {
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", tm);
     return buffer;
 };
+
+std::string AstroPhotoStacker::get_filename_from_path(const std::string &path)  {
+    std::filesystem::path p(path);
+    return p.filename().string();
+};
+
+std::string AstroPhotoStacker::get_filename_without_extension(const std::string &path)  {
+    std::filesystem::path p(path);
+    return p.stem().string();
+};

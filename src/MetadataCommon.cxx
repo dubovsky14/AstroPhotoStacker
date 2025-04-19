@@ -15,6 +15,14 @@ int AstroPhotoStacker::get_unix_timestamp(const std::string &time_string, const 
     return mktime(&tm);
 };
 
+std::string AstroPhotoStacker::get_string_timestamp_from_unix_time(int unix_time, const std::string timestamp_format)    {
+    std::time_t time = static_cast<std::time_t>(unix_time);
+    std::tm *tm = std::gmtime(&time);
+    char buffer[80];
+    strftime(buffer, sizeof(buffer), timestamp_format.c_str(), tm);
+    return std::string(buffer);
+};
+
 Metadata AstroPhotoStacker::get_file_creation_timestamp(const std::string &file_address, const Metadata &other_metadata)  {
     Metadata metadata = other_metadata;
 
@@ -32,3 +40,29 @@ Metadata AstroPhotoStacker::get_file_creation_timestamp(const std::string &file_
 
     return metadata;
 };
+
+std::string AstroPhotoStacker::convert_bayer_int_array_to_string(const std::array<char, 4> &bayer_array) {
+    std::string bayer_string;
+    for (const char &c : bayer_array) {
+        char color_letter = ' ';
+        switch (c) {
+            case 0:
+                color_letter = 'R';
+                break;
+            case 1:
+                color_letter = 'G';
+                break;
+            case 2:
+                color_letter = 'B';
+                break;
+            case 3:
+                color_letter = 'G';
+                break;
+            default:
+                throw std::invalid_argument("Invalid Bayer matrix value");
+
+        }
+        bayer_string += color_letter;
+    }
+    return bayer_string;
+}

@@ -3,6 +3,7 @@
 #include "../headers/TestMetadataReader.h"
 #include "../headers/ImageReadingTest.h"
 #include "../headers/TestLocalShifts.h"
+#include "../headers/TestFitFileSaver.h"
 
 #include "../headers/TestUtils.h"
 
@@ -25,11 +26,11 @@ int main(int argc, const char **argv)   {
 
     test_runner.run_test("Metadata reading - Canon 6D MarkII",    test_metadata_reading,
                         "AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2",
-                        6.3, 180.80f, 1600, 600.f, -1);
+                        6.3, 180.80f, 1600, 600.f, "RGGB", -1);
 
     test_runner.run_test("Metadata reading ZWO678MC",    test_metadata_reading,
                             "AstroPhotoStacker_test_files/data/ZWO678MC_horse_head/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001.fit",
-                            0, 180.0f, 100, 1197.f, 1735095619);
+                            0, 180.0f, 100, 1197.f, "RGGB", 1735164577);
 
     test_runner.run_test(   "Image reading - raw Canon 6D Mark II", test_image_reading_raw,
                             InputFrame("AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2"),
@@ -72,6 +73,22 @@ int main(int argc, const char **argv)   {
             {-7,2},
             {0,-7},
         });
+
+    test_runner.run_test("Saving 6D Mark II raw file into into file", test_metadata_fit_file_saver,
+        InputFrame("AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2"),
+        "output_tests/IMG_9138_test.fit",
+        16);
+
+    test_runner.run_test("Saving ZWO 678MC fit file into fit file", test_metadata_fit_file_saver,
+        InputFrame("AstroPhotoStacker_test_files/data/ZWO678MC_horse_head/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001.fit"),
+        "output_tests/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001_test.fit",
+        16);
+
+    test_runner.run_test("Saving ZWO 678MC video frame into 8-bit fit file", test_metadata_fit_file_saver,
+        InputFrame("AstroPhotoStacker_test_files/data/Jupiter_video/shortened_jupiter.avi", 3),
+        //InputFrame("bin/Jup_182523.avi", 3),
+        "output_tests/jupiter_video_frame3.fit",
+        8);
 
     test_runner.summarize_tests();
 

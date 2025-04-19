@@ -14,6 +14,10 @@ namespace AstroPhotoStacker {
             passed = result;
             error_message = message;
         };
+
+        TestResult operator+(const TestResult &other) const {
+            return TestResult(passed && other.passed, error_message + other.error_message);
+        };
     };
 
     class TestRunner {

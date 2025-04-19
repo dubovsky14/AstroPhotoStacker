@@ -21,9 +21,9 @@ namespace AstroPhotoStacker {
     struct MonochromeImageDataWithStorage : public MonochromeImageData {
         std::unique_ptr<std::vector<unsigned short>> brightness_storage = nullptr;
 
-        MonochromeImageDataWithStorage(int width, int height) {
-            this->width = width;
-            this->height = height;
+        MonochromeImageDataWithStorage(int image_width, int image_height) {
+            this->width  = image_width;
+            this->height = image_height;
             brightness_storage = std::make_unique<std::vector<unsigned short>>(width * height);
             brightness = brightness_storage->data();
         }

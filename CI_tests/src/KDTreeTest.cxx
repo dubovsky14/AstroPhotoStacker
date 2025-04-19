@@ -17,7 +17,7 @@ using namespace AstroPhotoStacker;
 TestResult AstroPhotoStacker::test_kd_tree()   {
     vector<vector<float> > random_points;
     for (int i = 0; i < 10000; i++) {
-        random_points.push_back({random_uniform(-1,1), random_uniform(0, 10), random_uniform(-1,1)});
+        random_points.push_back({random_uniform(-2,6), random_uniform(0, 10), random_uniform(-1,1)});
     }
 
     KDTreeWithBuffer<float, 3, int> tree;
@@ -32,13 +32,10 @@ TestResult AstroPhotoStacker::test_kd_tree()   {
     const vector<std::tuple<std::array<float, 3>, int>> nearest_neighbors = tree.get_k_nearest_neighbors(query_point, n_neighbors);
 
     for (const auto &node : nearest_neighbors) {
-        //cout << "Point: [ ";
         float distance2 = 0;
         for (int index = 0; index < 3; index++) {
-            //cout << get<0>(node)[index] << " ";
             distance2 += (get<0>(node)[index] - query_point[index])*(get<0>(node)[index] - query_point[index]);
         }
-        //cout << " ]\t\tDistance: " << sqrt(distance2) << "\t\tindex = " << get<1>(node) << endl;
     }
 
     vector<tuple<int, float>> index_distance2_vector;
@@ -55,15 +52,6 @@ TestResult AstroPhotoStacker::test_kd_tree()   {
         return get<1>(a) < get<1>(b);
     });
 
-    //cout << "Brute force:" << endl;
-    for (unsigned int i = 0; i < n_neighbors; i++) {
-        //cout << "Point: [ ";
-        for (int index = 0; index < 3; index++) {
-            //cout << random_points[get<0>(index_distance2_vector[i])][index] << " ";
-        }
-        //cout << " ]\t\tDistance: " << sqrt(get<1>(index_distance2_vector[i])) << "\t\tindex = " << get<0>(index_distance2_vector[i]) << endl;
-    }
-    //cout << endl;
 
     for (unsigned int i = 0; i < n_neighbors; i++) {
         if (get<1>(nearest_neighbors[i]) != get<0>(index_distance2_vector[i])) {
