@@ -28,8 +28,6 @@ Metadata AstroPhotoStacker::read_metadata_from_raw_file_dslr_slr(const std::stri
     result.timestamp     = raw_processor.imgdata.other.timestamp;
     result.is_raw        = true;
 
-    raw_processor.unpack();
-
     // 0th element ir 'R', 1st is 'G', 2nd is 'B', 3rd is 'G'
     const char* color_description = raw_processor.imgdata.idata.cdesc;
     const int bayer_matrix_numbers[4] = {raw_processor.COLOR(0,0), raw_processor.COLOR(0,1), raw_processor.COLOR(1,0), raw_processor.COLOR(1,1)};
