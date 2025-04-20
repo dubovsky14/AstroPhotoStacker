@@ -87,7 +87,11 @@ void ReferencePhotoHandlerStars::calculate_and_store_hashes()  {
                     vector<unsigned int> four_stars_indices = {i_star1, i_star2, i_star3, i_star4};
 
                     unsigned int starA, starB, starC, starD;
-                    calculate_asterism_hash(four_stars_positions, &asterism_hash_buffer, &starA, &starB, &starC, &starD);
+
+                    const bool hash_found = calculate_asterism_hash(four_stars_positions, &asterism_hash_buffer, &starA, &starB, &starC, &starD);
+                    if (!hash_found) {
+                        continue;
+                    }
 
                     tuple<unsigned int, unsigned int, unsigned int, unsigned int> asterism_hash_indices(
                         four_stars_indices[starA],
@@ -135,7 +139,10 @@ void ReferencePhotoHandlerStars::calculate_and_store_hashes()  {
         };
 
         unsigned int starA, starB, starC, starD;
-        calculate_asterism_hash(four_stars_positions, &asterism_hash_buffer, &starA, &starB, &starC, &starD);
+        const bool hash_found = calculate_asterism_hash(four_stars_positions, &asterism_hash_buffer, &starA, &starB, &starC, &starD);
+        if (!hash_found) {
+            continue;
+        }
 
         tuple<unsigned int, unsigned int, unsigned int, unsigned int> asterism_hash_indices(
             four_stars_indices[starA],
