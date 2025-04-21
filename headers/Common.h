@@ -265,6 +265,16 @@ namespace AstroPhotoStacker {
     };
 
     /**
+     * @brief equivalent to python's join function
+     *
+     * @param std::string
+     * @param std::vector<std::string>
+     * @return std::string
+     */
+    std::string join_strings(const std::string &separator, const std::vector<std::string> &strings);
+
+
+    /**
      * @brief Get the list of raw files in a folder
      *
      * @param folder_address The address of the folder

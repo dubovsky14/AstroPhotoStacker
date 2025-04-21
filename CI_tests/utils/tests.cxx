@@ -4,6 +4,7 @@
 #include "../headers/ImageReadingTest.h"
 #include "../headers/TestLocalShifts.h"
 #include "../headers/TestFitFileSaver.h"
+#include "../headers/AsterismHashTests.h"
 
 #include "../headers/TestUtils.h"
 
@@ -17,10 +18,7 @@ using namespace AstroPhotoStacker;
 
 int main(int argc, const char **argv)   {
     TestRunner test_runner;
-    //test_runner.run_test("hot_pixel_identifier",    hot_pixel_identification_test,
-    //                    "AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/",
-    //                    "temp_hot_pixel_file.txt",
-    //                    "AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/reference_files/hot_pixels.txt");
+
 
     test_runner.run_test("kd_tree",                 test_kd_tree);
 
@@ -89,6 +87,37 @@ int main(int argc, const char **argv)   {
         //InputFrame("bin/Jup_182523.avi", 3),
         "output_tests/jupiter_video_frame3.fit",
         8);
+
+
+    test_runner.run_test("Asterism hash test #1", test_asterism_hasher,
+        std::vector<std::tuple<float,float,int>>{
+            {0  , 0  , 1},
+            {2  , 3  , 2},
+            {1  , 1  , 3},
+            {1.5, 2.5, 4},
+        },
+        std::vector<float>{0.231, 0.154, 0.538, 0.692},
+        1, 0, 3, 2);
+
+    test_runner.run_test("Asterism hash test #2", test_asterism_hasher,
+        std::vector<std::tuple<float,float,int>>{
+            {1.6, 4.0, 1},
+            {0.54045, 6.62247, 1},
+            {0.95128, 4.77509, 1},
+            {0.48508, 5.92898, 1},
+        },
+        std::vector<float>{0.23, 0.45, 0.67, 0.89},
+        0,1,2,3);
+
+    test_runner.run_test("Asterism hash test #3", test_asterism_hasher,
+        std::vector<std::tuple<float,float,int>>{
+            {0.95128, 4.77509, 1},
+            {0.54045, 6.62247, 1},
+            {0.48508, 5.92898, 1},
+            {1.6, 4.0, 1},
+        },
+        std::vector<float>{0.23, 0.45, 0.67, 0.89},
+        3,1,0,2);
 
     test_runner.summarize_tests();
 

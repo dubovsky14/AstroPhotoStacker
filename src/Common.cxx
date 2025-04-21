@@ -117,6 +117,15 @@ bool AstroPhotoStacker::compare_case_insensitive(const std::string &x, const std
     return x_upper == y_upper;
 };
 
+std::string AstroPhotoStacker::join_strings(const std::string &separator, const std::vector<std::string> &strings)    {
+    std::string result;
+    for (const string &x : strings)   {
+        result += x + separator;
+    }
+    if (result.size() > 0) result.erase(result.size()-separator.size());
+    return result;
+};
+
 std::vector<std::string> AstroPhotoStacker::get_frame_files_in_folder(const std::string &folder_address)  {
     vector<string> result;
     for (const auto &entry : filesystem::directory_iterator(folder_address)) {
