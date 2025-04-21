@@ -18,11 +18,11 @@ namespace AstroPhotoStacker   {
      * @return true - valid hash
      * @return false - invalid hash (if 4 stars do not fit into the circle with diamater |AB| and center in the middle between star A and star B)
      */
-    bool calculate_asterism_hash(   const std::vector<std::tuple<float, float, int > > &stars, std::vector<float> *result,
-                                    unsigned int *index_star_A = nullptr,
-                                    unsigned int *index_star_B = nullptr,
-                                    unsigned int *index_star_C = nullptr,
-                                    unsigned int *index_star_D = nullptr);
+    [[nodiscard]] bool calculate_asterism_hash( const std::vector<std::tuple<float, float, int > > &stars, std::vector<float> *result,
+                                                unsigned int *index_star_A = nullptr,
+                                                unsigned int *index_star_B = nullptr,
+                                                unsigned int *index_star_C = nullptr,
+                                                unsigned int *index_star_D = nullptr);
 
     /**
      * @brief Get the indices of most distant stars from the vector of 4 inputs stars (their pixel coordinates)

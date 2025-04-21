@@ -84,7 +84,6 @@ int main(int argc, const char **argv)   {
 
     test_runner.run_test("Saving ZWO 678MC video frame into 8-bit fit file", test_metadata_fit_file_saver,
         InputFrame("AstroPhotoStacker_test_files/data/Jupiter_video/shortened_jupiter.avi", 3),
-        //InputFrame("bin/Jup_182523.avi", 3),
         "output_tests/jupiter_video_frame3.fit",
         8);
 

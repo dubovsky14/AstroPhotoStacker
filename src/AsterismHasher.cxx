@@ -11,7 +11,7 @@ using namespace AstroPhotoStacker;
 
 // for more details see chapter 2.2 here: https://arxiv.org/pdf/0910.2233.pdf
 bool AstroPhotoStacker::calculate_asterism_hash(const vector<tuple<float, float, int> > &stars, vector<float> *result,
-    unsigned int *index_star_A, unsigned int *index_star_B, unsigned int *index_star_C, unsigned int *index_star_D)   {
+    unsigned int *index_star_A, unsigned int *index_star_B, unsigned int *index_star_C, unsigned int *index_star_D)  {
 
     if (stars.size() != 4)  {
         throw runtime_error("Cannot calculate hash of #stars != 4");

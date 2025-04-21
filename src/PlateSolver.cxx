@@ -28,7 +28,10 @@ PlateSolvingResult PlateSolver::plate_solve(  const std::vector<std::tuple<float
                     vector<float> asterism_hash(4);
 
                     unsigned int starA, starB, starC, starD;
-                    calculate_asterism_hash(four_stars_positions, &asterism_hash, &starA, &starB, &starC, &starD);
+                    const bool hash_is_valid = calculate_asterism_hash(four_stars_positions, &asterism_hash, &starA, &starB, &starC, &starD);
+                    if (!hash_is_valid) {
+                        continue;
+                    }
 
                     // closest hashes and star indices from the reference photo
                     const std::vector<std::tuple<std::array<float, 4>, StarIndices> > nearest_neighbors =

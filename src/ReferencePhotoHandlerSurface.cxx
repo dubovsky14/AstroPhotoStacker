@@ -58,8 +58,6 @@ void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned shor
         blurred_image_data,
         m_alignment_window,
         *alignment_settings_surface);
-
-    cout << "Alignment grid initialized, number of boxes: " << m_alignment_point_box_grid->get_alignment_boxes().size() << endl;
 };
 
 std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const InputFrame &input_frame,
