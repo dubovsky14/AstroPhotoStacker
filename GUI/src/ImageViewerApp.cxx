@@ -163,17 +163,26 @@ void ImageViewerFrame::on_open_file(wxCommandEvent& event)    {
 void ImageViewerFrame::open_file(const std::string &file_address)   {
     m_image_preview->read_preview_from_file(file_address);
     m_image_preview->update_preview_bitmap();
-    m_file_address_text->SetLabel(file_address);
+    m_file_address = file_address;
+
+    const std::filesystem::path path = m_file_address;
+    const std::filesystem::path parent_path = path.parent_path();
+    const std::string extension = path.extension().string();
+    const std::vector<std::string> files = get_files_in_folder_with_extension(parent_path.string(), extension);
+    const size_t current_file_index = get_current_file_index(files);
+
+    const std::string text = m_file_address + " (" + to_string(current_file_index+1) + "/" + to_string(files.size()) + ")";
+
+    m_file_address_text->SetLabel(text);
 
     try {
-        const Metadata metadata = read_metadata(InputFrame(file_address));
+        const Metadata metadata = read_metadata(InputFrame(m_file_address));
         update_metadata(metadata);
     }
     catch (const std::exception &e) {
         cout << e.what() << endl;
     }
 
-    m_file_address = file_address;
 };
 
 void ImageViewerFrame::bind_key_events()  {
@@ -201,30 +210,40 @@ void ImageViewerFrame::add_bottom_panel()   {
 }
 
 void ImageViewerFrame::load_consecutive_file(int direction)   {
-    std::filesystem::path path = m_file_address;
-    std::filesystem::path parent_path = path.parent_path();
+    const std::filesystem::path path = m_file_address;
+    const std::filesystem::path parent_path = path.parent_path();
     m_current_folder = parent_path.string();
+    const std::string extension = path.extension().string();
+    const std::vector<std::string> files = get_files_in_folder_with_extension(parent_path.string(), extension);
 
-    vector<string> files;
-    for (const auto &entry : std::filesystem::directory_iterator(parent_path)) {
-        if (entry.path().extension() == path.extension()) {
-            files.push_back(entry.path().string());
-        }
-    }
     if (files.size() == 0) {
         return;
     }
 
-    sort(files.begin(), files.end());
+    const size_t current_file_index = get_current_file_index(files);
+    size_t next_file_index = (current_file_index + direction) % files.size();
+    open_file(files[next_file_index]);
+};
 
+std::vector<std::string> ImageViewerFrame::get_files_in_folder_with_extension(const std::string &folder, const std::string &extension)  const   {
+    const std::filesystem::path parent_path = folder;
+    vector<string> files;
+    for (const auto &entry : std::filesystem::directory_iterator(parent_path)) {
+        if (entry.path().extension() == extension) {
+            files.push_back(entry.path().string());
+        }
+    }
+    sort(files.begin(), files.end());
+    return files;
+};
+
+size_t ImageViewerFrame::get_current_file_index(const std::vector<std::string> &files)   const {
     size_t current_file_index = 0;
     for (size_t i = 0; i < files.size(); i++) {
-        if (files[i] == m_file_address) {
+        if (files[i] >= m_file_address) {
             current_file_index = i;
             break;
         }
     }
-
-    size_t next_file_index = (current_file_index + direction) % files.size();
-    open_file(files[next_file_index]);
+    return current_file_index;
 };

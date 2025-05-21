@@ -87,7 +87,7 @@ void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector
 
 wxImage ImagePreview::get_updated_wximage()  const  {
     wxImage image_wx(m_width, m_height);
-    const bool apply_additional_layers = (m_additional_layers_preview.size() == m_original_image.size()) && m_original_image.size() != 0;
+    const bool apply_additional_layers = m_additional_layers_preview.size() == 3;
 
     const float scale_factor = pow(2,m_exposure_correction)*2*255.0 / m_max_value;
     for (int y = 0; y < m_height; ++y) {

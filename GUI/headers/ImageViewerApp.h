@@ -75,6 +75,10 @@ class ImageViewerFrame : public wxFrame  {
 
         void update_metadata(const AstroPhotoStacker::Metadata &metadata);
 
+        std::vector<std::string> get_files_in_folder_with_extension(const std::string &folder, const std::string &extension) const;
+
+        size_t get_current_file_index(const std::vector<std::string> &files) const;
+
         // metadata text fields
         wxStaticText *m_metadata_text_exposure = nullptr;
         wxStaticText *m_metadata_text_iso = nullptr;
