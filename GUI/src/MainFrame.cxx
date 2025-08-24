@@ -501,6 +501,31 @@ void MyFrame::add_files_to_stack_checkbox()  {
             const int index = m_filelist_handler_gui_interface.selected_frame_index();
             m_filelist_handler_gui_interface.remove_frame(index);
             update_files_to_stack_checkbox();
+            update_image_preview_file(index);
+        }
+        if (event.GetKeyCode() == WXK_DOWN) {
+            const int old_index = m_filelist_handler_gui_interface.selected_frame_index();
+            int index = old_index + 1;
+            if (index > int(m_files_to_stack_checkbox->GetCount()) - 1) {
+                index = int(m_files_to_stack_checkbox->GetCount()) - 1;
+            }
+            m_filelist_handler_gui_interface.set_selected_frame_index(index);
+            m_files_to_stack_checkbox->SetSelection(index);
+            if (old_index != index) {
+                m_files_to_stack_checkbox->Deselect(old_index);
+                update_image_preview_file(index);
+            }
+        }
+        if (event.GetKeyCode() == WXK_UP) {
+            const int old_index = m_filelist_handler_gui_interface.selected_frame_index();
+            int index = old_index - 1;
+            if (index < 0) index = 0;
+            m_filelist_handler_gui_interface.set_selected_frame_index(index);
+            m_files_to_stack_checkbox->SetSelection(index);
+            if (old_index != index) {
+                m_files_to_stack_checkbox->Deselect(old_index);
+                update_image_preview_file(index);
+            }
         }
     });
 };
