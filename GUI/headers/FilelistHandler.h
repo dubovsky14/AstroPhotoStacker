@@ -249,14 +249,17 @@ class FilelistHandler   {
 
         void load_filelist_from_file(const std::string &input_address);
 
+        void calculate_frame_statistics(std::atomic<int> *counter = nullptr);
+
+        int get_number_of_frames_without_statistics() const;
+
+        bool statistics_calculated_for_all_frames() const;
+
     protected:
         const std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     &get_frames_list() const {
             return m_frames_list;
         }
 
-        void calculate_frame_statistics(std::atomic<int> *counter = nullptr);
-
-        int get_number_of_frames_with_statistics() const;
 
     private:
         std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     m_frames_list;

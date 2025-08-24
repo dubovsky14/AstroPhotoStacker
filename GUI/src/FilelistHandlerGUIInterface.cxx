@@ -60,8 +60,6 @@ std::string FilelistHandlerGUIInterface::get_gui_string(const FrameID &frame_id)
     std::string statistics_string = "";
     if (m_show_statistics) {
         statistics_string = "\tmean: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_avg) + "  " +
-                            //"\tmin: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_min) + "  " +
-                            //"\tmax: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_max) + "  " +
                             "\tstd: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_std) + "  ";
     }
 

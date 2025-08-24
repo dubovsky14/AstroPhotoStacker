@@ -499,14 +499,14 @@ void FilelistHandler::calculate_frame_statistics(std::atomic<int> *counter) {
     }
 }
 
-int FilelistHandler::get_number_of_frames_with_statistics() const    {
+int FilelistHandler::get_number_of_frames_without_statistics() const    {
     int count = 0;
     for (const auto &group : m_frames_list) {
         for (const auto &type : group.second) {
             const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
             for (const auto &frame : frames) {
                 const FrameInfo &frame_info = frame.second;
-                if (frame_info.statistics.is_valid) {
+                if (!frame_info.statistics.is_valid) {
                     count++;
                 }
             }
@@ -514,3 +514,18 @@ int FilelistHandler::get_number_of_frames_with_statistics() const    {
     }
     return count;
 };
+
+bool FilelistHandler::statistics_calculated_for_all_frames() const {
+    for (const auto &group : m_frames_list) {
+        for (const auto &type : group.second) {
+            const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
+            for (const auto &frame : frames) {
+                const FrameInfo &frame_info = frame.second;
+                if (!frame_info.statistics.is_valid) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}

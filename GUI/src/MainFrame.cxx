@@ -450,6 +450,19 @@ void MyFrame::add_files_to_stack_checkbox()  {
     wxCheckBox *checkbox_show_frame_stats = new wxCheckBox(header_panel, wxID_ANY, "Show Frame Statistics");
     checkbox_show_frame_stats->SetValue(m_filelist_handler_gui_interface.show_statistics());
     checkbox_show_frame_stats->Bind(wxEVT_CHECKBOX, [this, checkbox_show_frame_stats](wxCommandEvent&){
+        const int n_frames_without_stats = m_filelist_handler_gui_interface.get_number_of_frames_without_statistics();
+        if (n_frames_without_stats > 0) {
+            std::atomic<int> n_processed{0};
+            run_task_with_progress_dialog(  "Calculating frame statistics",
+                                            "Processed",
+                                            "frames",
+                                            n_processed,
+                                            n_frames_without_stats,
+                                            [this, &n_frames_without_stats, &n_processed](){
+                                                m_filelist_handler_gui_interface.calculate_frame_statistics(&n_processed);
+                                            });
+
+        }
         m_filelist_handler_gui_interface.set_show_statistics(checkbox_show_frame_stats->IsChecked());
         update_files_to_stack_checkbox();
     });

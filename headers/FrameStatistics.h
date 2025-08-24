@@ -34,12 +34,6 @@ namespace AstroPhotoStacker {
         }
         const double pixel_count = image_data.size() * image_data[0].size();
 
-        std::cout << "Pixel Count: " << pixel_count << std::endl;
-        std::cout << "Min Brightness: " << stats.brightness_min << std::endl;
-        std::cout << "Max Brightness: " << stats.brightness_max << std::endl;
-        std::cout << "sum_brightness: " << sum_brightness << std::endl;
-        std::cout << "sum_brightness_squared: " << sum_brightness_squared << std::endl;
-
         stats.brightness_avg = static_cast<float>(sum_brightness) / pixel_count;
         stats.brightness_std = static_cast<float>(std::sqrt(sum_brightness_squared / pixel_count - stats.brightness_avg * stats.brightness_avg));
         stats.is_valid = true;
