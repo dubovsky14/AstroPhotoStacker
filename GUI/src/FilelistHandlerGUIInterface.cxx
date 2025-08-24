@@ -32,6 +32,13 @@ void FilelistHandlerGUIInterface::sort_by_group(bool ascending)  {
     sort_frames();
 };
 
+void FilelistHandlerGUIInterface::sort_by_mean_brightness(bool ascending)  {
+    m_sort_type = SortType::BRIGHTNESS_MEAN;
+    m_sort_ascending = ascending;
+    sort_frames();
+};
+
+
 std::string FilelistHandlerGUIInterface::get_gui_string(const FrameID &frame_id)    {
     const std::string group_info = m_show_group ? "Group #" + std::to_string(frame_id.group_number) : "";
     const string frame_description = frame_id.input_frame.to_gui_string();
@@ -167,6 +174,39 @@ void FilelistHandlerGUIInterface::sort_by_ranking_internal()    {
     rearange_vector(&m_shown_frames, indices.data());
 };
 
+void FilelistHandlerGUIInterface::sort_by_mean_brightness_internal()   {
+    const bool ascending = m_sort_ascending;
+    std::vector<std::tuple<size_t, float, FrameType>> index_brightness_type_vector;
+    for (size_t i = 0; i < m_shown_frames.size(); ++i) {
+        const FrameType type = m_shown_frames[i].second.type;
+        const float brightness = get_frame_statistics(m_shown_frames[i].second.group_number, type, m_shown_frames[i].second.input_frame).brightness_avg;
+        index_brightness_type_vector.push_back({
+            i,
+            brightness,
+            m_shown_frames[i].second.type
+        });
+    }
+
+    std::sort(index_brightness_type_vector.begin(), index_brightness_type_vector.end(), [ascending](const std::tuple<size_t, float, FrameType> &a, const std::tuple<size_t, float, FrameType> &b) {
+        if (std::get<2>(a) != std::get<2>(b)) {
+            return std::get<2>(a) < std::get<2>(b);
+        }
+
+        if (ascending) {
+            return std::get<1>(a) < std::get<1>(b);
+        } else {
+            return std::get<1>(a) > std::get<1>(b);
+        }
+    });
+
+    std::vector<size_t> indices;
+    for (const auto &element : index_brightness_type_vector) {
+        indices.push_back(std::get<0>(element));
+    }
+
+    rearange_vector(&m_shown_frames, indices.data());
+};
+
 void FilelistHandlerGUIInterface::sort_by_group_internal()  {
     const bool ascending = m_sort_ascending;
     const auto lambda = [ascending](const std::pair<std::string,FrameID> &a, const std::pair<std::string,FrameID> &b) {
@@ -200,6 +240,9 @@ void FilelistHandlerGUIInterface::sort_frames() {
             break;
         case SortType::GROUP:
             sort_by_group_internal();
+            break;
+        case SortType::BRIGHTNESS_MEAN:
+            sort_by_mean_brightness_internal();
             break;
     }
 };

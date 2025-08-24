@@ -258,6 +258,19 @@ void FilelistHandler::get_alignment_info_tabular_data(std::vector<std::vector<st
     }
 };
 
+const AstroPhotoStacker::FrameStatistics &FilelistHandler::get_frame_statistics(int group, FrameType type, const AstroPhotoStacker::InputFrame &input_frame) const   {
+    if (m_frames_list.find(group) == m_frames_list.end())   {
+        throw std::runtime_error("FilelistHandler::get_frame_statistics: group not found");
+    }
+    if (m_frames_list.at(group).find(type) == m_frames_list.at(group).end())   {
+        throw std::runtime_error("FilelistHandler::get_frame_statistics: frame type not found");
+    }
+    if (m_frames_list.at(group).at(type).find(input_frame) == m_frames_list.at(group).at(type).end())   {
+        throw std::runtime_error("FilelistHandler::get_frame_statistics: frame not found");
+    }
+    return m_frames_list.at(group).at(type).at(input_frame).statistics;
+};
+
 const AlignmentFileInfo& FilelistHandler::get_alignment_info(int group, const AstroPhotoStacker::InputFrame &input_frame) const {
     if (m_frames_list.find(group) == m_frames_list.end())   {
         throw std::runtime_error("FilelistHandler::get_alignment_info: group not found");

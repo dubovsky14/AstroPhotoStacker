@@ -24,7 +24,8 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
     enum class SortType {
         NAME,
         RANKING,
-        GROUP
+        GROUP,
+        BRIGHTNESS_MEAN
     };
 
     public:
@@ -39,6 +40,8 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
         void sort_by_ranking(bool ascending = true);
 
         void sort_by_group(bool ascending = true);
+
+        void sort_by_mean_brightness(bool ascending = true);
 
         std::string get_gui_string(const FrameID &frame_info);
 
@@ -104,6 +107,7 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
         void sort_by_name_internal();
         void sort_by_ranking_internal();
         void sort_by_group_internal();
+        void sort_by_mean_brightness_internal();
 
         std::vector<std::pair<std::string,FrameID>> m_shown_frames;
 

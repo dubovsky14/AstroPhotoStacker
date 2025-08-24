@@ -408,9 +408,10 @@ void MyFrame::add_files_to_stack_checkbox()  {
         header_sizer->Add(static_text, 0, wxTOP, 5);
         header_sizer->Add(arrow_sizer, 0, wxTOP, 5);
     };
-    add_sorting_option("Sort by Name",  &FilelistHandlerGUIInterface::sort_by_name);
-    add_sorting_option("Sort by Score", &FilelistHandlerGUIInterface::sort_by_ranking);
-    add_sorting_option("Sort by Group", &FilelistHandlerGUIInterface::sort_by_group);
+    add_sorting_option("Sort by Name",          &FilelistHandlerGUIInterface::sort_by_name);
+    add_sorting_option("Sort by Score",         &FilelistHandlerGUIInterface::sort_by_ranking);
+    add_sorting_option("Sort by Group",         &FilelistHandlerGUIInterface::sort_by_group);
+    add_sorting_option("Sort by Brightness",    &FilelistHandlerGUIInterface::sort_by_mean_brightness);
 
     // button for keeping only best N files
     wxButton *button_keep_best = new wxButton(header_panel, wxID_ANY, "Keep best N", wxDefaultPosition, wxDefaultSize);

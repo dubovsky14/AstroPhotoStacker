@@ -200,6 +200,8 @@ class FilelistHandler   {
         */
         void get_alignment_info_tabular_data(std::vector<std::vector<std::string>> *tabular_data, std::vector<std::string> *description) const;
 
+        const AstroPhotoStacker::FrameStatistics &get_frame_statistics(int group, FrameType type, const AstroPhotoStacker::InputFrame &input_frame) const;
+
         /**
          * @brief Get the alignment info for a single frame
          *
