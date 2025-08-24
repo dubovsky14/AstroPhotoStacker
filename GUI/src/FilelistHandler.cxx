@@ -1,6 +1,7 @@
 #include "../headers/FilelistHandler.h"
 #include "../../headers/Common.h"
 #include "../../headers/VideoReader.h"
+#include "../../headers/TaskScheduler.hxx"
 
 #include <algorithm>
 #include <fstream>
@@ -482,17 +483,32 @@ void FilelistHandler::load_filelist_from_file(const std::string &input_address) 
     }
 };
 
-void FilelistHandler::calculate_frame_statistics(std::atomic<int> *counter) {
+void FilelistHandler::calculate_frame_statistics(unsigned int n_cpu, std::atomic<int> *counter) {
+    AstroPhotoStacker::TaskScheduler task_scheduler({n_cpu});
+    auto process_frame = [counter, n_cpu, &task_scheduler](AstroPhotoStacker::FrameStatistics *frame_statistics, const AstroPhotoStacker::InputFrame &input_frame) {
+        if (n_cpu > 1) {
+            task_scheduler.submit([frame_statistics, input_frame, counter]() {
+                *frame_statistics = AstroPhotoStacker::get_frame_statistics(input_frame);
+                if (counter) {
+                    (*counter)++;
+                }
+            }, {1});
+        }
+        else {
+            *frame_statistics = AstroPhotoStacker::get_frame_statistics(input_frame);
+            if (counter) {
+                (*counter)++;
+            }
+        }
+    };
+
     for (auto &group : m_frames_list) {
         for (auto &type : group.second) {
             std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
             for (auto &frame : frames) {
                 FrameInfo &frame_info = frame.second;
                 if (!frame_info.statistics.is_valid) {
-                    frame_info.statistics = AstroPhotoStacker::get_frame_statistics(frame.first);
-                    if (counter) {
-                        (*counter)++;
-                    }
+                    process_frame(&frame_info.statistics, frame.first);
                 }
             }
         }

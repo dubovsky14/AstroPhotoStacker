@@ -6,6 +6,7 @@
 #include <functional>
 #include <stdexcept>
 #include <atomic>
+#include <thread>
 
 namespace AstroPhotoStacker {
     class TaskScheduler {

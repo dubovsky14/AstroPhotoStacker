@@ -249,7 +249,7 @@ class FilelistHandler   {
 
         void load_filelist_from_file(const std::string &input_address);
 
-        void calculate_frame_statistics(std::atomic<int> *counter = nullptr);
+        void calculate_frame_statistics(unsigned int n_cpu = 1, std::atomic<int> *counter = nullptr);
 
         int get_number_of_frames_without_statistics() const;
 
