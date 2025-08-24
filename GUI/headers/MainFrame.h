@@ -126,7 +126,7 @@ class MyFrame : public wxFrame  {
         void update_input_numbers_overview();
         std::map<FrameType, std::pair<wxStaticText*, wxStaticText*>>  m_frames_numbers_overview_texts;
 
-        wxPanel     *m_panel_top        = nullptr;
+        wxPanel     *m_main_panel       = nullptr;
         wxBoxSizer  *m_sizer_main_frame = nullptr;
         wxBoxSizer  *m_sizer_button_bar = nullptr;
         wxBoxSizer  *m_sizer_top        = nullptr;

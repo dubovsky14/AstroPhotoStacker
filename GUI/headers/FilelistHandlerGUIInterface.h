@@ -100,6 +100,14 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
             return m_show_statistics;
         }
 
+        void set_selected_frame_index(int index) {
+            m_selected_frame_index = index;
+        }
+
+        int selected_frame_index() const {
+            return m_selected_frame_index;
+        }
+
     private:
 
         void sort_frames();
@@ -110,6 +118,7 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
         void sort_by_mean_brightness_internal();
 
         std::vector<std::pair<std::string,FrameID>> m_shown_frames;
+        int m_selected_frame_index = -1;
 
         SortType m_sort_type = SortType::NAME;
         bool m_sort_ascending = true;

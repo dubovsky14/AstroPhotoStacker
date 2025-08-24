@@ -43,6 +43,9 @@ bool MyApp::OnInit()    {
 MyFrame::MyFrame()
     : wxFrame(nullptr, wxID_ANY, "AstroPhotoStacker GUI") {
 
+    // to capture keyboard events
+    m_main_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS);
+
     m_recent_paths_handler = make_unique<RecentPathsHandler>(s_gui_folder_path + "data/recent_paths/");
     m_stack_settings = make_unique<StackSettingsSaver>(s_gui_folder_path + "data/stack_settings.txt");
 
@@ -483,7 +486,8 @@ void MyFrame::add_files_to_stack_checkbox()  {
     m_sizer_main_frame->Add(checkboxSizer, 9, wxEXPAND | wxALL, 5);
 
     m_files_to_stack_checkbox->Bind(wxEVT_LISTBOX, [this](wxCommandEvent &event){
-        int index = event.GetSelection();
+        const int index = event.GetSelection();
+        m_filelist_handler_gui_interface.set_selected_frame_index(index);
         const bool update_needed = update_checked_files_in_filelist();
 
         // Do not update the preview if the files was just checked/unchecked - it is slow
@@ -491,9 +495,18 @@ void MyFrame::add_files_to_stack_checkbox()  {
             update_image_preview_file(index);
         }
     });
+
+    m_files_to_stack_checkbox->Bind(wxEVT_CHAR_HOOK, [this](wxKeyEvent& event) {
+        if (event.GetKeyCode() == WXK_DELETE) {
+            const int index = m_filelist_handler_gui_interface.selected_frame_index();
+            m_filelist_handler_gui_interface.remove_frame(index);
+            update_files_to_stack_checkbox();
+        }
+    });
 };
 
 void MyFrame::update_files_to_stack_checkbox()   {
+    unsigned int index = m_filelist_handler_gui_interface.selected_frame_index() > 0 ? m_filelist_handler_gui_interface.selected_frame_index() : 0;
     m_files_to_stack_checkbox->Clear();
     vector<string> rows;
     vector<bool>   rows_checked;
@@ -516,6 +529,13 @@ void MyFrame::update_files_to_stack_checkbox()   {
     for (unsigned int i = 0; i < rows_checked.size(); i++) {
         m_files_to_stack_checkbox->Check(i, rows_checked[i]);
     }
+
+    if (index >= rows_checked.size()) {
+        index = rows_checked.size() ? rows_checked.size() - 1 : 0;
+        m_filelist_handler_gui_interface.set_selected_frame_index(index);
+    }
+
+    m_files_to_stack_checkbox->SetSelection(index);
 };
 
 bool MyFrame::update_checked_files_in_filelist() {
@@ -582,8 +602,8 @@ void MyFrame::add_button_bar()   {
             m_filelist_handler_gui_interface.remove_frame(checked_indices[i]);
         }
 
-        // update m_files_to_stack_checkbox
-        update_files_to_stack_checkbox();
+            // update m_files_to_stack_checkbox
+            update_files_to_stack_checkbox();
     });
 
     button_hot_pixel_id->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
