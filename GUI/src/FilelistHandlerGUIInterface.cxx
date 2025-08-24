@@ -33,26 +33,39 @@ void FilelistHandlerGUIInterface::sort_by_group(bool ascending)  {
 };
 
 std::string FilelistHandlerGUIInterface::get_gui_string(const FrameID &frame_id)    {
-    const std::string group_info = "Group #" + std::to_string(frame_id.group_number);
+    const std::string group_info = m_show_group ? "Group #" + std::to_string(frame_id.group_number) : "";
     const string frame_description = frame_id.input_frame.to_gui_string();
     const FrameType type = frame_id.type;
-
     // aperture, exposure time, ISO, and focal length
     std::string metadata_string = "";
+    std::string score_string = "";
+
+    const FrameInfo &frame_info = get_frames_list().at(frame_id.group_number).at(type).at(frame_id.input_frame);
     if (type == FrameType::LIGHT)   {
-        const FrameInfo &frame_info = get_frames_list().at(frame_id.group_number).at(type).at(frame_id.input_frame);
         const AstroPhotoStacker::Metadata &metadata = frame_info.metadata;
         const AlignmentFileInfo &alignment_info     = frame_info.alignment_info;
         const float alignment_score                 = alignment_info.ranking;
         const std::string exposure_string = metadata.exposure_time > 0.5 ?
                                             AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s" :
                                             AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time * 1000) + " ms";
-        metadata_string =   "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture) +
-                            "\t\t" + exposure_string +
-                            "\t\t" + to_string(metadata.iso) + " ISO" +
-                            "\t\t\tscore: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3);
+
+        if (show_metadata()) {
+            metadata_string =   "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture) +
+                                "\t\t" + exposure_string +
+                                "\t\t" + to_string(metadata.iso) + " ISO";
+        }
+        score_string = "\t\t\tscore: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3);
     }
-    const std::string file_string = group_info + "\t" + to_string(type) + "\t\t" + frame_description + metadata_string;
+
+    std::string statistics_string = "";
+    if (m_show_statistics) {
+        statistics_string = "\tmean: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_avg) + "  " +
+                            //"\tmin: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_min) + "  " +
+                            //"\tmax: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_max) + "  " +
+                            "\tstd: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_std) + "  ";
+    }
+
+    const std::string file_string = group_info + "\t" + to_string(type) + "\t\t" + frame_description + metadata_string + score_string + statistics_string;
     return file_string;
 };
 

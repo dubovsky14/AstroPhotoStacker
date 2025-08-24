@@ -481,3 +481,36 @@ void FilelistHandler::load_filelist_from_file(const std::string &input_address) 
         add_frame(input_frame, type, group_number, is_checked);
     }
 };
+
+void FilelistHandler::calculate_frame_statistics(std::atomic<int> *counter) {
+    for (auto &group : m_frames_list) {
+        for (auto &type : group.second) {
+            std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
+            for (auto &frame : frames) {
+                FrameInfo &frame_info = frame.second;
+                if (!frame_info.statistics.is_valid) {
+                    frame_info.statistics = AstroPhotoStacker::get_frame_statistics(frame.first);
+                    if (counter) {
+                        (*counter)++;
+                    }
+                }
+            }
+        }
+    }
+}
+
+int FilelistHandler::get_number_of_frames_with_statistics() const    {
+    int count = 0;
+    for (const auto &group : m_frames_list) {
+        for (const auto &type : group.second) {
+            const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
+            for (const auto &frame : frames) {
+                const FrameInfo &frame_info = frame.second;
+                if (frame_info.statistics.is_valid) {
+                    count++;
+                }
+            }
+        }
+    }
+    return count;
+};

@@ -69,6 +69,34 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
 
         void update_shown_frames();
 
+        void set_show_metadata(bool show_metadata) {
+            m_show_metadata = show_metadata;
+        };
+
+        bool show_metadata() const {
+            return m_show_metadata;
+        }
+
+        void set_show_group(bool show_group) {
+            m_show_group = show_group;
+        };
+
+        bool show_group() const {
+            return m_show_group;
+        };
+
+        void set_show_statistics(bool show_statistics) {
+            m_show_statistics = show_statistics;
+
+            if (show_statistics) {
+                this->calculate_frame_statistics();
+            }
+        };
+
+        bool show_statistics() const {
+            return m_show_statistics;
+        }
+
     private:
 
         void sort_frames();
@@ -81,4 +109,8 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
 
         SortType m_sort_type = SortType::NAME;
         bool m_sort_ascending = true;
+
+        bool m_show_metadata = true;
+        bool m_show_group = true;
+        bool m_show_statistics = false;
 };

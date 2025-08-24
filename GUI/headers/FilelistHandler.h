@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../headers/FrameStatistics.h"
 #include "../../headers/LocalShiftsHandler.h"
 #include "../../headers/Metadata.h"
 #include "../../headers/InputFrame.h"
@@ -12,7 +13,7 @@
 #include <ostream>
 #include <functional>
 #include <set>
-
+#include <atomic>
 
 
 /**
@@ -33,6 +34,7 @@ struct FrameInfo {
     AlignmentFileInfo                       alignment_info;
     AstroPhotoStacker::Metadata             metadata;
     AstroPhotoStacker::InputFrame           input_frame;
+    AstroPhotoStacker::FrameStatistics      statistics;
     FrameType                               type;
     int                                     group_number;
     bool                                    is_checked = true;
@@ -251,6 +253,10 @@ class FilelistHandler   {
         const std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     &get_frames_list() const {
             return m_frames_list;
         }
+
+        void calculate_frame_statistics(std::atomic<int> *counter = nullptr);
+
+        int get_number_of_frames_with_statistics() const;
 
     private:
         std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     m_frames_list;

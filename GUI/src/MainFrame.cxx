@@ -428,6 +428,32 @@ void MyFrame::add_files_to_stack_checkbox()  {
 
     header_sizer->Add(button_keep_best, 0, wxTOP, 5);
 
+    // show metadata checkbox
+    wxCheckBox *checkbox_show_metadata = new wxCheckBox(header_panel, wxID_ANY, "Show Metadata");
+    checkbox_show_metadata->SetValue(m_filelist_handler_gui_interface.show_metadata());
+    checkbox_show_metadata->Bind(wxEVT_CHECKBOX, [this, checkbox_show_metadata](wxCommandEvent&){
+        m_filelist_handler_gui_interface.set_show_metadata(checkbox_show_metadata->IsChecked());
+        update_files_to_stack_checkbox();
+    });
+    header_sizer->Add(checkbox_show_metadata, 0, wxRIGHT, 5);
+
+    // show group checkbox
+    wxCheckBox *checkbox_show_group = new wxCheckBox(header_panel, wxID_ANY, "Show Group");
+    checkbox_show_group->SetValue(m_filelist_handler_gui_interface.show_group());
+    checkbox_show_group->Bind(wxEVT_CHECKBOX, [this, checkbox_show_group](wxCommandEvent&){
+        m_filelist_handler_gui_interface.set_show_group(checkbox_show_group->IsChecked());
+        update_files_to_stack_checkbox();
+    });
+    header_sizer->Add(checkbox_show_group, 0, wxRIGHT, 5);
+
+    // show frame statistics checkbox
+    wxCheckBox *checkbox_show_frame_stats = new wxCheckBox(header_panel, wxID_ANY, "Show Frame Statistics");
+    checkbox_show_frame_stats->SetValue(m_filelist_handler_gui_interface.show_statistics());
+    checkbox_show_frame_stats->Bind(wxEVT_CHECKBOX, [this, checkbox_show_frame_stats](wxCommandEvent&){
+        m_filelist_handler_gui_interface.set_show_statistics(checkbox_show_frame_stats->IsChecked());
+        update_files_to_stack_checkbox();
+    });
+    header_sizer->Add(checkbox_show_frame_stats, 0, wxRIGHT, 5);
 
     wxArrayString files;
     m_files_to_stack_checkbox = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, files, wxLB_MULTIPLE);
