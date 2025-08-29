@@ -4,6 +4,7 @@
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/StarFinder.h"
 #include "../headers/SharpnessRanker.h"
+#include "../headers/ImageRanking.h"
 
 #include <memory>
 #include <string>
@@ -51,7 +52,9 @@ PlateSolvingResult ReferencePhotoHandlerPlanetary::calculate_alignment(const Inp
     plate_solving_result.is_valid = true;
 
     if (ranking != nullptr) {
-        const double sharpness = get_sharpness_factor(brightness.data(), width, height, alignment_window);
+        //const double sharpness = get_sharpness_factor(brightness.data(), width, height, alignment_window);
+        ImageRanker image_ranker(brightness, width, height);
+        const double sharpness = image_ranker.get_sharpness_score();
         *ranking = 100./sharpness;
     }
 
