@@ -2,6 +2,7 @@
 #include "../../headers/Common.h"
 #include "../../headers/VideoReader.h"
 #include "../../headers/TaskScheduler.hxx"
+#include "../../headers/MetadataReader.h"
 
 #include <algorithm>
 #include <fstream>
@@ -492,7 +493,8 @@ void FilelistHandler::load_filelist_from_file(const std::string &input_address) 
         if (type == FrameType::UNKNOWN)                 continue;
 
         const InputFrame input_frame(file_address, frame_number);
-        add_frame(input_frame, type, group_number, is_checked);
+        const Metadata metadata        = AstroPhotoStacker::read_metadata(input_frame);
+        add_frame(input_frame, type, group_number, is_checked, AlignmentFileInfo(), metadata);
     }
 };
 
