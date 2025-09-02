@@ -39,39 +39,42 @@ void FilelistHandlerGUIInterface::sort_by_mean_brightness(bool ascending)  {
 };
 
 
-std::string FilelistHandlerGUIInterface::get_gui_string(const FrameID &frame_id)    {
-    const std::string group_info = m_show_group ? "Group #" + std::to_string(frame_id.group_number) : "";
+std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const FrameID &frame_id)    {
+    vector<string> result;
+    if (m_show_group) {
+        result.push_back("Group #" + std::to_string(frame_id.group_number));
+    }
+
     const string frame_description = frame_id.input_frame.to_gui_string();
     const FrameType type = frame_id.type;
-    // aperture, exposure time, ISO, and focal length
-    std::string metadata_string = "";
-    std::string score_string = "";
+    result.push_back(to_string(type));
+    result.push_back(frame_description);
 
     const FrameInfo &frame_info = get_frames_list().at(frame_id.group_number).at(type).at(frame_id.input_frame);
-    if (type == FrameType::LIGHT)   {
-        const AstroPhotoStacker::Metadata &metadata = frame_info.metadata;
-        const AlignmentFileInfo &alignment_info     = frame_info.alignment_info;
-        const float alignment_score                 = alignment_info.ranking;
-        const std::string exposure_string = metadata.exposure_time > 0.5 ?
-                                            AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s" :
-                                            AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time * 1000) + " ms";
 
-        if (show_metadata()) {
-            metadata_string =   "\t\t f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture) +
-                                "\t\t" + exposure_string +
-                                "\t\t" + to_string(metadata.iso) + " ISO";
-        }
-        score_string = "\t\t\tscore: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3);
+    const AstroPhotoStacker::Metadata &metadata = frame_info.metadata;
+    const AlignmentFileInfo &alignment_info     = frame_info.alignment_info;
+    const float alignment_score                 = alignment_info.ranking;
+    const std::string exposure_string = metadata.exposure_time > 0.5 ?
+                                        AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s" :
+                                        AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time * 1000) + " ms";
+
+    if (show_metadata()) {
+        result.push_back("f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture));
+        result.push_back(exposure_string);
+        result.push_back(to_string(metadata.iso) + " ISO");
     }
+    const string score_string = (type == FrameType::LIGHT) ? "score: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3) : "";
+    result.push_back(score_string);
+
 
     std::string statistics_string = "";
     if (m_show_statistics) {
-        statistics_string = "\tmean: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_avg) + "  " +
-                            "\tstd: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_std) + "  ";
+        result.push_back("mean: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_avg));
+        result.push_back("std: "  + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_std));
     }
 
-    const std::string file_string = group_info + "\t" + to_string(type) + "\t\t" + frame_description + metadata_string + score_string + statistics_string;
-    return file_string;
+    return result;
 };
 
 void FilelistHandlerGUIInterface::keep_best_n_frames(unsigned int n) {
@@ -110,16 +113,25 @@ FilelistHandlerGUIInterface FilelistHandlerGUIInterface::get_filelist_with_check
 };
 
 void FilelistHandlerGUIInterface::update_shown_frames()      {
-    m_shown_frames.clear();
+    vector<vector<string>>  tabular_data;
+    vector<FrameID>         frame_ids;
+
     const std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>> &frames_list = get_frames_list();
     for (const auto &group : frames_list)   {
         for (const auto &type : group.second)   {
             const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames = group.second.at(type.first);
             for (const auto &frame : frames)   {
                 FrameID frame_id(frame.second);
-                m_shown_frames.push_back({get_gui_string(frame.second), frame_id});
+                tabular_data.push_back(get_gui_string_cells(frame.second));
+                frame_ids.push_back(frame_id);
             }
         }
+    }
+
+    m_shown_frames.clear();
+    const vector<string> formated_table = get_formated_table(tabular_data, 4*" "s);
+    for (size_t i = 0; i < formated_table.size(); ++i) {
+        m_shown_frames.push_back({formated_table[i], frame_ids[i]});
     }
     sort_frames();
 };

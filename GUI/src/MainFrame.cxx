@@ -477,6 +477,10 @@ void MyFrame::add_files_to_stack_checkbox()  {
     wxArrayString files;
     m_files_to_stack_checkbox = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, files, wxLB_MULTIPLE);
 
+    // set font to the one with fixed width characters
+    m_files_to_stack_checkbox->SetFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+
+
     // Create a new sizer for the header and the checkbox list
     wxBoxSizer* checkboxSizer = new wxBoxSizer(wxVERTICAL);
     checkboxSizer->Add(header_panel, 0, wxEXPAND | wxALL, 5);

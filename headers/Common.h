@@ -355,4 +355,12 @@ namespace AstroPhotoStacker {
     std::string get_filename_from_path(const std::string &path);
 
     std::string get_filename_without_extension(const std::string &path);
+
+    // python-style string repetition
+    std::string operator*(int n_repeats, const std::string& str);
+
+    // python-style string repetition
+    std::string operator*(const std::string& str, int n_repeats);
+
+    std::vector<std::string> get_formated_table(const std::vector<std::vector<std::string>> &data, const std::string &separator);
 }

@@ -173,3 +173,40 @@ std::string AstroPhotoStacker::get_filename_without_extension(const std::string 
     std::filesystem::path p(path);
     return p.stem().string();
 };
+
+std::string AstroPhotoStacker::operator*(int n_repeats, const std::string& str) {
+    std::string result;
+    for (int i = 0; i < n_repeats; ++i) {
+        result += str;
+    }
+    return result;
+};
+
+std::string AstroPhotoStacker::operator*(const std::string& str, int n_repeats)    {
+    return n_repeats * str;
+};
+
+std::vector<std::string> AstroPhotoStacker::get_formated_table(const std::vector<std::vector<std::string>> &data, const std::string &separator) {
+    if (data.size() == 0)   {
+        return {};
+    }
+    vector<unsigned int> max_lengths(data[0].size());
+    for (const auto &row : data) {
+        if (row.size() != max_lengths.size()) {
+            throw std::runtime_error("All rows must have the same number of columns");
+        }
+        for (size_t col = 0; col < row.size(); ++col) {
+            max_lengths[col] = std::max<unsigned int>(max_lengths[col], row[col].length());
+        }
+    }
+
+    std::vector<std::string> result;
+    for (const auto &row : data) {
+        std::vector<std::string> formatted_row;
+        for (size_t col = 0; col < row.size(); ++col) {
+            formatted_row.push_back(row[col] + (" "s * (max_lengths[col] - row[col].length())));
+        }
+        result.push_back(AstroPhotoStacker::join_strings(separator, formatted_row));
+    }
+    return result;
+};

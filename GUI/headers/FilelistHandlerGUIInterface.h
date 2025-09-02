@@ -43,7 +43,7 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
 
         void sort_by_mean_brightness(bool ascending = true);
 
-        std::string get_gui_string(const FrameID &frame_info);
+        std::vector<std::string> get_gui_string_cells(const FrameID &frame_info);
 
         FrameID get_frame_by_index(size_t index) const {
             if (index >= m_shown_frames.size())   {
@@ -126,4 +126,5 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
         bool m_show_metadata = true;
         bool m_show_group = true;
         bool m_show_statistics = false;
+
 };
