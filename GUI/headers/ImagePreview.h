@@ -206,6 +206,7 @@ class ImagePreview {
         double m_zoom_factor = 1.0;
         double m_max_zoom_factor = 8.0;
         double m_min_zoom_factor = 1;
+        double m_zoom_factor_one_to_one = 100; // zoom factor for which one pixel in preview corresponds to one pixel in original image
 
         void initialize_bitmap();
 
@@ -221,4 +222,6 @@ class ImagePreview {
         void bind_shift_events();
 
         void update_additional_layers_data();
+
+        int get_interpolated_original_image_data(const std::vector<short int> &original_image_channel_data, float x, float y) const;
 };

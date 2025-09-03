@@ -57,7 +57,8 @@ void ImagePreview::read_preview_from_frame(const InputFrame &input_frame)  {
     const int height_original = input_frame_data.get_height();
     m_image_resize_tool.set_original_size(width_original, height_original);
 
-    m_max_zoom_factor = std::min<double>(m_image_resize_tool.get_height_original()/m_height, m_image_resize_tool.get_width_original()/m_width);
+    m_zoom_factor_one_to_one = std::min<double>(m_image_resize_tool.get_height_original()/m_height, m_image_resize_tool.get_width_original()/m_width);
+    m_max_zoom_factor = 3*m_zoom_factor_one_to_one;
     m_image_resize_tool.set_default_resized_area();
     update_max_values_original();
     update_preview_data();
@@ -69,6 +70,8 @@ void ImagePreview::read_preview_from_file(const std::string &path)  {
 
 void ImagePreview::update_original_image(const std::vector<std::vector<short int>> &original_image, int width, int height)   {
     m_image_resize_tool.set_original_size(width, height);
+    m_zoom_factor_one_to_one = std::min<double>(m_image_resize_tool.get_height_original()/m_height, m_image_resize_tool.get_width_original()/m_width);
+    m_max_zoom_factor = 3*m_zoom_factor_one_to_one;
     m_original_image = original_image;
     m_image_resize_tool.set_default_resized_area();
     update_max_values_original();
@@ -207,37 +210,69 @@ void ImagePreview::update_preview_data(float mouse_position_relative_x, float mo
     int x_resized_min, x_resized_max, y_resized_min, y_resized_max;
     m_image_resize_tool.get_crop_borders_in_original_coordinates(&x_resized_min, &x_resized_max, &y_resized_min, &y_resized_max);
 
-    for (int i_color = 0; i_color < 3; i_color++)   {
-        for (int i_original_y = y_resized_min; i_original_y < y_resized_max; i_original_y++)  {
-            for (int i_original_x = x_resized_min; i_original_x < x_resized_max ; i_original_x++)  {
-                const int index = i_original_y * m_image_resize_tool.get_width_original()  + i_original_x;
+    if (m_zoom_factor < m_zoom_factor_one_to_one)   {
+        // in this case we want to integrate all pixels from the original image over the area of preview image to reduce the noise
+        for (int i_color = 0; i_color < 3; i_color++)   {
+            for (int i_original_y = y_resized_min; i_original_y < y_resized_max; i_original_y++)  {
+                for (int i_original_x = x_resized_min; i_original_x < x_resized_max ; i_original_x++)  {
+                    const int index = i_original_y * m_image_resize_tool.get_width_original()  + i_original_x;
 
-                const int pixel_preview_x = m_image_resize_tool.get_preview_coordinate_x(i_original_x);
-                const int pixel_preview_y = m_image_resize_tool.get_preview_coordinate_y(i_original_y);
+                    const int pixel_preview_x = m_image_resize_tool.get_preview_coordinate_x(i_original_x);
+                    const int pixel_preview_y = m_image_resize_tool.get_preview_coordinate_y(i_original_y);
 
-                const int index_new = pixel_preview_y * m_width + pixel_preview_x;
-                m_preview_data[i_color][index_new] += m_original_image[i_color][index];
-                count.at(index_new)++;
+                    const int index_new = pixel_preview_y * m_width + pixel_preview_x;
+                    if (index_new < 0 || index_new >= m_width*m_height) {
+                        continue;
+                    }
+                    m_preview_data[i_color][index_new] += m_original_image[i_color][index];
+                    if (i_color == 0)   {
+                        count.at(index_new)++;
+                    }
 
-                if (has_additional_layers && i_color == 0) {
-                    const bool valid_pixel = m_additional_layers_data[0][index] >= 0;
-                    if (valid_pixel) {
-                        m_additional_layers_preview[0][index_new] = m_additional_layers_data[0][index];
-                        m_additional_layers_preview[1][index_new] = m_additional_layers_data[1][index];
-                        m_additional_layers_preview[2][index_new] = m_additional_layers_data[2][index];
+                    if (has_additional_layers && i_color == 0) {
+                        const bool valid_pixel = m_additional_layers_data[0][index] >= 0;
+                        if (valid_pixel) {
+                            m_additional_layers_preview[0][index_new] = m_additional_layers_data[0][index];
+                            m_additional_layers_preview[1][index_new] = m_additional_layers_data[1][index];
+                            m_additional_layers_preview[2][index_new] = m_additional_layers_data[2][index];
+                        }
+                    }
+                }
+            }
+        }
+        for (int i_color = 0; i_color < 3; i_color++)   {
+            for (int i_pixel = 0; i_pixel < m_width*m_height; i_pixel++)   {
+                if (count[i_pixel] > 0) {
+                    m_preview_data[i_color][i_pixel] /= count[i_pixel];
+                }
+            }
+        }
+    }
+    else {
+        // in this case we want to interpolate pixels in order to allow additional zooming in
+        for (int i_color = 0; i_color < 3; i_color++)   {
+            for (int i_preview_y = 0; i_preview_y < m_height; i_preview_y++)  {
+                for (int i_preview_x = 0; i_preview_x < m_width ; i_preview_x++)  {
+                    const int index_new = i_preview_y * m_width + i_preview_x;
+
+                    const float x_original = m_image_resize_tool.get_original_coordinate_x((i_preview_x+0.5f)/m_width);
+                    const float y_original = m_image_resize_tool.get_original_coordinate_y((i_preview_y+0.5f)/m_height);
+
+                    m_preview_data[i_color][index_new] = get_interpolated_original_image_data(m_original_image[i_color], x_original, y_original);
+
+                    if (has_additional_layers && i_color == 0) {
+                        const bool valid_pixel = get_interpolated_original_image_data(m_additional_layers_preview[0], x_original, y_original) >= 0;
+                        if (valid_pixel) {
+                            m_additional_layers_preview[0][index_new] = get_interpolated_original_image_data(m_additional_layers_preview[0], x_original, y_original);
+                            m_additional_layers_preview[1][index_new] = get_interpolated_original_image_data(m_additional_layers_preview[1], x_original, y_original);
+                            m_additional_layers_preview[2][index_new] = get_interpolated_original_image_data(m_additional_layers_preview[2], x_original, y_original);
+                        }
                     }
                 }
             }
         }
     }
 
-    for (int i_color = 0; i_color < 3; i_color++)   {
-        for (int i_pixel = 0; i_pixel < m_width*m_height; i_pixel++)   {
-            if (count[i_pixel] > 0) {
-                m_preview_data[i_color][i_pixel] /= count[i_pixel];
-            }
-        }
-    }
 };
 
 void ImagePreview::on_mouse_wheel(wxMouseEvent& event) {
@@ -327,4 +362,36 @@ void ImagePreview::update_additional_layers_data()  {
     }
     update_preview_data();
     update_preview_bitmap();
+};
+
+int ImagePreview::get_interpolated_original_image_data(const vector<short int> &original_image_channel_data, float x, float y) const    {
+    const int original_width = m_image_resize_tool.get_width_original();
+    const int original_height = m_image_resize_tool.get_height_original();
+
+    if (x < 0 || x >= original_width-1 || y < 0 || y >= original_height-1) {
+        return 0;
+    }
+
+    // Get the integer coordinates of the pixel
+    const int x0 = static_cast<int>(x);
+    const int y0 = static_cast<int>(y);
+    const int x1 = x0 + 1;
+    const int y1 = y0 + 1;
+
+    if (x1 >= m_image_resize_tool.get_width_original() || y1 >= m_image_resize_tool.get_height_original()) {
+        return 0;
+    }
+
+    // Get the fractional part of the coordinates
+    const float fx = x - x0;
+    const float fy = y - y0;
+
+    // Get the pixel values from the original image
+    const int c00 = original_image_channel_data[y0 * original_width + x0];
+    const int c01 = original_image_channel_data[y0 * original_width + x1];
+    const int c10 = original_image_channel_data[y1 * original_width + x0];
+    const int c11 = original_image_channel_data[y1 * original_width + x1];
+
+    // Perform bilinear interpolation
+    return static_cast<int>((1 - fx) * (1 - fy) * c00 + fx * (1 - fy) * c01 + (1 - fx) * fy * c10 + fx * fy * c11);
 };
