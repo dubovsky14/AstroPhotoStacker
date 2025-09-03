@@ -75,8 +75,8 @@ int ImageResizeTool::get_preview_coordinate_y(int y_original) const {
     return (y_original-m_i_y_resized_min) / m_step_y;
 };
 
-int ImageResizeTool::get_original_coordinate_x(float x_relative) const   {
-    int x_center = m_i_x_resized_min + (m_i_x_resized_max - m_i_x_resized_min)*x_relative;
+float ImageResizeTool::get_original_coordinate_x(float x_relative) const   {
+    float x_center = m_i_x_resized_min + (m_i_x_resized_max - m_i_x_resized_min)*x_relative;
     if (x_center < m_i_x_resized_min) {
         x_center = m_i_x_resized_min;
     }
@@ -86,8 +86,8 @@ int ImageResizeTool::get_original_coordinate_x(float x_relative) const   {
     return x_center;
 };
 
-int ImageResizeTool::get_original_coordinate_y(float y_relative) const   {
-    int y_center = m_i_y_resized_min + (m_i_y_resized_max - m_i_y_resized_min)*y_relative;
+float ImageResizeTool::get_original_coordinate_y(float y_relative) const   {
+    float y_center = m_i_y_resized_min + (m_i_y_resized_max - m_i_y_resized_min)*y_relative;
     if (y_center < m_i_y_resized_min) {
         y_center = m_i_y_resized_min;
     }

@@ -22,9 +22,9 @@ class ImageResizeTool   {
 
         int get_preview_coordinate_y(int y_original) const;
 
-        int get_original_coordinate_x(float x_relative) const;
+        float get_original_coordinate_x(float x_relative) const;
 
-        int get_original_coordinate_y(float y_relative) const;
+        float get_original_coordinate_y(float y_relative) const;
 
         std::tuple<int, int> get_preview_coordinates(int x, int y) const;
 
