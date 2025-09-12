@@ -63,7 +63,6 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
         result.push_back("f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture));
         result.push_back(exposure_string);
         result.push_back(to_string(metadata.iso) + " ISO");
-        result.push_back(metadata.camera_model);
     }
     const string score_string = (type == FrameType::LIGHT) ? "score: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3) : "";
     result.push_back(score_string);

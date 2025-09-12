@@ -7,6 +7,7 @@
 #include "../headers/CombinedColorStrecherTool.h"
 #include "../headers/ThreePointSlider.h"
 #include "../headers/FloatingPointSlider.h"
+#include "../headers/SummaryYamlCreator.h"
 
 #include "../headers/HistogramDataTool.h"
 #include "../headers/HistogramDataToolGUI.h"
@@ -165,6 +166,7 @@ class MyFrame : public wxFrame  {
         std::unique_ptr<StackSettingsSaver>    m_stack_settings = nullptr;
         std::unique_ptr<AstroPhotoStacker::HotPixelIdentifier>  m_hot_pixel_identifier = nullptr;
         std::unique_ptr<AstroPhotoStacker::StackerBase>         m_stacker = nullptr;
+        std::unique_ptr<SummaryYamlCreator> m_summary_yaml_creator = nullptr;
 
         void on_open_frames(wxCommandEvent& event, FrameType type, const std::string& title);
         void on_open_lights(wxCommandEvent& event);

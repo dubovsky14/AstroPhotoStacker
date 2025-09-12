@@ -722,6 +722,7 @@ void MyFrame::add_button_bar()   {
                                 "Calculating final image ...");
 
         update_image_preview_with_stacked_image();
+        m_summary_yaml_creator = make_unique<SummaryYamlCreator>(m_filelist_handler_gui_interface);
 
         update_status_icon(m_stacked_status_icon, true);
     });
@@ -1269,6 +1270,10 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
                                         m_stacker->get_width(),
                                         m_stacker->get_height(),
                                         CV_16UC3);
+
+        if (m_summary_yaml_creator) {
+            m_summary_yaml_creator->create_and_save_yaml_file(file_address + ".yaml");
+        }
     }
 };
 
