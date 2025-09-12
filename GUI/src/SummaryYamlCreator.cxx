@@ -133,17 +133,17 @@ std::vector<std::string> SummaryYamlCreator::get_post_processing_summary(const P
 
     std::vector<std::string> result;
     if (post_processing_tool->get_apply_rgb_alignment()) {
-        result.push_back("rgb_alignment:");
+        result.push_back(s_indent + "rgb_alignment:");
         const std::pair<int,int> red_shift = post_processing_tool->get_shift_red();
-        result.push_back(s_indent + "red_shift_x: " + to_string(red_shift.first));
-        result.push_back(s_indent + "red_shift_y: " + to_string(red_shift.second));
+        result.push_back(s_indent*2 + "red_shift_x: " + to_string(red_shift.first));
+        result.push_back(s_indent*2 + "red_shift_y: " + to_string(red_shift.second));
     }
 
     if (post_processing_tool->get_apply_sharpening()) {
-        result.push_back("sharpening:");
-        result.push_back(s_indent + "kernel_size: " + to_string(post_processing_tool->get_kernel_size()));
-        result.push_back(s_indent + "gauss_width: " + AstroPhotoStacker::round_and_convert_to_string(post_processing_tool->get_gauss_width()));
-        result.push_back(s_indent + "center_value: " + AstroPhotoStacker::round_and_convert_to_string(post_processing_tool->get_center_value(), 2));
+        result.push_back(s_indent + "sharpening:");
+        result.push_back(s_indent*2 + "kernel_size: " + to_string(post_processing_tool->get_kernel_size()));
+        result.push_back(s_indent*2 + "gauss_width: " + AstroPhotoStacker::round_and_convert_to_string(post_processing_tool->get_gauss_width()));
+        result.push_back(s_indent*2 + "center_value: " + AstroPhotoStacker::round_and_convert_to_string(post_processing_tool->get_center_value(), 2));
     }
 
     if (!result.empty()) {
