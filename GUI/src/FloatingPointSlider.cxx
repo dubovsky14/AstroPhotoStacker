@@ -15,12 +15,12 @@ FloatingPointSlider::FloatingPointSlider(   wxWindow *parent,
 
 
     const float ten_power_n_decimals = pow(10, n_decimals);
-    const wxString label_with_value = label + get_rounded_value(initial_value+0.00001, n_decimals);
+    const wxString label_with_value = label + get_rounded_value(initial_value + (initial_value > 0 ? 0.00001 : -0.00001), n_decimals);
     m_text = new wxStaticText(parent, wxID_ANY, label_with_value);
     m_slider = new wxSlider(parent, wxID_ANY, initial_value*ten_power_n_decimals, min_value*ten_power_n_decimals, max_value*ten_power_n_decimals, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
     m_slider->Bind(wxEVT_SLIDER, [this, ten_power_n_decimals, label, n_decimals, callback](wxCommandEvent&){
         const float value = m_slider->GetValue()/ten_power_n_decimals;
-        const std::string new_label = label + get_rounded_value(value+0.00001, n_decimals);
+        const std::string new_label = label + get_rounded_value(value + (value > 0 ? 0.00001 : -0.00001), n_decimals);
         m_text->SetLabel(new_label);
         callback(value);
     });
