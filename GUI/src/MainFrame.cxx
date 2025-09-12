@@ -1272,7 +1272,7 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
                                         CV_16UC3);
 
         if (m_summary_yaml_creator) {
-            m_summary_yaml_creator->create_and_save_yaml_file(file_address + ".yaml");
+            m_summary_yaml_creator->create_and_save_yaml_file(file_address + ".yaml", &m_post_processing_tool);
         }
     }
 };

@@ -17,7 +17,7 @@ SummaryYamlCreator::SummaryYamlCreator(const FilelistHandlerGUIInterface &fileli
         m_group_numbers = m_filelist_handler_gui.get_group_numbers();
 };
 
-std::string SummaryYamlCreator::get_yaml_summary() const{
+std::string SummaryYamlCreator::get_yaml_summary(const PostProcessingTool *post_processing_tool) const{
 
     string result = block_to_string(get_overall_frames_summary(), "");
     result += "groups:\n";
@@ -26,34 +26,7 @@ std::string SummaryYamlCreator::get_yaml_summary() const{
         result += block_to_string(get_group_summary(group_number), "");
     }
 
-    /*
-    const std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>> &frames_list = m_filelist_handler_gui.get_frames_list();
-    for (const std::pair<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>> &group_frames : frames_list)    {
-        int group_number = group_frames.first;
-        result += s_indent + s_indent_new_item + "group_number: " + to_string(group_number) + "\n";
-        for (FrameType frame_type : s_file_types_ordering)   {
-            const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames_map = group_frames.second.at(frame_type);
-            std::string subgroup_filelist = "";
-
-        }
-
-    }
-
-    const AstroPhotoStacker::Metadata &metadata = frame_info.metadata;
-    const AlignmentFileInfo &alignment_info     = frame_info.alignment_info;
-    const float alignment_score                 = alignment_info.ranking;
-    const std::string exposure_string = metadata.exposure_time > 0.5 ?
-                                        AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s" :
-                                        AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time * 1000) + " ms";
-
-    if (show_metadata()) {
-        result.push_back("f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture));
-        result.push_back(exposure_string);
-        result.push_back(to_string(metadata.iso) + " ISO");
-    }
-    const string score_string = (type == FrameType::LIGHT) ? "score: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3) : "";
-    result.push_back(score_string);
-*/
+    result += block_to_string(get_post_processing_summary(post_processing_tool), "");
 
     return result;
 };
@@ -73,8 +46,8 @@ std::vector<std::string> SummaryYamlCreator::get_overall_frames_summary() const 
 };
 
 
-void SummaryYamlCreator::create_and_save_yaml_file(const std::string &output_address) const {
-    const std::string yaml_summary = get_yaml_summary();
+void SummaryYamlCreator::create_and_save_yaml_file(const std::string &output_address, const PostProcessingTool *post_processing_tool) const {
+    const std::string yaml_summary = get_yaml_summary(post_processing_tool);
     std::ofstream output_file(output_address);
     output_file << yaml_summary;
     output_file.close();
@@ -152,6 +125,33 @@ std::vector<std::string> SummaryYamlCreator::get_group_and_type_summary(int grou
     result.insert(result.begin() + 1, s_indent + "number_of_frames: " + to_string(n_frames));
     return result;
 };
+
+std::vector<std::string> SummaryYamlCreator::get_post_processing_summary(const PostProcessingTool *post_processing_tool) const {
+    if (!post_processing_tool) {
+        return {};
+    }
+
+    std::vector<std::string> result;
+    if (post_processing_tool->get_apply_rgb_alignment()) {
+        result.push_back("rgb_alignment:");
+        const std::pair<int,int> red_shift = post_processing_tool->get_shift_red();
+        result.push_back(s_indent + "red_shift_x: " + to_string(red_shift.first));
+        result.push_back(s_indent + "red_shift_y: " + to_string(red_shift.second));
+    }
+
+    if (post_processing_tool->get_apply_sharpening()) {
+        result.push_back("sharpening:");
+        result.push_back(s_indent + "kernel_size: " + to_string(post_processing_tool->get_kernel_size()));
+        result.push_back(s_indent + "gauss_width: " + AstroPhotoStacker::round_and_convert_to_string(post_processing_tool->get_gauss_width()));
+        result.push_back(s_indent + "center_value: " + AstroPhotoStacker::round_and_convert_to_string(post_processing_tool->get_center_value(), 2));
+    }
+
+    if (!result.empty()) {
+        result.insert(result.begin(), "post_processing:");
+    }
+
+    return result;
+}
 
 std::string SummaryYamlCreator::block_to_string(const std::vector<std::string> &block, const std::string &indent) const {
     std::string result;
