@@ -51,6 +51,7 @@ namespace AstroPhotoStacker {
             int m_gain = -1;
             float m_exposure_time = 0;
             std::string m_timestamp_string = "";
+            std::string m_camera_model = "";
             int m_unix_time = 0;
             std::array<char, 4> m_bayer_matrix = {-1,-1,-1,-1};
     };

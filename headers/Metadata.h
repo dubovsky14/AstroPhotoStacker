@@ -15,6 +15,7 @@ namespace AstroPhotoStacker {
         bool monochrome         = false;
 
         bool is_raw             = false;
+        std::string camera_model = "";
         std::string bayer_matrix = "";
 
     };

@@ -45,6 +45,8 @@ Metadata AstroPhotoStacker::read_metadata_from_raw_file_dslr_slr(const std::stri
     ss << std::put_time(t, "%Y-%m-%d %I:%M:%S %p");
     result.date_time     = ss.str();
 
+    result.camera_model   = raw_processor.imgdata.idata.model;
+
     // close the file
     raw_processor.recycle();
 

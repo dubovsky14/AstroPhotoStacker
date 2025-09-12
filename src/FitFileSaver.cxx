@@ -41,7 +41,15 @@ std::string FitFileSaver::get_header_string() const {
     if (!bayer_matrix.empty()) {
         header_string += get_header_line("BAYERPAT", bayer_matrix, "Bayer pattern");
     }
-    header_string += get_header_line("BAYERPAT", "\'RGGB\'", "Bayer pattern");
+    else    {
+        header_string += get_header_line("BAYERPAT", "\'RGGB\'", "Bayer pattern");
+    }
+
+    const std::string camera_model = m_metadata.has_value() ? m_metadata->camera_model : "";
+    if (!camera_model.empty()) {
+        header_string += get_header_line("INSTRUME", camera_model, "Camera model");
+    }
+
 
     header_string += get_metadata_header_string();
 

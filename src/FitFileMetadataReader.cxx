@@ -69,7 +69,9 @@ void FitFileMetadataReader::parse_header(const std::string &header)    {
        // reading key
         if (header[i] == ' ') {
             previous_was_space = true;
-            continue;
+            if (!reading_value) {
+                continue;
+            }
         }
         // starting to read key
         if (header[i] != ' ' && previous_was_space && !reading_value && header[i] != '=') {
@@ -96,7 +98,7 @@ void FitFileMetadataReader::parse_header(const std::string &header)    {
                 value += header[i];
             }
             else {
-                strip_string(&value, "\'\"");
+                strip_string(&value, "\'\" ");
                 m_metadata[key] = value;
                 key = "";
                 value = "";
@@ -142,6 +144,7 @@ void FitFileMetadataReader::fill_metadata()    {
     m_metadata_struct.monochrome = bayer_matrix == "";
     m_metadata_struct.bayer_matrix = convert_bayer_int_array_to_string(m_bayer_matrix);
     m_metadata_struct.is_raw = true;
+    m_metadata_struct.camera_model = get_with_default<string,string>(m_metadata, "INSTRUME", "");
 };
 
 void FitFileMetadataReader::process_bayer_matrix(const std::string &bayer_matrix)  {

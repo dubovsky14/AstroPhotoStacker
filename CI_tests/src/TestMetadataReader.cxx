@@ -1,6 +1,7 @@
 #include "../headers/TestMetadataReader.h"
 
 #include "../../headers/MetadataReader.h"
+#include "../../headers/Common.h"
 
 #include <iostream>
 
@@ -12,6 +13,7 @@ TestResult AstroPhotoStacker::test_metadata_reading(const std::string &input_fil
                                                     int expected_iso,
                                                     float expected_focal_length,
                                                     const std::string &expected_bayer_matrix,
+                                                    const std::string &expected_camera_model,
                                                     int expected_unix_time)    {
 
     const Metadata metadata = read_metadata(InputFrame(input_file));
@@ -34,6 +36,9 @@ TestResult AstroPhotoStacker::test_metadata_reading(const std::string &input_fil
     }
     if (metadata.bayer_matrix != expected_bayer_matrix) {
         error_message += "Bayer matrix mismatch: expected " + expected_bayer_matrix + ", got " + metadata.bayer_matrix + "\n";
+    }
+    if (compare_case_insensitive(metadata.camera_model, expected_camera_model)) {
+        error_message += "Camera model mismatch: expected '" + expected_camera_model + "', got '" + metadata.camera_model + "'\n";
     }
     if (error_message.empty()) {
         return TestResult(true, "Metadata reading test passed.");

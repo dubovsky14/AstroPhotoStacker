@@ -26,6 +26,7 @@ Metadata ZWOVideoTextFileInfo::get_metadata() const {
     metadata.timestamp = m_unix_time;
     metadata.date_time = m_timestamp_string;
     metadata.is_raw = true;
+    metadata.camera_model = m_camera_model;
 
     if (m_bayer_matrix[0] >= 0) {
         metadata.bayer_matrix = convert_bayer_int_array_to_string(m_bayer_matrix);
@@ -36,7 +37,15 @@ Metadata ZWOVideoTextFileInfo::get_metadata() const {
 
 void ZWOVideoTextFileInfo::read_data(std::ifstream *file)   {
     std::string line;
+
     while (std::getline(*file, line)) {
+        if (m_camera_model == "")   {
+            if (starts_with(line, "[") && ends_with(line, "]"))   {
+                m_camera_model = line.substr(1, line.size() - 2);
+                continue;
+            }
+        }
+
         vector<string> elements = split_string(line, "=");
         if (elements.size() != 2) {
             continue;
