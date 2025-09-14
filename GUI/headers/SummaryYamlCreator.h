@@ -2,6 +2,7 @@
 
 #include "../headers/FilelistHandlerGUIInterface.h"
 #include "../headers/PostProcessingTool.h"
+#include "../../headers/Metadata.h"
 
 #include <map>
 #include <string>
@@ -14,6 +15,8 @@ class SummaryYamlCreator {
         std::string get_yaml_summary(const PostProcessingTool *post_processing_tool = nullptr) const;
 
         void create_and_save_yaml_file(const std::string &output_address, const PostProcessingTool *post_processing_tool = nullptr) const;
+
+        void add_as_exif_metadata(const std::string &output_address) const;
 
     private:
 
@@ -33,4 +36,6 @@ class SummaryYamlCreator {
 
         static const std::string s_indent;
         static const std::string s_indent_new_item;
+
+        AstroPhotoStacker::Metadata get_metadata_of_first_light()  const;
 };

@@ -1,6 +1,8 @@
 #include "../headers/SummaryYamlCreator.h"
 #include "../../headers/Common.h"
 
+#include <exiv2/exiv2.hpp>
+
 #include <fstream>
 #include <algorithm>
 
@@ -160,3 +162,76 @@ std::string SummaryYamlCreator::block_to_string(const std::vector<std::string> &
     }
     return result;
 };
+
+void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address) const  {
+    // Open with Exiv2
+    Exiv2::Image::AutoPtr img = Exiv2::ImageFactory::open(output_address);
+    img->readMetadata();
+    Exiv2::ExifData &exif_data = img->exifData();
+
+    const Metadata metadata = get_metadata_of_first_light();
+
+    if (metadata.exposure_time > 0) {
+        if (metadata.exposure_time >= 1.0) {
+            int seconds = static_cast<int>(metadata.exposure_time + 0.5);
+            exif_data["Exif.Photo.ExposureTime"] = to_string(seconds) + "/1"; // e.g. 30s
+        } else {
+            int denominator = static_cast<int>(1.0 / metadata.exposure_time + 0.5);
+            exif_data["Exif.Photo.ExposureTime"] = "1/" + to_string(denominator); // e.g. 1/30s
+        }
+    }
+    if (metadata.aperture > 0) {
+        int aperture_times_10 = static_cast<int>(metadata.aperture * 10 + 0.5);
+        exif_data["Exif.Photo.FNumber"] = to_string(aperture_times_10) + "/10";
+    }
+
+    if (metadata.iso > 0) {
+        exif_data["Exif.Photo.ISOSpeedRatings"] = metadata.iso;
+    }
+
+    if (metadata.camera_model != "") {
+        exif_data["Exif.Image.Model"] = metadata.camera_model;
+    }
+
+    if (metadata.focal_length > 0) {
+        int focal_length_times_10 = static_cast<int>(metadata.focal_length * 10 + 0.5);
+        exif_data["Exif.Photo.FocalLength"] = to_string(focal_length_times_10) + "/10";
+    }
+
+    if (metadata.date_time != "") {
+        exif_data["Exif.Image.DateTime"] = metadata.date_time;
+        exif_data["Exif.Photo.DateTimeOriginal"] = metadata.date_time;
+        exif_data["Exif.Photo.DateTimeDigitized"] = metadata.date_time;
+    }
+
+    exif_data["Exif.Image.ImageDescription"] = join_strings("; ", get_overall_frames_summary());
+    exif_data["Exif.Image.Software"] = "AstroPhotoStacker";
+    exif_data["Exif.Photo.UserComment"] = metadata.date_time;
+
+    Exiv2::XmpData &xmpData = img->xmpData();
+    xmpData["Xmp.dc.full_yaml_data"] = get_yaml_summary();
+    xmpData["Xmp.dc.creator"] = "AstroPhotoStacker";
+    img->setXmpData(xmpData);
+
+
+    img->setExifData(exif_data);
+    img->writeMetadata();
+};
+
+Metadata SummaryYamlCreator::get_metadata_of_first_light() const {
+    for (int group_number : m_group_numbers)   {
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames_map = m_filelist_handler_gui.get_frames(FrameType::LIGHT, group_number);
+        if (frames_map.empty())   {
+            continue;
+        }
+
+        for (const auto &frame : frames_map)   {
+            const bool is_checked = frame.second.is_checked;
+            if (!is_checked)   {
+                continue;
+            }
+            return frame.second.metadata;
+        }
+    }
+    return Metadata();
+}
