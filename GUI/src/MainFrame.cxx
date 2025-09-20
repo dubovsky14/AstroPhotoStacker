@@ -269,6 +269,7 @@ void MyFrame::add_group_menu()   {
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         string message = "Groups allow a user to combine light frames taken in different conditions, ";
         message += " where different calibration frames are used for different groups.";
+        message += " A typical example: stacking an object photographed on a telescope over multiple nights, each night with different flat frames.";
         wxMessageDialog dialog(this, message, "");
         dialog.ShowModal();
     }, id);
@@ -505,7 +506,9 @@ void MyFrame::add_files_to_stack_checkbox()  {
             const int index = m_filelist_handler_gui_interface.selected_frame_index();
             m_filelist_handler_gui_interface.remove_frame(index);
             update_files_to_stack_checkbox();
-            update_image_preview_file(index);
+            const int new_index = (index < int(m_filelist_handler_gui_interface.get_number_of_shown_frames())) ?
+                                   index : m_filelist_handler_gui_interface.get_number_of_shown_frames() - 1;
+            update_image_preview_file(new_index);
         }
         if (event.GetKeyCode() == WXK_DOWN) {
             const int old_index = m_filelist_handler_gui_interface.selected_frame_index();

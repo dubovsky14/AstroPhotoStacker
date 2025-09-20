@@ -56,6 +56,10 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
             return m_shown_frames;
         };
 
+        size_t get_number_of_shown_frames() const {
+            return m_shown_frames.size();
+        };
+
         void keep_best_n_frames(unsigned int n);
 
         void remove_frame(size_t index);
