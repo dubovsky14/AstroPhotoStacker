@@ -68,6 +68,17 @@ void CalibratedPhotoHandler::calibrate() {
         }
     }
 
+    // have to fix hot pixels before debayering
+    if (m_hot_pixel_identifier != nullptr && m_is_raw_file) {
+        for (int y = 0; y < m_height; y++) {
+            for (int x = 0; x < m_width; x++) {
+                if (m_hot_pixel_identifier->is_hot_pixel(x, y)) {
+                    fix_hot_pixel(x, y);
+                }
+            }
+        }
+    }
+
     if (m_use_color_interpolation && m_is_raw_file) {
         m_input_frame_data_original->debayer();
         m_is_raw_file = false;
@@ -133,13 +144,8 @@ void CalibratedPhotoHandler::calibrate() {
                         continue;
                     }
                 }
-                int x_int = int(x_original);
-                int y_int = int(y_original);
-                if (m_hot_pixel_identifier != nullptr) {
-                    if (m_hot_pixel_identifier->is_hot_pixel(x_int, y_int)) {
-                        fix_hot_pixel(x_int, y_int);
-                    }
-                }
+                const int x_int = int(x_original);
+                const int y_int = int(y_original);
                 if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
                     const unsigned int index_shifted = y_shifted*m_width + x_shifted;
                     const unsigned int index_original = y_int*m_width + x_int;
