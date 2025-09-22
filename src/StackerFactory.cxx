@@ -47,24 +47,12 @@ std::unique_ptr<StackerBase> AstroPhotoStacker::create_stacker(const std::string
 };
 
 void AstroPhotoStacker::configure_stacker(StackerBase* stacker, const StackSettings &settings)   {
-    // kappa-sigma
-    StackerKappaSigmaBase *stacker_kappa_sigma = dynamic_cast<StackerKappaSigmaBase*>(stacker);
-    if (stacker_kappa_sigma != nullptr) {
-        stacker_kappa_sigma->set_kappa(settings.get_kappa());
-        stacker_kappa_sigma->set_number_of_iterations(settings.get_kappa_sigma_iter());
-    }
-
     stacker->set_number_of_cpu_threads(settings.get_n_cpus());
+    stacker->set_memory_usage_limit(settings.get_max_memory());
 
-    // Memory limit
-    if (dynamic_cast<StackerMeanValue*>(stacker) == nullptr) {
-        stacker->set_memory_usage_limit(settings.get_max_memory());
-    }
-
-    // cut-off average
-    if (dynamic_cast<StackerCutOffAverage*>(stacker) != nullptr) {
-        StackerCutOffAverage *stacker_cut_off_average = dynamic_cast<StackerCutOffAverage*>(stacker);
-        stacker_cut_off_average->set_tail_fraction_to_cut_off(settings.get_cut_off_tail_fraction());
+    const std::map<std::string, double> algorithm_specific_settings = settings.get_algorithm_specific_settings();
+    for (const auto &pair : algorithm_specific_settings) {
+        stacker->set_additional_setting(pair.first, pair.second);
     }
 };
 

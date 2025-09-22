@@ -62,34 +62,6 @@ const std::string& StackSettings::get_stacking_algorithm() const       {
     return m_stacking_algorithm;
 };
 
-bool StackSettings::is_kappa_sigma() const     {
-    return m_stacking_algorithm == "kappa-sigma mean" || m_stacking_algorithm == "kappa-sigma median";
-};
-
-void  StackSettings::set_kappa(float kappa_sigma)       {
-    m_kappa = kappa_sigma;
-};
-
-float StackSettings::get_kappa() const  {
-    return m_kappa;
-};
-
-void StackSettings::set_kappa_sigma_iter(int kappa_sigma_iter)  {
-    m_kappa_sigma_iter = kappa_sigma_iter;
-};
-
-int  StackSettings::get_kappa_sigma_iter() const        {
-    return m_kappa_sigma_iter;
-};
-
-void StackSettings::set_cut_off_tail_fraction(float cut_off_tail_fraction)    {
-    m_cut_off_tail_fraction = cut_off_tail_fraction;
-};
-
-float StackSettings::get_cut_off_tail_fraction() const   {
-    return m_cut_off_tail_fraction;
-};
-
 void StackSettings::set_hot_pixel_correction(bool hot_pixel_correction)    {
     m_hot_pixel_correction = hot_pixel_correction;
 };

@@ -184,3 +184,31 @@ CalibratedPhotoHandler StackerBase::get_calibrated_photo(unsigned int i_file, in
     calibrated_photo.calibrate();
     return calibrated_photo;
 };
+
+std::vector<std::string> StackerBase::get_additional_setting_keys() const {
+    std::vector<std::string> keys;
+    for (const auto &pair : m_additional_settings) {
+        keys.push_back(pair.first);
+    }
+    return keys;
+};
+
+void StackerBase::set_additional_setting(const std::string &name, double value) {
+    if (m_additional_settings.find(name) == m_additional_settings.end()) {
+        throw std::runtime_error("Setting not found: " + name);
+    }
+    m_additional_settings.at(name).set_value(value);
+};
+
+AdditionalStackerSetting StackerBase::get_additional_setting(const std::string &name) const {
+    if (m_additional_settings.find(name) != m_additional_settings.end()) {
+        return m_additional_settings.at(name);
+    }
+    throw std::runtime_error("Setting not found: " + name);
+};
+
+void StackerBase::configure_stacker(std::map<std::string, double> settings)  {
+    for (const auto &pair : settings) {
+        set_additional_setting(pair.first, pair.second);
+    }
+};

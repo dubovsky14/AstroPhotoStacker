@@ -8,12 +8,14 @@
 #include "../headers/LocalShiftsHandler.h"
 
 #include "../headers/InputFrame.h"
+#include "../headers/AdditionalStackerSetting.h"
 
 #include <memory>
 #include <string>
 #include <vector>
 #include <atomic>
 #include <tuple>
+#include <map>
 
 
 namespace AstroPhotoStacker {
@@ -173,6 +175,14 @@ namespace AstroPhotoStacker {
             */
             virtual unsigned long long get_maximal_memory_usage(int number_of_frames) const = 0;
 
+            std::vector<std::string> get_additional_setting_keys() const;
+
+            void set_additional_setting(const std::string &name, double value);
+
+            AdditionalStackerSetting get_additional_setting(const std::string &name) const;
+
+            void configure_stacker(std::map<std::string, double> settings);
+
         protected:
             /**
              * @brief Actual stacking method - should be implemented in the derived classes
@@ -196,6 +206,17 @@ namespace AstroPhotoStacker {
              * @param y_max - maximal y-coordinate of the photo (for memory consumption limits)
             */
             virtual CalibratedPhotoHandler get_calibrated_photo(unsigned int i_file, int y_min, int y_max) const;
+
+            template<typename ValueType>
+            void add_additional_setting(const std::string &name, ValueType *default_value, double range_min, double range_max, double step) {
+                // there is no default constructor for AdditionalStackerSetting, so we need this monstrosity with "at" and "insert" ...
+                if (m_additional_settings.find(name) != m_additional_settings.end()) {
+                    m_additional_settings.at(name) = AdditionalStackerSetting(name, default_value, range_min, range_max, step);
+                }
+                else {
+                    m_additional_settings.insert({name, AdditionalStackerSetting(name, default_value, range_min, range_max, step)});
+                }
+            };
 
             int m_number_of_colors;
             int m_width;
@@ -221,5 +242,7 @@ namespace AstroPhotoStacker {
 
             int m_top_left_corner_x = 0;
             int m_top_left_corner_y = 0;
+
+            std::map<std::string, AdditionalStackerSetting> m_additional_settings;
     };
 }

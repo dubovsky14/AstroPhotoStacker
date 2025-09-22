@@ -5,6 +5,14 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
+StackerKappaSigmaBase::StackerKappaSigmaBase(int number_of_colors, int width, int height, bool interpolate_colors) :
+    StackerMedian(number_of_colors, width, height, interpolate_colors)    {
+
+        add_additional_setting("kappa", &m_kappa, 0.1, 10.0, 0.1);
+        add_additional_setting("n_iterations", &m_n_iterations, 1, 20, 1);
+};
+
+
 void StackerKappaSigmaBase::apply_kappa_sigma_clipping(short int **ordered_array_begin, unsigned int *number_of_stacked_pixels)    {
     short int * const current_begin = *ordered_array_begin;
     for (int i_iter = 0; i_iter < m_n_iterations; i_iter++)    {

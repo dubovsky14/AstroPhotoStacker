@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <map>
 
 /**
  * @brief Class responsible for storing settings for the stacking process.
@@ -35,18 +36,6 @@ namespace AstroPhotoStacker {
             const std::vector<std::string>& get_stacking_algorithms() const;
             void set_stacking_algorithm(const std::string& stacking_algorithm);
             const std::string& get_stacking_algorithm() const;
-            bool is_kappa_sigma() const;
-
-            // kappa-sigma options
-            void  set_kappa(float kappa_sigma);
-            float get_kappa() const;
-
-            void set_kappa_sigma_iter(int kappa_sigma_iter);
-            int  get_kappa_sigma_iter() const;
-
-            // cut-off average options
-            void set_cut_off_tail_fraction(float cut_off_tail_fraction);
-            float get_cut_off_tail_fraction() const;
 
             // hot pixel correction
             void set_hot_pixel_correction(bool hot_pixel_correction);
@@ -60,15 +49,20 @@ namespace AstroPhotoStacker {
             void set_apply_color_stretching(bool apply_color_stretching);
             bool apply_color_stretching() const;
 
+            void set_algorithm_specific_settings(std::map<std::string, double> settings) {
+                m_algorithm_specific_settings = settings;
+            };
+
+            std::map<std::string, double> get_algorithm_specific_settings() const    {
+                return m_algorithm_specific_settings;
+            };
+
         private:
             AstroPhotoStacker::InputFrame m_alignment_frame;
             std::string m_stacking_algorithm = "kappa-sigma mean";
             int m_n_cpus = get_max_threads();
             int m_max_memory = 8000;
 
-            float m_kappa = 1.0;
-            int   m_kappa_sigma_iter = 3;
-            float m_cut_off_tail_fraction = 0.2;
             bool  m_hot_pixel_correction = false;
             bool  m_use_color_interpolation = true;
             bool  m_apply_color_stretching = false;
@@ -76,6 +70,8 @@ namespace AstroPhotoStacker {
             std::string m_alignment_method = "stars";
 
             static const std::vector<std::string> m_stacking_algorithms;
+
+            std::map<std::string, double> m_algorithm_specific_settings;
 
     };
 }

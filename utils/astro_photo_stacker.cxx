@@ -108,18 +108,28 @@ void configure_stacker_with_optional_arguments(StackerBase *stacker, const Input
         if (print_info) cout << "Memory limit: " << memory_limit << "\n";
     }
 
-    // Setting kappa and number of iterations for kappa-sigma algorithms
-    StackerKappaSigmaBase *stacker_kappa_sigma = dynamic_cast<StackerKappaSigmaBase*>(stacker);
-    if (stacker_kappa_sigma != nullptr) {
-        const float kappa = input_parser.get_optional_argument<float>("kappa", 3.0);
-        const int n_iterations = input_parser.get_optional_argument<int>("n_iterations", 3);
 
-        stacker_kappa_sigma->set_kappa(kappa);
-        stacker_kappa_sigma->set_number_of_iterations(n_iterations);
-
-        if (print_info) cout << "Kappa: " << kappa << "\n";
-        if (print_info) cout << "Number of iterations: " << n_iterations << "\n";
+    const std::string algorithm_specifict_settings_string = input_parser.get_optional_argument<std::string>("algorithm_specific_settings", "");
+    if (algorithm_specifict_settings_string != "")   {
+        std::map<std::string, double> algorithm_specific_settings;
+        vector<string> settings = split_string(algorithm_specifict_settings_string, ";");
+        for (const string &setting : settings) {
+            vector<string> key_value = split_string(setting, "=");
+            if (key_value.size() == 2) {
+                const string &key = key_value[0];
+                const double value = stod(key_value[1]);
+                algorithm_specific_settings[key] = value;
+            }
+        }
+        stacker->configure_stacker(algorithm_specific_settings);
+        if (print_info) {
+            cout << "Algorithm specific settings:\n";
+            for (const auto &pair : algorithm_specific_settings) {
+                cout << "  " << pair.first << " = " << pair.second << "\n";
+            }
+        }
     }
+
     cout << "\n";
 }
 

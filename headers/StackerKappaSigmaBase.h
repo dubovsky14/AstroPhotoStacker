@@ -19,22 +19,7 @@ namespace AstroPhotoStacker {
              * @param height - height of the photo
              * @param interpolate_colors - if true, each color will be interpolated from the colors of the neighboring pixels
             */
-            StackerKappaSigmaBase(int number_of_colors, int width, int height, bool interpolate_colors) :
-                StackerMedian(number_of_colors, width, height, interpolate_colors)    {};
-
-            /**
-             * @brief Set the value of kappa for the Kappa-Sigma clipping algorithm
-             *
-             * @param kappa - value of kappa
-             */
-            void set_kappa(float kappa)                         {m_kappa = kappa;};
-
-            /**
-             * @brief Set the number of iterations for the Kappa-Sigma clipping algorithm
-             *
-             * @param n_iterations - number of iterations
-             */
-            void set_number_of_iterations(int n_iterations)     {m_n_iterations = n_iterations;};
+            StackerKappaSigmaBase(int number_of_colors, int width, int height, bool interpolate_colors);
 
     protected:
             virtual double get_stacked_value_from_pixel_array(short int *ordered_array_begin, unsigned int number_of_stacked_pixels)  = 0;
