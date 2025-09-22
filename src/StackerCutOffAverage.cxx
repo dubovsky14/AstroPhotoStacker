@@ -6,12 +6,12 @@ StackerCutOffAverage::StackerCutOffAverage(int number_of_colors, int width, int 
 
 double StackerCutOffAverage::get_stacked_value_from_pixel_array(short int *ordered_array_begin, unsigned int number_of_stacked_pixels) {
     unsigned int pixels_to_cut_off = int(m_tail_fraction_to_cut_off*number_of_stacked_pixels + 0.5);
-    if (pixels_to_cut_off*2 >= number_of_stacked_pixels) {
-        pixels_to_cut_off = 0;
-    }
-
     if (number_of_stacked_pixels == 0) {
         return c_empty_pixel_value;
+    }
+
+    if (pixels_to_cut_off*2 >= number_of_stacked_pixels) {
+        return ordered_array_begin[number_of_stacked_pixels/2];
     }
 
     double sum = 0;
