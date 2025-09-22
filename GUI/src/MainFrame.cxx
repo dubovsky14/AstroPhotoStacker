@@ -807,10 +807,16 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
     m_sizer_top_left->Add(stacking_algorithm_text, 0, wxEXPAND, 5);
     m_sizer_top_left->Add(choice_box_stacking_algorithm, 0,  wxEXPAND, 5);
 
+    m_sizer_algorithm_specific_settings = new wxBoxSizer(wxVERTICAL);
     update_algorithm_specific_settings_gui();
+    m_sizer_top_left->Add(m_sizer_algorithm_specific_settings, 0, wxEXPAND, 5);
 
+    m_sizer_bottom_left = new wxBoxSizer(wxVERTICAL);
+
+    m_sizer_top_left->AddStretchSpacer(1);
+    m_sizer_top_left->Add(m_sizer_bottom_left, 0, wxALIGN_BOTTOM | wxEXPAND , 5);
     m_luminance_stretching_slider = new ThreePointSlider(this, wxID_ANY, wxDefaultPosition, wxSize(300, 50));
-    m_sizer_top_left->Add(m_luminance_stretching_slider, 0, wxEXPAND, 5);
+    m_sizer_bottom_left->Add(m_luminance_stretching_slider, 0, wxEXPAND, 5);
     m_luminance_stretching_slider->set_thumbs_positions(vector<float>({0., 0.5, 1.}));
     m_current_preview->set_stretcher(&m_color_stretcher);
     m_luminance_stretching_slider->register_on_change_callback([this](){
@@ -829,14 +835,14 @@ void MyFrame::update_algorithm_specific_settings_gui()  {
     vector<AdditionalStackerSetting> specific_settings = m_stack_settings->get_algorithm_specific_settings_defaults();
 
     for (wxStaticText* text : m_algorithm_specific_settings_texts) {
-        m_sizer_top_left->Detach(text);
-        text->Destroy();
+        m_sizer_algorithm_specific_settings->Detach(text);
+        text->Destroy();        // cannot call delete on this, because of a bug in wxWidgets desctructor, so we are going to leak some memory here instead ...
     }
     m_algorithm_specific_settings_texts.clear();
 
     for (wxSpinCtrlDouble* spin_ctrl : m_algorithm_specific_settings_spin_ctrls) {
-        m_sizer_top_left->Detach(spin_ctrl);
-        spin_ctrl->Destroy();
+        m_sizer_algorithm_specific_settings->Detach(spin_ctrl);
+        spin_ctrl->Destroy();   // cannot call delete on this, because of a bug in wxWidgets desctructor, so we are going to leak some memory here instead ...
     }
     m_algorithm_specific_settings_spin_ctrls.clear();
 
@@ -844,7 +850,7 @@ void MyFrame::update_algorithm_specific_settings_gui()  {
 
 
     for (const AstroPhotoStacker::AdditionalStackerSetting &setting : specific_settings) {
-        wxStaticText* label = new wxStaticText(this, wxID_ANY, setting.get_name());
+        wxStaticText* label = new wxStaticText(this, wxID_ANY, setting.get_name() + ":");
         const double current_value = setting.get_value();
         m_stack_settings->set_algorithm_specific_setting(setting.get_name(), current_value);
         const std::pair<double, double> min_max = setting.get_range();
@@ -859,10 +865,11 @@ void MyFrame::update_algorithm_specific_settings_gui()  {
         m_algorithm_specific_settings_texts.push_back(label);
         m_algorithm_specific_settings_spin_ctrls.push_back(spin_ctrl);
 
-        m_sizer_top_left->Add(label, 0, wxEXPAND, 5);
-        m_sizer_top_left->Add(spin_ctrl, 0, wxEXPAND, 5);
+        m_sizer_algorithm_specific_settings->Add(label, 0, wxEXPAND, 5);
+        m_sizer_algorithm_specific_settings->Add(spin_ctrl, 0, wxEXPAND, 5);
     }
 
+    m_sizer_algorithm_specific_settings->Layout();
     m_sizer_top_left->Layout();
 };
 
@@ -881,7 +888,7 @@ void MyFrame::add_hot_pixel_correction_checkbox()    {
     bool is_checked = checkbox_hot_pixel_correction->GetValue();
     m_stack_settings->set_hot_pixel_correction(is_checked);
 
-    m_sizer_top_left->Add(checkbox_hot_pixel_correction, 0, wxEXPAND, 5);
+    m_sizer_bottom_left->Add(checkbox_hot_pixel_correction, 0, wxEXPAND, 5);
 };
 
 void MyFrame::add_color_interpolation_checkbox()    {
@@ -893,7 +900,7 @@ void MyFrame::add_color_interpolation_checkbox()    {
         const bool is_checked = checkbox_color_interpolation->GetValue();
         m_stack_settings->set_use_color_interpolation(is_checked);
     });
-    m_sizer_top_left->Add(checkbox_color_interpolation, 0, wxEXPAND, 5);
+    m_sizer_bottom_left->Add(checkbox_color_interpolation, 0, wxEXPAND, 5);
 };
 
 void MyFrame::add_color_stretching_checkbox()   {
@@ -905,7 +912,7 @@ void MyFrame::add_color_stretching_checkbox()   {
         const bool is_checked = checkbox_color_stretching->GetValue();
         m_stack_settings->set_apply_color_stretching(is_checked);
     });
-    m_sizer_top_left->Add(checkbox_color_stretching, 0, wxEXPAND, 5);
+    m_sizer_bottom_left->Add(checkbox_color_stretching, 0, wxEXPAND, 5);
 };
 
 void MyFrame::add_max_memory_spin_ctrl() {

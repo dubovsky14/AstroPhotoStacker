@@ -113,6 +113,7 @@ class MyFrame : public wxFrame  {
 
         std::vector<wxStaticText*>      m_algorithm_specific_settings_texts;
         std::vector<wxSpinCtrlDouble*>  m_algorithm_specific_settings_spin_ctrls;
+        wxBoxSizer  *m_sizer_algorithm_specific_settings   = nullptr;
         void update_algorithm_specific_settings_gui();
 
         void add_hot_pixel_correction_checkbox();
@@ -182,6 +183,7 @@ class MyFrame : public wxFrame  {
         static void update_status_icon(wxGenericStaticBitmap *status_icon, bool is_ok);
 
         // luminance streching slider:
+        wxBoxSizer  *m_sizer_bottom_left  = nullptr;
         ThreePointSlider *m_luminance_stretching_slider = nullptr;
         CombinedColorStrecherTool m_color_stretcher;
 
