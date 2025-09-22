@@ -13,8 +13,9 @@ using namespace std;
 const std::string SummaryYamlCreator::s_indent = "  ";
 const std::string SummaryYamlCreator::s_indent_new_item = "-" + s_indent.substr(1);
 
-SummaryYamlCreator::SummaryYamlCreator(const FilelistHandlerGUIInterface &filelist_handler_gui) :
-    m_filelist_handler_gui(filelist_handler_gui) {
+SummaryYamlCreator::SummaryYamlCreator(const FilelistHandlerGUIInterface &filelist_handler_gui, const AstroPhotoStacker::StackSettings &stack_settings) :
+    m_filelist_handler_gui(filelist_handler_gui),
+    m_stack_settings(stack_settings) {
 
         m_group_numbers = m_filelist_handler_gui.get_group_numbers();
 };
@@ -29,6 +30,8 @@ std::string SummaryYamlCreator::get_yaml_summary(const PostProcessingTool *post_
     }
 
     result += block_to_string(get_post_processing_summary(post_processing_tool), "");
+
+    result += block_to_string(get_stack_settings_summary(), "");
 
     return result;
 };
@@ -154,6 +157,27 @@ std::vector<std::string> SummaryYamlCreator::get_post_processing_summary(const P
 
     return result;
 }
+
+std::vector<std::string> SummaryYamlCreator::get_stack_settings_summary() const {
+    std::vector<std::string> result;
+
+    result.push_back("stacking_settings:");
+    result.push_back(s_indent + "stacking_algorithm: \"" + m_stack_settings.get_stacking_algorithm() + "\"");
+    result.push_back(s_indent + "hot_pixel_correction: " + (m_stack_settings.use_hot_pixel_correction() ? "True" : "False"));
+    result.push_back(s_indent + "use_color_interpolation: " + (m_stack_settings.use_color_interpolation() ? "True" : "False"));
+    result.push_back(s_indent + "apply_color_stretching: " + (m_stack_settings.apply_color_stretching() ? "True" : "False"));
+
+    const std::map<std::string, double> algorithm_specific_settings = m_stack_settings.get_algorithm_specific_settings();
+    if (!algorithm_specific_settings.empty()) {
+        result.push_back(s_indent + "algorithm_specific_settings:");
+        for (const auto &setting : algorithm_specific_settings) {
+            result.push_back(s_indent*2 + setting.first + ": " + AstroPhotoStacker::round_and_convert_to_string(setting.second, 3));
+        }
+    }
+
+    return result;
+}
+
 
 std::string SummaryYamlCreator::block_to_string(const std::vector<std::string> &block, const std::string &indent) const {
     std::string result;

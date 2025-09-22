@@ -29,7 +29,7 @@ class StackSettingsSaver : public AstroPhotoStacker::StackSettings {
 
         double get_algorithm_specific_setting_from_previous_session(const std::string &name) const;
 
-         void set_algorithm_specific_setting_from_previous_session(const std::string &name, double value);
+        void set_algorithm_specific_setting_from_previous_session(const std::string &name, double value);
 
     private:
         /**

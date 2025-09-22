@@ -725,7 +725,7 @@ void MyFrame::add_button_bar()   {
                                 "Calculating final image ...");
 
         update_image_preview_with_stacked_image();
-        m_summary_yaml_creator = make_unique<SummaryYamlCreator>(m_filelist_handler_gui_interface);
+        m_summary_yaml_creator = make_unique<SummaryYamlCreator>(m_filelist_handler_gui_interface, *m_stack_settings);
 
         update_status_icon(m_stacked_status_icon, true);
     });
