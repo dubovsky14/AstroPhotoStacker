@@ -836,13 +836,13 @@ void MyFrame::update_algorithm_specific_settings_gui()  {
 
     for (wxStaticText* text : m_algorithm_specific_settings_texts) {
         m_sizer_algorithm_specific_settings->Detach(text);
-        text->Destroy();        // cannot call delete on this, because of a bug in wxWidgets desctructor, so we are going to leak some memory here instead ...
+        delete text;
     }
     m_algorithm_specific_settings_texts.clear();
 
     for (wxSpinCtrlDouble* spin_ctrl : m_algorithm_specific_settings_spin_ctrls) {
         m_sizer_algorithm_specific_settings->Detach(spin_ctrl);
-        spin_ctrl->Destroy();   // cannot call delete on this, because of a bug in wxWidgets desctructor, so we are going to leak some memory here instead ...
+        delete spin_ctrl;
     }
     m_algorithm_specific_settings_spin_ctrls.clear();
 
@@ -851,7 +851,10 @@ void MyFrame::update_algorithm_specific_settings_gui()  {
 
     for (const AstroPhotoStacker::AdditionalStackerSetting &setting : specific_settings) {
         wxStaticText* label = new wxStaticText(this, wxID_ANY, setting.get_name() + ":");
-        const double current_value = setting.get_value();
+
+        const double current_value = m_stack_settings->has_algorithm_specific_setting_from_previous_session(setting.get_name()) ?
+                                     m_stack_settings->get_algorithm_specific_setting_from_previous_session(setting.get_name()) : setting.get_value();
+
         m_stack_settings->set_algorithm_specific_setting(setting.get_name(), current_value);
         const std::pair<double, double> min_max = setting.get_range();
         const double step = setting.get_step();
@@ -860,6 +863,7 @@ void MyFrame::update_algorithm_specific_settings_gui()  {
 
         spin_ctrl->Bind(wxEVT_SPINCTRLDOUBLE, [spin_ctrl, setting, this](wxCommandEvent&){
             m_stack_settings->set_algorithm_specific_setting(setting.get_name(), spin_ctrl->GetValue());
+            m_stack_settings->set_algorithm_specific_setting_from_previous_session(setting.get_name(), spin_ctrl->GetValue());
         });
 
         m_algorithm_specific_settings_texts.push_back(label);

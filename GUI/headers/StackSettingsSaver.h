@@ -25,6 +25,11 @@ class StackSettingsSaver : public AstroPhotoStacker::StackSettings {
         */
         void save();
 
+        bool has_algorithm_specific_setting_from_previous_session(const std::string &name) const;
+
+        double get_algorithm_specific_setting_from_previous_session(const std::string &name) const;
+
+         void set_algorithm_specific_setting_from_previous_session(const std::string &name, double value);
 
     private:
         /**
@@ -40,10 +45,12 @@ class StackSettingsSaver : public AstroPhotoStacker::StackSettings {
         std::string m_dict_string_n_cpus = "n_cpus";
         std::string m_dict_string_max_memory = "max_memory";
         std::string m_dict_string_stacking_algorithm = "stacking_algorithm";
-        std::string m_dict_string_kappa = "kappa";
-        std::string m_dict_string_kappa_sigma_iter = "kappa_sigma_iter";
-        std::string m_dict_string_cut_off_tail_fraction = "cut_off_tail_fraction";
         std::string m_dict_string_hot_pixel_correction = "hot_pixel_correction";
         std::string m_dict_string_use_color_interpolation = "use_color_interpolation";
         std::string m_dict_string_apply_color_stretching = "apply_color_stretching";
+
+
+        std::string m_dict_string_algorithm_specific = "algorithm_specific_settings:";
+        std::map<std::string, double> m_algorithm_specific_settings_from_previous_session;
+
 };

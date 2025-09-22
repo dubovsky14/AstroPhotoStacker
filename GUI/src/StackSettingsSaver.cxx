@@ -25,8 +25,30 @@ void StackSettingsSaver::save() {
         file << m_dict_string_hot_pixel_correction << m_separator << use_hot_pixel_correction() << endl;
         file << m_dict_string_use_color_interpolation << m_separator << use_color_interpolation() << endl;
         file << m_dict_string_apply_color_stretching << m_separator << apply_color_stretching() << endl;
+
+        for (const auto& setting : get_algorithm_specific_settings()) {
+            file << m_dict_string_algorithm_specific << setting.first << m_separator << setting.second << endl;
+        }
     }
     file.close();
+};
+
+
+bool StackSettingsSaver::has_algorithm_specific_setting_from_previous_session(const std::string &name) const {
+    return m_algorithm_specific_settings_from_previous_session.find(name) != m_algorithm_specific_settings_from_previous_session.end();
+};
+
+double StackSettingsSaver::get_algorithm_specific_setting_from_previous_session(const std::string &name) const {
+    auto it = m_algorithm_specific_settings_from_previous_session.find(name);
+    if (it != m_algorithm_specific_settings_from_previous_session.end()) {
+        return it->second;
+    } else {
+        throw std::invalid_argument("Algorithm specific setting not found from previous session: \'" + name + "\'");
+    }
+};
+
+void StackSettingsSaver::set_algorithm_specific_setting_from_previous_session(const std::string &name, double value)    {
+    m_algorithm_specific_settings_from_previous_session[name] = value;
 };
 
 void StackSettingsSaver::load() {
@@ -63,6 +85,10 @@ void StackSettingsSaver::load() {
             }
             else if (key == m_dict_string_apply_color_stretching) {
                 set_apply_color_stretching(value == "1");
+            }
+            else if (AstroPhotoStacker::starts_with(key, m_dict_string_algorithm_specific)) {
+                const string setting_name = key.substr(m_dict_string_algorithm_specific.size());
+                m_algorithm_specific_settings_from_previous_session[setting_name] = stod(value);
             }
             else {
                 cout << "Unknown key: " << key << endl;
