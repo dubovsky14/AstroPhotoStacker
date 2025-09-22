@@ -110,11 +110,10 @@ class MyFrame : public wxFrame  {
         void add_n_cpu_slider();
         void add_max_memory_spin_ctrl();
         void add_stacking_algorithm_choice_box();
-        void add_kappa_sigma_options();
-        void update_kappa_sigma_visibility();
 
-        void add_cut_off_average_options();
-        void update_cut_off_average_visibility();
+        std::vector<wxStaticText*>      m_algorithm_specific_settings_texts;
+        std::vector<wxSpinCtrlDouble*>  m_algorithm_specific_settings_spin_ctrls;
+        void update_algorithm_specific_settings_gui();
 
         void add_hot_pixel_correction_checkbox();
         void add_color_interpolation_checkbox();

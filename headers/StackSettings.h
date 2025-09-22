@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../headers/InputFrame.h"
+#include "../headers/AdditionalStackerSetting.h"
 
 #include <string>
 #include <thread>
@@ -49,6 +50,15 @@ namespace AstroPhotoStacker {
             void set_apply_color_stretching(bool apply_color_stretching);
             bool apply_color_stretching() const;
 
+            // algorithm specific settings
+            void clear_algorithm_specific_settings() {
+                m_algorithm_specific_settings.clear();
+            };
+
+            void set_algorithm_specific_setting(const std::string& name, double value) {
+                m_algorithm_specific_settings[name] = value;
+            };
+
             void set_algorithm_specific_settings(std::map<std::string, double> settings) {
                 m_algorithm_specific_settings = settings;
             };
@@ -56,6 +66,8 @@ namespace AstroPhotoStacker {
             std::map<std::string, double> get_algorithm_specific_settings() const    {
                 return m_algorithm_specific_settings;
             };
+
+            std::vector<AdditionalStackerSetting> get_algorithm_specific_settings_defaults() const;
 
         private:
             AstroPhotoStacker::InputFrame m_alignment_frame;

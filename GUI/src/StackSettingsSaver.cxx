@@ -22,9 +22,6 @@ void StackSettingsSaver::save() {
         file << m_dict_string_n_cpus << m_separator << get_n_cpus() << endl;
         file << m_dict_string_max_memory << m_separator << get_max_memory() << endl;
         file << m_dict_string_stacking_algorithm << m_separator << get_stacking_algorithm() << endl;
-        file << m_dict_string_kappa << m_separator << get_kappa() << endl;
-        file << m_dict_string_kappa_sigma_iter << m_separator << get_kappa_sigma_iter() << endl;
-        file << m_dict_string_cut_off_tail_fraction << m_separator << get_cut_off_tail_fraction() << endl;
         file << m_dict_string_hot_pixel_correction << m_separator << use_hot_pixel_correction() << endl;
         file << m_dict_string_use_color_interpolation << m_separator << use_color_interpolation() << endl;
         file << m_dict_string_apply_color_stretching << m_separator << apply_color_stretching() << endl;
@@ -57,15 +54,6 @@ void StackSettingsSaver::load() {
             }
             else if (key == m_dict_string_stacking_algorithm) {
                 set_stacking_algorithm(value);
-            }
-            else if (key == m_dict_string_kappa) {
-                set_kappa(stof(value));
-            }
-            else if (key == m_dict_string_kappa_sigma_iter) {
-                set_kappa_sigma_iter(stoi(value));
-            }
-            else if (key == m_dict_string_cut_off_tail_fraction) {
-                set_cut_off_tail_fraction(stof(value));
             }
             else if (key == m_dict_string_hot_pixel_correction) {
                 set_hot_pixel_correction(value == "1");

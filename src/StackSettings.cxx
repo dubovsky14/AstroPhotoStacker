@@ -1,9 +1,11 @@
 #include "../headers/StackSettings.h"
+#include "../headers/StackerFactory.h"
 
 #include <stdexcept>
 #include <algorithm>
 
 using namespace AstroPhotoStacker;
+using namespace std;
 
 
 const std::vector<std::string> StackSettings::m_stacking_algorithms({"kappa-sigma median", "kappa-sigma mean", "average", "median", "cut-off average", "maximum", "minimum", "best score", "center"});
@@ -85,3 +87,13 @@ void StackSettings::set_apply_color_stretching(bool apply_color_stretching)    {
 bool StackSettings::apply_color_stretching() const   {
     return m_apply_color_stretching;
 };
+
+std::vector<AdditionalStackerSetting> StackSettings::get_algorithm_specific_settings_defaults() const {
+    std::unique_ptr<StackerBase> stacker = create_stacker(m_stacking_algorithm, m_n_cpus, 3, 2, m_use_color_interpolation);
+    vector<string> keys = stacker->get_additional_setting_keys();
+    std::vector<AdditionalStackerSetting> settings;
+    for (const auto &key : keys) {
+        settings.push_back(stacker->get_additional_setting(key));
+    }
+    return settings;
+}

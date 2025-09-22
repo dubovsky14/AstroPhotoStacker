@@ -798,8 +798,7 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
     choice_box_stacking_algorithm->Bind(wxEVT_CHOICE, [choice_box_stacking_algorithm, this](wxCommandEvent&){
         int current_selection = choice_box_stacking_algorithm->GetSelection();
         m_stack_settings->set_stacking_algorithm(choice_box_stacking_algorithm->GetString(current_selection).ToStdString());
-        update_kappa_sigma_visibility();
-        update_cut_off_average_visibility();
+        update_algorithm_specific_settings_gui();
     });
 
     int current_selection = choice_box_stacking_algorithm->GetSelection();
@@ -808,10 +807,7 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
     m_sizer_top_left->Add(stacking_algorithm_text, 0, wxEXPAND, 5);
     m_sizer_top_left->Add(choice_box_stacking_algorithm, 0,  wxEXPAND, 5);
 
-    add_kappa_sigma_options();
-    add_cut_off_average_options();
-
-
+    update_algorithm_specific_settings_gui();
 
     m_luminance_stretching_slider = new ThreePointSlider(this, wxID_ANY, wxDefaultPosition, wxSize(300, 50));
     m_sizer_top_left->Add(m_luminance_stretching_slider, 0, wxEXPAND, 5);
@@ -829,88 +825,45 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
 
 };
 
-void MyFrame::add_kappa_sigma_options() {
-    wxBoxSizer* kappa_sigma_sizer  = new wxBoxSizer(wxHORIZONTAL);
-    m_sizer_top_left->Add(kappa_sigma_sizer,   1, wxEXPAND | wxALL, 5);
+void MyFrame::update_algorithm_specific_settings_gui()  {
+    vector<AdditionalStackerSetting> specific_settings = m_stack_settings->get_algorithm_specific_settings_defaults();
 
-    wxBoxSizer* kappa_sizer  = new wxBoxSizer(wxVERTICAL);
-    kappa_sigma_sizer->Add(kappa_sizer, 0, wxEXPAND, 5);
-    m_kappa_text = new wxStaticText(this, wxID_ANY, "Kappa:");
-    const float default_kappa = m_stack_settings->get_kappa();
-    m_spin_ctrl_kappa = new wxSpinCtrlDouble(this, wxID_ANY, to_string(default_kappa), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 6, default_kappa, 0.1);
-
-    m_spin_ctrl_kappa->Bind(wxEVT_SPINCTRLDOUBLE, [this](wxCommandEvent&){
-        double current_value = m_spin_ctrl_kappa->GetValue();
-        m_stack_settings->set_kappa(current_value);
-    });
-    double current_kappa = m_spin_ctrl_kappa->GetValue();
-    m_stack_settings->set_kappa(current_kappa);
-
-    kappa_sizer->Add(m_kappa_text, 0, wxEXPAND, 5);
-    kappa_sizer->Add(m_spin_ctrl_kappa, 0,  wxEXPAND, 5);
-
-    wxBoxSizer* kappa_sigma_iter_sizer  = new wxBoxSizer(wxVERTICAL);
-    kappa_sigma_sizer->Add(kappa_sigma_iter_sizer, 0, wxEXPAND, 5);
-    m_kappa_sigma_iter_text = new wxStaticText(this, wxID_ANY, "Iterations:");
-    const int default_iter = m_stack_settings->get_kappa_sigma_iter();
-    m_spin_ctrl_kappa_sigma_iter = new wxSpinCtrl(this, wxID_ANY, to_string(default_iter), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 100, default_iter);
-
-    m_spin_ctrl_kappa_sigma_iter->Bind(wxEVT_SPINCTRL, [this](wxCommandEvent&){
-        int current_value = m_spin_ctrl_kappa_sigma_iter->GetValue();
-        m_stack_settings->set_kappa_sigma_iter(current_value);
-    });
-    int current_n_iter = m_spin_ctrl_kappa_sigma_iter->GetValue();
-    m_stack_settings->set_kappa_sigma_iter(current_n_iter);
-
-    kappa_sigma_iter_sizer->Add(m_kappa_sigma_iter_text, 0, wxEXPAND, 5);
-    kappa_sigma_iter_sizer->Add(m_spin_ctrl_kappa_sigma_iter, 0,  wxEXPAND, 5);
-};
-
-void MyFrame::update_kappa_sigma_visibility()   {
-    if (!m_stack_settings->is_kappa_sigma()) {
-        m_kappa_text->Hide();
-        m_spin_ctrl_kappa->Hide();
-        m_kappa_sigma_iter_text->Hide();
-        m_spin_ctrl_kappa_sigma_iter->Hide();
+    for (wxStaticText* text : m_algorithm_specific_settings_texts) {
+        m_sizer_top_left->Detach(text);
+        text->Destroy();
     }
-    else    {
-        m_kappa_text->Show();
-        m_spin_ctrl_kappa->Show();
-        m_kappa_sigma_iter_text->Show();
-        m_spin_ctrl_kappa_sigma_iter->Show();
+    m_algorithm_specific_settings_texts.clear();
+
+    for (wxSpinCtrlDouble* spin_ctrl : m_algorithm_specific_settings_spin_ctrls) {
+        m_sizer_top_left->Detach(spin_ctrl);
+        spin_ctrl->Destroy();
     }
-};
+    m_algorithm_specific_settings_spin_ctrls.clear();
 
-void MyFrame::add_cut_off_average_options()  {
-    wxBoxSizer* main_sizer  = new wxBoxSizer(wxHORIZONTAL);
-    m_sizer_top_left->Add(main_sizer,   1, wxEXPAND | wxALL, 5);
+    m_stack_settings->clear_algorithm_specific_settings();
 
-    wxBoxSizer* cut_off_sizer  = new wxBoxSizer(wxVERTICAL);
-    main_sizer->Add(cut_off_sizer, 0, wxEXPAND, 5);
-    m_cut_off_average_text = new wxStaticText(this, wxID_ANY, "Cut-off fraction:");
-    m_spin_ctrl_cut_off_average = new wxSpinCtrlDouble(this, wxID_ANY, "0.2", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 0.49, 0.2, 0.01);
 
-    m_spin_ctrl_cut_off_average->Bind(wxEVT_SPINCTRLDOUBLE, [this](wxCommandEvent&){
-        double current_value = m_spin_ctrl_cut_off_average->GetValue();
-        m_stack_settings->set_cut_off_tail_fraction(current_value);
-    });
-    double current_cut_off = m_spin_ctrl_cut_off_average->GetValue();
-    m_stack_settings->set_cut_off_tail_fraction(current_cut_off);
+    for (const AstroPhotoStacker::AdditionalStackerSetting &setting : specific_settings) {
+        wxStaticText* label = new wxStaticText(this, wxID_ANY, setting.get_name());
+        const double current_value = setting.get_value();
+        m_stack_settings->set_algorithm_specific_setting(setting.get_name(), current_value);
+        const std::pair<double, double> min_max = setting.get_range();
+        const double step = setting.get_step();
 
-    cut_off_sizer->Add(m_cut_off_average_text, 0, wxEXPAND, 5);
-    cut_off_sizer->Add(m_spin_ctrl_cut_off_average, 0,  wxEXPAND, 5);
+        wxSpinCtrlDouble* spin_ctrl = new wxSpinCtrlDouble(this, wxID_ANY, wxString::Format("%.2f", current_value), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, min_max.first, min_max.second, current_value, step);
 
-};
+        spin_ctrl->Bind(wxEVT_SPINCTRLDOUBLE, [spin_ctrl, setting, this](wxCommandEvent&){
+            m_stack_settings->set_algorithm_specific_setting(setting.get_name(), spin_ctrl->GetValue());
+        });
 
-void MyFrame::update_cut_off_average_visibility()   {
-    if (m_stack_settings->get_stacking_algorithm() != "cut-off average") {
-        m_cut_off_average_text->Hide();
-        m_spin_ctrl_cut_off_average->Hide();
+        m_algorithm_specific_settings_texts.push_back(label);
+        m_algorithm_specific_settings_spin_ctrls.push_back(spin_ctrl);
+
+        m_sizer_top_left->Add(label, 0, wxEXPAND, 5);
+        m_sizer_top_left->Add(spin_ctrl, 0, wxEXPAND, 5);
     }
-    else    {
-        m_cut_off_average_text->Show();
-        m_spin_ctrl_cut_off_average->Show();
-    }
+
+    m_sizer_top_left->Layout();
 };
 
 void MyFrame::add_hot_pixel_correction_checkbox()    {
