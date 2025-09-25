@@ -112,6 +112,8 @@ class FilelistHandlerGUIInterface : public FilelistHandler  {
             return m_selected_frame_index;
         }
 
+        std::string get_default_alignment_txt_file_name() const;
+
     private:
 
         void sort_frames();

@@ -157,7 +157,7 @@ void MyFrame::add_alignment_menu()  {
     alignment_menu->Append(id, "Save alignment info", "Save alignment info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
-        wxFileDialog dialog(this, "Save alignment info", "", default_path + "/alignment.txt", "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        wxFileDialog dialog(this, "Save alignment info", "", default_path + "/" + m_filelist_handler_gui_interface.get_default_alignment_txt_file_name(), "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_filelist_handler_gui_interface.save_alignment_to_file(file_address);

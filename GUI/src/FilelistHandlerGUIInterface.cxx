@@ -241,6 +241,27 @@ void FilelistHandlerGUIInterface::sort_by_group_internal()  {
     std::sort(m_shown_frames.begin(), m_shown_frames.end(), lambda);
 };
 
+std::string FilelistHandlerGUIInterface::get_default_alignment_txt_file_name() const {
+    std::vector<FrameInfo> checked_frames = get_checked_frames_of_type(FrameType::LIGHT);
+    if (checked_frames.empty()) {
+        return "alignment.txt";
+    }
+
+    const std::string first_address = checked_frames[0].input_frame.get_file_address();
+    for (const auto &frame : checked_frames) {
+        if (frame.input_frame.get_file_address() != first_address) {
+            return "alignment.txt";
+        }
+    }
+
+    const vector<string> path_parts = AstroPhotoStacker::split_string(first_address, "/");
+    if (path_parts.empty()) {
+        return "alignment.txt";
+    }
+
+    const std::string file_name = path_parts.back();
+    return file_name + "_alignment.txt";
+};
 
 void FilelistHandlerGUIInterface::sort_frames() {
     switch (m_sort_type) {
