@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../headers/InputFrame.h"
+#include "../headers/VideoReaderSer.h"
+#include "../headers/Common.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -12,6 +14,10 @@ namespace AstroPhotoStacker {
 
     template<class ValueType>
     std::vector<ValueType> read_one_channel_from_video_frame(const std::string &video_address, int frame_id, int *width, int *height, int channel) {
+        if (ends_with(to_upper_copy(video_address), ".SER")) {
+            return read_ser_video_frame_as_gray_scale<ValueType>(video_address, frame_id, width, height);
+        }
+
         cv::VideoCapture video(video_address);
         if (!video.isOpened()) {
             throw std::runtime_error("Unable to open video file: " + video_address);

@@ -6,6 +6,10 @@
 
 #include "../headers/Debayring.h"
 
+#include <iostream>
+#include <algorithm>
+#include <set>
+
 namespace AstroPhotoStacker {
 
     /**
