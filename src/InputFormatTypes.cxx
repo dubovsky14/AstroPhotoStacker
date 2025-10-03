@@ -1,0 +1,52 @@
+#include "../headers/InputFormatTypes.h"
+
+#include "../headers/VideoReader.h"
+#include "../headers/VideoReaderSer.h"
+#include "../headers/raw_file_reader.h"
+#include "../headers/ZWOVideoTextFileInfo.h"
+#include "../headers/FitFileReader.h"
+
+
+#include <opencv2/imgcodecs.hpp>
+
+
+using namespace AstroPhotoStacker;
+using namespace std;
+
+
+
+std::map<std::string, InputFormatType> InputFormatTypeGetter::s_format_type_cache;
+
+// TODO: caching of the results to avoid multiple checks for the same file
+InputFormatType InputFormatTypeGetter::determine_input_format_type(const InputFrame &input_frame)   {
+    const string file_address = input_frame.get_file_address();
+
+    if (s_format_type_cache.find(file_address) != s_format_type_cache.end()) {
+        return s_format_type_cache[file_address];
+    }
+    InputFormatType format_type = determine_input_format_type_without_cache(file_address);
+    s_format_type_cache[file_address] = format_type;
+    return format_type;
+};
+
+InputFormatType InputFormatTypeGetter::determine_input_format_type_without_cache(const std::string &file_address) {
+    if (is_ser_file(file_address)) {
+        return InputFormatType::VIDEO_FRAME_RAW_SER;
+    }
+    if (ZWOVideoTextFileInfo::is_valid_zwo_video_text_file(file_address + ".txt")) {
+        return InputFormatType::VIDEO_FRAME_RAW_ZWO;
+    }
+    if (is_valid_video_file(file_address)) {
+        return InputFormatType::VIDEO_FRAME_RGB;
+    }
+    if (is_raw_file_dslr_slr(file_address)) {
+        return InputFormatType::DSLR_RAW_FILE;
+    }
+    if (is_fit_file(file_address)) {
+        return InputFormatType::FIT_FILE;
+    }
+    if (cv::haveImageReader(file_address)) {
+        return InputFormatType::RGB_FILE;
+    }
+    return InputFormatType::NOT_SUPPORTED;
+};
