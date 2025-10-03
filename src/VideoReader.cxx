@@ -1,4 +1,5 @@
 #include "../headers/VideoReader.h"
+#include "../headers/VideoReaderSer.h"
 #include "../headers/Common.h"
 
 #include <opencv2/opencv.hpp>
@@ -24,6 +25,10 @@ std::vector<InputFrame> AstroPhotoStacker::get_video_frames(const std::string &v
 }
 
 float AstroPhotoStacker::get_fps_of_video(const std::string &video_address)    {
+    if (ends_with(to_upper_copy(video_address), ".SER")) {
+        return get_fps_of_ser_video(video_address);
+    }
+
     cv::VideoCapture video(video_address);
     if (!video.isOpened()) {
         throw std::runtime_error("Unable to open video file: " + video_address);

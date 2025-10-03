@@ -7,7 +7,7 @@
 #include "../headers/ZWOVideoTextFileInfo.h"
 #include "../headers/VideoReader.h"
 #include "../headers/InputFrame.h"
-#include "../headers/ZWOVideoTextFileInfo.h"
+#include "../headers/VideoReaderSer.h"
 
 #include "../headers/Common.h"
 
@@ -68,6 +68,38 @@ namespace AstroPhotoStacker   {
             }
         }
         else {
+            if (is_ser_file(input_frame.get_file_address())) {
+                std::vector<ValueType> result = read_ser_video_frame_as_gray_scale<ValueType>(input_frame.get_file_address(), input_frame.get_frame_number(), width, height);
+                const Metadata metadata = read_ser_video_metadata(input_frame.get_file_address());
+                std::array<char, 4> bayer_matrix;
+                for (int i = 0; i < 4; i++) {
+                    char channel = metadata.bayer_matrix[i];
+                    if (channel == 'R') {
+                        bayer_matrix[i] = 0;
+                    }
+                    else if (channel == 'G') {
+                        bayer_matrix[i] = 1;
+                    }
+                    else if (channel == 'B') {
+                        bayer_matrix[i] = 2;
+                    }
+                    else {
+                        bayer_matrix[i] = 1;
+                    }
+                }
+
+                if (colors != nullptr)   {
+                    colors->resize(result.size());
+                    for (int i_x = 0; i_x < *width; i_x++) {
+                        for (int i_y = 0; i_y < *height; i_y++) {
+                            const int index = i_y*(*width) + i_x;
+                            (*colors)[index] = bayer_matrix[(i_y%2)*2 + i_x%2];
+                        }
+                    }
+                }
+                return result;
+            }
+
             std::vector<ValueType> result = read_one_channel_from_video_frame<ValueType>(input_frame.get_file_address(), input_frame.get_frame_number(), width, height, 0);
 
             const ZWOVideoTextFileInfo info(input_frame.get_file_address() + ".txt");
