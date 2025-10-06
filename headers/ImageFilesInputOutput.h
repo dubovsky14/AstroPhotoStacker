@@ -268,7 +268,7 @@ namespace AstroPhotoStacker {
             return read_still_rgb_image<ValueType>(input_frame.get_file_address(), width, height);
         }
         else {
-            return read_video_frame<ValueType>(input_frame.get_file_address(), input_frame.get_frame_number(), width, height);
+            return read_video_frame_rgb<ValueType>(input_frame.get_file_address(), input_frame.get_frame_number(), width, height);
         }
     };
 

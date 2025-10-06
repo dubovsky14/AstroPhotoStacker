@@ -17,6 +17,7 @@ namespace AstroPhotoStacker {
         bool is_raw             = false;
         std::string camera_model = "";
         std::string bayer_matrix = "";
+        float video_fps         = -1;
 
     };
 }

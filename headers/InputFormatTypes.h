@@ -7,7 +7,7 @@
 
 namespace AstroPhotoStacker   {
     enum class InputFormatType {
-        DSLR_RAW_FILE,
+        DSLR_OR_SLR_RAW_FILE,
         FIT_FILE,
         RGB_FILE,
         VIDEO_FRAME_RGB,

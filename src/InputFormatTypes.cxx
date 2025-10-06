@@ -40,7 +40,7 @@ InputFormatType InputFormatTypeGetter::determine_input_format_type_without_cache
         return InputFormatType::VIDEO_FRAME_RGB;
     }
     if (is_raw_file_dslr_slr(file_address)) {
-        return InputFormatType::DSLR_RAW_FILE;
+        return InputFormatType::DSLR_OR_SLR_RAW_FILE;
     }
     if (is_fit_file(file_address)) {
         return InputFormatType::FIT_FILE;
