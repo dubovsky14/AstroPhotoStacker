@@ -9,6 +9,8 @@
 #include "../headers/InputFrame.h"
 #include "../headers/VideoReaderSer.h"
 
+#include "../headers/RawFileReaderFactory.h"
+
 #include "../headers/Common.h"
 
 #include <memory>
@@ -51,71 +53,26 @@ namespace AstroPhotoStacker   {
     */
     template<typename ValueType = unsigned short>
     std::vector<ValueType> read_raw_file(const InputFrame &input_frame, int *width, int *height, std::vector<char> *colors = nullptr)   {
-        const bool is_still_image = input_frame.is_still_image();
-        if (is_still_image) {
-            const std::string raw_file_address = input_frame.get_file_address();
-            if (is_fit_file(raw_file_address))    {
-                FitFileReader fit_files_reader(raw_file_address);
-                if (colors != nullptr)   {
-                    *colors = fit_files_reader.get_colors();
-                }
-                *width = fit_files_reader.get_width();
-                *height = fit_files_reader.get_height();
-                return fit_files_reader.get_data_templated<ValueType>();
-            }
-            else   {
-                return read_raw_file_dslr_slr<ValueType>(raw_file_address, width, height, colors);
-            }
+        std::unique_ptr<RawFileReaderBase> raw_file_reader = RawFileReaderFactory::get_raw_file_reader(input_frame);
+        if (raw_file_reader == nullptr) {
+            throw std::runtime_error("Unsupported raw file format: " + input_frame.get_file_address());
         }
-        else {
-            if (is_ser_file(input_frame.get_file_address())) {
-                std::vector<ValueType> result = read_ser_video_frame_as_gray_scale<ValueType>(input_frame.get_file_address(), input_frame.get_frame_number(), width, height);
-                const Metadata metadata = read_ser_video_metadata(input_frame.get_file_address());
-                std::array<char, 4> bayer_matrix;
-                for (int i = 0; i < 4; i++) {
-                    char channel = metadata.bayer_matrix[i];
-                    if (channel == 'R') {
-                        bayer_matrix[i] = 0;
-                    }
-                    else if (channel == 'G') {
-                        bayer_matrix[i] = 1;
-                    }
-                    else if (channel == 'B') {
-                        bayer_matrix[i] = 2;
-                    }
-                    else {
-                        bayer_matrix[i] = 1;
-                    }
-                }
-
-                if (colors != nullptr)   {
-                    colors->resize(result.size());
-                    for (int i_x = 0; i_x < *width; i_x++) {
-                        for (int i_y = 0; i_y < *height; i_y++) {
-                            const int index = i_y*(*width) + i_x;
-                            (*colors)[index] = bayer_matrix[(i_y%2)*2 + i_x%2];
-                        }
-                    }
-                }
-                return result;
-            }
-
-            std::vector<ValueType> result = read_one_channel_from_video_frame<ValueType>(input_frame.get_file_address(), input_frame.get_frame_number(), width, height, 0);
-
-            const ZWOVideoTextFileInfo info(input_frame.get_file_address() + ".txt");
-            const std::array<char, 4> &bayer_matrix = info.get_bayer_matrix();
-
-            if (colors != nullptr)   {
-                colors->resize(result.size());
+        std::array<char, 4> bayer_pattern = {-1,-1,-1,-1};
+        std::vector<short int> brightness = raw_file_reader->read_raw_file(width, height, &bayer_pattern);
+        if (colors != nullptr) {
+            *colors = std::vector<char>((*width)*(*height));
+            for (int i_y = 0; i_y < *height; i_y++) {
                 for (int i_x = 0; i_x < *width; i_x++) {
-                    for (int i_y = 0; i_y < *height; i_y++) {
-                        const int index = i_y*(*width) + i_x;
-                        (*colors)[index] = bayer_matrix[(i_y%2)*2 + i_x%2];
-                    }
+                    (*colors)[i_y*(*width) + i_x] = bayer_pattern[(i_x%2) + 2*(i_y%2)];
                 }
             }
-            return result;
         }
+        std::vector<ValueType> result(brightness.size());
+        for (unsigned int i_pixel = 0; i_pixel < brightness.size(); i_pixel++) {
+            const short int pixel = brightness[i_pixel];
+            result[i_pixel] = pixel;
+        }
+        return result;
     };
 
     /**

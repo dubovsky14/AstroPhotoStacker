@@ -66,3 +66,26 @@ std::string AstroPhotoStacker::convert_bayer_int_array_to_string(const std::arra
     }
     return bayer_string;
 }
+
+std::array<char, 4> AstroPhotoStacker::convert_bayer_string_to_int_array(const std::string &bayer_string) {
+    std::array<char, 4> bayer_array = {-1, -1, -1, -1};
+    if (bayer_string.length() != 4) {
+        return bayer_array;
+    }
+    for (int i = 0; i < 4; i++) {
+        const char c = bayer_string[i];
+        if (c == 'R' || c == 'r') {
+            bayer_array[i] = 0;
+        }
+        else if (c == 'G' || c == 'g') {
+            bayer_array[i] = 1;
+        }
+        else if (c == 'B' || c == 'b') {
+            bayer_array[i] = 2;
+        }
+        else {
+            throw std::invalid_argument("Invalid Bayer matrix character");
+        }
+    }
+    return bayer_array;
+}

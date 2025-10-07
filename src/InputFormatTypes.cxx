@@ -18,18 +18,18 @@ using namespace std;
 std::map<std::string, InputFormatType> InputFormatTypeGetter::s_format_type_cache;
 
 // TODO: caching of the results to avoid multiple checks for the same file
-InputFormatType InputFormatTypeGetter::determine_input_format_type(const InputFrame &input_frame)   {
+InputFormatType InputFormatTypeGetter::get_input_format_type(const InputFrame &input_frame)   {
     const string file_address = input_frame.get_file_address();
 
     if (s_format_type_cache.find(file_address) != s_format_type_cache.end()) {
         return s_format_type_cache[file_address];
     }
-    InputFormatType format_type = determine_input_format_type_without_cache(file_address);
+    InputFormatType format_type = get_input_format_type_without_cache(file_address);
     s_format_type_cache[file_address] = format_type;
     return format_type;
 };
 
-InputFormatType InputFormatTypeGetter::determine_input_format_type_without_cache(const std::string &file_address) {
+InputFormatType InputFormatTypeGetter::get_input_format_type_without_cache(const std::string &file_address) {
     if (is_ser_file(file_address)) {
         return InputFormatType::VIDEO_FRAME_RAW_SER;
     }

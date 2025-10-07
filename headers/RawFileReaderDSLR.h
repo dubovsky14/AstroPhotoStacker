@@ -7,7 +7,9 @@
 namespace AstroPhotoStacker {
     class RawFileReaderDSLR : public RawFileReaderBase {
         public:
-            virtual std::vector<short int> read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) override;
+            RawFileReaderDSLR(const InputFrame &input_frame) : RawFileReaderBase(input_frame) {};
+
+            virtual std::vector<short int> read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern = nullptr) override;
 
             virtual void get_photo_resolution(int *width, int *height) override;
 

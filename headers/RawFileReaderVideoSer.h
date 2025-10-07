@@ -5,7 +5,9 @@
 namespace AstroPhotoStacker {
     class RawFileReaderVideoSer : public RawFileReaderBase {
         public:
-            virtual std::vector<short int> read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) override;
+            RawFileReaderVideoSer(const InputFrame &input_frame) : RawFileReaderBase(input_frame) {};
+
+            virtual std::vector<short int> read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern = nullptr) override;
 
             virtual void get_photo_resolution(int *width, int *height) override;
 
@@ -19,5 +21,6 @@ namespace AstroPhotoStacker {
 
             unsigned long long int read_ulonglong_from_file(std::ifstream *file, size_t position_in_file, bool little_endian = true) const;
 
+            static std::string int_code_to_bayer_matrix(unsigned int code);
     };
 }

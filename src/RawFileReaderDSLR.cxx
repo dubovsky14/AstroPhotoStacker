@@ -11,10 +11,19 @@ using namespace std;
 
 
 
-std::vector<short int> RawFileReaderDSLR::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern = nullptr) {
+std::vector<short int> RawFileReaderDSLR::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) {
     LibRaw raw_processor = get_libraw_processor();
-    *width = raw_processor.imgdata.sizes.width;
-    *height = raw_processor.imgdata.sizes.height;
+
+    raw_processor.imgdata.params.use_camera_wb = 1;
+    raw_processor.subtract_black();
+    raw_processor.dcraw_process();
+
+    int num_colors, bps;
+    raw_processor.get_mem_image_format(width, height, &num_colors, &bps);
+
+    if (*width < *height)   {
+        std::swap(*width, *height);
+    }
 
     auto process_color = [](int color_code) -> char {
         if (color_code == 3)    {
@@ -31,20 +40,29 @@ std::vector<short int> RawFileReaderDSLR::read_raw_file(int *width, int *height,
     }
 
     std::vector<short int> result((*width)*(*height));
-    for (int y = 0; y < *height; y++) {
-        for (int x = 0; x < *width; x++) {
-            result[y*(*width) + x] = raw_processor.imgdata.rawdata.raw_image[y*(*width) + x];
+    const unsigned short int (*image_data)[4] = raw_processor.imgdata.image;
+
+    for (int row = 0; row < *height; ++row) {
+        for (int col = 0; col < *width; ++col) {
+            const unsigned int index = row * (*width) + col;
+            const int color = raw_processor.COLOR(row, col);
+            result[index] = image_data[index][color]/2; // divide by 2 to get 15-bit values
         }
     }
+
     raw_processor.recycle();
     return result;
 };
 
 void RawFileReaderDSLR::get_photo_resolution(int *width, int *height) {
     LibRaw raw_processor = get_libraw_processor();
-    *width = raw_processor.imgdata.sizes.width;
-    *height = raw_processor.imgdata.sizes.height;
-    raw_processor.recycle();
+    raw_processor.imgdata.params.use_camera_wb = 1;
+    raw_processor.subtract_black();
+    raw_processor.dcraw_process();
+
+    int num_colors, bps;
+    raw_processor.get_mem_image_format(width, height, &num_colors, &bps);
+
 };
 
 LibRaw RawFileReaderDSLR::get_libraw_processor() {

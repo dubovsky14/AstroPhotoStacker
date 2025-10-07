@@ -16,4 +16,6 @@ namespace AstroPhotoStacker {
      * * Convert a Bayer pattern represented as an array of 4 numbers (0,1,2,3) to a string like "RGGB".
      */
     std::string convert_bayer_int_array_to_string(const std::array<char, 4> &bayer_array);
+
+    std::array<char, 4> convert_bayer_string_to_int_array(const std::string &bayer_string);
 }

@@ -1,5 +1,5 @@
 #include "../headers/RawFileReaderVideoSer.h"
-
+#include "../headers/MetadataCommon.h"
 
 #include <string>
 #include <vector>
@@ -14,7 +14,7 @@ using namespace std;
 
 
 
-std::vector<short int> RawFileReaderVideoSer::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern = nullptr) {
+std::vector<short int> RawFileReaderVideoSer::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) {
    std::ifstream file(m_input_frame.get_file_address(), std::ios::binary | std::ios::in);
     if (!file.is_open()) {
         throw std::runtime_error("Unable to open video file: " + m_input_frame.get_file_address());
@@ -48,6 +48,13 @@ std::vector<short int> RawFileReaderVideoSer::read_raw_file(int *width, int *hei
     }
     else {
         throw std::runtime_error("Unsupported bit depth in SER file: " + std::to_string(bit_depth));
+    }
+
+    if (bayer_pattern != nullptr) {
+        const unsigned int bayer_pattern_code = read_uint_from_file(&file, 18);
+        const std::string bayer_pattern_string = RawFileReaderVideoSer::int_code_to_bayer_matrix(bayer_pattern_code);
+        *bayer_pattern = convert_bayer_string_to_int_array(bayer_pattern_string);
+
     }
 
     std::vector<short int> result(*width*(*height),0);
@@ -134,24 +141,7 @@ Metadata RawFileReaderVideoSer::read_metadata() {
 
     // decode bayer matrix
     const unsigned int bayer_pattern_code = read_uint_from_file(&file, 18);
-    if (bayer_pattern_code == 0) {
-        metadata.bayer_matrix = "";
-    }
-    else if (bayer_pattern_code == 8) {
-        metadata.bayer_matrix = "RGGB";
-    }
-    else if (bayer_pattern_code == 9) {
-        metadata.bayer_matrix = "GRBG";
-    }
-    else if (bayer_pattern_code == 10) {
-        metadata.bayer_matrix = "GBRG";
-    }
-    else if (bayer_pattern_code == 11) {
-        metadata.bayer_matrix = "BGGR";
-    }
-    else {
-        cout << "Warning: Unknown bayer pattern code in SER file: " << bayer_pattern_code << endl;
-    }
+    metadata.bayer_matrix = RawFileReaderVideoSer::int_code_to_bayer_matrix(bayer_pattern_code);
 
     if (!metadata.bayer_matrix.empty()) {
         metadata.monochrome = false;
@@ -187,3 +177,21 @@ unsigned long long int RawFileReaderVideoSer::read_ulonglong_from_file(std::ifst
     }
     return value;
 };
+
+std::string RawFileReaderVideoSer::int_code_to_bayer_matrix(unsigned int code) {
+    switch (code) {
+        case 0:
+            return "";
+        case 8:
+            return "RGGB";
+        case 9:
+            return "GRBG";
+        case 10:
+            return "GBRG";
+        case 11:
+            return "BGGR";
+        default:
+            cout << "Warning: Unknown bayer pattern code in SER file: " << code << endl;
+            return "";
+    }
+}

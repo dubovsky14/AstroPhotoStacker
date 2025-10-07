@@ -18,11 +18,11 @@ namespace AstroPhotoStacker   {
 
     class InputFormatTypeGetter {
         public:
-            static InputFormatType determine_input_format_type(const InputFrame &input_frame);
+            static InputFormatType get_input_format_type(const InputFrame &input_frame);
 
         private:
 
-            static InputFormatType determine_input_format_type_without_cache(const std::string &file_address);
+            static InputFormatType get_input_format_type_without_cache(const std::string &file_address);
 
             static std::map<std::string, InputFormatType> s_format_type_cache;
     };
