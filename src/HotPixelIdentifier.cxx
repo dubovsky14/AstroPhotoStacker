@@ -1,5 +1,6 @@
 #include "../headers/HotPixelIdentifier.h"
 #include "../headers/raw_file_reader.h"
+#include "../headers/InputFormatTypes.h"
 #include "../headers/Common.h"
 
 #include <algorithm>

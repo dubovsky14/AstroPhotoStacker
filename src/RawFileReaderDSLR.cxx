@@ -76,7 +76,7 @@ LibRaw RawFileReaderDSLR::get_libraw_processor() {
     return raw_processor;
 };
 
-Metadata RawFileReaderDSLR::read_metadata() {
+Metadata RawFileReaderDSLR::read_metadata_without_cache() {
     // create a LibRaw object
     LibRaw raw_processor;
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../headers/InputFrame.h"
-#include "../headers/VideoReaderSer.h"
 #include "../headers/Common.h"
 
 #include <opencv2/opencv.hpp>

@@ -47,7 +47,7 @@ void RawFileReaderFit::get_photo_resolution(int *width, int *height) {
     }
 };
 
-Metadata RawFileReaderFit::read_metadata() {
+Metadata RawFileReaderFit::read_metadata_without_cache() {
     ifstream input_stream(m_input_frame.get_file_address(), ios::binary | ios::in);
     if (!input_stream.is_open())    {
         throw std::runtime_error("Could not open file " + m_input_frame.get_file_address());

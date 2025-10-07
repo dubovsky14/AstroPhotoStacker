@@ -1,6 +1,5 @@
 #include "../headers/raw_file_reader.h"
 #include "../headers/ImageFilesInputOutput.h"
-#include "../headers/FitFileReader.h"
 #include "../headers/InputFrame.h"
 
 #include <vector>
@@ -72,27 +71,10 @@ int main(int argc, char **argv) {
         const string output_file = output_address + "/" + raw_file_wo_extension + ".jpg";
 
         int width, height;
-        if (is_fit_file(input_file))    {
-            vector<char> colors;
-            vector<unsigned short> brightness = read_raw_file<unsigned short>(InputFrame(input_file), &width, &height, &colors);
-            const Metadata metadata = read_metadata_from_raw_file(input_file);
-            if (metadata.monochrome) {
-                rgb_image.push_back(brightness);
-                rgb_image.push_back(brightness);
-                rgb_image.push_back(brightness);
-            }
-            else {
-                rgb_image = convert_raw_data_to_rgb_image(brightness.data(), colors.data(), width, height);
-            }
-
-            scale_to_8_bits(&rgb_image, width, height, !metadata.monochrome);
-        }
-        else    {
-            vector<char> colors;
-            vector<unsigned short> brightness = read_raw_file<unsigned short>(InputFrame(input_file), &width, &height, &colors);
-            rgb_image = convert_raw_data_to_rgb_image(brightness.data(), colors.data(), width, height);
-            scale_to_8_bits(&rgb_image, width, height);
-        }
+        vector<char> colors;
+        vector<unsigned short> brightness = read_raw_file<unsigned short>(InputFrame(input_file), &width, &height, &colors);
+        rgb_image = convert_raw_data_to_rgb_image(brightness.data(), colors.data(), width, height);
+        scale_to_8_bits(&rgb_image, width, height);
 
         create_color_image(&rgb_image[0][0],&rgb_image[1][0], &rgb_image[2][0], width, height, output_file);
     }

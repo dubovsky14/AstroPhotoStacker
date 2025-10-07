@@ -1,5 +1,6 @@
 #include "../headers/RawFileReaderVideoSer.h"
 #include "../headers/MetadataCommon.h"
+#include "../headers/Common.h"
 
 #include <string>
 #include <vector>
@@ -72,7 +73,7 @@ void RawFileReaderVideoSer::get_photo_resolution(int *width, int *height) {
     *height = read_uint_from_file(&file, 30);
 };
 
-Metadata RawFileReaderVideoSer::read_metadata() {
+Metadata RawFileReaderVideoSer::read_metadata_without_cache() {
     std::ifstream file(m_input_frame.get_file_address(), std::ios::binary | std::ios::in);
     if (!file.is_open()) {
         throw std::runtime_error("Unable to open video file: " + m_input_frame.get_file_address());
@@ -195,3 +196,7 @@ std::string RawFileReaderVideoSer::int_code_to_bayer_matrix(unsigned int code) {
             return "";
     }
 }
+
+bool AstroPhotoStacker::is_ser_file(const std::string &file_address)   {
+    return ends_with(to_upper_copy(file_address), ".SER");
+};

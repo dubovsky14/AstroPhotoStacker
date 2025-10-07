@@ -1,6 +1,7 @@
 #include "../headers/RawFileReaderVideoZWO.h"
 #include "../headers/ZWOVideoTextFileInfo.h"
 #include "../headers/VideoReader.h"
+#include "../headers/MetadataCommon.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -11,8 +12,11 @@ using namespace std;
 std::vector<short int> RawFileReaderVideoZWO::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) {
     std::vector<short int> result = read_one_channel_from_video_frame<short int>(m_input_frame.get_file_address(), m_input_frame.get_frame_number(), width, height, 0);
     if (bayer_pattern != nullptr)   {
-        const ZWOVideoTextFileInfo info(m_input_frame.get_file_address() + ".txt");
-        *bayer_pattern = info.get_bayer_matrix();
+        Metadata metadata = read_metadata();
+
+        if (bayer_pattern != nullptr) {
+            *bayer_pattern = convert_bayer_string_to_int_array(metadata.bayer_matrix);
+        }
     }
     return result;
 };
@@ -21,8 +25,8 @@ void RawFileReaderVideoZWO::get_photo_resolution(int *width, int *height) {
     read_one_channel_from_video_frame<short int>(m_input_frame.get_file_address(), m_input_frame.get_frame_number(), width, height, 0);
 };
 
-Metadata RawFileReaderVideoZWO::read_metadata() {
-    ZWOVideoTextFileInfo info(m_input_frame.get_file_address());
+Metadata RawFileReaderVideoZWO::read_metadata_without_cache() {
+    ZWOVideoTextFileInfo info(m_input_frame.get_file_address() + ".txt");
     Metadata metadata = info.get_metadata();
     metadata.video_fps = get_fps_of_video(m_input_frame.get_file_address());
     return metadata;

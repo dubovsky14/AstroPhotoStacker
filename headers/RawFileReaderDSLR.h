@@ -13,7 +13,8 @@ namespace AstroPhotoStacker {
 
             virtual void get_photo_resolution(int *width, int *height) override;
 
-            virtual Metadata read_metadata() override;
+        protected:
+            virtual Metadata read_metadata_without_cache() override;
 
         private:
             LibRaw get_libraw_processor();

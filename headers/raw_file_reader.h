@@ -25,15 +25,6 @@ namespace AstroPhotoStacker   {
     Metadata read_metadata_from_raw_file(const std::string &raw_file_address);
 
     /**
-     * @brief Check if the file is a raw file
-     *
-     * @param file_address - path to the file
-     * @return true - if the file is a raw file
-     * @return false - if the file is not a raw file
-    */
-    bool is_raw_file(const std::string &file_address);
-
-    /**
      * @brief Read raw file and return the brightness values
      *
      * @tparam ValueType - type of the output values

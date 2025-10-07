@@ -6,6 +6,7 @@
 #include "../headers/InputFrame.h"
 #include "../headers/VideoReader.h"
 #include "../headers/Debayring.h"
+#include "../headers/InputFormatTypes.h"
 
 #include <opencv2/opencv.hpp>
 
