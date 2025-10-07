@@ -16,6 +16,8 @@ namespace AstroPhotoStacker   {
         NOT_SUPPORTED
     };
 
+    bool is_raw_file(const std::string &file_address);
+
     class InputFormatTypeGetter {
         public:
             static InputFormatType get_input_format_type(const InputFrame &input_frame);

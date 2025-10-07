@@ -4,6 +4,8 @@
 #include "../headers/raw_file_reader.h"
 #include "../headers/MetadataReader.h"
 
+#include <algorithm>
+
 using namespace AstroPhotoStacker;
 using namespace std;
 

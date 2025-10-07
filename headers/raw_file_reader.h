@@ -1,16 +1,8 @@
 #pragma once
 
 #include "../headers/Metadata.h"
-
-#include "../headers/DSLR_and_SLR_raw_file_reader.h"
-#include "../headers/FitFileReader.h"
-#include "../headers/ZWOVideoTextFileInfo.h"
-#include "../headers/VideoReader.h"
 #include "../headers/InputFrame.h"
-#include "../headers/VideoReaderSer.h"
-
 #include "../headers/RawFileReaderFactory.h"
-
 #include "../headers/Common.h"
 
 #include <memory>
@@ -71,14 +63,6 @@ namespace AstroPhotoStacker   {
         }
         return result;
     };
-
-    /**
-     * @brief This is a vector with the same number of elemetns as possible color codes (most ofthen 3 or 4)
-     *
-     * @param raw_file - path to the raw file
-     * @return std::vector<char> - vector of numbers containing the color information for given index of the color (0 = red, 1 = green, 2 = blue)
-    */
-    std::vector<char> get_color_info_as_number(const InputFrame &input_frame);
 
     /**
      * @brief Get the resolution of the photo

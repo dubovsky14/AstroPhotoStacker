@@ -120,3 +120,8 @@ Metadata RawFileReaderDSLR::read_metadata() {
 
     return result;
 }
+
+bool AstroPhotoStacker::is_raw_file_dslr_slr(const std::string &file_address)   {
+    LibRaw raw_processor;
+    return raw_processor.open_file(file_address.c_str()) == LIBRAW_SUCCESS;
+};

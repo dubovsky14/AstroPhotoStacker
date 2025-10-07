@@ -18,4 +18,6 @@ namespace AstroPhotoStacker {
         private:
             LibRaw get_libraw_processor();
     };
+
+    bool is_raw_file_dslr_slr(const std::string &file_address);
 }

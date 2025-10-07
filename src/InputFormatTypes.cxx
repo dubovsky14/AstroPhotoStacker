@@ -1,5 +1,6 @@
 #include "../headers/InputFormatTypes.h"
 
+#include "../headers/RawFileReaderDSLR.h"
 #include "../headers/VideoReader.h"
 #include "../headers/VideoReaderSer.h"
 #include "../headers/raw_file_reader.h"

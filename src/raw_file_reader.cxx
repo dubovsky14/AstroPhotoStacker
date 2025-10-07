@@ -5,6 +5,9 @@
 #include "../headers/MetadataCommon.h"
 #include "../headers/Common.h"
 
+#include "../headers/ZWOVideoTextFileInfo.h"    // #TODO: clean up this spaghetti
+#include "../headers/RawFileReaderDSLR.h"       // #TODO: clean up this spaghetti
+
 #include <libraw/libraw.h>
 #include <iomanip>
 #include <sstream>
@@ -37,19 +40,8 @@ bool AstroPhotoStacker::is_raw_file(const std::string &file_address)   {
 };
 
 bool AstroPhotoStacker::get_photo_resolution_raw_file(const std::string &raw_file, int *width, int *height) {
-    if (ZWOVideoTextFileInfo::is_valid_zwo_video_text_file(raw_file + ".txt")) {
-        read_one_channel_from_video_frame<short>(raw_file, 0, width, height, 0);
-        return true;
-    }
-    if (AstroPhotoStacker::is_ser_file(raw_file)) {
-        AstroPhotoStacker::get_ser_file_width_and_height(raw_file, width, height);
-        return true;
-    }
-    if (is_fit_file(raw_file)) {
-        FitFileMetadataReader fit_file_metadata_reader(raw_file);
-        *width = fit_file_metadata_reader.get_width();
-        *height = fit_file_metadata_reader.get_height();
-        return true;
-    }
-    return get_photo_resolution_raw_file_dslr_slr(raw_file, width, height);
+    InputFrame input_frame(raw_file);
+    std::unique_ptr<RawFileReaderBase> raw_file_reader = RawFileReaderFactory::get_raw_file_reader(input_frame);
+    raw_file_reader->get_photo_resolution(width, height);
+    return true;
 };
