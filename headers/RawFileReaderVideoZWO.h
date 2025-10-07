@@ -14,6 +14,5 @@ namespace AstroPhotoStacker {
 
         private:
             static float get_fps_of_video(const std::string &video_address);
-
     };
 }

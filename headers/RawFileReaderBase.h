@@ -12,6 +12,8 @@ namespace AstroPhotoStacker {
         public:
             virtual ~RawFileReaderBase() = default;
 
+            RawFileReaderBase() = delete;
+
             RawFileReaderBase(const InputFrame &input_frame);
 
             virtual std::vector<short int> read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern = nullptr) = 0;
