@@ -54,9 +54,6 @@ namespace AstroPhotoStacker   {
     template<typename ValueType = unsigned short>
     std::vector<ValueType> read_raw_file(const InputFrame &input_frame, int *width, int *height, std::vector<char> *colors = nullptr)   {
         std::unique_ptr<RawFileReaderBase> raw_file_reader = RawFileReaderFactory::get_raw_file_reader(input_frame);
-        if (raw_file_reader == nullptr) {
-            throw std::runtime_error("Unsupported raw file format: " + input_frame.get_file_address());
-        }
         std::array<char, 4> bayer_pattern = {-1,-1,-1,-1};
         std::vector<short int> brightness = raw_file_reader->read_raw_file(width, height, &bayer_pattern);
         if (colors != nullptr) {

@@ -10,17 +10,16 @@ using namespace std;
 
 
 
-RawFileReaderFit::RawFileReaderFit(const InputFrame &input_frame) :
-    RawFileReaderBase(input_frame) {
-        ifstream input_stream(m_input_frame.get_file_address(), ios::binary | ios::in);
-        if (!input_stream.is_open())    {
-            throw std::runtime_error("Could not open file " + m_input_frame.get_file_address());
-        }
-        read_header(&input_stream);
-        read_data(&input_stream);
-};
+RawFileReaderFit::RawFileReaderFit(const InputFrame &input_frame) : RawFileReaderBase(input_frame) {};
 
 std::vector<short int> RawFileReaderFit::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) {
+    ifstream input_stream(m_input_frame.get_file_address(), ios::binary | ios::in);
+    if (!input_stream.is_open())    {
+        throw std::runtime_error("Could not open file " + m_input_frame.get_file_address());
+    }
+    read_header(&input_stream);
+    read_data(&input_stream);
+
     if (width != nullptr) {
         *width = m_width;
     }
@@ -34,6 +33,12 @@ std::vector<short int> RawFileReaderFit::read_raw_file(int *width, int *height, 
 };
 
 void RawFileReaderFit::get_photo_resolution(int *width, int *height) {
+    ifstream input_stream(m_input_frame.get_file_address(), ios::binary | ios::in);
+    if (!input_stream.is_open())    {
+        throw std::runtime_error("Could not open file " + m_input_frame.get_file_address());
+    }
+    read_header(&input_stream);
+
     if (width != nullptr) {
         *width = m_width;
     }
@@ -43,6 +48,12 @@ void RawFileReaderFit::get_photo_resolution(int *width, int *height) {
 };
 
 Metadata RawFileReaderFit::read_metadata() {
+    ifstream input_stream(m_input_frame.get_file_address(), ios::binary | ios::in);
+    if (!input_stream.is_open())    {
+        throw std::runtime_error("Could not open file " + m_input_frame.get_file_address());
+    }
+    read_header(&input_stream);
+
     return m_metadata;
 };
 

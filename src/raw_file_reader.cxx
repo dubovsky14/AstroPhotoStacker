@@ -16,28 +16,12 @@ bool AstroPhotoStacker::is_fit_file(const std::string &file_address)   {
     return ends_with(to_upper_copy(file_address), ".FIT");
 };
 
-Metadata AstroPhotoStacker::read_metadata_from_raw_file(const std::string &raw_file_address) {
-    if (is_fit_file(raw_file_address)) {
-        FitFileMetadataReader fit_file_metadata_reader(raw_file_address);
-        return fit_file_metadata_reader.get_metadata();
-    }
-    if (AstroPhotoStacker::is_ser_file(raw_file_address)) {
-        return read_ser_video_metadata(raw_file_address);
-    }
-    if (ZWOVideoTextFileInfo::is_valid_zwo_video_text_file(raw_file_address + ".txt")) {
-        ZWOVideoTextFileInfo zwo_video_text_file_info(raw_file_address + ".txt");
-        Metadata metadata = zwo_video_text_file_info.get_metadata();
-
-        if (metadata.timestamp == 0) {
-            Metadata timestamp_metadata = get_file_creation_timestamp(raw_file_address, metadata);
-            metadata.timestamp = timestamp_metadata.timestamp;
-            metadata.date_time = timestamp_metadata.date_time;
-        }
-
-        return metadata;
-    }
-    return read_metadata_from_raw_file_dslr_slr(raw_file_address);
+Metadata AstroPhotoStacker::read_metadata_from_raw_file(const std::string &raw_file_address)    {
+    InputFrame input_frame(raw_file_address);
+    std::unique_ptr<RawFileReaderBase> raw_file_reader = RawFileReaderFactory::get_raw_file_reader(input_frame);
+    return raw_file_reader->read_metadata();
 };
+
 
 bool AstroPhotoStacker::is_raw_file(const std::string &file_address)   {
     if (AstroPhotoStacker::is_ser_file(file_address)) {
