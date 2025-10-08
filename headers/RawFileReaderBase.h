@@ -2,12 +2,12 @@
 
 #include "../headers/InputFrame.h"
 #include "../headers/Metadata.h"
+#include "../headers/ThreadSafeCacheSystem.h"
 
 #include <string>
 #include <vector>
 #include <array>
 #include <map>
-#include <shared_mutex>
 
 namespace AstroPhotoStacker {
     class RawFileReaderBase {
@@ -29,7 +29,6 @@ namespace AstroPhotoStacker {
 
             virtual Metadata read_metadata_without_cache() = 0;
 
-            static std::map<std::string, Metadata> s_metadata_cache;
-            static std::shared_mutex s_metadata_mutex;
+            static ThreadSafeCacheSystem<std::string, Metadata> s_metadata_cache;
     };
 }
