@@ -14,29 +14,16 @@ Metadata VideoMetadataManager::get_metadata(const InputFrame &input_frame) {
     const string input_file = input_frame.get_file_address();
     const int frame_number = input_frame.get_frame_number();
 
-    {
-        // Lock the mutex in shared (read-only) mode
-        SharedMutexRAIIShared scoped_lock(&m_metadata_mutex);
+    auto get_metadata_lambda = [this, &input_file]() {
+        return read_metadata_video(input_file);
+    };
 
-        // Check if the metadata and fps are aleady in map
-        if (m_video_name_to_fps_and_metadata.find(input_file) != m_video_name_to_fps_and_metadata.end()) {
-            pair<float, Metadata> fps_and_metadata = m_video_name_to_fps_and_metadata[input_file];
-            Metadata metadata = fps_and_metadata.second;
-
-            metadata.timestamp += int(frame_number / fps_and_metadata.first); // add time in video to to the original timestamp
-            return metadata;
-        }
+    Metadata metadata = m_metadata_cache.get(input_file, get_metadata_lambda);
+    if (frame_number < 0) {
+        return metadata; // still image, no need to adjust timestamp
     }
 
-    // Video metadata and fps are not yet in the map, so we need to read them
-
-    Metadata metadata = read_metadata_video(input_file);
-    const float fps = get_fps_of_video(input_file);
-
-    // Lock the mutex in exclusive (write) mode. In principe, the value could have been written by another thread in the meantime, but we don't care
-    SharedMutexRAIIExclusive scoped_lock(&m_metadata_mutex);
-    m_video_name_to_fps_and_metadata[input_file] = {fps, metadata};
-
+    const float fps = metadata.video_fps;
     metadata.timestamp += int(frame_number / fps); // add time in video to to the original timestamp
     return metadata;
 }
