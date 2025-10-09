@@ -4,7 +4,7 @@
 #include "../headers/InputFrame.h"
 #include "../headers/Metadata.h"
 
-
+#include <opencv2/opencv.hpp>
 
 namespace AstroPhotoStacker {
     class NonRawFrameReaderBase : public FrameReaderBase {
@@ -20,6 +20,14 @@ namespace AstroPhotoStacker {
              */
             virtual std::vector<std::vector<short int>> get_pixels_data(int *width, int *height) = 0;
 
+            virtual std::vector<short int> get_pixels_data_monochrome(int *width, int *height) = 0;
+
             virtual void get_photo_resolution(int *width, int *height) = 0;
+
+
+        protected:
+            std::vector<std::vector<short int>> opencv_rgb_image_to_vector_vector_short(const cv::Mat &image, int *width, int *height);
+
+            std::vector<short int> opencv_grayscale_image_to_vector_short(const cv::Mat &image, int *width, int *height);
     };
 }

@@ -4,11 +4,11 @@
 #include "../headers/InputFrame.h"
 
 namespace AstroPhotoStacker {
-    class NonRawFrameReaderVideo : public NonRawFrameReaderBase {
+    class NonRawFrameReaderStillImage : public NonRawFrameReaderBase {
         public:
-            NonRawFrameReaderVideo() = delete;
+            NonRawFrameReaderStillImage() = delete;
 
-            NonRawFrameReaderVideo(const InputFrame &input_frame);
+            NonRawFrameReaderStillImage(const InputFrame &input_frame);
 
             virtual std::vector<std::vector<short int>> get_pixels_data(int *width, int *height) override;
 

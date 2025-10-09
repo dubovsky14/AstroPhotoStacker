@@ -20,54 +20,36 @@ vector<vector<short int>> NonRawFrameReaderVideo::get_pixels_data(int *width, in
     video.set(cv::CAP_PROP_POS_FRAMES, frame_id);
     cv::Mat frame;
     video.read(frame);
-    m_width = frame.cols;
-    m_height = frame.rows;
-    const int n_colors = frame.channels();
+    vector<vector<short int>> result = opencv_rgb_image_to_vector_vector_short(frame, &m_width, &m_height);
 
-    std::vector<std::vector<short int>> result(n_colors, std::vector<short int>(m_width*m_height));
-    if (n_colors == 3)  {
-        int bit_depth = frame.depth();
-        for (int y = 0; y < *height; y++) {
-            for (int x = 0; x < *width; x++) {
-                for (int color = 0; color < n_colors; color++) {
-                    if (bit_depth == CV_8U) {
-                        result[2-color][y*(*width) + x] = frame.at<cv::Vec3b>(y, x)[color];
-                    }
-                    else if (bit_depth == CV_16U) {
-                        result[2-color][y*(*width) + x] = frame.at<cv::Vec3w>(y, x)[color]/2;
-                    }
-                    else if (bit_depth == CV_16S) {
-                        result[2-color][y*(*width) + x] = frame.at<cv::Vec3s>(y, x)[color];
-                    }
-                    else {
-                        throw std::runtime_error("Unsupported bit depth");
-                    }
-                }
-            }
-        }
+    if (width != nullptr) {
+        *width = m_width;
     }
-    else if (n_colors == 1) {
-        int bit_depth = frame.depth();
-        for (int y = 0; y < *height; y++) {
-            for (int x = 0; x < *width; x++) {
-                if (bit_depth == CV_8U) {
-                    result[0][y*(*width) + x] = frame.at<unsigned char>(y, x);
-                }
-                else if (bit_depth == CV_16U) {
-                    result[0][y*(*width) + x] = frame.at<unsigned short>(y, x)/2;
-                }
-                else if (bit_depth == CV_16S) {
-                    result[0][y*(*width) + x] = frame.at<short>(y, x);
-                }
-                else {
-                    throw std::runtime_error("Unsupported bit depth");
-                }
-            }
-        }
+    if (height != nullptr) {
+        *height = m_height;
     }
-    else {
-        throw std::runtime_error("Unsupported number of channels: " + std::to_string(n_colors));
+
+    return result;
+};
+
+
+
+std::vector<short int> NonRawFrameReaderVideo::get_pixels_data_monochrome(int *width, int *height) {
+    const string video_address = m_input_frame.get_file_address();
+    const int frame_id = m_input_frame.get_frame_number();
+    cv::VideoCapture video(video_address);
+    if (!video.isOpened()) {
+        throw std::runtime_error("Unable to open video file: " + video_address);
     }
+    video.set(cv::CAP_PROP_POS_FRAMES, frame_id);
+    cv::Mat frame;
+    video.read(frame);
+
+    // convert to grayscale
+    cv::Mat image;
+    cv::cvtColor(frame, image, cv::COLOR_BGR2GRAY);
+
+    vector<short int> result = opencv_grayscale_image_to_vector_short(image, &m_width, &m_height);
 
     if (width != nullptr) {
         *width = m_width;
