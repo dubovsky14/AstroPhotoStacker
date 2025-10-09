@@ -3,9 +3,6 @@
 #include "../headers/MetadataCommon.h"
 #include "../headers/Common.h"
 
-#include "../headers/ZWOVideoTextFileInfo.h"    // #TODO: clean up this spaghetti
-#include "../headers/RawFileReaderDSLR.h"       // #TODO: clean up this spaghetti
-
 #include <libraw/libraw.h>
 #include <iomanip>
 #include <sstream>

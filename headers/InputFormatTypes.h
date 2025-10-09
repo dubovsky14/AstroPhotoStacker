@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../headers/InputFrame.h"
+#include "../headers/ThreadSafeCacheSystem.h"
 
 #include <string>
 #include <map>
@@ -35,6 +36,6 @@ namespace AstroPhotoStacker   {
 
             static InputFormatType get_input_format_type_without_cache(const std::string &file_address);
 
-            static std::map<std::string, InputFormatType> s_format_type_cache;
+            static ThreadSafeCacheSystem<std::string, InputFormatType> s_format_type_cache;
     };
 }

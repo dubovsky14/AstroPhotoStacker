@@ -15,7 +15,7 @@ using namespace std;
 
 
 
-std::map<std::string, InputFormatType> InputFormatTypeGetter::s_format_type_cache;
+ThreadSafeCacheSystem<std::string, InputFormatType> InputFormatTypeGetter::s_format_type_cache;
 
 // TODO: caching of the results to avoid multiple checks for the same file
 InputFormatType InputFormatTypeGetter::get_input_format_type(const InputFrame &input_frame)   {
@@ -24,11 +24,11 @@ InputFormatType InputFormatTypeGetter::get_input_format_type(const InputFrame &i
 };
 
 InputFormatType InputFormatTypeGetter::get_input_format_type(const std::string &input_address) {
-    if (s_format_type_cache.find(input_address) != s_format_type_cache.end()) {
-        return s_format_type_cache[input_address];
-    }
-    InputFormatType format_type = get_input_format_type_without_cache(input_address);
-    s_format_type_cache[input_address] = format_type;
+    auto get_format_type_lambda = [&input_address]() {
+        return get_input_format_type_without_cache(input_address);
+    };
+
+    InputFormatType format_type = s_format_type_cache.get(input_address, get_format_type_lambda);
     return format_type;
 };
 

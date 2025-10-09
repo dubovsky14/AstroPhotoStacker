@@ -13,10 +13,7 @@ std::vector<short int> RawFileReaderVideoZWO::read_raw_file(int *width, int *hei
     std::vector<short int> result = read_one_channel_from_video_frame<short int>(m_input_frame.get_file_address(), m_input_frame.get_frame_number(), width, height, 0);
     if (bayer_pattern != nullptr)   {
         Metadata metadata = read_metadata();
-
-        if (bayer_pattern != nullptr) {
-            *bayer_pattern = convert_bayer_string_to_int_array(metadata.bayer_matrix);
-        }
+        *bayer_pattern = convert_bayer_string_to_int_array(metadata.bayer_matrix);
     }
     return result;
 };
