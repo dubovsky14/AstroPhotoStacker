@@ -10,6 +10,10 @@
 #include <map>
 
 namespace AstroPhotoStacker {
+
+    /**
+     * @brief Base class for reading frames (both raw and non-raw), taking care of metadata caching
+     */
     class FrameReaderBase {
         public:
             virtual ~FrameReaderBase() = default;
