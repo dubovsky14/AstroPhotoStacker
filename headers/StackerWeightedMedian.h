@@ -31,7 +31,7 @@ namespace AstroPhotoStacker {
             virtual void calculate_stacked_photo_internal() override;
 
             std::vector<std::vector<unsigned short>>                m_number_of_stacked_pixels;
-            std::vector<std::vector<std::tuple<short,ScoreType>>>   m_values_to_stack;
+            std::vector<std::vector<std::tuple<PixelType,ScoreType>>>   m_values_to_stack;
 
             virtual void add_photo_to_stack(unsigned int file_index, int y_min, int y_max) override;
 
@@ -45,7 +45,7 @@ namespace AstroPhotoStacker {
              * @param ordered_array_begin       - pointer ot the first element of the ordered array
              * @param number_of_stacked_pixels  - number of pixels to stack
              */
-            virtual double get_stacked_value_from_pixel_array(std::tuple<short,ScoreType> *ordered_array_begin, unsigned int number_of_stacked_pixels);
+            virtual double get_stacked_value_from_pixel_array(std::tuple<PixelType,ScoreType> *ordered_array_begin, unsigned int number_of_stacked_pixels);
 
             static const ScoreType c_default_score;
 

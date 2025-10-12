@@ -68,7 +68,7 @@ void ImagePreview::read_preview_from_file(const std::string &path)  {
     read_preview_from_frame(InputFrame(path));
 };
 
-void ImagePreview::update_original_image(const std::vector<std::vector<short int>> &original_image, int width, int height)   {
+void ImagePreview::update_original_image(const std::vector<std::vector<PixelType>> &original_image, int width, int height)   {
     m_image_resize_tool.set_original_size(width, height);
     m_zoom_factor_one_to_one = std::min<double>(m_image_resize_tool.get_height_original()/m_height, m_image_resize_tool.get_width_original()/m_width);
     m_max_zoom_factor = 3*m_zoom_factor_one_to_one;
@@ -79,7 +79,7 @@ void ImagePreview::update_original_image(const std::vector<std::vector<short int
 };
 
 void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {
-    std::vector<std::vector<short int>> stacked_image_short_int(3, std::vector<short int>(width_original*height_original,0));
+    std::vector<std::vector<PixelType>> stacked_image_short_int(3, std::vector<PixelType>(width_original*height_original,0));
     for (int i_color = 0; i_color < 3; i_color++)   {
         for (int i_pixel = 0; i_pixel < width_original*height_original; i_pixel++)   {
             stacked_image_short_int[i_color][i_pixel] = stacked_image[i_color][i_pixel];
@@ -164,7 +164,7 @@ void ImagePreview::set_stretcher(const CombinedColorStrecherTool *color_stretche
     m_color_stretcher = color_stretcher;
 };
 
-const std::vector<std::vector<short int>>& ImagePreview::get_original_image(int *width, int *height) const    {
+const std::vector<std::vector<PixelType>>& ImagePreview::get_original_image(int *width, int *height) const    {
     if (width != nullptr) {
         *width = m_image_resize_tool.get_width_original();
     }
@@ -174,7 +174,7 @@ const std::vector<std::vector<short int>>& ImagePreview::get_original_image(int 
     return m_original_image;
 };
 
-void ImagePreview::add_layer(const std::string &layer_name, const std::function<void(std::vector<std::vector<short int>> *, int, int)> &functor)   {
+void ImagePreview::add_layer(const std::string &layer_name, const std::function<void(std::vector<std::vector<PixelType>> *, int, int)> &functor)   {
     m_additional_layers_functors[layer_name] = functor;
     update_additional_layers_data();
 };
@@ -200,7 +200,7 @@ void ImagePreview::update_max_values_original()    {
 void ImagePreview::update_preview_data(float mouse_position_relative_x, float mouse_position_relative_y)    {
     const bool has_additional_layers = m_additional_layers_functors.size() != 0;
     m_preview_data = std::vector<std::vector<int>>(3, std::vector<int>(m_width*m_height,0)); // 2D vector of brightness values - first index = color, second index = pixel
-    m_additional_layers_preview = has_additional_layers ? std::vector<std::vector<short int>>(3, std::vector<short int>(m_width*m_height, -1)) : std::vector<std::vector<short int>>();
+    m_additional_layers_preview = has_additional_layers ? std::vector<std::vector<PixelType>>(3, std::vector<PixelType>(m_width*m_height, -1)) : std::vector<std::vector<PixelType>>();
 
     std::vector<int>                count(m_width*m_height,0);
 
@@ -356,7 +356,7 @@ void ImagePreview::bind_shift_events()    {
 
 
 void ImagePreview::update_additional_layers_data()  {
-    m_additional_layers_data = std::vector<std::vector<short int>>(3, std::vector<short int>(m_image_resize_tool.get_width_original()*m_image_resize_tool.get_height_original(), -1));
+    m_additional_layers_data = std::vector<std::vector<PixelType>>(3, std::vector<PixelType>(m_image_resize_tool.get_width_original()*m_image_resize_tool.get_height_original(), -1));
     for (const auto &layer_name_and_functor : m_additional_layers_functors) {
         layer_name_and_functor.second(&m_additional_layers_data, m_image_resize_tool.get_width_original(), m_image_resize_tool.get_height_original());
     }
@@ -364,7 +364,7 @@ void ImagePreview::update_additional_layers_data()  {
     update_preview_bitmap();
 };
 
-int ImagePreview::get_interpolated_original_image_data(const vector<short int> &original_image_channel_data, float x, float y) const    {
+int ImagePreview::get_interpolated_original_image_data(const vector<PixelType> &original_image_channel_data, float x, float y) const    {
     const int original_width = m_image_resize_tool.get_width_original();
     const int original_height = m_image_resize_tool.get_height_original();
 

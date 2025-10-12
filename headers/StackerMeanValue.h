@@ -72,7 +72,7 @@ namespace AstroPhotoStacker {
             virtual int get_height_range_limit() const override;
 
             virtual unsigned long long get_maximal_memory_usage(int number_of_frames) const override    {
-                return static_cast<unsigned long long>(m_number_of_colors) * static_cast<unsigned long long>(m_width) * static_cast<unsigned long long>(m_height) * (sizeof(int) + sizeof(short unsigned int));
+                return static_cast<unsigned long long>(m_number_of_colors) * static_cast<unsigned long long>(m_width) * static_cast<unsigned long long>(m_height) * (sizeof(int) + sizeof(PixelType));
             };
 
 

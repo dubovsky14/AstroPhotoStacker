@@ -4,6 +4,7 @@
 #include "../headers/ImageResizeTool.h"
 
 #include "../../headers/InputFrame.h"
+#include "../../headers/PixelType.h"
 
 #include <vector>
 #include <string>
@@ -92,7 +93,7 @@ class ImagePreview {
          * @param width width of the image
          * @param height height of the image
          */
-        void update_original_image(const std::vector<std::vector<short int>> &original_image, int width, int height);
+        void update_original_image(const std::vector<std::vector<PixelType>> &original_image, int width, int height);
 
         /**
          * @brief Set exposure correction
@@ -155,14 +156,14 @@ class ImagePreview {
         const std::vector<std::vector<int>>& get_preview_data() const { return m_preview_data;};
 
         /**
-         * @brief Get original image data as vector<vector<short int>> (3 color channels, each with width*height pixels)
+         * @brief Get original image data as vector<vector<PixelType>> (3 color channels, each with width*height pixels)
          *
          * @param width pointer to the width of the image
          * @param height pointer to the height of the image
          *
-         * @return  const std::vector<std::vector<short int>>& original image data
+         * @return  const std::vector<std::vector<PixelType>>& original image data
         */
-        const std::vector<std::vector<short int>>& get_original_image(int *width = nullptr, int *height = nullptr) const;
+        const std::vector<std::vector<PixelType>>& get_original_image(int *width = nullptr, int *height = nullptr) const;
 
         /**
          * @brief Image preview bitmap (for sizer)
@@ -175,7 +176,7 @@ class ImagePreview {
          * @param layer_name name of the layer
          * @param functor function to apply the layer
         */
-        void add_layer(const std::string &layer_name, const std::function<void(std::vector<std::vector<short int>> *, int, int)> &functor);
+        void add_layer(const std::string &layer_name, const std::function<void(std::vector<std::vector<PixelType>> *, int, int)> &functor);
 
         /**
          * @brief Remove additional layer
@@ -188,12 +189,12 @@ class ImagePreview {
         ImageResizeTool m_image_resize_tool;
 
 
-        std::vector<std::vector<short int>>                     m_original_image;               // 3 color channels, each with width*height pixels
-        std::vector<std::vector<short int>>                     m_additional_layers_data;       // 3 color channels, each with width*height pixels
-        std::vector<std::vector<short int>>                     m_additional_layers_preview;    // 3 color channels, each with width*height pixels = -1 means empty pixel in the additional layer
+        std::vector<std::vector<PixelType>>                     m_original_image;               // 3 color channels, each with width*height pixels
+        std::vector<std::vector<PixelType>>                     m_additional_layers_data;       // 3 color channels, each with width*height pixels
+        std::vector<std::vector<PixelType>>                     m_additional_layers_preview;    // 3 color channels, each with width*height pixels = -1 means empty pixel in the additional layer
 
         // vector of functors to apply additional layers to the image, such as crop borders, alignment points, etc.
-        std::map<std::string, std::function<void(std::vector<std::vector<short int>> *, int, int)>>   m_additional_layers_functors;
+        std::map<std::string, std::function<void(std::vector<std::vector<PixelType>> *, int, int)>>   m_additional_layers_functors;
 
         int m_width = 0;
         int m_height =0;
@@ -223,5 +224,5 @@ class ImagePreview {
 
         void update_additional_layers_data();
 
-        int get_interpolated_original_image_data(const std::vector<short int> &original_image_channel_data, float x, float y) const;
+        int get_interpolated_original_image_data(const std::vector<PixelType> &original_image_channel_data, float x, float y) const;
 };

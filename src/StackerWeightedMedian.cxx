@@ -174,7 +174,7 @@ int StackerWeightedMedian::get_tasks_total() const  {
 unsigned long long StackerWeightedMedian::get_maximal_memory_usage(int number_of_frames) const {
     const unsigned long long resolution = m_width*m_height;
     const unsigned long long stacked_image_size = m_number_of_colors*sizeof(double)*resolution;
-    const unsigned long long stacking_array = resolution*m_number_of_colors*number_of_frames*(sizeof(unsigned short) + sizeof(ScoreType));
+    const unsigned long long stacking_array = resolution*m_number_of_colors*number_of_frames*(sizeof(PixelType) + sizeof(ScoreType));
 
     const unsigned long long memory_usage_total = stacked_image_size + stacking_array;
 

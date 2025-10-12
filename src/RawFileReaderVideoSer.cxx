@@ -15,7 +15,7 @@ using namespace std;
 
 
 
-std::vector<short int> RawFileReaderVideoSer::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) {
+std::vector<PixelType> RawFileReaderVideoSer::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) {
    std::ifstream file(m_input_frame.get_file_address(), std::ios::binary | std::ios::in);
     if (!file.is_open()) {
         throw std::runtime_error("Unable to open video file: " + m_input_frame.get_file_address());

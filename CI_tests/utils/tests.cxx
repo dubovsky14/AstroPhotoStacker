@@ -33,7 +33,7 @@ int main(int argc, const char **argv)   {
     test_runner.run_test(   "Image reading - raw Canon 6D Mark II", test_image_reading_raw,
                             InputFrame("AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2"),
                             std::pair<int,int>{6264, 4180},
-                            std::vector<std::tuple<int, int, short int, char>>{
+                            std::vector<std::tuple<int, int, PixelType, char>>{
                                {0, 0, 557, 0},
                                {1200, 2679, 605, 1},
                                {2455, 1237, 918, 2},
@@ -47,7 +47,7 @@ int main(int argc, const char **argv)   {
     test_runner.run_test(   "Image reading - raw ZWO 678MC", test_image_reading_raw,
                             InputFrame("AstroPhotoStacker_test_files/data/ZWO678MC_horse_head/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001.fit"),
                             std::pair<int,int>{3840,2160},
-                            std::vector<std::tuple<int, int, short int, char>>{
+                            std::vector<std::tuple<int, int, PixelType, char>>{
                                {0, 0, 1896, 0},
                                {2455, 1237, 1808, 2},
                                {1711, 1989, 1680, 2},
