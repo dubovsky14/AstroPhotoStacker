@@ -16,7 +16,7 @@ bool AstroPhotoStacker::is_fit_file(const std::string &file_address) {
 
 RawFileReaderFit::RawFileReaderFit(const InputFrame &input_frame) : RawFileReaderBase(input_frame) {};
 
-std::vector<short int> RawFileReaderFit::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) {
+std::vector<PixelType> RawFileReaderFit::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) {
     ifstream input_stream(m_input_frame.get_file_address(), ios::binary | ios::in);
     if (!input_stream.is_open())    {
         throw std::runtime_error("Could not open file " + m_input_frame.get_file_address());
@@ -63,7 +63,7 @@ Metadata RawFileReaderFit::read_metadata_without_cache() {
 
 void RawFileReaderFit::read_data(std::ifstream *file) {
     const unsigned  int n_elements = m_width*m_height;
-    m_data = std::vector<short int>(n_elements);
+    m_data = std::vector<PixelType>(n_elements);
 
     // skip whitespaces
     char x;
@@ -105,7 +105,7 @@ void RawFileReaderFit::read_data_8bit(std::ifstream *file) {
     file->read(reinterpret_cast<char*>(signed_char_buffer.data()), signed_char_buffer.size());
 
     std::transform(signed_char_buffer.begin(), signed_char_buffer.end(), m_data.begin(), [this](char pixel_value) -> unsigned short int {
-        return static_cast<short unsigned int>(static_cast<short int>(pixel_value) + m_zero_point);
+        return static_cast<short unsigned int>(static_cast<PixelType>(pixel_value) + m_zero_point);
     });
 };
 

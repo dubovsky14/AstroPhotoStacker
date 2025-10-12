@@ -6,10 +6,10 @@ using namespace std;
 NonRawFrameReaderBase::NonRawFrameReaderBase(const InputFrame &input_frame) : FrameReaderBase(input_frame) {
 };
 
-std::vector<std::vector<short int>> NonRawFrameReaderBase::opencv_rgb_image_to_vector_vector_short(const cv::Mat &image, int *width, int *height) {
+std::vector<std::vector<PixelType>> NonRawFrameReaderBase::opencv_rgb_image_to_vector_vector_short(const cv::Mat &image, int *width, int *height) {
     const int bit_depth = image.depth();
     const int n_colors = image.channels();
-    std::vector<std::vector<short int>> result(n_colors, std::vector<short int>(image.cols*image.rows));
+    std::vector<std::vector<PixelType>> result(n_colors, std::vector<PixelType>(image.cols*image.rows));
     if (n_colors == 3)  {
         for (int y = 0; y < image.rows; y++) {
             for (int x = 0; x < image.cols; x++) {
@@ -62,9 +62,9 @@ std::vector<std::vector<short int>> NonRawFrameReaderBase::opencv_rgb_image_to_v
 };
 
 
-std::vector<short int> NonRawFrameReaderBase::opencv_grayscale_image_to_vector_short(const cv::Mat &image, int *width, int *height) {
+std::vector<PixelType> NonRawFrameReaderBase::opencv_grayscale_image_to_vector_short(const cv::Mat &image, int *width, int *height) {
     const int bit_depth = image.depth();
-    std::vector<short int> result(image.cols * image.rows, 0);
+    std::vector<PixelType> result(image.cols * image.rows, 0);
     for (int y = 0; y < (image.rows); y++) {
         for (int x = 0; x < (image.cols); x++) {
             if (bit_depth == CV_8U) {

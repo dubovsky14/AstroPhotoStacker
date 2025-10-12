@@ -23,11 +23,11 @@ ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const InputFrame 
     InputFrameReader reader(input_frame);
     reader.load_input_frame_data();
     reader.get_photo_resolution(&m_width, &m_height);
-    const vector<short> brightness = reader.get_monochrome_data();
+    const vector<PixelType> brightness = reader.get_monochrome_data();
     initialize(brightness.data(), m_width, m_height, threshold_fraction);
 };
 
-ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const short *brightness, int width, int height, float threshold_fraction)  :
+ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const PixelType *brightness, int width, int height, float threshold_fraction)  :
     ReferencePhotoHandlerBase(brightness, width, height, threshold_fraction) {
     m_threshold_fraction = threshold_fraction;
     initialize(brightness, width, height, threshold_fraction);
@@ -38,7 +38,7 @@ PlateSolvingResult ReferencePhotoHandlerPlanetary::calculate_alignment(const Inp
     InputFrameReader reader(input_frame);
     reader.load_input_frame_data();
     reader.get_photo_resolution(&width, &height);
-    const vector<short> brightness = reader.get_monochrome_data();
+    const vector<PixelType> brightness = reader.get_monochrome_data();
 
     MonochromeImageData image_data;
     image_data.brightness = brightness.data();
@@ -68,9 +68,9 @@ PlateSolvingResult ReferencePhotoHandlerPlanetary::calculate_alignment(const Inp
 };
 
 AlignmentWindow ReferencePhotoHandlerPlanetary::get_alignment_window(   const MonochromeImageData &image_data,
-                                                                        short threshold) const    {
+                                                                        PixelType threshold) const    {
 
-    const short *brightness = image_data.brightness;
+    const PixelType *brightness = image_data.brightness;
     const int width = image_data.width;
     const int height = image_data.height;
 
@@ -110,10 +110,10 @@ AlignmentWindow ReferencePhotoHandlerPlanetary::get_alignment_window(   const Mo
 };
 
 std::tuple<double,double> ReferencePhotoHandlerPlanetary::get_center_of_mass(   const MonochromeImageData &image_data,
-                                                                                short threshold,
+                                                                                PixelType threshold,
                                                                                 const AlignmentWindow &window_coordinates) const    {
 
-    const short *brightness = image_data.brightness;
+    const PixelType *brightness = image_data.brightness;
     const int width = image_data.width;
 
     double center_of_mass_x = 0;
@@ -137,10 +137,10 @@ std::tuple<double,double> ReferencePhotoHandlerPlanetary::get_center_of_mass(   
 
 std::vector<std::vector<double>> ReferencePhotoHandlerPlanetary::get_covariance_matrix( const MonochromeImageData &image_data,
                                                                                         const tuple<double,double> &center_of_mass,
-                                                                                        short threshold,
+                                                                                        PixelType threshold,
                                                                                         const AlignmentWindow &window_coordinates) const  {
 
-    const short *brightness = image_data.brightness;
+    const PixelType *brightness = image_data.brightness;
     const int width = image_data.width;
 
     double x2 = 0;
@@ -173,14 +173,14 @@ std::vector<std::vector<double>> ReferencePhotoHandlerPlanetary::get_covariance_
 
 
 std::tuple<float,float,vector<vector<double>>,vector<double>> ReferencePhotoHandlerPlanetary::get_center_of_mass_eigenvectors_and_eigenvalues(const MonochromeImageData &image_data, float threshold_fraction, AlignmentWindow *window_coordinates) const    {
-    const short *brightness = image_data.brightness;
+    const PixelType *brightness = image_data.brightness;
     const int width = image_data.width;
     const int height = image_data.height;
 
-    const short max_value = *max_element(brightness, brightness + width*height);
-    const short min_value = *min_element(brightness, brightness + width*height);
+    const PixelType max_value = *max_element(brightness, brightness + width*height);
+    const PixelType min_value = *min_element(brightness, brightness + width*height);
 
-    const short threshold = min_value + threshold_fraction * (max_value - min_value);
+    const PixelType threshold = min_value + threshold_fraction * (max_value - min_value);
 
     const AlignmentWindow alignment_window = get_alignment_window(image_data, threshold);
     if (window_coordinates != nullptr) {
@@ -202,7 +202,7 @@ std::tuple<float,float,vector<vector<double>>,vector<double>> ReferencePhotoHand
 };
 
 
-void  ReferencePhotoHandlerPlanetary::initialize(const short *brightness, int width, int height, float threshold_fraction)   {
+void  ReferencePhotoHandlerPlanetary::initialize(const PixelType *brightness, int width, int height, float threshold_fraction)   {
     m_width = width;
     m_height = height;
 

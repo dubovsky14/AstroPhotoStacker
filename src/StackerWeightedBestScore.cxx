@@ -7,7 +7,7 @@ StackerWeightedBestScore::StackerWeightedBestScore(int number_of_colors, int wid
     StackerWeightedMedian(number_of_colors, width, height, interpolate_colors)   {
 };
 
-double StackerWeightedBestScore::get_stacked_value_from_pixel_array(tuple<short,ScoreType> *ordered_array_begin, unsigned int number_of_stacked_pixels) {
+double StackerWeightedBestScore::get_stacked_value_from_pixel_array(tuple<PixelType,ScoreType> *ordered_array_begin, unsigned int number_of_stacked_pixels) {
     if (number_of_stacked_pixels == 0) {
         return c_empty_pixel_value;
     }

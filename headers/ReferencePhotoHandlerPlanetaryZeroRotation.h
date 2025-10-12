@@ -35,7 +35,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetaryZeroRotation(const short *brightness, int width, int height, float threshold_fraction);
+            ReferencePhotoHandlerPlanetaryZeroRotation(const PixelType *brightness, int width, int height, float threshold_fraction);
 
              /**
              * @brief Calculate how the photo should be rotated and shifted to match the reference photo

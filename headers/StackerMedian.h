@@ -27,7 +27,7 @@ namespace AstroPhotoStacker {
             */
             virtual void calculate_stacked_photo_internal() override;
 
-            std::vector<std::vector<short int>> m_values_to_stack;
+            std::vector<std::vector<PixelType>> m_values_to_stack;
 
             virtual void add_photo_to_stack(unsigned int file_index, int y_min, int y_max) override;
 
@@ -41,7 +41,7 @@ namespace AstroPhotoStacker {
              * @param ordered_array_begin       - pointer ot the first element of the ordered array
              * @param number_of_stacked_pixels  - number of pixels to stack
              */
-            virtual double get_stacked_value_from_pixel_array(short int *ordered_array_begin, unsigned int number_of_stacked_pixels);
+            virtual double get_stacked_value_from_pixel_array(PixelType *ordered_array_begin, unsigned int number_of_stacked_pixels);
 
             /**
              * @brief Get maximal memory usage, considering the number of frames and their resolution

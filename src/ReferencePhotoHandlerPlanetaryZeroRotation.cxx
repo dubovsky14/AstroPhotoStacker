@@ -11,7 +11,7 @@ using namespace AstroPhotoStacker;
 ReferencePhotoHandlerPlanetaryZeroRotation::ReferencePhotoHandlerPlanetaryZeroRotation(const InputFrame &input_frame, float threshold_fraction)  :
     ReferencePhotoHandlerPlanetary(input_frame, threshold_fraction) {};
 
-ReferencePhotoHandlerPlanetaryZeroRotation::ReferencePhotoHandlerPlanetaryZeroRotation(const short *brightness, int width, int height, float threshold_fraction) :
+ReferencePhotoHandlerPlanetaryZeroRotation::ReferencePhotoHandlerPlanetaryZeroRotation(const PixelType *brightness, int width, int height, float threshold_fraction) :
     ReferencePhotoHandlerPlanetary(brightness, width, height, threshold_fraction) {};
 
 

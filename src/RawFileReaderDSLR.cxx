@@ -11,7 +11,7 @@ using namespace std;
 
 
 
-std::vector<short int> RawFileReaderDSLR::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) {
+std::vector<PixelType> RawFileReaderDSLR::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) {
     LibRaw raw_processor = get_libraw_processor();
 
     raw_processor.imgdata.params.use_camera_wb = 1;
@@ -39,7 +39,7 @@ std::vector<short int> RawFileReaderDSLR::read_raw_file(int *width, int *height,
         bayer_pattern->at(3) = process_color(raw_processor.COLOR(1,1));
     }
 
-    std::vector<short int> result((*width)*(*height));
+    std::vector<PixelType> result((*width)*(*height));
     const unsigned short int (*image_data)[4] = raw_processor.imgdata.image;
 
     for (int row = 0; row < *height; ++row) {

@@ -22,7 +22,7 @@ namespace AstroPhotoStacker {
             StackerKappaSigmaBase(int number_of_colors, int width, int height, bool interpolate_colors);
 
     protected:
-            virtual double get_stacked_value_from_pixel_array(short int *ordered_array_begin, unsigned int number_of_stacked_pixels)  = 0;
+            virtual double get_stacked_value_from_pixel_array(PixelType *ordered_array_begin, unsigned int number_of_stacked_pixels)  = 0;
 
             /**
              * @brief Apply the Kappa-Sigma clipping algorithm to the ordered array of pixels
@@ -30,7 +30,7 @@ namespace AstroPhotoStacker {
              * @param ordered_array_begin - pointer to the first element of the ordered array
              * @param number_of_stacked_pixels - number of pixels to stack
              */
-            void apply_kappa_sigma_clipping(short int **ordered_array_begin, unsigned int *number_of_stacked_pixels);
+            void apply_kappa_sigma_clipping(PixelType **ordered_array_begin, unsigned int *number_of_stacked_pixels);
 
             float   m_kappa       = 3.0;
             int     m_n_iterations  = 3;

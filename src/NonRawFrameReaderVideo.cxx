@@ -10,7 +10,7 @@ using namespace std;
 NonRawFrameReaderVideo::NonRawFrameReaderVideo(const InputFrame &input_frame) : NonRawFrameReaderBase(input_frame) {
 };
 
-vector<vector<short int>> NonRawFrameReaderVideo::get_pixels_data(int *width, int *height) {
+vector<vector<PixelType>> NonRawFrameReaderVideo::get_pixels_data(int *width, int *height) {
     const string video_address = m_input_frame.get_file_address();
     const int frame_id = m_input_frame.get_frame_number();
     cv::VideoCapture video(video_address);
@@ -20,7 +20,7 @@ vector<vector<short int>> NonRawFrameReaderVideo::get_pixels_data(int *width, in
     video.set(cv::CAP_PROP_POS_FRAMES, frame_id);
     cv::Mat frame;
     video.read(frame);
-    vector<vector<short int>> result = opencv_rgb_image_to_vector_vector_short(frame, &m_width, &m_height);
+    vector<vector<PixelType>> result = opencv_rgb_image_to_vector_vector_short(frame, &m_width, &m_height);
 
     if (width != nullptr) {
         *width = m_width;
@@ -34,7 +34,7 @@ vector<vector<short int>> NonRawFrameReaderVideo::get_pixels_data(int *width, in
 
 
 
-std::vector<short int> NonRawFrameReaderVideo::get_pixels_data_monochrome(int *width, int *height) {
+std::vector<PixelType> NonRawFrameReaderVideo::get_pixels_data_monochrome(int *width, int *height) {
     const string video_address = m_input_frame.get_file_address();
     const int frame_id = m_input_frame.get_frame_number();
     cv::VideoCapture video(video_address);
@@ -49,7 +49,7 @@ std::vector<short int> NonRawFrameReaderVideo::get_pixels_data_monochrome(int *w
     cv::Mat image;
     cv::cvtColor(frame, image, cv::COLOR_BGR2GRAY);
 
-    vector<short int> result = opencv_grayscale_image_to_vector_short(image, &m_width, &m_height);
+    vector<PixelType> result = opencv_grayscale_image_to_vector_short(image, &m_width, &m_height);
 
     if (width != nullptr) {
         *width = m_width;

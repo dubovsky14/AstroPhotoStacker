@@ -10,14 +10,14 @@ using namespace std;
 NonRawFrameReaderStillImage::NonRawFrameReaderStillImage(const InputFrame &input_frame) : NonRawFrameReaderBase(input_frame) {
 };
 
-vector<vector<short int>> NonRawFrameReaderStillImage::get_pixels_data(int *width, int *height) {
+vector<vector<PixelType>> NonRawFrameReaderStillImage::get_pixels_data(int *width, int *height) {
     const string input_file = m_input_frame.get_file_address();
     cv::Mat image = cv::imread(input_file, cv::IMREAD_COLOR);
     if (image.empty()) {
         throw std::runtime_error("Unable to open image file: " + input_file);
     }
 
-    vector<vector<short int>> result = opencv_rgb_image_to_vector_vector_short(image, &m_width, &m_height);
+    vector<vector<PixelType>> result = opencv_rgb_image_to_vector_vector_short(image, &m_width, &m_height);
 
     if (width != nullptr) {
         *width = m_width;
@@ -29,14 +29,14 @@ vector<vector<short int>> NonRawFrameReaderStillImage::get_pixels_data(int *widt
     return result;
 };
 
-std::vector<short int> NonRawFrameReaderStillImage::get_pixels_data_monochrome(int *width, int *height) {
+std::vector<PixelType> NonRawFrameReaderStillImage::get_pixels_data_monochrome(int *width, int *height) {
     const string input_file = m_input_frame.get_file_address();
     cv::Mat image = cv::imread(input_file, cv::IMREAD_ANYDEPTH);
     if (image.empty()) {
         throw std::runtime_error("Unable to open image file: " + input_file);
     }
 
-    vector<short int> result = opencv_grayscale_image_to_vector_short(image, &m_width, &m_height);
+    vector<PixelType> result = opencv_grayscale_image_to_vector_short(image, &m_width, &m_height);
 
     if (width != nullptr) {
         *width = m_width;

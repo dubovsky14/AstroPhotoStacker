@@ -13,8 +13,8 @@ StackerKappaSigmaBase::StackerKappaSigmaBase(int number_of_colors, int width, in
 };
 
 
-void StackerKappaSigmaBase::apply_kappa_sigma_clipping(short int **ordered_array_begin, unsigned int *number_of_stacked_pixels)    {
-    short int * const current_begin = *ordered_array_begin;
+void StackerKappaSigmaBase::apply_kappa_sigma_clipping(PixelType **ordered_array_begin, unsigned int *number_of_stacked_pixels)    {
+    PixelType * const current_begin = *ordered_array_begin;
     for (int i_iter = 0; i_iter < m_n_iterations; i_iter++)    {
 
         double mean(0), mean2(0);

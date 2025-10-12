@@ -33,7 +33,7 @@ void SyntheticFlatCreator::load_data(const InputFrame &input_frame) {
     m_height = calibrated_photo_handler.get_height();
     m_width = calibrated_photo_handler.get_width();
 
-    vector<vector<short int>> calibrated_color_data = calibrated_photo_handler.get_calibrated_data_after_color_interpolation();
+    vector<vector<PixelType>> calibrated_color_data = calibrated_photo_handler.get_calibrated_data_after_color_interpolation();
 
     m_original_gray_scale_data.resize(calibrated_color_data[0].size(), 0);
     for (unsigned int i = 0; i < calibrated_color_data[0].size(); i++) {

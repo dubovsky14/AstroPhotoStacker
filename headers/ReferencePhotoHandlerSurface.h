@@ -36,7 +36,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerSurface(const short *brightness, int width, int height, float threshold_fraction);
+            ReferencePhotoHandlerSurface(const PixelType *brightness, int width, int height, float threshold_fraction);
 
             std::vector<LocalShift> get_local_shifts(   const InputFrame &input_frame,
                                                         const PlateSolvingResult &plate_solving_result) const;
@@ -47,7 +47,7 @@ namespace AstroPhotoStacker   {
 
             std::unique_ptr<AlignmentPointBoxGrid> m_alignment_point_box_grid = nullptr;
 
-            void initialize_alignment_grid(const short *brightness_original);
+            void initialize_alignment_grid(const PixelType *brightness_original);
 
             float m_blur_sigma = 1.;
             int   m_blur_window_size = 5;

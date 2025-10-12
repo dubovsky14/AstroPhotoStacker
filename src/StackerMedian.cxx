@@ -22,7 +22,7 @@ void StackerMedian::calculate_stacked_photo_internal()  {
     }
 
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
-        m_values_to_stack.push_back(vector<short>(m_width*height_range*n_files, -1));
+        m_values_to_stack.push_back(vector<PixelType>(m_width*height_range*n_files, -1));
     }
 
     int i_slice = 0;

@@ -10,9 +10,9 @@ namespace AstroPhotoStacker {
 
             NonRawFrameReaderVideo(const InputFrame &input_frame);
 
-            virtual std::vector<std::vector<short int>> get_pixels_data(int *width, int *height) override;
+            virtual std::vector<std::vector<PixelType>> get_pixels_data(int *width, int *height) override;
 
-            virtual std::vector<short int> get_pixels_data_monochrome(int *width, int *height) override;
+            virtual std::vector<PixelType> get_pixels_data_monochrome(int *width, int *height) override;
 
             virtual void get_photo_resolution(int *width, int *height) override;
 

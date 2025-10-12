@@ -9,8 +9,8 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
-std::vector<short int> RawFileReaderVideoZWO::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) {
-    std::vector<short int> result = read_one_channel_from_video_frame<short int>(m_input_frame.get_file_address(), m_input_frame.get_frame_number(), width, height, 0);
+std::vector<PixelType> RawFileReaderVideoZWO::read_raw_file(int *width, int *height, std::array<char, 4> *bayer_pattern) {
+    std::vector<PixelType> result = read_one_channel_from_video_frame<PixelType>(m_input_frame.get_file_address(), m_input_frame.get_frame_number(), width, height, 0);
     if (bayer_pattern != nullptr)   {
         Metadata metadata = read_metadata();
         *bayer_pattern = convert_bayer_string_to_int_array(metadata.bayer_matrix);
@@ -19,7 +19,7 @@ std::vector<short int> RawFileReaderVideoZWO::read_raw_file(int *width, int *hei
 };
 
 void RawFileReaderVideoZWO::get_photo_resolution(int *width, int *height) {
-    read_one_channel_from_video_frame<short int>(m_input_frame.get_file_address(), m_input_frame.get_frame_number(), width, height, 0);
+    read_one_channel_from_video_frame<PixelType>(m_input_frame.get_file_address(), m_input_frame.get_frame_number(), width, height, 0);
 };
 
 Metadata RawFileReaderVideoZWO::read_metadata_without_cache() {

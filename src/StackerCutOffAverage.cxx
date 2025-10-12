@@ -7,7 +7,7 @@ StackerCutOffAverage::StackerCutOffAverage(int number_of_colors, int width, int 
     add_additional_setting("tail_fraction_to_cut_off", &m_tail_fraction_to_cut_off, 0.0, 0.45, 0.01);
 };
 
-double StackerCutOffAverage::get_stacked_value_from_pixel_array(short int *ordered_array_begin, unsigned int number_of_stacked_pixels) {
+double StackerCutOffAverage::get_stacked_value_from_pixel_array(PixelType *ordered_array_begin, unsigned int number_of_stacked_pixels) {
     unsigned int pixels_to_cut_off = int(m_tail_fraction_to_cut_off*number_of_stacked_pixels + 0.5);
     if (number_of_stacked_pixels == 0) {
         return c_empty_pixel_value;
