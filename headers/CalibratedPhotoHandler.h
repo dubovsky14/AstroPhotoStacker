@@ -161,6 +161,6 @@ namespace AstroPhotoStacker {
             std::vector<PixelType> m_data_shifted;
             std::vector<char> m_colors_shifted;
 
-            //void fix_hot_pixel(int x, int y);
+            void fix_hot_pixel(int x, int y, std::vector<PixelType> *data);
     };
 }

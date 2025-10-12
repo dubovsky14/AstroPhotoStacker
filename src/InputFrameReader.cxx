@@ -51,6 +51,10 @@ bool InputFrameReader::is_raw_file() const {
     return m_is_raw_file;
 };
 
+bool InputFrameReader::is_raw_file_before_debayering() const {
+    return m_is_raw_before_debayering;
+};
+
 void InputFrameReader::debayer() {
     if (!m_is_raw_file) {
         return;

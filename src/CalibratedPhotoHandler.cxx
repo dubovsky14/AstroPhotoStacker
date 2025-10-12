@@ -62,15 +62,16 @@ void CalibratedPhotoHandler::calibrate() {
     }
 
     // have to fix hot pixels before debayering
-    //if (m_hot_pixel_identifier != nullptr && m_is_raw_file) {
-    //    for (int y = 0; y < m_height; y++) {
-    //        for (int x = 0; x < m_width; x++) {
-    //            if (m_hot_pixel_identifier->is_hot_pixel(x, y)) {
-    //                fix_hot_pixel(x, y);
-    //            }
-    //        }
-    //    }
-    //}
+    if (m_hot_pixel_identifier != nullptr && m_input_frame_data_original->is_raw_file_before_debayering()) {
+        vector<PixelType>& raw_data = m_input_frame_data_original->get_raw_data_non_const();
+        for (int y = 0; y < m_height; y++) {
+            for (int x = 0; x < m_width; x++) {
+                if (m_hot_pixel_identifier->is_hot_pixel(x, y)) {
+                    fix_hot_pixel(x, y, &raw_data);
+                }
+            }
+        }
+    }
 
     if (m_use_color_interpolation && m_input_frame_data_original->is_raw_file()) {
         m_input_frame_data_original->debayer();
@@ -141,12 +142,12 @@ void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int
     }
 };
 
-/*
-void CalibratedPhotoHandler::fix_hot_pixel(int x, int y)    {
+
+void CalibratedPhotoHandler::fix_hot_pixel(int x, int y, std::vector<PixelType> *data)    {
     int n_same_color_neighbors = 0;
     int new_value = 0;
     const int index = y*m_width + x;
-    const int color_this_pixel = m_input_frame_data_original->get_color(index);
+    const int color_this_pixel = m_input_frame_data_original->get_raw_color(x,y);
     for (int shift_size = 1; shift_size <= 2; shift_size++) {
         for (int i_shift_y = -1*shift_size; i_shift_y <= shift_size; i_shift_y++) {
             const int neighbor_y = y + i_shift_y;
@@ -162,17 +163,16 @@ void CalibratedPhotoHandler::fix_hot_pixel(int x, int y)    {
                     continue;
                 }
                 const int neighbor_index = neighbor_y*m_width + neighbor_x;
-                if (m_input_frame_data_original->get_color(neighbor_index) == color_this_pixel) {
+                if (m_input_frame_data_original->get_raw_color(neighbor_x, neighbor_y) == color_this_pixel) {
                     n_same_color_neighbors++;
-                    new_value += m_input_frame_data_original->get_pixel_value(neighbor_index);
+                    new_value += data->at(neighbor_index);
                 }
             }
         }
         if (n_same_color_neighbors != 0) {
             new_value /= n_same_color_neighbors;
-            m_input_frame_data_original->get_pixel_value(index) = new_value;
+            data->at(index) = new_value;
             return;
         }
     }
 };
-*/

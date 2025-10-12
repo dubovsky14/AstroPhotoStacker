@@ -71,7 +71,7 @@ int StackerMeanValue::get_height_range_limit() const {
         const unsigned long long int memory_needed_for_stacked_image = 3*sizeof(double)*m_width*m_height;
         const unsigned long long int memory_needed_for_calibrated_photos = m_n_cpu*3*sizeof(unsigned short)*m_width*m_height;
         const unsigned long long int memory_usage_limit = m_memory_usage_limit_in_mb*1024ULL*1024ULL - memory_needed_for_stacked_image - memory_needed_for_calibrated_photos;
-        const unsigned long long int memory_usage_per_line = m_number_of_colors*m_n_cpu*18ULL*m_width*m_height;;
+        const unsigned long long int memory_usage_per_line = m_number_of_colors*m_n_cpu*18ULL*m_width;
         height_range = min(height_range, int(memory_usage_limit/memory_usage_per_line));
     }
     return height_range;

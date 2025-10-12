@@ -22,11 +22,16 @@ namespace AstroPhotoStacker {
 
             bool is_raw_file() const;
 
+            bool is_raw_file_before_debayering() const;
+
             void debayer();
 
             const std::vector<std::vector<PixelType>> &get_rgb_data();
 
             const std::vector<PixelType> &get_raw_data() const { return m_raw_data; };
+
+            // we need this for hot pixel correction
+            inline std::vector<PixelType>& get_raw_data_non_const() { return m_raw_data; };
 
             std::vector<PixelType> get_monochrome_data();
 
