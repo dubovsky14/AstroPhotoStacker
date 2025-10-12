@@ -80,32 +80,16 @@ void StackerWeightedMedian::add_photo_to_stack(unsigned int file_index, int y_mi
 
     CalibratedPhotoHandler calibrated_photo = get_calibrated_photo(file_index, y_min, y_max);
 
-    if (m_interpolate_colors)   {
-        for (int color = 0; color < 3; color++)   {
-            const unsigned int slice_shift = y_min*m_width;
-            for (int y = y_min; y < y_max; y++)  {
-                const unsigned int start_of_line_index_reference_frame = y*m_width;
-                const unsigned int start_of_line_index_this_slice = (y*m_width - slice_shift)*n_files + file_index;
-                for (int x = 0; x < m_width; x++)   {
-                    const short value = calibrated_photo.get_value_by_reference_frame_index(start_of_line_index_reference_frame+x, color);
-                    const ScoreType score = value < 0 ? c_default_score : calibrated_photo.get_score(x,y);
-                    m_values_to_stack[color][start_of_line_index_this_slice + x*n_files] = {value, score};
-
-                }
-            }
-        }
-    }
-    else    {
-        short int value;
-        char color;
+    for (int color = 0; color < 3; color++)   {
+        const unsigned int slice_shift = y_min*m_width;
         for (int y = y_min; y < y_max; y++)  {
+            const unsigned int start_of_line_index_reference_frame = y*m_width;
+            const unsigned int start_of_line_index_this_slice = (y*m_width - slice_shift)*n_files + file_index;
             for (int x = 0; x < m_width; x++)   {
-                calibrated_photo.get_value_by_reference_frame_coordinates(x, y, &value, &color);
-                const unsigned int index_stacking_array = (y-y_min)*m_width + x;
-                if (color >= 0) {
-                    const ScoreType score = value < 0 ? c_default_score : calibrated_photo.get_score(x,y);
-                    m_values_to_stack[color][n_files*index_stacking_array + file_index] = {value, score};
-                }
+                const short value = calibrated_photo.get_value_by_reference_frame_index(start_of_line_index_reference_frame+x, color);
+                const ScoreType score = value < 0 ? c_default_score : calibrated_photo.get_score(x,y);
+                m_values_to_stack[color][start_of_line_index_this_slice + x*n_files] = {value, score};
+
             }
         }
     }
