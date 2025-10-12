@@ -102,7 +102,7 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent, const PostPr
 
         run_task_with_progress_dialog("Producing aligned images", "Finished", "", tasks_processed, tasks_total, [this](){
             if (m_apply_color_stretcher) {
-                m_aligned_images_producer->set_image_stretching_function([this](std::vector<std::vector<unsigned short>> *image, unsigned short max_value){
+                m_aligned_images_producer->set_image_stretching_function([this](std::vector<std::vector<PixelType>> *image, PixelType max_value){
                     m_color_stretcher.stretch_image(image, max_value, true);
                 });
             }
@@ -124,7 +124,7 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
     const FilelistHandlerGUIInterface *filelist_handler_gui_interface = &m_parent->get_filelist_handler_gui_interface();
     m_aligned_images_producer = make_unique<AlignedImagesProducer>(stack_settings->get_n_cpus(), stack_settings->get_max_memory());
     m_aligned_images_producer->set_add_datetime(m_add_datetime);
-    m_aligned_images_producer->set_post_processing_tool([this](const std::vector<std::vector<unsigned short>> &image, int width, int height){
+    m_aligned_images_producer->set_post_processing_tool([this](const std::vector<std::vector<PixelType>> &image, int width, int height){
         return m_post_processing_tool->post_process_image(image, width, height);
     });
     m_aligned_images_producer->set_timestamp_offset(m_timestamp_offset);

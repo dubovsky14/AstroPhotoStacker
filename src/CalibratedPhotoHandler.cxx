@@ -115,7 +115,7 @@ void CalibratedPhotoHandler::calibrate() {
     m_input_frame_data_original = nullptr;
 };
 
-void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int y, short int *value, char *color) const {
+void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int y, PixelType *value, char *color) const {
     if (x >= 0 && x < m_width && y >= 0 && y < m_height) {
         const unsigned int index = y*m_width + x;
         *value = m_data_shifted[index];
@@ -127,7 +127,7 @@ void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int
     }
 };
 
-void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int y, int color, short int *value) const   {
+void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int y, int color, PixelType *value) const   {
     if (!m_use_color_interpolation) {
         *value = 0;
         return;

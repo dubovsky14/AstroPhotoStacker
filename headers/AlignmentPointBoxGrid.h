@@ -5,6 +5,7 @@
 #include "../headers/LocalShift.h"
 #include "../headers/AlignmentWindow.h"
 #include "../headers/AlignmentSettingsSurface.h"
+#include "../headers/PixelType.h"
 
 #include <tuple>
 #include <vector>
@@ -103,7 +104,7 @@ namespace AstroPhotoStacker {
             /**
              * @brief Given the provided fraction, what is the pixel brightness for which this fraction of the pixels are brighter
              */
-            static unsigned short int get_brigness_for_corresponding_fraction(const MonochromeImageData &image_data, const AlignmentWindow &alignment_window, float fraction = 0.1);
+            static PixelType get_brightness_for_corresponding_fraction(const MonochromeImageData &image_data, const AlignmentWindow &alignment_window, float fraction = 0.1);
 
             static std::vector<float> get_scaled_data_in_alignment_window(const MonochromeImageData &image_data, const AlignmentWindow &alignment_window, float scale_factor);
 

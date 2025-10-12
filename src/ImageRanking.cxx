@@ -4,10 +4,13 @@
 
 using namespace std;
 
-ImageRanker::ImageRanker(const vector<short int> &image_brightness, int width, int height) {
+ImageRanker::ImageRanker(const vector<PixelType> &image_brightness, int width, int height) {
     // Preprocess the image and create the planet mask
-    // 1) Wrap raw data into cv::Mat (16-bit unsigned, single channel)
-    cv::Mat img16(height, width, CV_16UC1, (void*)image_brightness.data());
+    // 1) Wrap raw data into cv::Mat (16-bit signed, single channel)
+
+    // Check if PixelType is short int
+    static_assert(sizeof(PixelType) == sizeof(short int), "PixelType must be short int");
+    cv::Mat img16(height, width, CV_16SC1, (void*)image_brightness.data());
 
     // Convert to float for math
     cv::Mat img;

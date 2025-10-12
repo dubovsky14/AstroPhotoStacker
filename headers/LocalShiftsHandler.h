@@ -6,6 +6,7 @@
 
 #include "../headers/KDTreeWithBuffer.h"
 #include "../headers/LocalShift.h"
+#include "../headers/PixelType.h"
 
 
 namespace AstroPhotoStacker {
@@ -28,7 +29,7 @@ namespace AstroPhotoStacker {
             inline bool empty() const { return m_empty; };
 
             // for debugging
-            void draw_ap_boxes_into_image(std::vector<std::vector<unsigned short>> *image, int width, int height, int boxsize, const std::vector<int> &valid_ap_color, const std::vector<int> &invalid_ap_color, int global_shift_x = 0, int global_shift_y = 0) const;
+            void draw_ap_boxes_into_image(std::vector<std::vector<PixelType>> *image, int width, int height, int boxsize, const std::vector<int> &valid_ap_color, const std::vector<int> &invalid_ap_color, int global_shift_x = 0, int global_shift_y = 0) const;
 
             // for storing alignment boxes in alignment text file
             std::string to_string() const;

@@ -68,7 +68,7 @@ bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifte
     return true;
 };
 
-void LocalShiftsHandler::draw_ap_boxes_into_image(std::vector<std::vector<unsigned short>> *image, int width, int height, int boxsize, const std::vector<int> &valid_ap_color, const std::vector<int> &invalid_ap_color, int global_shift_x, int global_shift_y) const    {
+void LocalShiftsHandler::draw_ap_boxes_into_image(std::vector<std::vector<PixelType>> *image, int width, int height, int boxsize, const std::vector<int> &valid_ap_color, const std::vector<int> &invalid_ap_color, int global_shift_x, int global_shift_y) const    {
     for (const auto &shift : m_shifts) {
         const int x = shift.x + shift.dx - global_shift_x;
         const int y = shift.y + shift.dy - global_shift_y;

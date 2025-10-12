@@ -181,7 +181,7 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
     const std::vector<std::vector<double>> &stacked_image_double = stacker->get_stacked_image();
 
     const auto [width_crop, height_crop] = calculate_cropped_width_and_height(width_original, height_original);
-    std::vector<vector<unsigned short>> output_image(3, vector<unsigned short>(width_crop*height_crop, 0));
+    std::vector<vector<PixelType>> output_image(3, vector<PixelType>(width_crop*height_crop, 0));
     for (int color = 0; color < 3; color++) {
         for (int y = 0; y < height_crop; y++) {
             for (int x = 0; x < width_crop; x++) {
@@ -216,7 +216,7 @@ void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_fram
     const int height_original = photo_handler.get_height();
     const auto [width, height] = calculate_cropped_width_and_height(width_original, height_original);
 
-    std::vector<vector<unsigned short>> output_image(3, vector<unsigned short>(width*height, 0));
+    std::vector<vector<PixelType>> output_image(3, vector<PixelType>(width*height, 0));
 
     for (int color = 0; color < 3; color++) {
         for (int y = 0; y < height; y++) {
@@ -235,7 +235,7 @@ void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_fram
 };
 
 void AlignedImagesProducer::process_save_and_update_counter_and_image_list(
-                                std::vector<std::vector<unsigned short>> *stacked_image,
+                                std::vector<std::vector<PixelType>> *stacked_image,
                                 int width,
                                 int height,
                                 const std::string &output_file_address,
@@ -252,13 +252,13 @@ void AlignedImagesProducer::process_save_and_update_counter_and_image_list(
     m_n_tasks_processed++;
 };
 
-void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<unsigned short>> *stacked_image,
+void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<PixelType>> *stacked_image,
                                                     int width,
                                                     int height,
                                                     const std::string &output_file_address,
                                                     int unix_time) const    {
 
-    unsigned short max_value = get_max_value_ignoring_borders(*stacked_image, width, height, 5);
+    PixelType max_value = get_max_value_ignoring_borders(*stacked_image, width, height, 5);
 
     if (m_image_stretching_function) {
         m_image_stretching_function(stacked_image, max_value);
@@ -273,9 +273,9 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<unsi
         *stacked_image = m_post_processing_tool(*stacked_image, width, height);
     }
 
-    for (vector<unsigned short> &color_channel : *stacked_image) {
-        for (unsigned short &value : color_channel) {
-            value = min<unsigned short>(value, 255);
+    for (vector<PixelType> &color_channel : *stacked_image) {
+        for (PixelType &value : color_channel) {
+            value = min<PixelType>(value, 255);
         }
     }
 
@@ -307,7 +307,7 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<unsi
 
 };
 
-void AlignedImagesProducer::scale_down_image(   std::vector<std::vector<unsigned short>> *image,
+void AlignedImagesProducer::scale_down_image(   std::vector<std::vector<PixelType>> *image,
                                                 unsigned int original_max,
                                                 unsigned int new_max)  {
 
