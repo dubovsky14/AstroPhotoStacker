@@ -27,16 +27,24 @@ void FlatFrameHandler::calibrate() {
     m_data_calibrated = vector<float>(m_width*m_height);
 
     // get maximum values
-    unsigned short int max_values[3] = {1, 1, 1};   // to avoid division by zero if not initialized
-    for (int i = 0; i < m_width*m_height; i++) {
-        if (m_data_original[i] > max_values[int(m_colors[i])]) {
-            max_values[int(m_colors[i])] = m_data_original[i];
+    PixelType max_values[3] = {1, 1, 1};   // to avoid division by zero if not initialized
+    for (int y = 0; y < m_height; y++) {
+        for (int x = 0; x < m_width; x++) {
+            const int index = y*m_width + x;
+            const int bayer_index = (y % 2) * 2 + x % 2;
+            if (m_data_original[index] > max_values[int(m_colors[bayer_index])]) {
+                max_values[int(m_colors[bayer_index])] = m_data_original[index];
+            }
         }
     }
 
     // normalize
-    for (int i = 0; i < m_width*m_height; i++) {
-        m_data_calibrated[i] = double(max_values[int(m_colors[i])]) / m_data_original[i];
+    for (int y = 0; y < m_height; y++) {
+        for (int x = 0; x < m_width; x++) {
+            const int index = y*m_width + x;
+            const int bayer_index = (y % 2) * 2 + x % 2;
+            m_data_calibrated[index] = double(max_values[int(m_colors[bayer_index])]) / m_data_original[index];
+        }
     }
 
     // smooth it because of the bayer filter/fluctuations:

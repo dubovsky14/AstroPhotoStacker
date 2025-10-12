@@ -1,8 +1,11 @@
 #include "../headers/CalibrationFrameBase.h"
 #include "../headers/InputFrameReader.h"
+#include "../headers/Common.h"
+
 #include <opencv2/opencv.hpp>
 
 #include <string>
+#include <numeric>
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -20,6 +23,7 @@ CalibrationFrameBase::CalibrationFrameBase(const InputFrame &input_frame) {
     }
     else {
         m_data_original = input_frame_reader.get_monochrome_data();
+        m_colors = std::array<char, 4>{0,0,0,0};
     }
 };
 
@@ -41,7 +45,7 @@ void CalibrationFrameBase::apply_calibration(std::vector<PixelType> *data) const
     for (int y = 0; y < m_height; y++) {
         for (int x = 0; x < m_width; x++) {
             const int index = y*m_width + x;
-            (*data)[index] = static_cast<PixelType>(get_updated_pixel_value((*data)[index], x, y));
+            (*data)[index] = force_range<float>(get_updated_pixel_value((*data)[index], x, y), 0, std::numeric_limits<PixelType>::max());
         }
     }
 }
