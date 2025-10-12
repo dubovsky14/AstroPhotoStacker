@@ -3,7 +3,7 @@
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 
 #include "../../headers/Common.h"
-#include "../../headers/raw_file_reader.h"
+#include "../../headers/InputFrameReader.h"
 #include "../../headers/MetadataReader.h"
 #include "../../headers/InputFrame.h"
 
