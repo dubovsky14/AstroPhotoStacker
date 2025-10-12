@@ -1,9 +1,11 @@
-#include "../headers/raw_file_reader.h"
-#include "../headers/ImageFilesInputOutput.h"
+#include "../headers/PixelType.h"
+#include "../headers/InputFrameReader.h"
 #include "../headers/InputFrame.h"
 
 #include <vector>
 #include <filesystem>
+#include <iostream>
+#include <cmath>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -16,12 +18,16 @@ int main(int argc, char **argv) {
 
     const std::string input_file = argv[1];
     int width, height;
-    vector<char> colors;
-    vector<unsigned short> brightness = read_raw_file<unsigned short>(InputFrame(input_file), &width, &height, &colors);
+
+    InputFrame input_frame(input_file);
+    InputFrameReader reader(input_frame);
+    reader.load_input_frame_data();
+    reader.get_photo_resolution(&width, &height);
+    vector<PixelType> brightness = reader.get_raw_data();
 
     double mean = 0;
     double mean2 = 0;
-    for (unsigned short value : brightness) {
+    for (PixelType value : brightness) {
         mean += value;
         mean2 += value*value;
     }

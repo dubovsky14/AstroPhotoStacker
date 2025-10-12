@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../headers/StarFinder.h"
+#include "../headers/PixelType.h"
 #include "../headers/KDTree.h"
 #include "../headers/PlateSolver.h"
 #include "../headers/MonochromeImageData.h"
@@ -73,6 +74,8 @@ namespace AstroPhotoStacker   {
             int m_height;
 
             virtual void initialize(const short *brightness, int width, int height, float threshold_fraction = 0.0005) = 0;
+
+            std::vector<PixelType>  read_image_monochrome(const InputFrame &input_frame, int *width, int *height)   const;
 
     };
 }

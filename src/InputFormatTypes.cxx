@@ -2,8 +2,8 @@
 
 #include "../headers/RawFileReaderDSLR.h"
 #include "../headers/RawFileReaderVideoSer.h"
+#include "../headers/RawFileReaderFit.h"
 #include "../headers/VideoReader.h"
-#include "../headers/raw_file_reader.h"
 #include "../headers/ZWOVideoTextFileInfo.h"
 
 

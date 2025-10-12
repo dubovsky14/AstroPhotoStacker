@@ -44,6 +44,8 @@ namespace AstroPhotoStacker {
 
             char get_raw_color(int x, int y) const;
 
+            std::array<char, 4> get_bayer_pattern() const { return m_bayer_pattern; };
+
         private:
             InputFrame m_input_frame;
             int m_width = 0;

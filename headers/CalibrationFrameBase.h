@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <array>
 
 namespace AstroPhotoStacker {
     /**
@@ -53,9 +54,9 @@ namespace AstroPhotoStacker {
             virtual void calibrate() {};
 
             int m_width, m_height;
-            std::vector<unsigned short int>     m_data_original;
+            std::vector<PixelType>              m_data_original;
             std::vector<float>                  m_data_calibrated;
-            std::vector<char>                   m_colors;
+            std::array<char, 4>                 m_colors;
 
     };
 }

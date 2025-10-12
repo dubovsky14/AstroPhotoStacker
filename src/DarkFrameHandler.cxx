@@ -31,7 +31,6 @@ void DarkFrameHandler::calibrate() {
     }
 
     m_data_original.clear();
-    m_colors.clear();
 }
 
 float DarkFrameHandler::get_updated_pixel_value(float pixel_value, int x, int y) const {

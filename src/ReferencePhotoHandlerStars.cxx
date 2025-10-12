@@ -1,6 +1,5 @@
 #include "../headers/ReferencePhotoHandlerStars.h"
-#include "../headers/raw_file_reader.h"
-#include "../headers/ImageFilesInputOutput.h"
+#include "../headers/InputFrameReader.h"
 #include "../headers/AsterismHasher.h"
 #include "../headers/PhotoRanker.h"
 

@@ -56,5 +56,4 @@ void FlatFrameHandler::calibrate() {
     }
 
     m_data_original.clear();
-    m_colors.clear();
 }

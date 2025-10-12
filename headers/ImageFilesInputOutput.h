@@ -2,7 +2,6 @@
 
 #include "../headers/Metadata.h"
 #include "../headers/Common.h"
-#include "../headers/raw_file_reader.h"
 #include "../headers/InputFrame.h"
 #include "../headers/VideoReader.h"
 #include "../headers/Debayring.h"
@@ -323,10 +322,6 @@ namespace AstroPhotoStacker {
             return read_video_frame_as_gray_scale<ValueType>(input_frame.get_file_address(), input_frame.get_frame_number(), width, height);
         }
     };
-
-    std::vector<short> read_image_monochrome(const InputFrame &input_frame, int *width, int *height);
-
-    bool get_photo_resolution(const InputFrame &input_frame, int *width, int *height);
 
     template <class ValueType>
     void decrease_image_bit_depth(ValueType *data, size_t data_size, int bits_to_drop) {

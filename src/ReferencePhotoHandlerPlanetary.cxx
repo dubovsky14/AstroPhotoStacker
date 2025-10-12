@@ -1,7 +1,6 @@
 #include "../headers/StarFinder.h"
 #include "../headers/ReferencePhotoHandlerPlanetary.h"
-#include "../headers/raw_file_reader.h"
-#include "../headers/ImageFilesInputOutput.h"
+#include "../headers/InputFrameReader.h"
 #include "../headers/StarFinder.h"
 #include "../headers/SharpnessRanker.h"
 #include "../headers/ImageRanking.h"
@@ -20,7 +19,11 @@ ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const InputFrame 
     ReferencePhotoHandlerBase(input_frame, threshold_fraction) {
 
     m_threshold_fraction = threshold_fraction;
-    const vector<short> brightness = read_image_monochrome(input_frame, &m_width, &m_height);
+
+    InputFrameReader reader(input_frame);
+    reader.load_input_frame_data();
+    reader.get_photo_resolution(&m_width, &m_height);
+    const vector<short> brightness = reader.get_monochrome_data();
     initialize(brightness.data(), m_width, m_height, threshold_fraction);
 };
 
@@ -32,7 +35,10 @@ ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const short *brig
 
 PlateSolvingResult ReferencePhotoHandlerPlanetary::calculate_alignment(const InputFrame &input_frame, float *ranking) const{
     int width, height;
-    const vector<short> brightness = read_image_monochrome(input_frame, &width, &height);
+    InputFrameReader reader(input_frame);
+    reader.load_input_frame_data();
+    reader.get_photo_resolution(&width, &height);
+    const vector<short> brightness = reader.get_monochrome_data();
 
     MonochromeImageData image_data;
     image_data.brightness = brightness.data();

@@ -1,5 +1,7 @@
 #include "../headers/HotPixelIdentifier.h"
-#include "../headers/raw_file_reader.h"
+
+#include "../headers/PixelType.h"
+#include "../headers/InputFrameReader.h"
 #include "../headers/InputFormatTypes.h"
 #include "../headers/Common.h"
 
@@ -14,7 +16,6 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 
-
 void HotPixelIdentifier::add_photos(const std::vector<InputFrame> &input_frames)    {
     thread_pool pool(m_n_cpu);
     for (const auto &input_frame : input_frames) {
@@ -26,20 +27,19 @@ void HotPixelIdentifier::add_photos(const std::vector<InputFrame> &input_frames)
 };
 
 void HotPixelIdentifier::add_photo(const InputFrame &input_frame)    {
-    if (input_frame.is_video_frame()) {
-        throw runtime_error("HotPixelIdentifier::add_photo: video frames are not supported");
-    }
-    const std::string file_address = input_frame.get_file_address();
-    if (!is_raw_file(file_address)) {
+    InputFrameReader input_frame_reader(input_frame);
+    input_frame_reader.load_input_frame_data();
+    if (!input_frame_reader.is_raw_file()) {
         throw runtime_error("HotPixelIdentifier::add_photo: file is not a raw file");
     }
 
     int width,height;
-    vector<unsigned short int> pixel_values = read_raw_file<unsigned short int>(input_frame, &width, &height);
+    input_frame_reader.get_photo_resolution(&width, &height);
+    vector<PixelType> pixel_values = input_frame_reader.get_raw_data();
     add_photo(pixel_values.data(), width, height);
 };
 
-void HotPixelIdentifier::add_photo(const unsigned short int *pixel_value_array, int width, int height, int image_bit_depth) {
+void HotPixelIdentifier::add_photo(const PixelType *pixel_value_array, int width, int height, int image_bit_depth) {
     const auto hot_pixel_candidates = get_hot_pixel_candidates_from_photo(pixel_value_array, width, height, image_bit_depth);
     {
         scoped_lock lock(m_mutex);
@@ -74,7 +74,7 @@ const vector<tuple<int,int>> &HotPixelIdentifier::get_hot_pixels() const   {
     return m_hot_pixels;
 };
 
-std::map<std::tuple<int,int>,int> HotPixelIdentifier::get_hot_pixel_candidates_from_photo(const unsigned short int *pixel_value_array, int width, int height, int image_bit_depth) {
+std::map<std::tuple<int,int>,int> HotPixelIdentifier::get_hot_pixel_candidates_from_photo(const PixelType *pixel_value_array, int width, int height, int image_bit_depth) {
     std::map<std::tuple<int,int>, int> hot_pixel_candidates;
     const int max_value = pow(2, image_bit_depth)-1;
     int hot_pixel_threshold = 0.8*max_value;

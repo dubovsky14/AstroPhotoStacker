@@ -9,6 +9,10 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 
+bool AstroPhotoStacker::is_fit_file(const std::string &file_address) {
+    const string file_address_upper = to_upper_copy(file_address);
+    return ends_with(file_address_upper, ".FIT") || ends_with(file_address_upper, ".FITS");
+}
 
 RawFileReaderFit::RawFileReaderFit(const InputFrame &input_frame) : RawFileReaderBase(input_frame) {};
 

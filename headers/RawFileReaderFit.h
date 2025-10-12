@@ -8,6 +8,8 @@
 
 namespace AstroPhotoStacker {
 
+    bool is_fit_file(const std::string &file_address);
+
     class RawFileReaderFit : public RawFileReaderBase {
         public:
             RawFileReaderFit(const InputFrame &input_frame);

@@ -1,5 +1,6 @@
 #include "../headers/AlignedImagesProducer.h"
 #include "../headers/CalibratedPhotoHandler.h"
+#include "../headers/InputFrameReader.h"
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/MetadataReader.h"
 #include "../headers/Common.h"
@@ -155,7 +156,10 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
 
     int width_original, height_original;
     const InputFrame &first_frame = group_to_stack.input_frames[0];
-    get_photo_resolution(first_frame, &width_original, &height_original);
+
+    InputFrameReader reader(first_frame);
+    reader.load_input_frame_data();
+    reader.get_photo_resolution(&width_original, &height_original);
     std::unique_ptr<StackerBase> stacker = create_stacker(group_to_stack.stack_settings, 3, width_original, height_original);
 
     for (unsigned int i_frame = 0; i_frame < group_to_stack.input_frames.size(); i_frame++) {

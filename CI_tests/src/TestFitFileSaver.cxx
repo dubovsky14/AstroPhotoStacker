@@ -1,7 +1,7 @@
 #include "../headers/TestFitFileSaver.h"
 
 #include "../../headers/ConvertToFitFile.h"
-#include "../../headers/raw_file_reader.h"
+#include "../../headers/InputFrameReader.h"
 #include "../../headers/MetadataReader.h"
 
 using namespace std;
@@ -11,13 +11,19 @@ TestResult AstroPhotoStacker::test_if_two_light_input_frames_match(const InputFr
     string error_message;
 
     int width_original, height_original;
-    const vector<unsigned short> image_data_original = read_raw_file(original_frame, &width_original, &height_original);
-    const Metadata metadata_original = read_metadata(original_frame);
+    InputFrameReader reader(original_frame);
+    reader.load_input_frame_data();
+    reader.get_photo_resolution(&width_original, &height_original);
+    const vector<PixelType> image_data_original = reader.get_raw_data();
+    const Metadata metadata_original = reader.get_metadata();
 
 
     int width_fit, height_fit;
-    const vector<unsigned short> image_data_fit = read_raw_file(fit_frame, &width_fit, &height_fit);
-    const Metadata metadata_fit = read_metadata(fit_frame);
+    InputFrameReader reader_fit(fit_frame);
+    reader_fit.load_input_frame_data();
+    reader_fit.get_photo_resolution(&width_fit, &height_fit);
+    const vector<PixelType> image_data_fit = reader_fit.get_raw_data();
+    const Metadata metadata_fit = reader_fit.get_metadata();
 
     if (width_original != width_fit)    {
         error_message += "Width mismatch: original = " + std::to_string(width_original) + ", fit = " + std::to_string(width_fit) + "\n";

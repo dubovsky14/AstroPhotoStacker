@@ -1,6 +1,5 @@
 #include "../headers/StackerBase.h"
 #include "../headers/ImageFilesInputOutput.h"
-#include "../headers/raw_file_reader.h"
 
 using namespace std;
 using namespace AstroPhotoStacker;

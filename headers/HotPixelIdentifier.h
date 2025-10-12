@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../headers/InputFrame.h"
+#include "../headers/PixelType.h"
 
 #include <vector>
 #include <map>
@@ -44,7 +45,7 @@ namespace AstroPhotoStacker {
          * @param height The height of the photo.
          * @param image_bit_depth The bit depth of the photo (default is 14).
          */
-        void add_photo(const unsigned short int* pixel_value_array, int width, int height, int image_bit_depth = 14);
+        void add_photo(const PixelType* pixel_value_array, int width, int height, int image_bit_depth = 14);
 
         /**
          * @brief Gets the hot pixel candidates from a photo.
@@ -56,7 +57,7 @@ namespace AstroPhotoStacker {
          * @return A map of hot pixel candidates, where the key is a tuple representing the pixel coordinates (x, y),
          *         and the value is 1.
          */
-        static std::map<std::tuple<int, int>, int> get_hot_pixel_candidates_from_photo(const unsigned short int* pixel_value_array, int width, int height, int image_bit_depth);
+        static std::map<std::tuple<int, int>, int> get_hot_pixel_candidates_from_photo(const PixelType* pixel_value_array, int width, int height, int image_bit_depth);
 
         /**
          * @brief Computes the hot pixels from the added photos.

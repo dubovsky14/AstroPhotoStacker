@@ -1,6 +1,5 @@
-#include "../headers/raw_file_reader.h"
 #include "../headers/PhotoAlignmentHandler.h"
-#include "../headers/ImageFilesInputOutput.h"
+#include "../headers/InputFrameReader.h"
 #include "../headers/StackerFactory.h"
 #include "../headers/StackerKappaSigmaBase.h"
 #include "../headers/StackerMeanValue.h"
@@ -52,7 +51,10 @@ int main(int argc, const char **argv) {
 
         // photo resolution
         int width, height;
-        get_photo_resolution(InputFrame(input_files[0]), &width, &height);
+        InputFrame input_frame(input_files[0]);
+        InputFrameReader input_frame_reader(input_frame);
+        input_frame_reader.load_input_frame_data();
+        input_frame_reader.get_photo_resolution(&width, &height);
         cout << "Photo resolution: " << width << "x" << height << "\n";
 
         // getting correct stacker instance and configuring it
