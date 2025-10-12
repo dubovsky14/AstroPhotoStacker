@@ -38,7 +38,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerBase(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005)    {
+            ReferencePhotoHandlerBase(const short *brightness, int width, int height, float threshold_fraction = 0.0005)    {
 
             };
 
@@ -72,7 +72,7 @@ namespace AstroPhotoStacker   {
             int m_width;
             int m_height;
 
-            virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005) = 0;
+            virtual void initialize(const short *brightness, int width, int height, float threshold_fraction = 0.0005) = 0;
 
     };
 }

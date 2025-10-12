@@ -36,7 +36,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetary(const unsigned short *brightness, int width, int height, float threshold_fraction);
+            ReferencePhotoHandlerPlanetary(const short *brightness, int width, int height, float threshold_fraction);
 
             /**
              * @brief Calculate how the photo should be rotated and shifted to match the reference photo
@@ -60,9 +60,9 @@ namespace AstroPhotoStacker   {
              * @param threshold - threshold value for the pixels
              * @return AlignmentWindow - coordinates of the window x0, y0, x1, y1
             */
-            AlignmentWindow get_alignment_window(const MonochromeImageData &image_data, unsigned short threshold) const;
+            AlignmentWindow get_alignment_window(const MonochromeImageData &image_data, short threshold) const;
 
-            std::vector<std::vector<double>> get_covariance_matrix(const MonochromeImageData &image_data, const std::tuple<double,double> &center_of_mass, unsigned short threshold, const AlignmentWindow &window_coordinates) const;
+            std::vector<std::vector<double>> get_covariance_matrix(const MonochromeImageData &image_data, const std::tuple<double,double> &center_of_mass, short threshold, const AlignmentWindow &window_coordinates) const;
 
             /**
              * @brief get the center of mass of the planet
@@ -75,11 +75,11 @@ namespace AstroPhotoStacker   {
              *
              * @return std::tuple<double,double> - x and y coordinates of the center of mass
              */
-            std::tuple<double,double> get_center_of_mass(const MonochromeImageData &image_data, unsigned short threshold, const AlignmentWindow &window_coordinates) const;
+            std::tuple<double,double> get_center_of_mass(const MonochromeImageData &image_data, short threshold, const AlignmentWindow &window_coordinates) const;
 
             std::tuple<float,float,std::vector<std::vector<double>>,std::vector<double>> get_center_of_mass_eigenvectors_and_eigenvalues(const MonochromeImageData &image_data, float threshold_fraction, AlignmentWindow *window_coordinates = nullptr) const;
 
-            virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction) override;
+            virtual void initialize(const short *brightness, int width, int height, float threshold_fraction) override;
 
             static void calculate_eigenvectors_and_eigenvalues(const std::vector<std::vector<double>> &covariance_matrix, std::vector<double> *eigenvalues, std::vector<std::vector<double>> *eigenvectors);
 

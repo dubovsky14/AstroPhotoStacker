@@ -9,7 +9,7 @@ using namespace AstroPhotoStacker;
 MonochromeImageDataWithStorage AstroPhotoStacker::gaussian_blur(const MonochromeImageData &input_image, int blur_width, int blur_height, float sigma) {
     MonochromeImageDataWithStorage result(input_image.width, input_image.height);
 
-    std::vector<unsigned short> &output_image = *result.brightness_storage;
+    std::vector<short> &output_image = *result.brightness_storage;
 
     // Calculate the kernel
     const std::vector<double> kernel = get_gaussian_kernel(blur_width, blur_height, sigma);

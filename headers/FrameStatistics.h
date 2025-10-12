@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../headers/InputFrame.h"
-#include "../headers/InputFrameData.h"
+#include "../headers/InputFrameReader.h"
 
 #include <vector>
 #include <numeric>
@@ -67,13 +67,10 @@ namespace AstroPhotoStacker {
 
 
     inline FrameStatistics get_frame_statistics(const InputFrame &input_frame) {
-        const InputFrameData input_frame_data(input_frame);
-        if (input_frame_data.is_raw_file())   {
-            return get_frame_statistics(input_frame_data.get_image_data_raw());
-        }
-        else {
-            return get_frame_statistics(input_frame_data.get_image_data_color());
-        }
+        InputFrameReader input_frame_data(input_frame);
+        input_frame_data.load_input_frame_data();
+        input_frame_data.debayer();
+        return get_frame_statistics(input_frame_data.get_rgb_data());
     }
 }
 

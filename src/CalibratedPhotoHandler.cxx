@@ -6,12 +6,10 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 CalibratedPhotoHandler::CalibratedPhotoHandler(const InputFrame &input_frame, bool use_color_interpolation)    {
-    m_input_frame_data_original = make_unique<InputFrameData<short int>>(input_frame);
-    m_is_raw_file = m_input_frame_data_original->is_raw_file();
-    m_width = m_input_frame_data_original->get_width();
-    m_height = m_input_frame_data_original->get_height();
-
     m_use_color_interpolation = use_color_interpolation;
+    m_input_frame_data_original = make_unique<InputFrameReader>(input_frame);
+    m_input_frame_data_original->load_input_frame_data();
+    m_input_frame_data_original->get_photo_resolution(&m_width, &m_height);
 
     m_y_min = 0;
     m_y_max = m_height;
@@ -56,73 +54,32 @@ void CalibratedPhotoHandler::calibrate() {
         m_score_handler.initialize_local_scores(m_width, m_height, 1);
     }
 
+    vector<std::vector<PixelType>*> data_for_calibration = m_input_frame_data_original->get_all_data_for_calibration();
     // firstly apply the calibration frames on the original data
     for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler : m_calibration_frames) {
-        if (m_input_frame_data_original->is_raw_file()) {
-            for (int y = 0; y < m_height; y++) {
-                for (int x = 0; x < m_width; x++) {
-                    auto &value = m_input_frame_data_original->get_pixel_value_raw(x, y);
-                    value = std::min<float>(32'767, calibration_frame_handler->get_updated_pixel_value(value, x, y));
-                }
-            }
+        for (std::vector<PixelType>* data : data_for_calibration) {
+            calibration_frame_handler->apply_calibration(data);
         }
     }
 
     // have to fix hot pixels before debayering
-    if (m_hot_pixel_identifier != nullptr && m_is_raw_file) {
-        for (int y = 0; y < m_height; y++) {
-            for (int x = 0; x < m_width; x++) {
-                if (m_hot_pixel_identifier->is_hot_pixel(x, y)) {
-                    fix_hot_pixel(x, y);
-                }
-            }
-        }
-    }
+    //if (m_hot_pixel_identifier != nullptr && m_is_raw_file) {
+    //    for (int y = 0; y < m_height; y++) {
+    //        for (int x = 0; x < m_width; x++) {
+    //            if (m_hot_pixel_identifier->is_hot_pixel(x, y)) {
+    //                fix_hot_pixel(x, y);
+    //            }
+    //        }
+    //    }
+    //}
 
-    if (m_use_color_interpolation && m_is_raw_file) {
+    if (m_use_color_interpolation && m_input_frame_data_original->is_raw_file()) {
         m_input_frame_data_original->debayer();
-        m_is_raw_file = false;
     }
 
-    if (!m_is_raw_file) {
-        // having the interpolated values for all pixels, let's just shift them
-        for (int color = 0; color < 3; color++) {
-            m_data_shifted_color_interpolation.push_back(vector<short int>(m_width*m_height, -1));
-            for (int y_shifted = 0; y_shifted < m_height; y_shifted++)  {
-                for (int x_shifted = 0; x_shifted < m_width; x_shifted++)   {
-                    float x_original = x_shifted;
-                    float y_original = y_shifted;
-                    // translations and rotations
-                    m_geometric_transformer->transform_from_reference_to_shifted_frame(&x_original, &y_original);
-
-                    // seeing effect, accounting for local shifts
-                    if (!m_local_shifts_handler.empty()) {
-                        int x_int = int(x_original);
-                        int y_int = int(y_original);
-                        float score = 1;
-                        if (m_local_shifts_handler.calculate_shifted_coordinates(x_int, y_int, &x_int, &y_int, &score)) {
-                            x_original = x_int;
-                            y_original = y_int;
-                            m_score_handler.set_local_score(x_shifted, y_shifted, score);
-                        }
-                        else {
-                            continue;
-                        }
-                    }
-                    int x_int = int(x_original);
-                    int y_int = int(y_original);
-                    if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
-                        const unsigned int index_shifted = y_shifted*m_width + x_shifted;
-                        m_data_shifted_color_interpolation[color][index_shifted] = m_input_frame_data_original->get_pixel_value(x_int, y_int, color);
-                    }
-                }
-            }
-        }
-    }
-    else {  // do not use color interpolation
-        m_data_shifted   = vector<short int>(m_width*m_height, -1);
-        m_colors_shifted = vector<char>(m_width*m_height);
-
+    // having the interpolated values for all pixels, let's just shift them
+    for (int color = 0; color < 3; color++) {
+        m_data_shifted_color_interpolation.push_back(vector<PixelType>(m_width*m_height, -1));
         for (int y_shifted = 0; y_shifted < m_height; y_shifted++)  {
             for (int x_shifted = 0; x_shifted < m_width; x_shifted++)   {
                 float x_original = x_shifted;
@@ -144,14 +101,11 @@ void CalibratedPhotoHandler::calibrate() {
                         continue;
                     }
                 }
-                const int x_int = int(x_original);
-                const int y_int = int(y_original);
+                int x_int = int(x_original);
+                int y_int = int(y_original);
                 if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
                     const unsigned int index_shifted = y_shifted*m_width + x_shifted;
-                    const unsigned int index_original = y_int*m_width + x_int;
-
-                    m_data_shifted[index_shifted]   = m_input_frame_data_original->get_pixel_value_raw(index_original);
-                    m_colors_shifted[index_shifted] = m_input_frame_data_original->get_color(index_original);
+                    m_data_shifted_color_interpolation[color][index_shifted] = m_input_frame_data_original->get_pixel_value(x_int, y_int, color);
                 }
             }
         }
@@ -188,6 +142,7 @@ void CalibratedPhotoHandler::get_value_by_reference_frame_coordinates(int x, int
     }
 };
 
+/*
 void CalibratedPhotoHandler::fix_hot_pixel(int x, int y)    {
     int n_same_color_neighbors = 0;
     int new_value = 0;
@@ -210,14 +165,15 @@ void CalibratedPhotoHandler::fix_hot_pixel(int x, int y)    {
                 const int neighbor_index = neighbor_y*m_width + neighbor_x;
                 if (m_input_frame_data_original->get_color(neighbor_index) == color_this_pixel) {
                     n_same_color_neighbors++;
-                    new_value += m_input_frame_data_original->get_pixel_value_raw(neighbor_index);
+                    new_value += m_input_frame_data_original->get_pixel_value(neighbor_index);
                 }
             }
         }
         if (n_same_color_neighbors != 0) {
             new_value /= n_same_color_neighbors;
-            m_input_frame_data_original->get_pixel_value_raw(index) = new_value;
+            m_input_frame_data_original->get_pixel_value(index) = new_value;
             return;
         }
     }
 };
+*/

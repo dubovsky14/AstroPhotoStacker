@@ -6,7 +6,8 @@
 #include "../headers/LocalShiftsHandler.h"
 #include "../headers/CalibratedPhotoScoreHandler.h"
 #include "../headers/InputFrame.h"
-#include "../headers/InputFrameData.h"
+#include "../headers/InputFrameReader.h"
+#include "../headers/PixelType.h"
 
 #include <memory>
 #include <vector>
@@ -152,14 +153,14 @@ namespace AstroPhotoStacker {
 
             std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
             LocalShiftsHandler m_local_shifts_handler;
-            std::unique_ptr<InputFrameData<short int>> m_input_frame_data_original = nullptr;
+            std::unique_ptr<InputFrameReader> m_input_frame_data_original = nullptr;
 
             bool m_use_color_interpolation = false;
-            std::vector<std::vector<short int>> m_data_shifted_color_interpolation;
+            std::vector<std::vector<PixelType>> m_data_shifted_color_interpolation;
 
-            std::vector<short int> m_data_shifted;
+            std::vector<PixelType> m_data_shifted;
             std::vector<char> m_colors_shifted;
 
-            void fix_hot_pixel(int x, int y);
+            //void fix_hot_pixel(int x, int y);
     };
 }

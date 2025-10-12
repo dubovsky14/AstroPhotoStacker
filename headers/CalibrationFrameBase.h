@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../headers/PixelType.h"
 #include "../headers/InputFrame.h"
 
 #include <string>
@@ -45,6 +46,8 @@ namespace AstroPhotoStacker {
              * @return float The value of the pixel after calibration
             */
             virtual float get_updated_pixel_value(float pixel_value, int x, int y) const = 0;
+
+            virtual void apply_calibration(std::vector<PixelType> *data) const;
 
         protected:
             virtual void calibrate() {};

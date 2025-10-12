@@ -40,3 +40,16 @@ CalibrationFrameBase::CalibrationFrameBase(int width, int height, const std::vec
     }
     m_colors = vector<char>(m_width*m_height, 0);
 };
+
+void CalibrationFrameBase::apply_calibration(std::vector<PixelType> *data) const {
+    if (int(data->size()) != m_width*m_height) {
+        throw runtime_error("CalibrationFrameBase::apply_calibration: size of the data does not match the size of the calibration frame");
+    }
+
+    for (int y = 0; y < m_height; y++) {
+        for (int x = 0; x < m_width; x++) {
+            const int index = y*m_width + x;
+            (*data)[index] = static_cast<PixelType>(get_updated_pixel_value((*data)[index], x, y));
+        }
+    }
+}

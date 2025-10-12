@@ -1,6 +1,7 @@
 #include "../headers/ImagePreview.h"
 
-#include "../../headers/InputFrameData.h"
+#include "../../headers/InputFrameReader.h"
+#include "../../headers/Common.h"
 
 
 #include <opencv2/opencv.hpp>
@@ -48,11 +49,10 @@ void ImagePreview::initialize_bitmap()    {
 };
 
 void ImagePreview::read_preview_from_frame(const InputFrame &input_frame)  {
-    InputFrameData<short int> input_frame_data(input_frame);
-    if (input_frame_data.is_raw_file()) {
-        input_frame_data.debayer();
-    }
-    m_original_image = input_frame_data.get_image_data_color();
+    InputFrameReader input_frame_data(input_frame);
+    input_frame_data.load_input_frame_data();
+    input_frame_data.debayer();
+    m_original_image = input_frame_data.get_rgb_data();
     const int width_original = input_frame_data.get_width();
     const int height_original = input_frame_data.get_height();
     m_image_resize_tool.set_original_size(width_original, height_original);

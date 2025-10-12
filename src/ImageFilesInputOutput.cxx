@@ -18,3 +18,10 @@ bool AstroPhotoStacker::get_photo_resolution(const InputFrame &input_frame, int 
     }
     return false;
 };
+
+std::vector<short> AstroPhotoStacker::read_image_monochrome(const InputFrame &input_frame, int *width, int *height)    {
+    InputFrameReader reader(input_frame);
+    reader.load_input_frame_data();
+    reader.get_photo_resolution(width, height);
+    return reader.get_monochrome_data();
+};

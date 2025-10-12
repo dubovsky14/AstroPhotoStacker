@@ -3,6 +3,7 @@
 #include "../headers/TestUtils.h"
 
 #include "../../headers/InputFrame.h"
+#include "../../headers/PixelType.h"
 
 #include <string>
 #include <vector>
@@ -17,5 +18,5 @@ namespace AstroPhotoStacker {
      */
     TestResult test_image_reading_raw(  const InputFrame &input_frame,
                                         const std::pair<int,int> &expected_resolution,
-                                        const std::vector<std::tuple<int, int, short int, char>> &expected_pixel_values);
+                                        const std::vector<std::tuple<int, int, PixelType, char>> &expected_pixel_values);
 }

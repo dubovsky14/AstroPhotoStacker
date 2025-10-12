@@ -36,7 +36,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerStars(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005)  :
+            ReferencePhotoHandlerStars(const short *brightness, int width, int height, float threshold_fraction = 0.0005)  :
                 ReferencePhotoHandlerBase(brightness, width, height, threshold_fraction) {
                 initialize(brightness, width, height, threshold_fraction);
             };
@@ -73,7 +73,7 @@ namespace AstroPhotoStacker   {
             std::unique_ptr<KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>>> m_kd_tree = nullptr;
             std::unique_ptr<PlateSolver> m_plate_solver = nullptr;
 
-            virtual void initialize(const unsigned short *brightness, int width, int height, float threshold_fraction = 0.0005) override;
+            virtual void initialize(const short *brightness, int width, int height, float threshold_fraction = 0.0005) override;
 
             void initialize(const std::vector<std::tuple<float, float, int> > &stars, int width, int height);
 

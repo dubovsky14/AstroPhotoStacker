@@ -7,6 +7,7 @@
 #include "../headers/VideoReader.h"
 #include "../headers/Debayring.h"
 #include "../headers/InputFormatTypes.h"
+#include "../headers/InputFrameReader.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -323,20 +324,7 @@ namespace AstroPhotoStacker {
         }
     };
 
-    template<class ValueType>
-    std::vector<ValueType> read_image_monochrome(const InputFrame &input_frame, int *width, int *height)    {
-        const bool raw_file = is_raw_file(input_frame.get_file_address());
-        std::vector<ValueType> brightness;
-        if (raw_file) {
-            std::vector<char> colors;
-            brightness = read_raw_file<ValueType>(input_frame, width, height, &colors);
-            debayer_monochrome(&brightness, *width, *height, colors);
-            return brightness;
-        }
-        else {
-            return read_rgb_image_as_gray_scale<ValueType>(input_frame, width, height);
-        }
-    };
+    std::vector<short> read_image_monochrome(const InputFrame &input_frame, int *width, int *height);
 
     bool get_photo_resolution(const InputFrame &input_frame, int *width, int *height);
 

@@ -4,7 +4,7 @@
 
 using namespace std;
 
-ImageRanker::ImageRanker(const vector<unsigned short int> &image_brightness, int width, int height) {
+ImageRanker::ImageRanker(const vector<short int> &image_brightness, int width, int height) {
     // Preprocess the image and create the planet mask
     // 1) Wrap raw data into cv::Mat (16-bit unsigned, single channel)
     cv::Mat img16(height, width, CV_16UC1, (void*)image_brightness.data());

@@ -15,13 +15,13 @@ using namespace AstroPhotoStacker;
 
 ReferencePhotoHandlerStars::ReferencePhotoHandlerStars(const InputFrame &input_frame, float threshold_fraction) :
     ReferencePhotoHandlerBase(input_frame, threshold_fraction) {
-    const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(input_frame, &m_width, &m_height);
+    const vector<short> brightness = read_image_monochrome(input_frame, &m_width, &m_height);
     initialize(brightness.data(), m_width, m_height, threshold_fraction);
 };
 
 
-void ReferencePhotoHandlerStars::initialize(const unsigned short *brightness, int width, int height, float threshold_fraction)  {
-    const unsigned short threshold = get_threshold_value<unsigned short>(&brightness[0], width*height, threshold_fraction);
+void ReferencePhotoHandlerStars::initialize(const short *brightness, int width, int height, float threshold_fraction)  {
+    const short threshold = get_threshold_value<short>(&brightness[0], width*height, threshold_fraction);
     std::vector<std::tuple<float, float, int> > stars = get_stars(&brightness[0], width, height, threshold);
     keep_only_stars_above_size(&stars, 9);
     sort_stars_by_size(&stars);
@@ -39,8 +39,8 @@ void ReferencePhotoHandlerStars::initialize(const std::vector<std::tuple<float, 
 PlateSolvingResult ReferencePhotoHandlerStars::calculate_alignment(const InputFrame &input_frame, float *ranking)   const    {
     try {
         int width, height;
-        const vector<unsigned short> brightness = read_image_monochrome<unsigned short>(input_frame, &width, &height);
-        const unsigned short threshold = get_threshold_value<unsigned short>(brightness.data(), width*height, 0.0005);
+        const vector<short> brightness = read_image_monochrome(input_frame, &width, &height);
+        const short threshold = get_threshold_value(brightness.data(), width*height, 0.0005);
 
         vector<tuple<float,float,int> > stars = get_stars(brightness.data(), width, height, threshold);
         keep_only_stars_above_size(&stars, 9);

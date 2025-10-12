@@ -6,7 +6,7 @@
 
 class ImageRanker {
     public:
-        ImageRanker(const std::vector<unsigned short int> &image_brightness, int width, int height);
+        ImageRanker(const std::vector<short int> &image_brightness, int width, int height);
 
         float get_sharpness_score() const;
 

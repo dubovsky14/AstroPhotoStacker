@@ -21,7 +21,7 @@ ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &ref
     m_height = calibrated_photo_handler.get_height();
     const vector<vector<short int>> &calibrated_data = calibrated_photo_handler.get_calibrated_data_after_color_interpolation();
 
-    vector<unsigned short int> brightness(m_width*m_height);
+    vector<short int> brightness(m_width*m_height);
     for (int i_pixel = 0; i_pixel < m_width*m_height; i_pixel++) {
         float value = 0;
         int n_points = 0;
@@ -41,11 +41,11 @@ ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &ref
 };
 
 
-ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const unsigned short *brightness, int width, int height, float threshold_fraction) : ReferencePhotoHandlerPlanetaryZeroRotation(brightness, width, height, threshold_fraction) {
+ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const short *brightness, int width, int height, float threshold_fraction) : ReferencePhotoHandlerPlanetaryZeroRotation(brightness, width, height, threshold_fraction) {
     initialize_alignment_grid(brightness);
 };
 
-void ReferencePhotoHandlerSurface::initialize_alignment_grid(const unsigned short *brightness_original) {
+void ReferencePhotoHandlerSurface::initialize_alignment_grid(const short *brightness_original) {
     MonochromeImageData image_data;
     image_data.brightness = brightness_original;
     image_data.width = m_width;
@@ -75,7 +75,7 @@ std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const In
     const int height = calibrated_photo_handler.get_height();
     const vector<vector<short int>> &calibrated_data = calibrated_photo_handler.get_calibrated_data_after_color_interpolation();
 
-    const vector<unsigned short int> brightness = convert_color_to_monochrome<short, unsigned short>(calibrated_data, width, height);
+    const vector<short int> brightness = convert_color_to_monochrome<short, short>(calibrated_data, width, height);
 
     MonochromeImageData calibrated_image_data;
     calibrated_image_data.brightness = brightness.data();
