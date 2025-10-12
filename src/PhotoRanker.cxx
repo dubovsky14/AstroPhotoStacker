@@ -1,7 +1,6 @@
 #include "../headers/PhotoRanker.h"
 #include "../headers/StarFinder.h"
 #include "../headers/InputFrameReader.h"
-#include "../headers/ImageFilesInputOutput.h"
 #include "../headers/Common.h"
 #include "../headers/VideoReader.h"
 

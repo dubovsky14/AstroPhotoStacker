@@ -15,7 +15,6 @@
 #include "../../headers/Common.h"
 #include "../../headers/thread_pool.h"
 #include "../../headers/StackerBase.h"
-#include "../../headers/VideoReader.h"
 #include "../../headers/AlignmentPointBoxGrid.h"
 #include "../../headers/ConvertToFitFile.h"
 

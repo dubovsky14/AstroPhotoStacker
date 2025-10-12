@@ -1,5 +1,4 @@
 #include "../headers/CalibratedPhotoHandler.h"
-#include "../headers/ImageFilesInputOutput.h"
 #include "../headers/Debayring.h"
 
 using namespace std;
