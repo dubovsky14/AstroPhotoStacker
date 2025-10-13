@@ -32,8 +32,8 @@ namespace AstroPhotoStacker {
                 return m_additional_header_data;
             }
 
-            template<typename PixelType>
-            void save(const std::string &filename, const std::vector<PixelType> &image)  const  {
+            template<typename PixelTypeTemplate>
+            void save(const std::string &filename, const std::vector<PixelTypeTemplate> &image)  const  {
                 std::ofstream file(filename, std::ios::binary);
                 if (!file) {
                     throw std::runtime_error("Could not open file for writing.");
@@ -61,8 +61,8 @@ namespace AstroPhotoStacker {
 
             void add_final_header_padding(std::string *header_string)  const;
 
-            template<typename PixelType>
-            void dump_image_into_data_block(std::ofstream *file, const std::vector<PixelType> &image)  const    {
+            template<typename PixelTypeTemplate>
+            void dump_image_into_data_block(std::ofstream *file, const std::vector<PixelTypeTemplate> &image)  const    {
                 int end_of_file_padding_length = 0;
                 if (m_bits_per_pixel == 8) {
                     std::vector<char> buffer(image.size());

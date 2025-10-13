@@ -2,10 +2,9 @@
 
 #include "../headers/Metadata.h"
 #include "../headers/Common.h"
-#include "../headers/raw_file_reader.h"
 #include "../headers/InputFrame.h"
-#include "../headers/VideoReader.h"
-#include "../headers/Debayring.h"
+#include "../headers/InputFormatTypes.h"
+#include "../headers/InputFrameReader.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -263,16 +262,6 @@ namespace AstroPhotoStacker {
     };
 
     template<class ValueType>
-    std::vector<std::vector<ValueType> > read_rgb_image(const InputFrame &input_frame, int *width, int *height) {
-        if (input_frame.is_still_image()) {
-            return read_still_rgb_image<ValueType>(input_frame.get_file_address(), width, height);
-        }
-        else {
-            return read_video_frame<ValueType>(input_frame.get_file_address(), input_frame.get_frame_number(), width, height);
-        }
-    };
-
-    template<class ValueType>
     std::vector<ValueType> read_still_rgb_image_as_gray_scale(const std::string &input_file, int *width, int *height) {
         cv::Mat image = cv::imread(input_file, cv::IMREAD_ANYDEPTH);
         *width = image.cols;
@@ -297,47 +286,6 @@ namespace AstroPhotoStacker {
         }
         return result;
     };
-
-    template<class ValueType>
-    std::vector<ValueType> read_video_rgb_image_as_gray_scale(const std::string &input_file, int frame_number, int *width, int *height) {
-        cv::Mat image = cv::imread(input_file, cv::IMREAD_ANYDEPTH);
-        *width = image.cols;
-        *height = image.rows;
-        std::vector<ValueType> result((*width)*(*height),0);
-        for (int y = 0; y < (*height); y++) {
-            for (int x = 0; x < (*width); x++) {
-                result[y*(*width) + x] = image.at<ValueType>(y, x);
-            }
-        }
-        return result;
-    };
-
-    template<class ValueType>
-    std::vector<ValueType> read_rgb_image_as_gray_scale(const InputFrame &input_frame, int *width, int *height) {
-        if (input_frame.is_still_image()) {
-            return read_still_rgb_image_as_gray_scale<ValueType>(input_frame.get_file_address(), width, height);
-        }
-        else {
-            return read_video_frame_as_gray_scale<ValueType>(input_frame.get_file_address(), input_frame.get_frame_number(), width, height);
-        }
-    };
-
-    template<class ValueType>
-    std::vector<ValueType> read_image_monochrome(const InputFrame &input_frame, int *width, int *height)    {
-        const bool raw_file = is_raw_file(input_frame.get_file_address());
-        std::vector<ValueType> brightness;
-        if (raw_file) {
-            std::vector<char> colors;
-            brightness = read_raw_file<ValueType>(input_frame, width, height, &colors);
-            debayer_monochrome(&brightness, *width, *height, colors);
-            return brightness;
-        }
-        else {
-            return read_rgb_image_as_gray_scale<ValueType>(input_frame, width, height);
-        }
-    };
-
-    bool get_photo_resolution(const InputFrame &input_frame, int *width, int *height);
 
     template <class ValueType>
     void decrease_image_bit_depth(ValueType *data, size_t data_size, int bits_to_drop) {

@@ -1,10 +1,12 @@
 #pragma once
 
+#include "../headers/PixelType.h"
 #include "../headers/InputFrame.h"
 
 #include <string>
 #include <vector>
 #include <memory>
+#include <array>
 
 namespace AstroPhotoStacker {
     /**
@@ -46,13 +48,15 @@ namespace AstroPhotoStacker {
             */
             virtual float get_updated_pixel_value(float pixel_value, int x, int y) const = 0;
 
+            virtual void apply_calibration(std::vector<PixelType> *data) const;
+
         protected:
             virtual void calibrate() {};
 
             int m_width, m_height;
-            std::vector<unsigned short int>     m_data_original;
+            std::vector<PixelType>              m_data_original;
             std::vector<float>                  m_data_calibrated;
-            std::vector<char>                   m_colors;
+            std::array<char, 4>                 m_colors;
 
     };
 }

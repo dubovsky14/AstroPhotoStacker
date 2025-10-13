@@ -13,12 +13,11 @@
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 
 #include "../../headers/Common.h"
-#include "../../headers/raw_file_reader.h"
 #include "../../headers/thread_pool.h"
 #include "../../headers/StackerBase.h"
-#include "../../headers/VideoReader.h"
 #include "../../headers/AlignmentPointBoxGrid.h"
 #include "../../headers/ConvertToFitFile.h"
+#include "../../headers/PixelType.h"
 
 #include <wx/spinctrl.h>
 #include <wx/progdlg.h>
@@ -189,7 +188,7 @@ void MyFrame::add_alignment_menu()  {
     id = unique_counter();
     alignment_menu->Append(id, "Show alignment boxes", "Show alignment boxes");
     Bind(wxEVT_MENU, [this, alignment_boxes_preview_name](wxCommandEvent&){
-        auto draw_boxes_lambda = [this, alignment_boxes_preview_name](std::vector<std::vector<short int>> *image_data, int width, int height) {
+        auto draw_boxes_lambda = [this, alignment_boxes_preview_name](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
             cout << "Drawing " << m_alignment_box_vector_storage.size() <<  " alignment boxes" << endl;
             AstroPhotoStacker::AlignmentPointBoxGrid::draw_boxes_into_image(
                 m_alignment_box_vector_storage,

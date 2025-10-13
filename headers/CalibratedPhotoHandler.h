@@ -6,7 +6,8 @@
 #include "../headers/LocalShiftsHandler.h"
 #include "../headers/CalibratedPhotoScoreHandler.h"
 #include "../headers/InputFrame.h"
-#include "../headers/InputFrameData.h"
+#include "../headers/InputFrameReader.h"
+#include "../headers/PixelType.h"
 
 #include <memory>
 #include <vector>
@@ -88,7 +89,7 @@ namespace AstroPhotoStacker {
              * @param value The value of the pixel at the given coordinates.
              * @param color The color of the pixel at the given coordinates.
             */
-            void get_value_by_reference_frame_coordinates(int x, int y, short int *value, char *color) const;
+            void get_value_by_reference_frame_coordinates(int x, int y, PixelType *value, char *color) const;
 
             /**
              * @brief Get the value of the pixel at the given coordinates in the reference frame, when color interpolation is used.
@@ -98,7 +99,7 @@ namespace AstroPhotoStacker {
              * @param color The color of the pixel at the given coordinates.
              * @param value The value of the pixel at the given coordinates.
             */
-            void get_value_by_reference_frame_coordinates(int x, int y, int color, short int *value) const;
+            void get_value_by_reference_frame_coordinates(int x, int y, int color, PixelType *value) const;
 
             /**
              * @brief Get the value of the pixel at the given index in the reference frame, when color interpolation is used. This method is optimized for speed, no boundary checks are performed.
@@ -107,7 +108,7 @@ namespace AstroPhotoStacker {
              * @param color The color of the pixel at the given index.
              * @return The value of the pixel at the given index.
             */
-            inline short int get_value_by_reference_frame_index(int index, int color) const {
+            inline PixelType get_value_by_reference_frame_index(int index, int color) const {
                 return m_data_shifted_color_interpolation[color][index];
             };
 
@@ -122,9 +123,9 @@ namespace AstroPhotoStacker {
             /**
              * @brief Get the data of the calibrated photo.
              *
-             * @return const std::vector<std::vector<short int>>& The data of the calibrated photo.
+             * @return const std::vector<std::vector<PixelType>>& The data of the calibrated photo.
             */
-            const std::vector<std::vector<short int>>& get_calibrated_data_after_color_interpolation() const {
+            const std::vector<std::vector<PixelType>>& get_calibrated_data_after_color_interpolation() const {
                 return m_data_shifted_color_interpolation;
             };
 
@@ -152,14 +153,14 @@ namespace AstroPhotoStacker {
 
             std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
             LocalShiftsHandler m_local_shifts_handler;
-            std::unique_ptr<InputFrameData<short int>> m_input_frame_data_original = nullptr;
+            std::unique_ptr<InputFrameReader> m_input_frame_data_original = nullptr;
 
             bool m_use_color_interpolation = false;
-            std::vector<std::vector<short int>> m_data_shifted_color_interpolation;
+            std::vector<std::vector<PixelType>> m_data_shifted_color_interpolation;
 
-            std::vector<short int> m_data_shifted;
+            std::vector<PixelType> m_data_shifted;
             std::vector<char> m_colors_shifted;
 
-            void fix_hot_pixel(int x, int y);
+            void fix_hot_pixel(int x, int y, std::vector<PixelType> *data);
     };
 }

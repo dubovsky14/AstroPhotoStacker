@@ -1,6 +1,5 @@
 #include "../headers/StackerBase.h"
 #include "../headers/ImageFilesInputOutput.h"
-#include "../headers/raw_file_reader.h"
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -178,6 +177,9 @@ CalibratedPhotoHandler StackerBase::get_calibrated_photo(unsigned int i_file, in
     calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
     calibrated_photo.define_local_shifts(alignment_info.local_shifts_handler);
     calibrated_photo.limit_y_range(y_min, y_max);
+    if (m_hot_pixel_identifier != nullptr)  {
+        calibrated_photo.register_hot_pixel_identifier(m_hot_pixel_identifier.get());
+    }
     for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame : m_calibration_frame_handlers.at(i_file)) {
         calibrated_photo.register_calibration_frame(calibration_frame);
     }

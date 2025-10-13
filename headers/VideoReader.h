@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../headers/InputFrame.h"
+#include "../headers/Common.h"
 
 #include <opencv2/opencv.hpp>
 
@@ -43,7 +44,7 @@ namespace AstroPhotoStacker {
     }
 
     template<class ValueType>
-    std::vector<std::vector<ValueType> > read_video_frame(const std::string &video_address, int frame_id, int *width, int *height) {
+    std::vector<std::vector<ValueType> > read_video_frame_rgb(const std::string &video_address, int frame_id, int *width, int *height) {
         cv::VideoCapture video(video_address);
         if (!video.isOpened()) {
             throw std::runtime_error("Unable to open video file: " + video_address);
@@ -60,13 +61,13 @@ namespace AstroPhotoStacker {
             for (int x = 0; x < *width; x++) {
                 for (int color = 0; color < n_colors; color++) {
                     if (bit_depth == CV_8U) {
-                        result[color][y*(*width) + x] = frame.at<cv::Vec3b>(y, x)[color];
+                        result[2-color][y*(*width) + x] = frame.at<cv::Vec3b>(y, x)[color];
                     }
                     else if (bit_depth == CV_16U) {
-                        result[color][y*(*width) + x] = frame.at<cv::Vec3w>(y, x)[color];
+                        result[2-color][y*(*width) + x] = frame.at<cv::Vec3w>(y, x)[color];
                     }
                     else if (bit_depth == CV_16S) {
-                        result[color][y*(*width) + x] = frame.at<cv::Vec3s>(y, x)[color];
+                        result[2-color][y*(*width) + x] = frame.at<cv::Vec3s>(y, x)[color];
                     }
                     else {
                         throw std::runtime_error("Unsupported bit depth");

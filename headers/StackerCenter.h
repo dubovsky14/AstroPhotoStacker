@@ -23,7 +23,7 @@ namespace AstroPhotoStacker {
             /**
              * @brief Set the value which will be used for stacking -> pixel closest to this value will be selected
              */
-            void set_central_value(unsigned short int central_value) {
+            void set_central_value(PixelType central_value) {
                 m_central_value = central_value;
             }
 
@@ -74,6 +74,6 @@ namespace AstroPhotoStacker {
             */
             virtual int get_height_range_limit() const override;
 
-            unsigned short int m_central_value = 16384;
+            PixelType m_central_value = 16384;
     };
 }

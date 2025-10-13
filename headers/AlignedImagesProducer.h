@@ -55,7 +55,7 @@ namespace AstroPhotoStacker {
 
             int get_tasks_total() const;
 
-            void set_image_stretching_function(const std::function<void(std::vector<std::vector<unsigned short>>*, unsigned short max_value)> &image_stretching_function) {
+            void set_image_stretching_function(const std::function<void(std::vector<std::vector<PixelType>>*, PixelType max_value)> &image_stretching_function) {
                 m_image_stretching_function = image_stretching_function;
             };
 
@@ -83,11 +83,11 @@ namespace AstroPhotoStacker {
 
             static std::string get_output_file_name(const InputFrame &input_frame);
 
-            static void scale_down_image(std::vector<std::vector<unsigned short>> *image, unsigned int original_max, unsigned int new_max);
+            static void scale_down_image(std::vector<std::vector<PixelType>> *image, unsigned int original_max, unsigned int new_max);
 
             void produce_video(const std::string &output_video_address)   const;
 
-            void set_post_processing_tool(const std::function<std::vector<std::vector<unsigned short>>(const std::vector<std::vector<unsigned short>> &, int, int)> &post_processing_tool) {
+            void set_post_processing_tool(const std::function<std::vector<std::vector<PixelType>>(const std::vector<std::vector<PixelType>> &, int, int)> &post_processing_tool) {
                 m_post_processing_tool = post_processing_tool;
             };
 
@@ -111,8 +111,8 @@ namespace AstroPhotoStacker {
 
             int m_timestamp_offset = 0;
 
-            std::function<void(std::vector<std::vector<unsigned short>>*, unsigned short max_value)> m_image_stretching_function = nullptr;
-            std::function<std::vector<std::vector<unsigned short>>(const std::vector<std::vector<unsigned short>>&, int, int)> m_post_processing_tool = nullptr;
+            std::function<void(std::vector<std::vector<PixelType>>*, PixelType max_value)> m_image_stretching_function = nullptr;
+            std::function<std::vector<std::vector<PixelType>>(const std::vector<std::vector<PixelType>>&, int, int)> m_post_processing_tool = nullptr;
 
             std::vector<InputFrame>                                                 m_frames_to_align;
             std::vector<FileAlignmentInformation>                                   m_alignment_info;
@@ -128,13 +128,13 @@ namespace AstroPhotoStacker {
             void produce_aligned_image( const GroupToStack &group_to_stack, const std::string &output_file_address);
 
             void process_save_and_update_counter_and_image_list(
-                                                    std::vector<std::vector<unsigned short>> *stacked_image,
+                                                    std::vector<std::vector<PixelType>> *stacked_image,
                                                     int width,
                                                     int height,
                                                     const std::string &output_file_address,
                                                     const InputFrame &input_frame);
 
-            void process_and_save_image(std::vector<std::vector<unsigned short>> *stacked_image,
+            void process_and_save_image(std::vector<std::vector<PixelType>> *stacked_image,
                                         int width,
                                         int height,
                                         const std::string &output_file_address,

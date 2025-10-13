@@ -24,7 +24,7 @@ void StackerWeightedMedian::calculate_stacked_photo_internal()  {
     }
 
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
-        m_values_to_stack.push_back(vector<std::tuple<short,ScoreType>>(m_width*height_range*n_files, {-1,c_default_score}));
+        m_values_to_stack.push_back(vector<std::tuple<PixelType,ScoreType>>(m_width*height_range*n_files, {-1,c_default_score}));
     }
 
     int i_slice = 0;
@@ -80,32 +80,16 @@ void StackerWeightedMedian::add_photo_to_stack(unsigned int file_index, int y_mi
 
     CalibratedPhotoHandler calibrated_photo = get_calibrated_photo(file_index, y_min, y_max);
 
-    if (m_interpolate_colors)   {
-        for (int color = 0; color < 3; color++)   {
-            const unsigned int slice_shift = y_min*m_width;
-            for (int y = y_min; y < y_max; y++)  {
-                const unsigned int start_of_line_index_reference_frame = y*m_width;
-                const unsigned int start_of_line_index_this_slice = (y*m_width - slice_shift)*n_files + file_index;
-                for (int x = 0; x < m_width; x++)   {
-                    const short value = calibrated_photo.get_value_by_reference_frame_index(start_of_line_index_reference_frame+x, color);
-                    const ScoreType score = value < 0 ? c_default_score : calibrated_photo.get_score(x,y);
-                    m_values_to_stack[color][start_of_line_index_this_slice + x*n_files] = {value, score};
-
-                }
-            }
-        }
-    }
-    else    {
-        short int value;
-        char color;
+    for (int color = 0; color < 3; color++)   {
+        const unsigned int slice_shift = y_min*m_width;
         for (int y = y_min; y < y_max; y++)  {
+            const unsigned int start_of_line_index_reference_frame = y*m_width;
+            const unsigned int start_of_line_index_this_slice = (y*m_width - slice_shift)*n_files + file_index;
             for (int x = 0; x < m_width; x++)   {
-                calibrated_photo.get_value_by_reference_frame_coordinates(x, y, &value, &color);
-                const unsigned int index_stacking_array = (y-y_min)*m_width + x;
-                if (color >= 0) {
-                    const ScoreType score = value < 0 ? c_default_score : calibrated_photo.get_score(x,y);
-                    m_values_to_stack[color][n_files*index_stacking_array + file_index] = {value, score};
-                }
+                const PixelType value = calibrated_photo.get_value_by_reference_frame_index(start_of_line_index_reference_frame+x, color);
+                const ScoreType score = value < 0 ? c_default_score : calibrated_photo.get_score(x,y);
+                m_values_to_stack[color][start_of_line_index_this_slice + x*n_files] = {value, score};
+
             }
         }
     }
@@ -132,8 +116,8 @@ void StackerWeightedMedian::process_line(int y_index_final_array, int y_index_va
         const unsigned long long int pixel_index = m_width*y_index_final_array + i_width;
         const unsigned long long int pixel_index_stacking_array = m_width*y_index_values_to_stack_array*n_files + i_width*n_files;
 
-        tuple<short,ScoreType> *slice_begin = &m_values_to_stack[i_color][pixel_index_stacking_array];
-        tuple<short,ScoreType> *slice_end   = &m_values_to_stack[i_color][pixel_index_stacking_array + n_files];
+        tuple<PixelType,ScoreType> *slice_begin = &m_values_to_stack[i_color][pixel_index_stacking_array];
+        tuple<PixelType,ScoreType> *slice_end   = &m_values_to_stack[i_color][pixel_index_stacking_array + n_files];
 
         int number_of_stacked_pixels = 0;
         for (int i = 0; i < n_files; i++) {
@@ -143,7 +127,7 @@ void StackerWeightedMedian::process_line(int y_index_final_array, int y_index_va
         }
         int first_non_negative_index = n_files - number_of_stacked_pixels;
 
-        sort(slice_begin, slice_end, [](const tuple<short,ScoreType> &a, const tuple<short,ScoreType> &b) {
+        sort(slice_begin, slice_end, [](const tuple<PixelType,ScoreType> &a, const tuple<PixelType,ScoreType> &b) {
             return std::get<1>(a) < std::get<1>(b);
         });
 
@@ -152,12 +136,12 @@ void StackerWeightedMedian::process_line(int y_index_final_array, int y_index_va
 };
 
 
-double StackerWeightedMedian::get_stacked_value_from_pixel_array(tuple<short,ScoreType> *ordered_array_begin, unsigned int number_of_stacked_pixels) {
+double StackerWeightedMedian::get_stacked_value_from_pixel_array(tuple<PixelType,ScoreType> *ordered_array_begin, unsigned int number_of_stacked_pixels) {
     if (number_of_stacked_pixels == 0) {
         return c_empty_pixel_value;
     }
 
-    sort(ordered_array_begin, ordered_array_begin + number_of_stacked_pixels, [](const tuple<short,ScoreType> &a, const tuple<short,ScoreType> &b) {
+    sort(ordered_array_begin, ordered_array_begin + number_of_stacked_pixels, [](const tuple<PixelType,ScoreType> &a, const tuple<PixelType,ScoreType> &b) {
         return std::get<0>(a) < std::get<0>(b);
     });
 
@@ -190,7 +174,7 @@ int StackerWeightedMedian::get_tasks_total() const  {
 unsigned long long StackerWeightedMedian::get_maximal_memory_usage(int number_of_frames) const {
     const unsigned long long resolution = m_width*m_height;
     const unsigned long long stacked_image_size = m_number_of_colors*sizeof(double)*resolution;
-    const unsigned long long stacking_array = resolution*m_number_of_colors*number_of_frames*(sizeof(unsigned short) + sizeof(ScoreType));
+    const unsigned long long stacking_array = resolution*m_number_of_colors*number_of_frames*(sizeof(PixelType) + sizeof(ScoreType));
 
     const unsigned long long memory_usage_total = stacked_image_size + stacking_array;
 

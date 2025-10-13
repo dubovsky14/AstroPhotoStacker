@@ -6,6 +6,7 @@
 
 #include "../../headers/FlatFrameHandler.h"
 #include "../../headers/DarkFrameHandler.h"
+#include "../../headers/InputFrameReader.h"
 
 #include <memory>
 
@@ -25,7 +26,8 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
 
         if (stacker == nullptr) {
             int width, height;
-            get_photo_resolution(light_frames.begin()->first, &width, &height);
+            AstroPhotoStacker::InputFrameReader input_frame_reader(light_frames.begin()->first);
+            input_frame_reader.get_photo_resolution(&width, &height);
             cout << "Resolution: " << width << "x" << height << endl;
             stacker = AstroPhotoStacker::create_stacker(stack_settings, 3, width, height);
         }

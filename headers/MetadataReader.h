@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../headers/Metadata.h"
-#include "../headers/raw_file_reader.h"
 #include "../headers/InputFrame.h"
 
 #include <string>

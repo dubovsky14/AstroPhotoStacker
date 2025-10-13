@@ -20,6 +20,6 @@ namespace AstroPhotoStacker {
              * @param ordered_array_begin       - pointer ot the first element of the ordered array
              * @param number_of_stacked_pixels  - number of pixels to stack
              */
-            virtual double get_stacked_value_from_pixel_array(std::tuple<short,ScoreType> *ordered_array_begin, unsigned int number_of_stacked_pixels) override;
+            virtual double get_stacked_value_from_pixel_array(std::tuple<PixelType,ScoreType> *ordered_array_begin, unsigned int number_of_stacked_pixels) override;
     };
 }

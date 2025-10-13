@@ -68,29 +68,18 @@ void StackerSimpleBase::add_photo_to_stack(unsigned int i_file, int y_min, int y
             continue;
         }
 
-        if (m_interpolate_colors)   {
-            for (int color = 0; color < 3; color++)   {
-                for (int y = y_min; y < y_max; y++)  {
-                    for (int x = 0; x < m_width; x++)   {
-                        const int index = y*m_width + x;
-                        const auto value = calibrated_photo.get_value_by_reference_frame_index(index, color);
+        for (int color = 0; color < 3; color++)   {
+            for (int y = y_min; y < y_max; y++)  {
+                for (int x = 0; x < m_width; x++)   {
+                    const int index = y*m_width + x;
+                    const PixelType value = calibrated_photo.get_value_by_reference_frame_index(index, color);
+                    if (value >= 0) {
                         process_pixel(color, index - pixel_shift, value, i_thread);
                     }
                 }
             }
         }
-        else   {
-            short int value;
-            char color;
-            for (int y = y_min; y < y_max; y++)  {
-                for (int x = 0; x < m_width; x++)   {
-                    calibrated_photo.get_value_by_reference_frame_coordinates(x, y, &value, &color);
-                    if (color >= 0) {
-                        process_pixel(color, (y-y_min)*m_width + x, value, i_thread);
-                    }
-                }
-            }
-        }
+
         break;
     }
 

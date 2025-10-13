@@ -1,7 +1,6 @@
 #include "../headers/PhotoRanker.h"
 #include "../headers/StarFinder.h"
-#include "../headers/raw_file_reader.h"
-#include "../headers/ImageFilesInputOutput.h"
+#include "../headers/InputFrameReader.h"
 #include "../headers/Common.h"
 #include "../headers/VideoReader.h"
 
@@ -42,15 +41,10 @@ void PhotoRanker::rank_all_files()    {
 
 float PhotoRanker::calculate_frame_ranking(const InputFrame &input_frame)  {
     int width, height;
+    InputFrameReader input_frame_reader(input_frame);
+    const std::vector<PixelType> brightness = input_frame_reader.get_monochrome_data();
+    input_frame_reader.get_photo_resolution(&width, &height);
 
-    const bool raw_file = is_raw_file(input_frame.get_file_address());
-    std::vector<unsigned short> brightness;
-    if (raw_file) {
-        brightness = read_raw_file<unsigned short>(input_frame, &width, &height);
-    }
-    else {
-        brightness = read_rgb_image_as_gray_scale<unsigned short>(input_frame, &width, &height);
-    }
     const float threshold_value = get_threshold_value(brightness.data(), width*height, 0.002);
     std::vector<std::vector<std::tuple<int,int>>> clusters = get_clusters(brightness.data(), width, height, threshold_value);
 

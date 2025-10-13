@@ -1,6 +1,6 @@
 #include "../headers/MetadataReader.h"
 #include "../headers/MetadataCommon.h"
-#include "../headers/VideoMetadataManager.h"
+#include "../headers/InputFrameReader.h"
 
 #include <exiv2/exiv2.hpp>
 #include <string>
@@ -78,18 +78,6 @@ Metadata AstroPhotoStacker::read_metadata_rgb_image(const std::string &input_fil
 };
 
 Metadata AstroPhotoStacker::read_metadata(const InputFrame &input_frame)    {
-    if (input_frame.is_video_frame()) {
-        static VideoMetadataManager s_video_metadata_manager;
-        return s_video_metadata_manager.get_metadata(input_frame);
-    }
-    else {
-        const string input_file = input_frame.get_file_address();
-        const bool raw_file = is_raw_file(input_file);
-        if (raw_file)    {
-            return read_metadata_from_raw_file(input_file);
-        }
-        else    {
-            return read_metadata_rgb_image(input_file);
-        }
-    }
+    InputFrameReader input_frame_reader(input_frame, false);
+    return input_frame_reader.get_metadata();
 };

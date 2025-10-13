@@ -30,7 +30,7 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
     const std::pair<int,int> box_width_range = {min_box_width, max_box_width};
     const std::pair<int,int> box_height_range = {min_box_height, max_box_height};
 
-    const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
+    const float scale_factor = 1./get_brightness_for_corresponding_fraction(image_data, alignment_window, 0.1);
     m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
     const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
 
@@ -43,7 +43,7 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
 
         const int step_size = box_size + box_spacing;
         m_alignment_window = alignment_window;
-        const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
+        const float scale_factor = 1./get_brightness_for_corresponding_fraction(image_data, alignment_window, 0.1);
         m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
         const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
         for (int y = alignment_window.y_min; y < alignment_window.y_max; y += step_size) {
@@ -91,7 +91,7 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
                                                 unsigned int box_size, unsigned int box_spacing)  {
     const int step_size = box_size + box_spacing;
     m_alignment_window = alignment_window;
-    const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
+    const float scale_factor = 1./get_brightness_for_corresponding_fraction(image_data, alignment_window, 0.1);
     m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
     const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
     for (int y = alignment_window.y_min; y < alignment_window.y_max; y += step_size) {
@@ -123,7 +123,7 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
 
     const int step_size = box_size + box_spacing;
     m_alignment_window = alignment_window;
-    const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
+    const float scale_factor = 1./get_brightness_for_corresponding_fraction(image_data, alignment_window, 0.1);
     m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
     const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
     for (int y = alignment_window.y_min; y < alignment_window.y_max; y += step_size) {
@@ -145,7 +145,7 @@ AlignmentPointBoxGrid::AlignmentPointBoxGrid(   const MonochromeImageData &image
                                                 bool sort_alignment_points)   {
 
     m_alignment_window = alignment_window;
-    const float scale_factor = 1./get_brigness_for_corresponding_fraction(image_data, alignment_window, 0.1);
+    const float scale_factor = 1./get_brightness_for_corresponding_fraction(image_data, alignment_window, 0.1);
     m_scaled_data_reference_image_in_alignment_window = get_scaled_data_in_alignment_window(image_data, alignment_window, scale_factor);
     const float max_value = *std::max_element(m_scaled_data_reference_image_in_alignment_window.begin(), m_scaled_data_reference_image_in_alignment_window.end());
 
@@ -218,7 +218,7 @@ std::vector<LocalShift> AlignmentPointBoxGrid::get_local_shifts(const Monochrome
     const int alignment_window_width = m_alignment_window.x_max - m_alignment_window.x_min;
     const int alignment_window_height = m_alignment_window.y_max - m_alignment_window.y_min;
 
-    const float scale_factor = 1./get_brigness_for_corresponding_fraction(calibrated_image, m_alignment_window, 0.1);
+    const float scale_factor = 1./get_brightness_for_corresponding_fraction(calibrated_image, m_alignment_window, 0.1);
     const vector<float> scaled_values_in_alignment_window = get_scaled_data_in_alignment_window(calibrated_image, m_alignment_window, scale_factor);
     for (const AlignmentPointBox &box : m_boxes) {
         const int original_x = box.get_center_x();
@@ -377,14 +377,14 @@ bool AlignmentPointBoxGrid::fulfill_overlap_condition(const std::vector<Alignmen
     return true;
 };
 
-unsigned short int AlignmentPointBoxGrid::get_brigness_for_corresponding_fraction(  const MonochromeImageData &image_data,
+PixelType AlignmentPointBoxGrid::get_brightness_for_corresponding_fraction(  const MonochromeImageData &image_data,
                                                                                     const AlignmentWindow &alignment_window,
                                                                                     float fraction) {
 
     vector<unsigned int> histogram(65536, 0);
     for (int y = alignment_window.y_min; y < alignment_window.y_max; y++) {
         for (int x = alignment_window.x_min; x < alignment_window.x_max; x++) {
-            const unsigned short brightness = image_data.brightness[y*image_data.width + x];
+            const PixelType brightness = image_data.brightness[y*image_data.width + x];
             histogram[brightness]++;
         }
     }

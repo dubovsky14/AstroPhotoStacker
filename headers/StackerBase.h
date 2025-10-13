@@ -9,6 +9,7 @@
 
 #include "../headers/InputFrame.h"
 #include "../headers/AdditionalStackerSetting.h"
+#include "../headers/PixelType.h"
 
 #include <memory>
 #include <string>
@@ -223,7 +224,7 @@ namespace AstroPhotoStacker {
             int m_height;
             bool m_interpolate_colors;
 
-            constexpr static short int c_empty_pixel_value = -1;
+            constexpr static PixelType c_empty_pixel_value = -1;
 
             unsigned int m_n_cpu = 1;
 

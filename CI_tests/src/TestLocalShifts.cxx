@@ -1,7 +1,8 @@
 
 #include "../headers/TestLocalShifts.h"
 
-#include "../../headers/InputFrameData.h"
+#include "../../headers/PixelType.h"
+#include "../../headers/InputFrameReader.h"
 #include "../../headers/AlignmentPointBoxGrid.h"
 #include "../../headers/AlignmentWindow.h"
 #include "../../headers/MonochromeImageData.h"
@@ -20,13 +21,15 @@ TestResult AstroPhotoStacker::test_predefined_alignment_boxes(  const InputFrame
 
     string error_message;
 
-    InputFrameData<unsigned short int> reference_frame_data(reference_frame);
-    InputFrameData<unsigned short int> alternative_frame_data(alternative_frame);
+    InputFrameReader reference_frame_data(reference_frame);
+    reference_frame_data.load_input_frame_data();
+    InputFrameReader alternative_frame_data(alternative_frame);
+    alternative_frame_data.load_input_frame_data();
 
     const int width_reference = reference_frame_data.get_width();
     const int height_reference = reference_frame_data.get_height();
-    const vector<vector<unsigned short int>> reference_image_data_rgb = reference_frame_data.get_image_data_color();
-    const vector<unsigned short int> reference_image_data_monochrome = convert_color_to_monochrome(reference_image_data_rgb, width_reference, height_reference);
+    const vector<vector<PixelType>> reference_image_data_rgb = reference_frame_data.get_rgb_data();
+    const vector<PixelType> reference_image_data_monochrome = convert_color_to_monochrome(reference_image_data_rgb, width_reference, height_reference);
     MonochromeImageData image_data_reference;
     image_data_reference.brightness = reference_image_data_monochrome.data();
     image_data_reference.width = width_reference;
@@ -45,8 +48,8 @@ TestResult AstroPhotoStacker::test_predefined_alignment_boxes(  const InputFrame
 
     const int width_alternative = alternative_frame_data.get_width();
     const int height_alternative = alternative_frame_data.get_height();
-    const vector<vector<unsigned short int>> alternative_image_data_rgb = alternative_frame_data.get_image_data_color();
-    const vector<unsigned short int> alternative_image_data_monochrome = convert_color_to_monochrome(alternative_image_data_rgb, width_alternative, height_alternative);
+    const vector<vector<PixelType>> alternative_image_data_rgb = alternative_frame_data.get_rgb_data();
+    const vector<PixelType> alternative_image_data_monochrome = convert_color_to_monochrome(alternative_image_data_rgb, width_alternative, height_alternative);
     MonochromeImageData image_data_alternative;
     image_data_alternative.brightness = alternative_image_data_monochrome.data();
     image_data_alternative.width = width_alternative;

@@ -22,7 +22,7 @@ void StackerMedian::calculate_stacked_photo_internal()  {
     }
 
     for (int i_color = 0; i_color < m_number_of_colors; i_color++) {
-        m_values_to_stack.push_back(vector<short>(m_width*height_range*n_files, -1));
+        m_values_to_stack.push_back(vector<PixelType>(m_width*height_range*n_files, -1));
     }
 
     int i_slice = 0;
@@ -78,28 +78,13 @@ void StackerMedian::add_photo_to_stack(unsigned int file_index, int y_min, int y
 
     CalibratedPhotoHandler calibrated_photo = get_calibrated_photo(file_index, y_min, y_max);
 
-    if (m_interpolate_colors)   {
-        for (int color = 0; color < 3; color++)   {
-            const unsigned int slice_shift = y_min*m_width;
-            for (int y = y_min; y < y_max; y++)  {
-                const unsigned int start_of_line_index_reference_frame = y*m_width;
-                const unsigned int start_of_line_index_this_slice = (y*m_width - slice_shift)*n_files + file_index;
-                for (int x = 0; x < m_width; x++)   {
-                    m_values_to_stack[color][start_of_line_index_this_slice + x*n_files] = calibrated_photo.get_value_by_reference_frame_index(start_of_line_index_reference_frame+x, color);
-                }
-            }
-        }
-    }
-    else    {
-        short int value;
-        char color;
+    for (int color = 0; color < 3; color++)   {
+        const unsigned int slice_shift = y_min*m_width;
         for (int y = y_min; y < y_max; y++)  {
+            const unsigned int start_of_line_index_reference_frame = y*m_width;
+            const unsigned int start_of_line_index_this_slice = (y*m_width - slice_shift)*n_files + file_index;
             for (int x = 0; x < m_width; x++)   {
-                calibrated_photo.get_value_by_reference_frame_coordinates(x, y, &value, &color);
-                const unsigned int index_stacking_array = (y-y_min)*m_width + x;
-                if (color >= 0) {
-                    m_values_to_stack[color][n_files*index_stacking_array + file_index] = value;
-                }
+                m_values_to_stack[color][start_of_line_index_this_slice + x*n_files] = calibrated_photo.get_value_by_reference_frame_index(start_of_line_index_reference_frame+x, color);
             }
         }
     }
@@ -111,9 +96,9 @@ int StackerMedian::get_height_range_limit() const {
     const long long int n_files = m_frames_to_stack.size();
     if (m_memory_usage_limit_in_mb > 0) {
         const unsigned long long int memory_needed_for_stacked_image = 3*sizeof(double)*m_width*m_height;
-        const unsigned long long int memory_needed_for_calibrated_photos = m_n_cpu*3*sizeof(unsigned short)*m_width*m_height;
+        const unsigned long long int memory_needed_for_calibrated_photos = m_n_cpu*3*sizeof(PixelType)*m_width*m_height;
         const unsigned long long int memory_usage_limit = m_memory_usage_limit_in_mb*1024ULL*1024ULL - memory_needed_for_stacked_image - memory_needed_for_calibrated_photos;
-        const unsigned long long int memory_usage_per_line = m_number_of_colors*m_width*n_files*sizeof(unsigned short);
+        const unsigned long long int memory_usage_per_line = m_number_of_colors*m_width*n_files*sizeof(PixelType);
         height_range = min(height_range, int(memory_usage_limit/memory_usage_per_line));
     }
     return height_range;
@@ -126,8 +111,8 @@ void StackerMedian::process_line(int y_index_final_array, int y_index_values_to_
         const unsigned long long int pixel_index = m_width*y_index_final_array + i_width;
         const unsigned long long int pixel_index_stacking_array = m_width*y_index_values_to_stack_array*n_files + i_width*n_files;
 
-        short *slice_begin = &m_values_to_stack[i_color][pixel_index_stacking_array];
-        short *slice_end   = &m_values_to_stack[i_color][pixel_index_stacking_array + n_files];
+        PixelType *slice_begin = &m_values_to_stack[i_color][pixel_index_stacking_array];
+        PixelType *slice_end   = &m_values_to_stack[i_color][pixel_index_stacking_array + n_files];
 
         int number_of_stacked_pixels = 0;
         for (int i = 0; i < n_files; i++) {
@@ -144,7 +129,7 @@ void StackerMedian::process_line(int y_index_final_array, int y_index_values_to_
 };
 
 
-double StackerMedian::get_stacked_value_from_pixel_array(short int *ordered_array_begin, unsigned int number_of_stacked_pixels) {
+double StackerMedian::get_stacked_value_from_pixel_array(PixelType *ordered_array_begin, unsigned int number_of_stacked_pixels) {
     if (number_of_stacked_pixels == 0) {
         return c_empty_pixel_value;
     }
@@ -167,7 +152,7 @@ int StackerMedian::get_tasks_total() const  {
 unsigned long long StackerMedian::get_maximal_memory_usage(int number_of_frames) const {
     const unsigned long long resolution = m_width*m_height;
     const unsigned long long stacked_image_size = m_number_of_colors*sizeof(double)*resolution;
-    const unsigned long long all_frames_data    = m_number_of_colors*number_of_frames*sizeof(unsigned short)*resolution;
+    const unsigned long long all_frames_data    = m_number_of_colors*number_of_frames*sizeof(PixelType)*resolution;
 
     const unsigned long long memory_usage_total = stacked_image_size + all_frames_data;
 
