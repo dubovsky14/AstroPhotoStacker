@@ -12,7 +12,6 @@ using namespace std;
 void AstroPhotoStacker::convert_to_fit_file(const InputFrame &input_frame, const std::string &output_file, int output_bit_depth)   {
     int width, height;
     InputFrameReader input_frame_reader(input_frame);
-    input_frame_reader.load_input_frame_data();
     input_frame_reader.get_photo_resolution(&width, &height);
     vector<PixelType> image_data = input_frame_reader.get_raw_data();
     const Metadata metadata_reader = read_metadata(input_frame);

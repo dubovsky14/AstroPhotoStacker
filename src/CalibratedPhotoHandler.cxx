@@ -7,7 +7,6 @@ using namespace AstroPhotoStacker;
 CalibratedPhotoHandler::CalibratedPhotoHandler(const InputFrame &input_frame, bool use_color_interpolation)    {
     m_use_color_interpolation = use_color_interpolation;
     m_input_frame_data_original = make_unique<InputFrameReader>(input_frame);
-    m_input_frame_data_original->load_input_frame_data();
     m_input_frame_data_original->get_photo_resolution(&m_width, &m_height);
 
     m_y_min = 0;

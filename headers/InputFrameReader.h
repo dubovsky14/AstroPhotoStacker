@@ -10,9 +10,23 @@
 #include <array>
 
 namespace AstroPhotoStacker {
+
+    /**
+     * Class for reading image data and metadata from input frames (video or still, raw or non-raw).
+     *
+     * This is THE way how to read any input in the AstroPhotoStacker project.
+     */
     class InputFrameReader {
         public:
-            InputFrameReader(const InputFrame &input_frame);
+            /**
+             * Constructor for InputFrameReader. It will load image data immediately unless specified otherwise.
+             *
+             * @param input_frame The input frame to read data from.
+             * @param load_image_data Whether to load image data immediately - set to false if you only need metadata.
+             */
+            InputFrameReader(const InputFrame &input_frame, bool load_image_data = true);
+
+            InputFrameReader() = delete;
 
             void load_input_frame_data();
 

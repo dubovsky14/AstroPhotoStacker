@@ -27,7 +27,6 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
         if (stacker == nullptr) {
             int width, height;
             AstroPhotoStacker::InputFrameReader input_frame_reader(light_frames.begin()->first);
-            input_frame_reader.load_input_frame_data();
             input_frame_reader.get_photo_resolution(&width, &height);
             cout << "Resolution: " << width << "x" << height << endl;
             stacker = AstroPhotoStacker::create_stacker(stack_settings, 3, width, height);

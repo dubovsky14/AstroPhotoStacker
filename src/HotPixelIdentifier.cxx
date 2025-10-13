@@ -28,7 +28,6 @@ void HotPixelIdentifier::add_photos(const std::vector<InputFrame> &input_frames)
 
 void HotPixelIdentifier::add_photo(const InputFrame &input_frame)    {
     InputFrameReader input_frame_reader(input_frame);
-    input_frame_reader.load_input_frame_data();
     if (!input_frame_reader.is_raw_file()) {
         throw runtime_error("HotPixelIdentifier::add_photo: file is not a raw file");
     }

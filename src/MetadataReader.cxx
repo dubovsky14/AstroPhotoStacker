@@ -78,6 +78,6 @@ Metadata AstroPhotoStacker::read_metadata_rgb_image(const std::string &input_fil
 };
 
 Metadata AstroPhotoStacker::read_metadata(const InputFrame &input_frame)    {
-    InputFrameReader input_frame_reader(input_frame);
+    InputFrameReader input_frame_reader(input_frame, false);
     return input_frame_reader.get_metadata();
 };

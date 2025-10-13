@@ -42,7 +42,6 @@ void PhotoRanker::rank_all_files()    {
 float PhotoRanker::calculate_frame_ranking(const InputFrame &input_frame)  {
     int width, height;
     InputFrameReader input_frame_reader(input_frame);
-    input_frame_reader.load_input_frame_data();
     const std::vector<PixelType> brightness = input_frame_reader.get_monochrome_data();
     input_frame_reader.get_photo_resolution(&width, &height);
 

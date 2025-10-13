@@ -42,7 +42,6 @@ int main(int argc, const char **argv) {
         int width, height;
         InputFrame input_frame(input_files[0]);
         InputFrameReader input_frame_reader(input_frame);
-        input_frame_reader.load_input_frame_data();
         input_frame_reader.get_photo_resolution(&width, &height);
         cout << "Photo resolution: " << width << "x" << height << "\n";
 

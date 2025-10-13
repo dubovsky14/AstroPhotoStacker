@@ -9,10 +9,14 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
-InputFrameReader::InputFrameReader(const InputFrame &input_frame) : m_input_frame(input_frame) {
+InputFrameReader::InputFrameReader(const InputFrame &input_frame, bool load_image_data) : m_input_frame(input_frame) {
     m_is_raw_before_debayering = AstroPhotoStacker::is_raw_file(input_frame.get_file_address());
     m_is_raw_file = m_is_raw_before_debayering;
     m_data_are_loaded = false;
+
+    if (load_image_data) {
+        load_input_frame_data();
+    }
 };
 
 void InputFrameReader::load_input_frame_data() {

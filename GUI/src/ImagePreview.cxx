@@ -50,7 +50,6 @@ void ImagePreview::initialize_bitmap()    {
 
 void ImagePreview::read_preview_from_frame(const InputFrame &input_frame)  {
     InputFrameReader input_frame_data(input_frame);
-    input_frame_data.load_input_frame_data();
     input_frame_data.debayer();
     m_original_image = input_frame_data.get_rgb_data();
     const int width_original = input_frame_data.get_width();

@@ -158,7 +158,6 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
     const InputFrame &first_frame = group_to_stack.input_frames[0];
 
     InputFrameReader reader(first_frame);
-    reader.load_input_frame_data();
     reader.get_photo_resolution(&width_original, &height_original);
     std::unique_ptr<StackerBase> stacker = create_stacker(group_to_stack.stack_settings, 3, width_original, height_original);
 

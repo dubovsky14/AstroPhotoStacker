@@ -13,7 +13,6 @@ using namespace std;
 
 CalibrationFrameBase::CalibrationFrameBase(const InputFrame &input_frame) {
     InputFrameReader input_frame_reader(input_frame);
-    input_frame_reader.load_input_frame_data();
     m_width = input_frame_reader.get_width();
     m_height = input_frame_reader.get_height();
 

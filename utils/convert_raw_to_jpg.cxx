@@ -72,7 +72,6 @@ int main(int argc, char **argv) {
         int width, height;
         InputFrame input_frame(input_file);
         InputFrameReader reader(input_frame);
-        reader.load_input_frame_data();
         reader.get_photo_resolution(&width, &height);
         vector<PixelType> brightness = reader.get_raw_data();
         vector<vector<PixelType>> rgb_image = reader.get_rgb_data();

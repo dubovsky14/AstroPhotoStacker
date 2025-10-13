@@ -68,7 +68,6 @@ namespace AstroPhotoStacker {
 
     inline FrameStatistics get_frame_statistics(const InputFrame &input_frame) {
         InputFrameReader input_frame_data(input_frame);
-        input_frame_data.load_input_frame_data();
         input_frame_data.debayer();
         return get_frame_statistics(input_frame_data.get_rgb_data());
     }
