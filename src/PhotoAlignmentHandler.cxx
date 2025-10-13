@@ -138,7 +138,6 @@ void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const
         else {
             cout << "Plate solving failed for frame: " + input_frame.to_string() + "\n";
         }
-
         m_n_files_aligned += 1;
     };
 

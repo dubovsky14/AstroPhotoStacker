@@ -10,7 +10,7 @@ ImageRanker::ImageRanker(const vector<PixelType> &image_brightness, int width, i
 
     // Check if PixelType is short int
     static_assert(sizeof(PixelType) == sizeof(short int), "PixelType must be short int");
-    cv::Mat img16(height, width, CV_16SC1, (void*)image_brightness.data());
+    cv::Mat img16(height, width, CV_16UC1, (void*)image_brightness.data());
 
     // Convert to float for math
     cv::Mat img;

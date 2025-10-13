@@ -20,10 +20,7 @@ ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const InputFrame 
 
     m_threshold_fraction = threshold_fraction;
 
-    InputFrameReader reader(input_frame);
-    reader.load_input_frame_data();
-    reader.get_photo_resolution(&m_width, &m_height);
-    const vector<PixelType> brightness = reader.get_monochrome_data();
+    const vector<PixelType> brightness = read_image_monochrome(input_frame, &m_width, &m_height);
     initialize(brightness.data(), m_width, m_height, threshold_fraction);
 };
 
@@ -35,10 +32,7 @@ ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const PixelType *
 
 PlateSolvingResult ReferencePhotoHandlerPlanetary::calculate_alignment(const InputFrame &input_frame, float *ranking) const{
     int width, height;
-    InputFrameReader reader(input_frame);
-    reader.load_input_frame_data();
-    reader.get_photo_resolution(&width, &height);
-    const vector<PixelType> brightness = reader.get_monochrome_data();
+    const vector<PixelType> brightness = read_image_monochrome(input_frame, &width, &height);
 
     MonochromeImageData image_data;
     image_data.brightness = brightness.data();

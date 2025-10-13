@@ -97,10 +97,11 @@ std::vector<PixelType> InputFrameReader::get_monochrome_data() {
     std::vector<PixelType> result(m_rgb_data[0].size(), 0);
     const int n_channels = m_rgb_data.size();
     for (size_t i = 0; i < m_rgb_data[0].size(); i++) {
+        int value = 0;
         for (int c = 0; c < n_channels; c++) {
-            result[i] += static_cast<int>(m_rgb_data[c][i]);
+            value += static_cast<int>(m_rgb_data[c][i]);
         }
-        result[i] /= n_channels;
+        result[i] = value / n_channels;
     }
     return result;
 };
