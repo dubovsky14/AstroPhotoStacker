@@ -418,6 +418,7 @@ void MyFrame::add_files_to_stack_checkbox()  {
 
     // button for keeping only best N files
     wxButton *button_keep_best = new wxButton(header_panel, wxID_ANY, "Keep best N", wxDefaultPosition, wxDefaultSize);
+    button_keep_best->SetToolTip("Keep only the best N files based on their ranking (N will be selected in the dialog after clicking on this button). Useful for removing bad quality frames (with star trails or bad seeing).");
     button_keep_best->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         const int n_files = m_filelist_handler_gui_interface.get_number_of_all_frames();
         const wxString default_value = wxString::Format(wxT("%d"), n_files);
@@ -878,6 +879,7 @@ void MyFrame::update_algorithm_specific_settings_gui()  {
 
 void MyFrame::add_hot_pixel_correction_checkbox()    {
     wxCheckBox* checkbox_hot_pixel_correction = new wxCheckBox(this, wxID_ANY, "Hot pixel correction");
+    checkbox_hot_pixel_correction->SetToolTip("This will correct hot pixels in each frame before stacking. Hot pixels are identified using the 'Identify hot pixels' button. If no hot pixel identification has been performed, this option cannot be enabled.");
     checkbox_hot_pixel_correction->Bind(wxEVT_CHECKBOX, [checkbox_hot_pixel_correction, this](wxCommandEvent&){
         if (m_hot_pixel_identifier == nullptr && checkbox_hot_pixel_correction->GetValue())    {
             wxMessageDialog *dialog = new wxMessageDialog(this, "Hot pixel identification not performed. Please run it first!", "Hot pixel identification");
