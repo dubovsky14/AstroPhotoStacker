@@ -492,10 +492,10 @@ void MyFrame::add_files_to_stack_checkbox()  {
     m_files_to_stack_checkbox->Bind(wxEVT_LISTBOX, [this](wxCommandEvent &event){
         const int index = event.GetSelection();
         m_filelist_handler_gui_interface.set_selected_frame_index(index);
-        const bool update_needed = update_checked_files_in_filelist();
+        const bool update_needed = !update_checked_files_in_filelist();
 
         // Do not update the preview if the files was just checked/unchecked - it is slow
-        if (!update_needed) {
+        if (update_needed) {
             update_image_preview_file(index);
         }
     });

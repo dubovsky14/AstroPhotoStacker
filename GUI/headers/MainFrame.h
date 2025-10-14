@@ -149,7 +149,7 @@ class MyFrame : public wxFrame  {
         wxStaticText        *m_cut_off_average_text         = nullptr;
         wxSpinCtrlDouble    *m_spin_ctrl_cut_off_average    = nullptr;
 
-        int                             m_preview_size[2]   = {600, 400};
+        std::array<int, 2>   m_preview_size   = {600, 400};
         std::unique_ptr<ImagePreview>   m_current_preview = std::make_unique<ImagePreview>(this, m_preview_size[0], m_preview_size[1], 255, true);
         std::unique_ptr<FloatingPointSlider> m_exposure_correction_slider   = nullptr;
 
