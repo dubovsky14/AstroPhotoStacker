@@ -91,7 +91,7 @@ wxImage ImagePreview::get_updated_wximage()  const  {
     wxImage image_wx(m_width, m_height);
     const bool apply_additional_layers = m_additional_layers_preview.size() == 3;
 
-    const float scale_factor = pow(2,m_exposure_correction)*2*255.0 / m_max_value;
+    const float scale_factor = pow(2,m_exposure_correction)*255.0 / m_max_value;
     for (int y = 0; y < m_height; ++y) {
         for (int x = 0; x < m_width; ++x) {
             const int index = x + y*m_width;
