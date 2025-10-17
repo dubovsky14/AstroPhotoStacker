@@ -115,11 +115,6 @@ bool ReferencePhotoHandlerComet::fit_comet_path() {
         ts -= m_minimal_timestamp;
     }
 
-    cout << "Timestamps and comet positions used for fitting:\n";
-    for (size_t i = 0; i < timestamps.size(); ++i) {
-        cout << "  Time: " << timestamps[i] << " s, Position: (" << positions_x[i] << ", " << positions_y[i] << ")\n";
-    }
-
     if (timestamps.size() < 2) {
         return false;
     }
@@ -155,10 +150,6 @@ bool ReferencePhotoHandlerComet::fit_comet_path() {
         const int timestamp = input_frame_reader_reference_frame.get_metadata().timestamp;
         m_comet_position_reference_frame = calculate_expected_comet_position(timestamp);
     }
-
-    cout << "Fitted comet path: \n";
-    cout << "  Initial position (pixels at time=0): (" << m_comet_initial_position.first << ", " << m_comet_initial_position.second << ")\n";
-    cout << "  Velocity (pixels/second): (" << m_comet_velocity.first << ", " << m_comet_velocity.second << ")\n";
 
     return true;
 };
