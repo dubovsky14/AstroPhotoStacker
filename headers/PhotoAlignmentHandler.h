@@ -143,6 +143,8 @@ namespace   AstroPhotoStacker   {
 
             void set_alignment_box_vector_storage(std::vector<AlignmentPointBox> *alignment_box_vector_storage) {m_alignment_box_vector_storage = alignment_box_vector_storage;};
 
+            std::map<InputFrame, std::pair<float, float>>& get_comet_positions_map() {return m_comet_positions;};
+
         private:
             InputFrame m_reference_frame;
             std::vector<FileAlignmentInformation> m_alignment_information_vector;
@@ -156,5 +158,7 @@ namespace   AstroPhotoStacker   {
             std::string m_alignment_method = "stars";
 
             std::unique_ptr<ReferencePhotoHandlerBase> reference_photo_handler_factory(const InputFrame &input_frame) const;
+
+            std::map<InputFrame, std::pair<float, float>> m_comet_positions;
     };
 }

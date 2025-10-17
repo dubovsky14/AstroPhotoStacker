@@ -3,6 +3,7 @@
 #include "../headers/ReferencePhotoHandlerPlanetary.h"
 #include "../headers/ReferencePhotoHandlerPlanetaryZeroRotation.h"
 #include "../headers/ReferencePhotoHandlerSurface.h"
+#include "../headers/ReferencePhotoHandlerComet.h"
 #include "../headers/Common.h"
 #include "../headers/PhotoRanker.h"
 #include "../headers/SharpnessRanker.h"
@@ -112,6 +113,18 @@ void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const
     if (m_alignment_box_vector_storage && surface_handler != nullptr) {
         *m_alignment_box_vector_storage = surface_handler->get_alignment_boxes();
     }
+
+    ReferencePhotoHandlerComet *comet_handler = dynamic_cast<ReferencePhotoHandlerComet*>(m_reference_photo_handler.get());
+    if (comet_handler != nullptr) {
+        for (const std::pair<const InputFrame, std::pair<float, float>> &comet_position_entry : m_comet_positions) {
+            comet_handler->add_comet_position(comet_position_entry.first, comet_position_entry.second.first, comet_position_entry.second.second);
+        }
+        const bool fit_success = comet_handler->fit_comet_path();
+        if (!fit_success) {
+            cout << "Warning: Comet path fitting failed.\n";
+        }
+    }
+
     const unsigned int n_files = files.size();
     m_alignment_information_vector.resize(n_files);
     m_local_shifts_vector.resize(n_files);
@@ -246,6 +259,9 @@ unique_ptr<ReferencePhotoHandlerBase> PhotoAlignmentHandler::reference_photo_han
     }
     else if (m_alignment_method == "surface") {
         return make_unique<ReferencePhotoHandlerSurface>(input_frame, 0.05);
+    }
+    else if (m_alignment_method == "comet") {
+        return  make_unique<ReferencePhotoHandlerComet>(input_frame);
     }
     else {
         throw runtime_error("Invalid alignment method: " + m_alignment_method);
