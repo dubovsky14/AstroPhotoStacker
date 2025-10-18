@@ -75,6 +75,7 @@ void ImagePreview::update_original_image(const std::vector<std::vector<PixelType
     m_image_resize_tool.set_default_resized_area();
     update_max_values_original();
     update_preview_data();
+    on_update_original_image();
 };
 
 void ImagePreview::read_preview_from_stacked_image(const std::vector<std::vector<double>> &stacked_image, int width_original, int height_original)  {

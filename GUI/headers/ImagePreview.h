@@ -225,4 +225,7 @@ class ImagePreview {
         void update_additional_layers_data();
 
         int get_interpolated_original_image_data(const std::vector<PixelType> &original_image_channel_data, float x, float y) const;
+
+        // Hook for derived classes to react on original image update
+        virtual void on_update_original_image() {};
 };
