@@ -29,7 +29,7 @@ class ImagePreviewCometSelectionTool : public ImagePreview {
 
         virtual void on_update_original_image() override;
 
-        void plot_stars(wxImage *wx_image);
+        void plot_stars();
 
         void add_circle_to_additional_layers(float center_x, float center_y, float radius_outer, float radius_inner, std::array<int,3> color);
 

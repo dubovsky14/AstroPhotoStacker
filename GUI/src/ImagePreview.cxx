@@ -51,16 +51,11 @@ void ImagePreview::initialize_bitmap()    {
 void ImagePreview::read_preview_from_frame(const InputFrame &input_frame)  {
     InputFrameReader input_frame_data(input_frame);
     input_frame_data.debayer();
-    m_original_image = input_frame_data.get_rgb_data();
+    std::vector<std::vector<PixelType>> original_image = input_frame_data.get_rgb_data();
     const int width_original = input_frame_data.get_width();
     const int height_original = input_frame_data.get_height();
-    m_image_resize_tool.set_original_size(width_original, height_original);
 
-    m_zoom_factor_one_to_one = std::min<double>(m_image_resize_tool.get_height_original()/m_height, m_image_resize_tool.get_width_original()/m_width);
-    m_max_zoom_factor = 3*m_zoom_factor_one_to_one;
-    m_image_resize_tool.set_default_resized_area();
-    update_max_values_original();
-    update_preview_data();
+    update_original_image(std::move(original_image), width_original, height_original);
 };
 
 void ImagePreview::read_preview_from_file(const std::string &path)  {
@@ -258,14 +253,14 @@ void ImagePreview::update_preview_data(float mouse_position_relative_x, float mo
                     const float x_original = m_image_resize_tool.get_original_coordinate_x((i_preview_x+0.5f)/m_width);
                     const float y_original = m_image_resize_tool.get_original_coordinate_y((i_preview_y+0.5f)/m_height);
 
-                    m_preview_data[i_color][index_new] = get_interpolated_original_image_data(m_original_image[i_color], x_original, y_original);
+                    m_preview_data[i_color].at(index_new) = get_interpolated_original_image_data(m_original_image[i_color], x_original, y_original);
 
                     if (has_additional_layers && i_color == 0) {
-                        const bool valid_pixel = get_interpolated_original_image_data(m_additional_layers_preview[0], x_original, y_original) >= 0;
+                        const bool valid_pixel = get_interpolated_original_image_data(m_additional_layers_data[0], x_original, y_original) >= 0;
                         if (valid_pixel) {
-                            m_additional_layers_preview[0][index_new] = get_interpolated_original_image_data(m_additional_layers_preview[0], x_original, y_original);
-                            m_additional_layers_preview[1][index_new] = get_interpolated_original_image_data(m_additional_layers_preview[1], x_original, y_original);
-                            m_additional_layers_preview[2][index_new] = get_interpolated_original_image_data(m_additional_layers_preview[2], x_original, y_original);
+                            m_additional_layers_preview[0].at(index_new) = get_interpolated_original_image_data(m_additional_layers_data[0], x_original, y_original);
+                            m_additional_layers_preview[1].at(index_new) = get_interpolated_original_image_data(m_additional_layers_data[1], x_original, y_original);
+                            m_additional_layers_preview[2].at(index_new) = get_interpolated_original_image_data(m_additional_layers_data[2], x_original, y_original);
                         }
                     }
                 }
