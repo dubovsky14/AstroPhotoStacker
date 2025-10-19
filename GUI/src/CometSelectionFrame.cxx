@@ -8,7 +8,7 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 CometSelectionFrame::CometSelectionFrame(AlignmentFrame *parent, std::map<InputFrame, std::pair<float,float>> *comet_positions_storage, std::vector<AstroPhotoStacker::InputFrame> frames_to_select_from) :
-    wxDialog(parent, wxID_ANY, "Select comet position in frame",  wxDefaultPosition, wxSize(700, 800))   {
+    wxDialog(parent, wxID_ANY, "Select comet position in frame (right-click)",  wxDefaultPosition, wxSize(700, 800))   {
 
     m_comet_positions_storage = comet_positions_storage;
     m_frames_to_select_from = frames_to_select_from;
@@ -96,6 +96,17 @@ void CometSelectionFrame::add_frames_dropdown_menu() {
 };
 
 void CometSelectionFrame::add_control_buttons() {
+
+    // HELP button
+    wxButton* button_help = new wxButton(this, wxID_ANY, "HELP");
+    button_help->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        wxMessageDialog dialog(this, "Select the position of the comet in a frame by right-clicking on the preview image. Do this for at least two frames (ideally, the first and last), but more the better. The program will then run least squares fit on the frames with selected positions to extract the comet initial position and velocity.", "Help", wxOK | wxICON_INFORMATION);
+        dialog.ShowModal();
+    });
+    m_main_vertical_sizer->Add(button_help, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 10);
+
+
+
     m_buttons_horizontal_sizer = new wxBoxSizer(wxHORIZONTAL);
 
     auto add_button_to_sizer = [this](const std::string &label, std::function<void(wxCommandEvent&)> callback) {
@@ -141,6 +152,7 @@ void CometSelectionFrame::add_control_buttons() {
         }
         EndModal(wxID_OK);
     });
+    button_ok->SetToolTip("Proceed with the selected comet positions. It is necessary to select at least two positions, ideally the first and last frame, but more the better.");
 
     m_main_vertical_sizer->Add(button_ok, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 10);
 };
