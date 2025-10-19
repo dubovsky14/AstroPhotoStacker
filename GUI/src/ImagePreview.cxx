@@ -15,7 +15,7 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-ImagePreview::ImagePreview(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation)    {
+ImagePreview::ImagePreview(wxWindow *parent, int width, int height, int max_value, bool use_color_interpolation)    {
     m_parent = parent;
     m_width = width;
     m_height = height;

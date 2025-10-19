@@ -29,7 +29,7 @@ class ImagePreview {
          * @param max_value maximum value of the pixel
          * @param use_color_interpolation whether to use color interpolation when resizing the image
         */
-        ImagePreview(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation);
+        ImagePreview(wxWindow *parent, int width, int height, int max_value, bool use_color_interpolation);
 
 
         /**
@@ -184,7 +184,7 @@ class ImagePreview {
         void remove_layer(const std::string &layer_name);
 
     protected:
-        wxFrame *m_parent = nullptr;
+        wxWindow *m_parent = nullptr;
         wxGenericStaticBitmap                  *m_preview_bitmap       = nullptr;
         ImageResizeTool m_image_resize_tool;
 

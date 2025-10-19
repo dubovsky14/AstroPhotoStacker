@@ -17,9 +17,6 @@
 #include "../../headers/HotPixelIdentifier.h"
 #include "../../headers/StackerBase.h"
 
-
-#include "../headers/ImagePreviewCometSelectionTool.h"
-
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
 #include <wx/generic/statbmpg.h>
@@ -152,7 +149,7 @@ class MyFrame : public wxFrame  {
         wxSpinCtrlDouble    *m_spin_ctrl_cut_off_average    = nullptr;
 
         std::array<int, 2>   m_preview_size   = {600, 400};
-        std::unique_ptr<ImagePreview>   m_current_preview = std::make_unique<ImagePreviewCometSelectionTool>(this, m_preview_size[0], m_preview_size[1], 255, true);
+        std::unique_ptr<ImagePreview>   m_current_preview = std::make_unique<ImagePreview>(this, m_preview_size[0], m_preview_size[1], 255, true);
         std::unique_ptr<FloatingPointSlider> m_exposure_correction_slider   = nullptr;
 
         std::unique_ptr<HistogramDataTool> m_histogram_data_tool            = nullptr;

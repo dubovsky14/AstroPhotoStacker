@@ -139,6 +139,12 @@ bool ReferencePhotoHandlerComet::fit_comet_path() {
         return std::make_pair(slope, intercept);
     };
 
+    cout << "Fitting comet path through " << timestamps.size() << " positions. Data:" << endl;
+    for (size_t i = 0; i < timestamps.size(); ++i) {
+        cout << "  t = " << timestamps[i] << "s, x = " << positions_x[i] << ", y = " << positions_y[i] << endl;
+    }
+
+
     const auto [v_x, initial_x] = least_squares_fit(timestamps, positions_x);
     const auto [v_y, initial_y] = least_squares_fit(timestamps, positions_y);
 
@@ -150,6 +156,10 @@ bool ReferencePhotoHandlerComet::fit_comet_path() {
         const int timestamp = input_frame_reader_reference_frame.get_metadata().timestamp;
         m_comet_position_reference_frame = calculate_expected_comet_position(timestamp);
     }
+
+    cout << "Fitted comet path: " << endl;
+    cout << "  Initial position: (" << m_comet_initial_position.first << ", " << m_comet_initial_position.second << ")" << endl;
+    cout << "  Velocity: (" << m_comet_velocity.first << ", " << m_comet_velocity.second << ")" << endl;
 
     return true;
 };

@@ -13,11 +13,13 @@ class ImagePreviewCometSelectionTool : public ImagePreview {
          * @param max_value maximum value of the pixel
          * @param use_color_interpolation whether to use color interpolation when resizing the image
         */
-        ImagePreviewCometSelectionTool(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation);
+        ImagePreviewCometSelectionTool(wxWindow *parent, int width, int height, int max_value, bool use_color_interpolation);
 
         virtual void update_preview_bitmap() override;
 
         std::pair<float,float> get_comet_position() const { return m_comet_position; };
+
+        void set_comet_position(float x, float y);
 
     protected:
 

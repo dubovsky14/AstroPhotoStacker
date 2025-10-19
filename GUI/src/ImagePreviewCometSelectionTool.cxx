@@ -7,7 +7,7 @@
 using namespace std;
 
 
-ImagePreviewCometSelectionTool::ImagePreviewCometSelectionTool(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation) :
+ImagePreviewCometSelectionTool::ImagePreviewCometSelectionTool(wxWindow *parent, int width, int height, int max_value, bool use_color_interpolation) :
     ImagePreview(parent, width, height, max_value, use_color_interpolation) {
     bind_comet_selection_events();
 };
@@ -19,6 +19,12 @@ void ImagePreviewCometSelectionTool::update_preview_bitmap()   {
     wxBitmap bitmap(image_wx);
 
     m_preview_bitmap->SetBitmap(bitmap);
+};
+
+
+void ImagePreviewCometSelectionTool::set_comet_position(float x, float y) {
+    m_comet_position = std::make_pair(x, y);
+    plot_stars();
 };
 
 
@@ -59,6 +65,8 @@ std::vector<std::pair<float,float>> ImagePreviewCometSelectionTool::calculate_st
 
 void ImagePreviewCometSelectionTool::on_update_original_image() {
     m_star_positions = calculate_star_positions();
+    m_comet_position = std::make_pair(-1.0f, -1.0f);
+    update_preview_bitmap();
 };
 
 void ImagePreviewCometSelectionTool::plot_stars() {
