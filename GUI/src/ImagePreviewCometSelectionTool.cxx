@@ -64,6 +64,7 @@ std::vector<std::pair<float,float>> ImagePreviewCometSelectionTool::calculate_st
 }
 
 void ImagePreviewCometSelectionTool::on_update_original_image() {
+    remove_layer(c_comet_layer_name);
     m_star_positions = calculate_star_positions();
     m_comet_position = std::make_pair(-1.0f, -1.0f);
     update_preview_bitmap();
@@ -82,7 +83,7 @@ void ImagePreviewCometSelectionTool::add_circle_to_additional_layers(float cente
     const int radius_outer_squared = static_cast<int>(radius_outer * radius_outer);
     const int radius_inner_squared = static_cast<int>(radius_inner * radius_inner);
 
-    add_layer("Comet Position", [=](std::vector<std::vector<PixelType>> *layer_data, int width, int height) {
+    add_layer(c_comet_layer_name, [=](std::vector<std::vector<PixelType>> *layer_data, int width, int height) {
         const int x_start = static_cast<int>(max(0.0f, center_x - radius_outer));
         const int x_end = static_cast<int>(min(static_cast<float>(width - 1), center_x + radius_outer));
         const int y_start = static_cast<int>(max(0.0f, center_y - radius_outer));
@@ -134,4 +135,19 @@ void ImagePreviewCometSelectionTool::bind_comet_selection_events() {
             plot_stars();
         }
     });
+};
+
+int ImagePreviewCometSelectionTool::get_closest_star_index(float x, float y) const {
+    int closest_index = -1;
+    float min_distance_squared = std::numeric_limits<float>::max();
+    for (size_t i = 0; i < m_star_positions.size(); ++i) {
+        const float dx = m_star_positions[i].first - x;
+        const float dy = m_star_positions[i].second - y;
+        const float distance_squared = dx * dx + dy * dy;
+        if (distance_squared < min_distance_squared) {
+            min_distance_squared = distance_squared;
+            closest_index = static_cast<int>(i);
+        }
+    }
+    return closest_index;
 };

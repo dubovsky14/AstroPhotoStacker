@@ -35,17 +35,27 @@ class CometSelectionFrame : public wxDialog  {
         std::unique_ptr<ImagePreviewCometSelectionTool> m_image_preview_comet_selection_tool = nullptr;
 
         std::vector<AstroPhotoStacker::InputFrame> m_frames_to_select_from;
-        AstroPhotoStacker::InputFrame m_current_frame;
+        int m_current_frame_index = -1;
 
 
         wxBoxSizer *m_main_vertical_sizer = nullptr;
+        wxBoxSizer *m_buttons_horizontal_sizer = nullptr;
         CombinedColorStrecherTool m_color_stretcher; // for exposure correction
         std::unique_ptr<FloatingPointSlider> m_exposure_correction_slider   = nullptr;
+
+        const std::string c_summary_text_template = "Frames with selected comet positions: ";
+        wxStaticText* m_summary_wx_static_text = nullptr;
 
 
         void add_image_preview();
 
         void add_exposure_correction_spin_ctrl();
+
+        std::string build_summary_text() const;
+
+        void update_summary_text();
+
+        void add_summary_of_selected_positions();
 
         void add_frames_dropdown_menu();
 
@@ -53,5 +63,5 @@ class CometSelectionFrame : public wxDialog  {
 
         void sort_frames_by_timestamp();
 
-        void update_image_preview(const AstroPhotoStacker::InputFrame &frame);
+        void update_image_preview(int frame_index);
 };

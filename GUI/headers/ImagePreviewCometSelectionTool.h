@@ -22,6 +22,7 @@ class ImagePreviewCometSelectionTool : public ImagePreview {
         void set_comet_position(float x, float y);
 
     protected:
+        const std::string c_comet_layer_name = "comet";
 
         std::vector<std::pair<float,float>> calculate_star_positions();
 
@@ -37,18 +38,5 @@ class ImagePreviewCometSelectionTool : public ImagePreview {
 
         void bind_comet_selection_events();
 
-        int get_closest_star_index(float x, float y) const {
-            int closest_index = -1;
-            float min_distance_squared = std::numeric_limits<float>::max();
-            for (size_t i = 0; i < m_star_positions.size(); ++i) {
-                const float dx = m_star_positions[i].first - x;
-                const float dy = m_star_positions[i].second - y;
-                const float distance_squared = dx * dx + dy * dy;
-                if (distance_squared < min_distance_squared) {
-                    min_distance_squared = distance_squared;
-                    closest_index = static_cast<int>(i);
-                }
-            }
-            return closest_index;
-        };
+        int get_closest_star_index(float x, float y) const;
 };

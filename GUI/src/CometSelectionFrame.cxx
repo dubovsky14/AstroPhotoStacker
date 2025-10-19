@@ -21,9 +21,13 @@ CometSelectionFrame::CometSelectionFrame(AlignmentFrame *parent, std::map<InputF
 
     add_exposure_correction_spin_ctrl();
 
+    add_summary_of_selected_positions();
+
     add_frames_dropdown_menu();
 
     add_control_buttons();
+
+
 };
 
 
@@ -53,7 +57,22 @@ void CometSelectionFrame::add_exposure_correction_spin_ctrl()   {
             m_image_preview_comet_selection_tool->update_preview_bitmap();
         }
     );
-    m_exposure_correction_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
+    m_exposure_correction_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND | wxTOP, 5);
+};
+
+void CometSelectionFrame::add_summary_of_selected_positions() {
+    m_summary_wx_static_text = new wxStaticText(this, wxID_ANY, build_summary_text());
+    m_main_vertical_sizer->Add(m_summary_wx_static_text, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
+};
+
+std::string CometSelectionFrame::build_summary_text() const {
+    const int total_frames = static_cast<int>(m_frames_to_select_from.size());
+    const int frames_with_positions = static_cast<int>(m_comet_positions_storage->size());
+    return c_summary_text_template + std::to_string(frames_with_positions) + " / " + std::to_string(total_frames);
+};
+
+void CometSelectionFrame::update_summary_text() {
+    m_summary_wx_static_text->SetLabel(build_summary_text());
 };
 
 void CometSelectionFrame::add_frames_dropdown_menu() {
@@ -66,10 +85,10 @@ void CometSelectionFrame::add_frames_dropdown_menu() {
     }
     wxChoice* choice_box_frame = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, frame_names.size(), frame_names.data());
     choice_box_frame->SetSelection(0);
-    update_image_preview(m_frames_to_select_from[0]);
+    update_image_preview(0);
     choice_box_frame->Bind(wxEVT_CHOICE, [this, choice_box_frame](wxCommandEvent&){
         int current_selection = choice_box_frame->GetSelection();
-        update_image_preview(m_frames_to_select_from[current_selection]);
+        update_image_preview(current_selection);
     });
     m_main_vertical_sizer->Add(select_file_text, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
     m_main_vertical_sizer->Add(choice_box_frame, 0,  wxEXPAND, 5);
@@ -77,14 +96,53 @@ void CometSelectionFrame::add_frames_dropdown_menu() {
 };
 
 void CometSelectionFrame::add_control_buttons() {
-    wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
+    m_buttons_horizontal_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-    wxButton* button_next_frame = new wxButton(this, wxID_ANY, "Next frame");
-    button_next_frame->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+    auto add_button_to_sizer = [this](const std::string &label, std::function<void(wxCommandEvent&)> callback) {
+        wxButton* button = new wxButton(this, wxID_ANY, label);
+        button->Bind(wxEVT_BUTTON, callback);
+        m_buttons_horizontal_sizer->Add(button, 1, wxEXPAND, 5);
+    };
 
+    add_button_to_sizer("First frame", [this](wxCommandEvent&){
+        update_image_preview(0);
     });
-    button_sizer->Add(button_next_frame, 0, wxEXPAND, 5);
-    m_main_vertical_sizer->Add(button_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
+
+    add_button_to_sizer("Previous frame", [this](wxCommandEvent&){
+        int new_index = (m_current_frame_index - 1 + m_frames_to_select_from.size()) % m_frames_to_select_from.size();
+        update_image_preview(new_index);
+    });
+
+    add_button_to_sizer("Next frame", [this](wxCommandEvent&){
+        int new_index = (m_current_frame_index + 1) % m_frames_to_select_from.size();
+        update_image_preview(new_index);
+    });
+
+    add_button_to_sizer("Last frame", [this](wxCommandEvent&){
+        update_image_preview(static_cast<int>(m_frames_to_select_from.size()) - 1);
+    });
+
+    m_main_vertical_sizer->Add(m_buttons_horizontal_sizer, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
+
+
+    // OK button
+    wxButton* button_ok = new wxButton(this, wxID_ANY, "OK");
+    button_ok->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        const std::pair<float,float> comet_position = m_image_preview_comet_selection_tool->get_comet_position();
+        if (comet_position.first >= 0 && comet_position.second >= 0)   {
+            // save last comet position
+            (*m_comet_positions_storage)[m_frames_to_select_from[m_current_frame_index]] = comet_position;
+        }
+
+        if (m_comet_positions_storage->size() < 2) {
+            wxMessageDialog dialog(this, "Please select at least two comet positions.", "Error", wxOK | wxICON_ERROR);
+            dialog.ShowModal();
+            return;
+        }
+        EndModal(wxID_OK);
+    });
+
+    m_main_vertical_sizer->Add(button_ok, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 10);
 };
 
 void CometSelectionFrame::sort_frames_by_timestamp() {
@@ -103,17 +161,18 @@ void CometSelectionFrame::sort_frames_by_timestamp() {
     );
 };
 
-void CometSelectionFrame::update_image_preview(const AstroPhotoStacker::InputFrame &frame) {
+void CometSelectionFrame::update_image_preview(int frame_index) {
+    const InputFrame &frame = m_frames_to_select_from[frame_index];
     const std::pair<float,float> comet_position = m_image_preview_comet_selection_tool->get_comet_position();
     if (comet_position.first >= 0 && comet_position.second >= 0)   {
         // save previous comet position
-        (*m_comet_positions_storage)[m_current_frame] = comet_position;
-        cout << "Stored comet position for frame " << m_current_frame.to_gui_string() << ": (" << comet_position.first << ", " << comet_position.second << ")" << endl;
+        (*m_comet_positions_storage)[m_frames_to_select_from[m_current_frame_index]] = comet_position;
     }
     m_image_preview_comet_selection_tool->read_preview_from_frame(frame);
     if (m_comet_positions_storage->find(frame) != m_comet_positions_storage->end()) {
         const std::pair<float,float> &stored_comet_position = (*m_comet_positions_storage)[frame];
         m_image_preview_comet_selection_tool->set_comet_position(stored_comet_position.first, stored_comet_position.second);
     }
-    m_current_frame = frame;
+    m_current_frame_index = frame_index;
+    update_summary_text();
 };

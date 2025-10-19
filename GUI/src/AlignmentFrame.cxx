@@ -267,16 +267,11 @@ void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
         }
 
         if (m_stack_settings->get_alignment_method() == "comet") {
-            cout << "Comet alignment selected" << endl;
             std::map<InputFrame, std::pair<float,float>> comet_positions_storage;
             CometSelectionFrame comet_selection_frame(this, &comet_positions_storage, m_frames_to_align);
 
             // wait until the comet selection frame is closed
             comet_selection_frame.ShowModal();
-
-            for (const auto& [frame, position] : comet_positions_storage) {
-                cout << "Comet position for frame " << frame.to_gui_string() << ": (" << position.first << ", " << position.second << ")" << endl;
-            }
 
             photo_alignment_handler.get_comet_positions_map() = comet_positions_storage;
         }
