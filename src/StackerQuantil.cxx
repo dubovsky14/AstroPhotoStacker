@@ -9,7 +9,7 @@ StackerQuantil::StackerQuantil(int number_of_colors, int width, int height, bool
 
 double StackerQuantil::get_stacked_value_from_pixel_array(PixelType *ordered_array_begin, unsigned int number_of_stacked_pixels) {
     const unsigned int selected_pixel = int(m_quantil_fraction*number_of_stacked_pixels + 0.5);
-    if (number_of_stacked_pixels < selected_pixel) {
+    if (number_of_stacked_pixels <= selected_pixel) {
         return c_empty_pixel_value;
     }
 
