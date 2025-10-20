@@ -1,5 +1,6 @@
 #include "../headers/AlignmentFrame.h"
 #include "../headers/ProgressBarWindow.h"
+#include "../headers/CometSelectionFrame.h"
 
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/thread_pool.h"
@@ -263,6 +264,16 @@ void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
         if (m_alignment_box_vector_storage != nullptr) {
             m_alignment_box_vector_storage->clear();
             photo_alignment_handler.set_alignment_box_vector_storage(m_alignment_box_vector_storage);
+        }
+
+        if (m_stack_settings->get_alignment_method() == "comet") {
+            std::map<InputFrame, std::pair<float,float>> comet_positions_storage;
+            CometSelectionFrame comet_selection_frame(this, &comet_positions_storage, m_frames_to_align);
+
+            // wait until the comet selection frame is closed
+            comet_selection_frame.ShowModal();
+
+            photo_alignment_handler.get_comet_positions_map() = comet_positions_storage;
         }
 
 

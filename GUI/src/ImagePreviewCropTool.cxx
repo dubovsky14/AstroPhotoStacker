@@ -2,7 +2,7 @@
 
 using namespace std;
 
-ImagePreviewCropTool::ImagePreviewCropTool(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation) :
+ImagePreviewCropTool::ImagePreviewCropTool(wxWindow *parent, int width, int height, int max_value, bool use_color_interpolation) :
     ImagePreview(parent, width, height, max_value, use_color_interpolation) {
     bind_crop_events();
 };

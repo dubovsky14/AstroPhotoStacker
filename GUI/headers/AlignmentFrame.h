@@ -41,7 +41,7 @@ class AlignmentFrame : public wxFrame  {
 
         void add_button_align_files(MyFrame *parent);
 
-        std::vector<wxString> m_alignment_methods = {"stars", "planetary", "planetary without rotation", "surface"};
+        std::vector<wxString> m_alignment_methods = {"stars", "planetary without rotation", "surface", "comet"};
 
         AstroPhotoStacker::StackSettings *m_stack_settings = nullptr;
         FilelistHandlerGUIInterface *m_filelist_handler_gui_interface = nullptr;

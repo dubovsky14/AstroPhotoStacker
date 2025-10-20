@@ -17,7 +17,6 @@
 #include "../../headers/HotPixelIdentifier.h"
 #include "../../headers/StackerBase.h"
 
-
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
 #include <wx/generic/statbmpg.h>

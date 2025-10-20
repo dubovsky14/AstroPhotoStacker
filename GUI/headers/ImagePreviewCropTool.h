@@ -12,7 +12,7 @@ class ImagePreviewCropTool : public ImagePreview {
          * @param max_value maximum value of the pixel
          * @param use_color_interpolation whether to use color interpolation when resizing the image
         */
-        ImagePreviewCropTool(wxFrame *parent, int width, int height, int max_value, bool use_color_interpolation);
+        ImagePreviewCropTool(wxWindow *parent, int width, int height, int max_value, bool use_color_interpolation);
 
         virtual void update_preview_bitmap() override;
 

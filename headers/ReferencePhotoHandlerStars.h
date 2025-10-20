@@ -56,7 +56,7 @@ namespace AstroPhotoStacker   {
              *
              * @return PlateSolvingResult
             */
-           virtual PlateSolvingResult calculate_alignment(const InputFrame &input_frame, float *ranking = nullptr) const override;
+            virtual PlateSolvingResult calculate_alignment(const InputFrame &input_frame, float *ranking = nullptr) const override;
 
             /**
              * @brief Plate-solve a photo - calculate how it should be rotated and shifted to match the reference photo
@@ -65,9 +65,9 @@ namespace AstroPhotoStacker   {
              *
              * @return PlateSolvingResult
             */
-           PlateSolvingResult plate_solve(const std::vector<std::tuple<float, float, int> > &stars) const;
+            PlateSolvingResult plate_solve(const std::vector<std::tuple<float, float, int> > &stars) const;
 
-        private:
+        protected:
 
             std::vector<std::tuple<float, float, int> > m_stars;
             std::unique_ptr<KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>>> m_kd_tree = nullptr;
