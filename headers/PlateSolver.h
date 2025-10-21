@@ -43,9 +43,12 @@ namespace AstroPhotoStacker {
             unsigned int m_reference_photo_height;
 
             bool validate_hypothesis(   const std::vector<std::tuple<float,float,int> > &stars,
-                                        const PlateSolvingResult &plate_solving_result) const;
+                                        const PlateSolvingResult &plate_solving_result, float position_tolerance, float fraction_of_matched_stars) const;
 
-            bool has_paired_star(float x, float y, float position_error = 3)    const;
+            bool has_paired_star(float x, float y, float position_error)    const;
+
+
+            PlateSolvingResult plate_solve(const std::vector<std::tuple<float,float,int> > &stars, float position_tolerance, float fraction_of_matched_stars) const;
     };
 }
 

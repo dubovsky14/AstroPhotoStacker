@@ -17,7 +17,15 @@ PlateSolver::PlateSolver(   const KDTree<float, 4, std::tuple<unsigned, unsigned
     m_reference_photo_height(reference_photo_height)  {};
 
 
-PlateSolvingResult PlateSolver::plate_solve(  const std::vector<std::tuple<float,float,int> > &stars) const   {
+PlateSolvingResult PlateSolver::plate_solve(const std::vector<std::tuple<float,float,int> > &stars) const {
+    const PlateSolvingResult plate_solving_result = plate_solve(stars, 3, 0.5);
+    if (plate_solving_result.is_valid) {
+        return plate_solving_result;
+    }
+    return plate_solve(stars, 10, 0.6);
+};
+
+PlateSolvingResult PlateSolver::plate_solve(const std::vector<std::tuple<float,float,int> > &stars, float position_tolerance, float fraction_of_matched_stars) const {
     for (unsigned int i_star1 = 0; i_star1 < stars.size(); i_star1++)   {
         for (unsigned int i_star2 = i_star1+1; i_star2 < stars.size(); i_star2++)   {
             for (unsigned int i_star3 = i_star2+1; i_star3 < stars.size(); i_star3++)   {
@@ -55,7 +63,7 @@ PlateSolvingResult PlateSolver::plate_solve(  const std::vector<std::tuple<float
                             atan2(get<1>(this_photo_star_B) - get<1>(this_photo_star_A), get<0>(this_photo_star_B) - get<0>(this_photo_star_A));
                         plate_solving_result.is_valid = true;
 
-                        if (validate_hypothesis(stars, plate_solving_result))   {
+                        if (validate_hypothesis(stars, plate_solving_result, position_tolerance, fraction_of_matched_stars))   {
                             return plate_solving_result;
                         }
                     }
@@ -70,7 +78,7 @@ PlateSolvingResult PlateSolver::plate_solve(  const std::vector<std::tuple<float
 
 
 bool PlateSolver::validate_hypothesis(  const std::vector<std::tuple<float,float,int> > &stars,
-                                        const PlateSolvingResult &plate_solving_result) const   {
+                                        const PlateSolvingResult &plate_solving_result, float position_tolerance, float fraction_of_matched_stars) const   {
     const GeometricTransformer geometric_transformer(plate_solving_result);
     unsigned int n_stars_in_reference_frame(0), n_stars_in_reference_frame_paired(0);
 
@@ -80,12 +88,12 @@ bool PlateSolver::validate_hypothesis(  const std::vector<std::tuple<float,float
         geometric_transformer.transform_to_reference_frame(&x, &y);
         if (x >= 0 && x < m_reference_photo_width && y >= 0 && y < m_reference_photo_height)   {
             n_stars_in_reference_frame++;
-            if (has_paired_star(x,y, 10))   {
+            if (has_paired_star(x,y, position_tolerance))   {
                 n_stars_in_reference_frame_paired++;
             }
         }
     }
-    return (n_stars_in_reference_frame_paired > 0.6*n_stars_in_reference_frame) && (n_stars_in_reference_frame_paired >= 6);
+    return (n_stars_in_reference_frame_paired > fraction_of_matched_stars*n_stars_in_reference_frame) && (n_stars_in_reference_frame_paired >= 6);
 };
 
 
