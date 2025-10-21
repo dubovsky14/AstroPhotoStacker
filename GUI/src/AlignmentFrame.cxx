@@ -271,7 +271,11 @@ void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
             CometSelectionFrame comet_selection_frame(this, &comet_positions_storage, m_frames_to_align);
 
             // wait until the comet selection frame is closed
-            comet_selection_frame.ShowModal();
+            if (comet_selection_frame.ShowModal() != wxID_OK) {
+                wxMessageDialog dialog(this, "The comet alignment process was canceled.", "Help", wxOK | wxICON_INFORMATION);
+                dialog.ShowModal();
+                return;
+            }
 
             photo_alignment_handler.get_comet_positions_map() = comet_positions_storage;
         }
