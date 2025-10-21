@@ -80,12 +80,12 @@ bool PlateSolver::validate_hypothesis(  const std::vector<std::tuple<float,float
         geometric_transformer.transform_to_reference_frame(&x, &y);
         if (x >= 0 && x < m_reference_photo_width && y >= 0 && y < m_reference_photo_height)   {
             n_stars_in_reference_frame++;
-            if (has_paired_star(x,y))   {
+            if (has_paired_star(x,y, 10))   {
                 n_stars_in_reference_frame_paired++;
             }
         }
     }
-    return n_stars_in_reference_frame_paired > 0.5*n_stars_in_reference_frame;
+    return (n_stars_in_reference_frame_paired > 0.6*n_stars_in_reference_frame) && (n_stars_in_reference_frame_paired >= 6);
 };
 
 

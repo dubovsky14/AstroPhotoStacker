@@ -24,6 +24,12 @@ void ReferencePhotoHandlerStars::initialize(const PixelType *brightness, int wid
     std::vector<std::tuple<float, float, int> > stars = get_stars(&brightness[0], width, height, threshold);
     keep_only_stars_above_size(&stars, 9);
     sort_stars_by_size(&stars);
+
+    m_minimal_number_of_pixels_per_star = stars.size() >= 25 ? get<2>(stars[24]) : get<2>(stars.back());
+    keep_only_stars_above_size(&stars, m_minimal_number_of_pixels_per_star);
+    if (stars.size() > 30) {
+        stars.resize(30);
+    }
     initialize(stars, width, height);
 };
 
@@ -42,9 +48,12 @@ PlateSolvingResult ReferencePhotoHandlerStars::calculate_alignment(const InputFr
         const PixelType threshold = get_threshold_value(brightness.data(), width*height, 0.0005);
 
         vector<tuple<float,float,int> > stars = get_stars(brightness.data(), width, height, threshold);
-        keep_only_stars_above_size(&stars, 9);
+        keep_only_stars_above_size(&stars, m_minimal_number_of_pixels_per_star*1.3);
         sort_stars_by_size(&stars);
-        stars.resize(min<int>(stars.size(), 20));
+
+        if (stars.size() > 25) {
+            stars.resize(25);
+        }
 
         if (ranking != nullptr) {
             *ranking = PhotoRanker::calculate_frame_ranking(input_frame);
@@ -73,13 +82,12 @@ void ReferencePhotoHandlerStars::calculate_and_store_hashes()  {
     // to avoid duplicit hashes
     map<tuple<unsigned int,unsigned int,unsigned int,unsigned int>, char > used_hashes;
 
-    // we want to calculate the hashes for all possible combinations of 4 stars from leading 20 stars
-    const unsigned int n_stars_all_hashes = min(n_stars, 20u);
+    // we want to calculate the hashes for all possible combinations of 4 stars
     vector<float> asterism_hash_buffer;
-    for (unsigned int i_star1 = 0; i_star1 < n_stars_all_hashes; i_star1++)   {
-        for (unsigned int i_star2 = i_star1+1; i_star2 < n_stars_all_hashes; i_star2++)   {
-            for (unsigned int i_star3 = i_star2+1; i_star3 < n_stars_all_hashes; i_star3++)   {
-                for (unsigned int i_star4 = i_star3+1; i_star4 < n_stars_all_hashes; i_star4++)   {
+    for (unsigned int i_star1 = 0; i_star1 < n_stars; i_star1++)   {
+        for (unsigned int i_star2 = i_star1+1; i_star2 < n_stars; i_star2++)   {
+            for (unsigned int i_star3 = i_star2+1; i_star3 < n_stars; i_star3++)   {
+                for (unsigned int i_star4 = i_star3+1; i_star4 < n_stars; i_star4++)   {
 
                     // yeah, this is not exactly efficient, but we do it only once (for the reference photo)
                     vector<tuple<float,float,int> > four_stars_positions = {m_stars[i_star1], m_stars[i_star2], m_stars[i_star3], m_stars[i_star4]};
@@ -105,52 +113,6 @@ void ReferencePhotoHandlerStars::calculate_and_store_hashes()  {
                 }
             }
         }
-    }
-
-    // now some random hashes
-    for (unsigned int i_hash = 0; i_hash < 2000; i_hash++)   {
-        vector<unsigned int> four_stars_indices;
-        for (unsigned int i_star = 0; i_star < 4; i_star++) {
-            four_stars_indices.push_back(rand()%n_stars);
-        }
-
-        // to avoid duplicit hashes
-        sort(four_stars_indices.begin(), four_stars_indices.end());
-
-        tuple<unsigned int, unsigned int, unsigned int, unsigned int> these_indices(
-            four_stars_indices[0],
-            four_stars_indices[1],
-            four_stars_indices[2],
-            four_stars_indices[3]
-        );
-
-        if (used_hashes.find(these_indices) == used_hashes.end())   {
-            continue;
-        }
-        used_hashes[these_indices] = 1;
-
-        // ok, duplicit hashes eliminated, now we can calculate the hash itself and store it
-        vector<tuple<float,float,int> > four_stars_positions = {
-            m_stars[four_stars_indices[0]],
-            m_stars[four_stars_indices[1]],
-            m_stars[four_stars_indices[2]],
-            m_stars[four_stars_indices[3]]
-        };
-
-        unsigned int starA, starB, starC, starD;
-        const bool hash_found = calculate_asterism_hash(four_stars_positions, &asterism_hash_buffer, &starA, &starB, &starC, &starD);
-        if (!hash_found) {
-            continue;
-        }
-
-        tuple<unsigned int, unsigned int, unsigned int, unsigned int> asterism_hash_indices(
-            four_stars_indices[starA],
-            four_stars_indices[starB],
-            four_stars_indices[starC],
-            four_stars_indices[starD]
-        );
-
-        m_kd_tree->add_point(asterism_hash_buffer, asterism_hash_indices);
     }
 
     m_kd_tree->build_tree_structure();

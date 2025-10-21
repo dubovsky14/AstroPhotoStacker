@@ -73,6 +73,8 @@ namespace AstroPhotoStacker   {
             std::unique_ptr<KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>>> m_kd_tree = nullptr;
             std::unique_ptr<PlateSolver> m_plate_solver = nullptr;
 
+            int m_minimal_number_of_pixels_per_star = -1;
+
             virtual void initialize(const PixelType *brightness, int width, int height, float threshold_fraction = 0.0005) override;
 
             void initialize(const std::vector<std::tuple<float, float, int> > &stars, int width, int height);
