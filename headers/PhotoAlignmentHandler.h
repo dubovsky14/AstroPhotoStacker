@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../headers/ReferencePhotoHandlerBase.h"
-#include "../headers/AlignmentPointBox.h"
 #include "../headers/LocalShiftsHandler.h"
 #include "../headers/LocalShift.h"
 #include "../headers/InputFrame.h"
@@ -141,7 +140,7 @@ namespace   AstroPhotoStacker   {
 
             const std::vector<std::vector<LocalShift>>& get_local_shifts_vector() const {return m_local_shifts_vector;};
 
-            void set_alignment_box_vector_storage(std::vector<AlignmentPointBox> *alignment_box_vector_storage) {m_alignment_box_vector_storage = alignment_box_vector_storage;};
+            void set_alignment_point_vector_storage(std::vector<std::pair<float,float>> *alignment_point_vector_storage) {m_alignment_point_vector_storage = alignment_point_vector_storage;};
 
             std::map<InputFrame, std::pair<float, float>>& get_comet_positions_map() {return m_comet_positions;};
 
@@ -153,7 +152,7 @@ namespace   AstroPhotoStacker   {
             unsigned int m_n_cpu = 1;
             std::unique_ptr<ReferencePhotoHandlerBase> m_reference_photo_handler = nullptr;
             const std::string c_reference_file_header = "reference_file";
-            std::vector<AlignmentPointBox> *m_alignment_box_vector_storage = nullptr;
+            std::vector<std::pair<float,float>> *m_alignment_point_vector_storage = nullptr;
 
             std::string m_alignment_method = "stars";
 

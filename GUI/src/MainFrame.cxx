@@ -189,9 +189,9 @@ void MyFrame::add_alignment_menu()  {
     alignment_menu->Append(id, "Show alignment boxes", "Show alignment boxes");
     Bind(wxEVT_MENU, [this, alignment_boxes_preview_name](wxCommandEvent&){
         auto draw_boxes_lambda = [this, alignment_boxes_preview_name](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
-            cout << "Drawing " << m_alignment_box_vector_storage.size() <<  " alignment boxes" << endl;
-            AstroPhotoStacker::AlignmentPointBoxGrid::draw_boxes_into_image(
-                m_alignment_box_vector_storage,
+            cout << "Drawing " << m_alignment_point_vector_storage.size() <<  " alignment boxes" << endl;
+            AstroPhotoStacker::AlignmentPointBoxGrid::draw_points_into_image(
+                m_alignment_point_vector_storage,
                 image_data,
                 width,
                 height,
@@ -323,7 +323,7 @@ void MyFrame::add_aligned_images_producer_menu()  {
         if (!frames_aligned) {
             wxMessageDialog dialog(this, "Please align the frames first!", "Frames not aligned");
             if (dialog.ShowModal() == wxID_YES) {
-                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, static_cast<StackSettings *>(m_stack_settings.get()), &m_alignment_box_vector_storage);
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, static_cast<StackSettings *>(m_stack_settings.get()), &m_alignment_point_vector_storage);
                 select_alignment_window->Show(true);
             }
             else {
@@ -619,7 +619,7 @@ void MyFrame::add_button_bar()   {
             dialog->ShowModal();
             return;
         }
-        AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, m_stack_settings.get(), &m_alignment_box_vector_storage);
+        AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, m_stack_settings.get(), &m_alignment_point_vector_storage);
         select_alignment_window->Show(true);
     });
 
@@ -688,7 +688,7 @@ void MyFrame::add_button_bar()   {
         if (!frames_aligned) {
             wxMessageDialog dialog(this, "Please align the files first!", "Files not aligned");
             if (dialog.ShowModal() == wxID_YES) {
-                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, static_cast<StackSettings *>(m_stack_settings.get()), &m_alignment_box_vector_storage);
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, static_cast<StackSettings *>(m_stack_settings.get()), &m_alignment_point_vector_storage);
                 select_alignment_window->Show(true);
             }
             else {

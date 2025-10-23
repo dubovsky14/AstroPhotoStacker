@@ -4,14 +4,20 @@
 #include "../headers/MonochromeImageData.h"
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/Common.h"
+#include "../headers/ImageRanking.h"
 
 #include "../headers/AlignmentSettingsSurface.h"
+
+#include <opencv2/features2d.hpp>
+
+
+#include <algorithm>
 
 using namespace AstroPhotoStacker;
 using namespace std;
 
 
-ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &reference_frame, float threshold_fraction) : ReferencePhotoHandlerPlanetaryZeroRotation(reference_frame, threshold_fraction) {
+ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &reference_frame, float threshold_fraction) : ReferencePhotoHandlerBase(reference_frame, threshold_fraction) {
     m_threshold_fraction = threshold_fraction;
     CalibratedPhotoHandler calibrated_photo_handler(reference_frame, true);
     calibrated_photo_handler.define_alignment(0,0,0,0,0);
@@ -34,55 +40,163 @@ ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &ref
         value /= n_points;
         brightness.at(i_pixel) = value;
     }
-
-    ReferencePhotoHandlerPlanetaryZeroRotation::initialize(brightness.data(), m_width, m_height, threshold_fraction);
-
-    initialize_alignment_grid(brightness.data());
+    initialize(brightness.data(), m_width, m_height, threshold_fraction);
 };
 
 
-ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const PixelType *brightness, int width, int height, float threshold_fraction) : ReferencePhotoHandlerPlanetaryZeroRotation(brightness, width, height, threshold_fraction) {
-    initialize_alignment_grid(brightness);
+ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const PixelType *brightness, int width, int height, float threshold_fraction) : ReferencePhotoHandlerBase(brightness, width, height, threshold_fraction) {
+    initialize(brightness, width, height, threshold_fraction);
 };
 
-void ReferencePhotoHandlerSurface::initialize_alignment_grid(const PixelType *brightness_original) {
+
+PlateSolvingResult ReferencePhotoHandlerSurface::calculate_alignment(const InputFrame &input_frame, float *ranking) const {
+    std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> result = m_local_shifts_cache.get(input_frame, [this, &input_frame]() {
+        return compute_local_shifts_and_alignment(input_frame);
+    });
+
+    if (ranking) {
+        *ranking = std::get<2>(result);
+    }
+
+    return std::get<1>(result);
+};
+
+
+void ReferencePhotoHandlerSurface::initialize(const PixelType *brightness, int width, int height, float threshold_fraction)  {
+    m_width = width;
+    m_height = height;
+    m_threshold_fraction = threshold_fraction;
+    initialize_reference_features(brightness);
+};
+
+
+void ReferencePhotoHandlerSurface::initialize_reference_features(const PixelType *brightness_original) {
+    cout << "Initializing reference features for surface alignment..." << endl;
     MonochromeImageData image_data;
     image_data.brightness = brightness_original;
     image_data.width = m_width;
     image_data.height = m_height;
 
-    const AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
-    const MonochromeImageDataWithStorage blurred_image_data = gaussian_blur(image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
+    MonochromeImageDataWithStorage blurred_image_data = gaussian_blur(image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
 
-    m_alignment_point_box_grid = make_unique<AlignmentPointBoxGrid>(
-        blurred_image_data,
-        m_alignment_window,
-        *alignment_settings_surface);
+    cv::Mat cv_image(m_height, m_width, CV_16UC1, blurred_image_data.brightness_storage->data());
+    const PixelType max_pixel_value = *std::max_element(blurred_image_data.brightness_storage->begin(), blurred_image_data.brightness_storage->end());
+    cv::Mat cv_image_normalized;
+    cv_image.convertTo(cv_image_normalized, CV_8UC1, 255.0 / max_pixel_value);
+
+
+    //cv::SIFT detector = cv::SIFT();
+    cv::Ptr<cv::SIFT> detector = cv::SIFT::create();
+    detector->detectAndCompute(cv_image_normalized, cv::noArray(), m_reference_keypoints, m_reference_descriptors);
+
+    cout << "Detected " << m_reference_keypoints.size() << " keypoints in reference image." << endl;
+    for (const cv::KeyPoint &kp : m_reference_keypoints) {
+        cout << "Keypoint at (" << kp.pt.x << ", " << kp.pt.y << ")" << endl;
+    }
 };
 
-std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const InputFrame &input_frame,
-                                                                        const PlateSolvingResult &plate_solving_result) const   {
+std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const InputFrame &input_frame) const   {
+    std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> result = m_local_shifts_cache.get(input_frame, [this, &input_frame]() {
+        return compute_local_shifts_and_alignment(input_frame);
+    });
 
-    CalibratedPhotoHandler calibrated_photo_handler(input_frame, true);
-    calibrated_photo_handler.define_alignment(plate_solving_result.shift_x,
-                                              plate_solving_result.shift_y,
-                                              plate_solving_result.rotation_center_x,
-                                              plate_solving_result.rotation_center_y,
-                                              plate_solving_result.rotation);
-    calibrated_photo_handler.calibrate();
+    return std::get<0>(result);
+};
 
-    const int width  = calibrated_photo_handler.get_width();
-    const int height = calibrated_photo_handler.get_height();
-    const vector<vector<PixelType>> &calibrated_data = calibrated_photo_handler.get_calibrated_data_after_color_interpolation();
+const std::vector<std::pair<float,float>> ReferencePhotoHandlerSurface::get_alignment_points() const {
+    vector<std::pair<float,float>> alignment_points;
+    for (const cv::KeyPoint &kp : m_reference_keypoints) {
+        alignment_points.push_back({kp.pt.x, kp.pt.y});
+    }
+    return alignment_points;
+};
 
-    const vector<PixelType> brightness = convert_color_to_monochrome<PixelType, PixelType>(calibrated_data, width, height);
+std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> ReferencePhotoHandlerSurface::compute_local_shifts_and_alignment(const InputFrame &input_frame) const {
+    InputFrameReader reader(input_frame);
+    std::vector<PixelType> brightness = reader.get_monochrome_data();
+    const int width = reader.get_width();
+    const int height = reader.get_height();
 
-    MonochromeImageData calibrated_image_data;
-    calibrated_image_data.brightness = brightness.data();
-    calibrated_image_data.width = width;
-    calibrated_image_data.height = height;
+    MonochromeImageData image_data;
+    image_data.brightness = brightness.data();
+    image_data.width = width;
+    image_data.height = height;
 
-    MonochromeImageDataWithStorage blurred_image = gaussian_blur(calibrated_image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
+    ImageRanker image_ranker(brightness, width, height);
+    const double sharpness = image_ranker.get_sharpness_score();
+    const float ranking = 100./sharpness;
 
-    return m_alignment_point_box_grid->get_local_shifts(blurred_image);
+    MonochromeImageDataWithStorage blurred_image_data = gaussian_blur(image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
+    cv::Mat cv_image(height, width, CV_16UC1, static_cast<void*>(blurred_image_data.brightness_storage->data()));
+    const PixelType max_pixel_value = *std::max_element(blurred_image_data.brightness_storage->begin(), blurred_image_data.brightness_storage->end());
+    cv::Mat cv_image_normalized;
+    cv_image.convertTo(cv_image_normalized, CV_8UC1, 255.0 / max_pixel_value);
+
+    std::vector<cv::KeyPoint> keypoints;
+    cv::Mat descriptors;
+    cv::Ptr<cv::SIFT> detector = cv::SIFT::create();
+    detector->detectAndCompute(cv_image_normalized, cv::noArray(), keypoints, descriptors);
+
+    // Match features
+    cv::BFMatcher matcher(cv::NORM_L2);
+    std::vector<cv::DMatch> matches;
+    matcher.match(m_reference_descriptors, descriptors, matches);
+
+    std::vector<float> shift_sizes_x, shift_sizes_y;
+
+    std::vector<LocalShift> local_shifts;
+    for (const cv::DMatch &match : matches) {
+        if (match.distance > 200.0f) {
+            continue;
+        }
+
+        const cv::KeyPoint &ref_kp = m_reference_keypoints[match.queryIdx];
+        const cv::KeyPoint &img_kp = keypoints[match.trainIdx];
+
+        LocalShift shift;
+        shift.x = img_kp.pt.x;
+        shift.y = img_kp.pt.y;
+        shift.dx = img_kp.pt.x - ref_kp.pt.x;
+        shift.dy = img_kp.pt.y - ref_kp.pt.y;
+        shift.valid_ap = true;
+        shift.score = 1.0f - (match.distance / 300.0f);
+
+        local_shifts.push_back(shift);
+
+        shift_sizes_x.push_back(shift.dx);
+        shift_sizes_y.push_back(shift.dy);
+    }
+
+    if (local_shifts.size() == 0) {
+        PlateSolvingResult plate_solving_result;
+        plate_solving_result.is_valid = false;
+        return {local_shifts, plate_solving_result, ranking};
+    }
+
+    std::sort(shift_sizes_x.begin(), shift_sizes_x.end());
+    std::sort(shift_sizes_y.begin(), shift_sizes_y.end());
+
+
+    PlateSolvingResult plate_solving_result;
+    plate_solving_result.is_valid = true;
+
+    const float median_shift_x = shift_sizes_x[shift_sizes_x.size()/2];
+    const float median_shift_y = shift_sizes_y[shift_sizes_y.size()/2];
+
+    plate_solving_result.shift_x = -median_shift_x;
+    plate_solving_result.shift_y = -median_shift_y;
+
+    const float max_allowed_deviation = 20.0f;
+    std::vector<LocalShift> selected_local_shifts;
+    for (LocalShift shift : local_shifts) {
+        if (std::abs(shift.dx - median_shift_x) < max_allowed_deviation
+            && std::abs(shift.dy - median_shift_y) < max_allowed_deviation) {
+                shift.dx -= median_shift_x;
+                shift.dy -= median_shift_y;
+
+                selected_local_shifts.push_back(shift);
+        }
+    }
+
+    return {selected_local_shifts, plate_solving_result, ranking};
 };

@@ -18,14 +18,14 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandlerGUIInterface *filelist_handler_gui_interface, StackSettings *stack_settings, std::vector<AstroPhotoStacker::AlignmentPointBox> *alignment_box_vector_storage)
+AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandlerGUIInterface *filelist_handler_gui_interface, StackSettings *stack_settings, std::vector<std::pair<float,float>> *alignment_point_vector_storage)
     :  wxFrame(parent, wxID_ANY, "Select alignment file")      {
 
     SetSize(m_window_size);
 
     m_stack_settings = stack_settings;
     m_filelist_handler_gui_interface = filelist_handler_gui_interface;
-    m_alignment_box_vector_storage = alignment_box_vector_storage;
+    m_alignment_point_vector_storage = alignment_point_vector_storage;
     m_main_sizer = new wxBoxSizer(wxVERTICAL);
 
     initialize_list_of_frames_to_align();
@@ -261,9 +261,9 @@ void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
         AstroPhotoStacker::PhotoAlignmentHandler photo_alignment_handler;
         photo_alignment_handler.set_alignment_method(m_stack_settings->get_alignment_method());
         photo_alignment_handler.set_number_of_cpu_threads(m_stack_settings->get_n_cpus());
-        if (m_alignment_box_vector_storage != nullptr) {
-            m_alignment_box_vector_storage->clear();
-            photo_alignment_handler.set_alignment_box_vector_storage(m_alignment_box_vector_storage);
+        if (m_alignment_point_vector_storage != nullptr) {
+            m_alignment_point_vector_storage->clear();
+            photo_alignment_handler.set_alignment_point_vector_storage(m_alignment_point_vector_storage);
         }
 
         if (m_stack_settings->get_alignment_method() == "comet") {

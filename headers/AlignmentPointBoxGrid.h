@@ -72,30 +72,32 @@ namespace AstroPhotoStacker {
             const std::vector<AlignmentPointBox> &get_alignment_boxes() const {return m_boxes;};
 
             template<typename PixelType>
-            static void draw_boxes_into_image(  const std::vector<AlignmentPointBox> &alignment_boxes,
+            static void draw_points_into_image(  const std::vector<std::pair<float,float>> &alignment_points,
                                                 std::vector<std::vector<PixelType>> *image,
                                                 int width,
                                                 int height,
                                                 const std::vector<int> &valid_ap_color,
                                                 const std::vector<int> &invalid_ap_color)    {
 
-                for (const AlignmentPointBox &box : alignment_boxes) {
-                    const int x = box.get_center_x();
-                    const int y = box.get_center_y();
+                for (const std::pair<float,float> &point : alignment_points) {
+                    const int x = static_cast<int>(point.first);
+                    const int y = static_cast<int>(point.second);
+                    const float radius = 5.0;
+                    const int x_min = std::max(0, static_cast<int>(x - radius));
+                    const int x_max = std::min(width - 1, static_cast<int>(x + radius));
+                    const int y_min = std::max(0, static_cast<int>(y - radius));
+                    const int y_max = std::min(height - 1, static_cast<int>(y + radius));
 
-                    const int x_min = std::max<int>(0, x - box.get_box_width()/2);
-                    const int x_max = std::min<int>(width-1, x + box.get_box_width()/2);
-                    const int y_min = std::max<int>(0, y - box.get_box_height()/2);
-                    const int y_max = std::min<int>(height-1, y + box.get_box_height()/2);
-
+                    const float radius_squared = radius * radius;
                     for (int i_color = 0; i_color < 3; i_color++) {
                         for (int y = y_min; y <= y_max; y++) {
-                            (*image)[i_color][y*width + x_min] = valid_ap_color[i_color]; // left
-                            (*image)[i_color][y*width + x_max] = valid_ap_color[i_color]; // right
-                        }
-                        for (int x = x_min; x <= x_max; x++) {
-                            (*image)[i_color][y_min*width + x] = valid_ap_color[i_color]; // top
-                            (*image)[i_color][y_max*width + x] = valid_ap_color[i_color]; // bottom
+                            for (int x = x_min; x <= x_max; x++) {
+                                const float distance_squared = (x - point.first)*(x - point.first) + (y - point.second)*(y - point.second);
+                                if (distance_squared > radius_squared) {
+                                    continue;
+                                }
+                                (*image)[i_color][y*width + x] = valid_ap_color[i_color];
+                            }
                         }
                     }
                 }

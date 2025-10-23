@@ -198,7 +198,7 @@ class MyFrame : public wxFrame  {
 
         static std::string s_gui_folder_path;
 
-        std::vector<AstroPhotoStacker::AlignmentPointBox> m_alignment_box_vector_storage;
+        std::vector<std::pair<float,float>> m_alignment_point_vector_storage;
 
         int m_current_group = 0;
 };

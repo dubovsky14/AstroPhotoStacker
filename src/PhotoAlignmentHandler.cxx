@@ -110,8 +110,8 @@ void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const
     m_reference_frame = reference_frame;
 
     const ReferencePhotoHandlerSurface *surface_handler = dynamic_cast<const ReferencePhotoHandlerSurface*>(m_reference_photo_handler.get());
-    if (m_alignment_box_vector_storage && surface_handler != nullptr) {
-        *m_alignment_box_vector_storage = surface_handler->get_alignment_boxes();
+    if (m_alignment_point_vector_storage && surface_handler != nullptr) {
+        *m_alignment_point_vector_storage = surface_handler->get_alignment_points();
     }
 
     ReferencePhotoHandlerComet *comet_handler = dynamic_cast<ReferencePhotoHandlerComet*>(m_reference_photo_handler.get());
@@ -143,7 +143,7 @@ void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const
 
             const ReferencePhotoHandlerSurface *surface_handler = dynamic_cast<const ReferencePhotoHandlerSurface*>(m_reference_photo_handler.get());
             if (surface_handler != nullptr) {
-                vector<LocalShift> local_shifts = surface_handler->get_local_shifts(input_frame, plate_solving_result);
+                vector<LocalShift> local_shifts = surface_handler->get_local_shifts(input_frame);
                 m_local_shifts_vector[file_index] = local_shifts;
                 alignment_info.local_shifts_handler = LocalShiftsHandler(local_shifts);
             }
