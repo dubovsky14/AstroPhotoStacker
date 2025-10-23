@@ -77,16 +77,15 @@ void ReferencePhotoHandlerSurface::initialize_reference_features(const PixelType
     image_data.width = m_width;
     image_data.height = m_height;
 
-    MonochromeImageDataWithStorage blurred_image_data = gaussian_blur(image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
-
-    cv::Mat cv_image(m_height, m_width, CV_16UC1, blurred_image_data.brightness_storage->data());
-    const PixelType max_pixel_value = *std::max_element(blurred_image_data.brightness_storage->begin(), blurred_image_data.brightness_storage->end());
+    std::vector<PixelType> image_copy(brightness_original, brightness_original + m_width * m_height);
+    cv::Mat cv_image(m_height, m_width, CV_16UC1, image_copy.data());
+    const PixelType max_pixel_value = *std::max_element(image_copy.begin(), image_copy.end());
     cv::Mat cv_image_normalized;
     cv_image.convertTo(cv_image_normalized, CV_8UC1, 255.0 / max_pixel_value);
 
 
     //cv::SIFT detector = cv::SIFT();
-    cv::Ptr<cv::SIFT> detector = cv::SIFT::create();
+    cv::Ptr<cv::SIFT> detector = cv::SIFT::create(0,1);
     detector->detectAndCompute(cv_image_normalized, cv::noArray(), m_reference_keypoints, m_reference_descriptors);
 
     cout << "Detected " << m_reference_keypoints.size() << " keypoints in reference image." << endl;
@@ -126,15 +125,14 @@ std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> ReferencePhotoHan
     const double sharpness = image_ranker.get_sharpness_score();
     const float ranking = 100./sharpness;
 
-    MonochromeImageDataWithStorage blurred_image_data = gaussian_blur(image_data, m_blur_window_size, m_blur_window_size, m_blur_sigma);
-    cv::Mat cv_image(height, width, CV_16UC1, static_cast<void*>(blurred_image_data.brightness_storage->data()));
-    const PixelType max_pixel_value = *std::max_element(blurred_image_data.brightness_storage->begin(), blurred_image_data.brightness_storage->end());
+    cv::Mat cv_image(height, width, CV_16UC1, static_cast<void*>(brightness.data()));
+    const PixelType max_pixel_value = *std::max_element(brightness.begin(), brightness.end());
     cv::Mat cv_image_normalized;
     cv_image.convertTo(cv_image_normalized, CV_8UC1, 255.0 / max_pixel_value);
 
     std::vector<cv::KeyPoint> keypoints;
     cv::Mat descriptors;
-    cv::Ptr<cv::SIFT> detector = cv::SIFT::create();
+    cv::Ptr<cv::SIFT> detector = cv::SIFT::create(0,1);
     detector->detectAndCompute(cv_image_normalized, cv::noArray(), keypoints, descriptors);
 
     // Match features
