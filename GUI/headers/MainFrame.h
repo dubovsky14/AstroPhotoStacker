@@ -118,6 +118,7 @@ class MyFrame : public wxFrame  {
         void add_hot_pixel_correction_checkbox();
         void add_color_interpolation_checkbox();
         void add_color_stretching_checkbox();
+        void add_calibrated_preview_checkbox();
 
         void add_image_settings();
         void add_exposure_correction_spin_ctrl();
@@ -201,6 +202,7 @@ class MyFrame : public wxFrame  {
         std::vector<std::pair<float,float>> m_alignment_point_vector_storage;
 
         int m_current_group = 0;
+        bool m_show_calibrated_preview = false;
 };
 
 inline int unique_counter()    {

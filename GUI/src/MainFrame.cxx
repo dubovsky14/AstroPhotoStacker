@@ -18,6 +18,7 @@
 #include "../../headers/AlignmentPointBoxGrid.h"
 #include "../../headers/ConvertToFitFile.h"
 #include "../../headers/PixelType.h"
+#include "../../headers/CalibratedPhotoHandler.h"
 
 #include <wx/spinctrl.h>
 #include <wx/progdlg.h>
@@ -744,6 +745,7 @@ void MyFrame::add_stack_settings_preview()   {
     add_hot_pixel_correction_checkbox();
     add_color_interpolation_checkbox();
     add_color_stretching_checkbox();
+    add_calibrated_preview_checkbox();
 };
 
 void MyFrame::add_n_cpu_slider()    {
@@ -920,6 +922,18 @@ void MyFrame::add_color_stretching_checkbox()   {
     m_sizer_bottom_left->Add(checkbox_color_stretching, 0, wxEXPAND, 5);
 };
 
+void MyFrame::add_calibrated_preview_checkbox() {
+    wxCheckBox* checkbox_calibrated_preview = new wxCheckBox(this, wxID_ANY, "Show aligned preview");
+    checkbox_calibrated_preview->SetValue(m_show_calibrated_preview);
+    checkbox_calibrated_preview->SetToolTip("If checked, the image preview will show the aligned image. Otherwise, the raw image will be shown.");
+    checkbox_calibrated_preview->Bind(wxEVT_CHECKBOX, [checkbox_calibrated_preview, this](wxCommandEvent&){
+        m_show_calibrated_preview = checkbox_calibrated_preview->GetValue();
+        const int selected_index = m_filelist_handler_gui_interface.selected_frame_index();
+        update_image_preview_file(selected_index);
+    });
+    m_sizer_bottom_left->Add(checkbox_calibrated_preview, 0, wxEXPAND, 5);
+};
+
 void MyFrame::add_max_memory_spin_ctrl() {
     wxStaticText* memory_usage_text = new wxStaticText(this, wxID_ANY, "Maximum memory usage (MB):");
 
@@ -958,7 +972,40 @@ void MyFrame::add_image_preview()    {
 
 void MyFrame::update_image_preview_file(size_t frame_index)  {
     const InputFrame frame = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).input_frame;
-    m_current_preview->read_preview_from_frame(frame);
+    const int group_number = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).group_number;
+    if (m_show_calibrated_preview)  {
+        const AlignmentFileInfo &alignment_info = m_filelist_handler_gui_interface.get_alignment_info(group_number, frame);
+        CalibratedPhotoHandler calibrated_photo_handler(frame, true);
+        calibrated_photo_handler.define_alignment(
+            alignment_info.shift_x,
+            alignment_info.shift_y,
+            alignment_info.rotation_center_x,
+            alignment_info.rotation_center_y,
+            alignment_info.rotation
+        );
+        const std::vector<AstroPhotoStacker::LocalShift> &local_shifts = alignment_info.local_shifts_handler.get_shifts();
+        if (!local_shifts.empty()) {
+            calibrated_photo_handler.define_local_shifts(alignment_info.local_shifts_handler);
+        }
+        calibrated_photo_handler.calibrate();
+
+        const int width = calibrated_photo_handler.get_width();
+        const int height = calibrated_photo_handler.get_height();
+        std::vector<std::vector<double>> calibrated_image(3, std::vector<double>(width * height));
+
+        for (int i_color = 0; i_color < 3; i_color++) {
+            for (int i_pixel = 0; i_pixel < width * height; i_pixel++) {
+                calibrated_image[i_color][i_pixel] = calibrated_photo_handler.get_value_by_reference_frame_index(i_pixel,i_color);
+                if (calibrated_image[i_color][i_pixel] < 0) {
+                    calibrated_image[i_color][i_pixel] = 0;
+                }
+            }
+        }
+        m_current_preview->read_preview_from_stacked_image(calibrated_image, width, height);
+    }
+    else {
+        m_current_preview->read_preview_from_frame(frame);
+    }
     update_image_preview();
     update_alignment_status();
 };
