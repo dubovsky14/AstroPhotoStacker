@@ -203,6 +203,8 @@ class MyFrame : public wxFrame  {
 
         int m_current_group = 0;
         bool m_show_calibrated_preview = false;
+        bool m_show_alignment_points = false;
+        const std::string c_alignment_boxes_preview_name = "alignment_boxes";
 };
 
 inline int unique_counter()    {

@@ -185,27 +185,17 @@ void MyFrame::add_alignment_menu()  {
     }, id);
 
 
-    const std::string alignment_boxes_preview_name = "alignment_boxes";
     id = unique_counter();
     alignment_menu->Append(id, "Show alignment boxes", "Show alignment boxes");
-    Bind(wxEVT_MENU, [this, alignment_boxes_preview_name](wxCommandEvent&){
-        auto draw_boxes_lambda = [this, alignment_boxes_preview_name](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
-            cout << "Drawing " << m_alignment_point_vector_storage.size() <<  " alignment boxes" << endl;
-            AstroPhotoStacker::AlignmentPointBoxGrid::draw_points_into_image(
-                m_alignment_point_vector_storage,
-                image_data,
-                width,
-                height,
-                {0, 255, 0},
-                {255,0,0});
-        };
-        m_current_preview->add_layer(alignment_boxes_preview_name, draw_boxes_lambda);
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        m_show_alignment_points = true;
     }, id);
 
     id = unique_counter();
     alignment_menu->Append(id, "Hide alignment boxes", "Hide alignment boxes");
-    Bind(wxEVT_MENU, [this, alignment_boxes_preview_name](wxCommandEvent&){
-        m_current_preview->remove_layer(alignment_boxes_preview_name);
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        m_show_alignment_points = false;
+        m_current_preview->remove_layer(c_alignment_boxes_preview_name);
     }, id);
 
 
@@ -976,8 +966,9 @@ void MyFrame::update_image_preview_file(size_t frame_index)  {
     }
     const InputFrame frame = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).input_frame;
     const int group_number = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).group_number;
+    const AlignmentFileInfo &alignment_info = m_filelist_handler_gui_interface.get_alignment_info(group_number, frame);
+    const std::vector<AstroPhotoStacker::LocalShift> &local_shifts = alignment_info.local_shifts_handler.get_shifts();
     if (m_show_calibrated_preview)  {
-        const AlignmentFileInfo &alignment_info = m_filelist_handler_gui_interface.get_alignment_info(group_number, frame);
         CalibratedPhotoHandler calibrated_photo_handler(frame, true);
         calibrated_photo_handler.define_alignment(
             alignment_info.shift_x,
@@ -986,7 +977,6 @@ void MyFrame::update_image_preview_file(size_t frame_index)  {
             alignment_info.rotation_center_y,
             alignment_info.rotation
         );
-        const std::vector<AstroPhotoStacker::LocalShift> &local_shifts = alignment_info.local_shifts_handler.get_shifts();
         if (!local_shifts.empty()) {
             calibrated_photo_handler.define_local_shifts(alignment_info.local_shifts_handler);
         }
@@ -1004,9 +994,41 @@ void MyFrame::update_image_preview_file(size_t frame_index)  {
                 }
             }
         }
+
+        if (m_show_alignment_points) {
+            auto draw_boxes_lambda = [this, local_shifts](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
+                cout << "Drawing " << local_shifts.size() <<  " alignment boxes" << endl;
+                AstroPhotoStacker::AlignmentPointBoxGrid::draw_points_into_image(
+                    local_shifts,
+                    image_data,
+                    width,
+                    height,
+                    {0, 255, 0},
+                    {255,0,0});
+            };
+            m_current_preview->remove_layer(c_alignment_boxes_preview_name);
+            m_current_preview->add_layer(c_alignment_boxes_preview_name, draw_boxes_lambda);
+        }
+
+
         m_current_preview->read_preview_from_stacked_image(calibrated_image, width, height);
     }
     else {
+        if (m_show_alignment_points) {
+            auto draw_boxes_lambda = [this, local_shifts](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
+                cout << "Drawing " << local_shifts.size() <<  " alignment boxes" << endl;
+                AstroPhotoStacker::AlignmentPointBoxGrid::draw_points_into_image(
+                    local_shifts,
+                    image_data,
+                    width,
+                    height,
+                    {0, 255, 0},
+                    {255,0,0});
+            };
+            m_current_preview->remove_layer(c_alignment_boxes_preview_name);
+            m_current_preview->add_layer(c_alignment_boxes_preview_name, draw_boxes_lambda);
+        }
+
         m_current_preview->read_preview_from_frame(frame);
     }
     update_image_preview();
