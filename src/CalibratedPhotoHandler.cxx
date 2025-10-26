@@ -77,33 +77,33 @@ void CalibratedPhotoHandler::calibrate() {
     }
 
     // having the interpolated values for all pixels, let's just shift them
-    for (int color = 0; color < 3; color++) {
-        m_data_shifted_color_interpolation.push_back(vector<PixelType>(m_width*m_height, -1));
-        for (int y_shifted = 0; y_shifted < m_height; y_shifted++)  {
-            for (int x_shifted = 0; x_shifted < m_width; x_shifted++)   {
-                float x_original = x_shifted;
-                float y_original = y_shifted;
-                // translations and rotations
-                m_geometric_transformer->transform_from_reference_to_shifted_frame(&x_original, &y_original);
+    m_data_shifted_color_interpolation = vector<vector<PixelType>>(3, vector<PixelType>(m_width*m_height, -1));
+    for (int y_shifted = 0; y_shifted < m_height; y_shifted++)  {
+        for (int x_shifted = 0; x_shifted < m_width; x_shifted++)   {
+            float x_original = x_shifted;
+            float y_original = y_shifted;
+            // translations and rotations
+            m_geometric_transformer->transform_from_reference_to_shifted_frame(&x_original, &y_original);
 
-                // seeing effect, accounting for local shifts
-                if (!m_local_shifts_handler.empty()) {
-                    int x_int = int(x_original);
-                    int y_int = int(y_original);
-                    float score = 1;
-                    if (m_local_shifts_handler.calculate_shifted_coordinates(x_int, y_int, &x_int, &y_int, &score)) {
-                        x_original = x_int;
-                        y_original = y_int;
-                        m_score_handler.set_local_score(x_shifted, y_shifted, score);
-                    }
-                    else {
-                        continue;
-                    }
-                }
+            // seeing effect, accounting for local shifts
+            if (!m_local_shifts_handler.empty()) {
                 int x_int = int(x_original);
                 int y_int = int(y_original);
-                if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
-                    const unsigned int index_shifted = y_shifted*m_width + x_shifted;
+                float score = 1;
+                if (m_local_shifts_handler.calculate_shifted_coordinates(x_int, y_int, &x_int, &y_int, &score)) {
+                    x_original = x_int;
+                    y_original = y_int;
+                    m_score_handler.set_local_score(x_shifted, y_shifted, score);
+                }
+                else {
+                    continue;
+                }
+            }
+            int x_int = int(x_original);
+            int y_int = int(y_original);
+            if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
+                const unsigned int index_shifted = y_shifted*m_width + x_shifted;
+                for (int color = 0; color < 3; color++) {
                     m_data_shifted_color_interpolation[color][index_shifted] = m_input_frame_data_original->get_pixel_value(x_int, y_int, color);
                 }
             }
