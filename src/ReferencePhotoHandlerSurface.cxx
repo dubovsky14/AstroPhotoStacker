@@ -70,7 +70,6 @@ void ReferencePhotoHandlerSurface::initialize(const PixelType *brightness, int w
 
 
 void ReferencePhotoHandlerSurface::initialize_reference_features(const PixelType *brightness_original) {
-    cout << "Initializing reference features for surface alignment..." << endl;
     MonochromeImageData image_data;
     image_data.brightness = brightness_original;
     image_data.width = m_width;
@@ -82,16 +81,9 @@ void ReferencePhotoHandlerSurface::initialize_reference_features(const PixelType
     cv::Mat cv_image_normalized;
     cv_image.convertTo(cv_image_normalized, CV_8UC1, 255.0 / max_pixel_value);
 
-
-    //cv::SIFT detector = cv::SIFT();
     cv::Ptr<cv::ORB> detector = cv::ORB::create(2000, 1.2f, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
     detector->detectAndCompute(cv_image_normalized, cv::noArray(), m_reference_keypoints, m_reference_descriptors);
-    //cv::goodFeaturesToTrack(cv_image_normalized, m_reference_keypoints, 500, 0.01, 10);
 
-    cout << "Detected " << m_reference_keypoints.size() << " keypoints in reference image." << endl;
-    for (const cv::KeyPoint &kp : m_reference_keypoints) {
-        cout << "Keypoint at (" << kp.pt.x << ", " << kp.pt.y << ")" << endl;
-    }
 };
 
 std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const InputFrame &input_frame) const   {
@@ -132,7 +124,6 @@ std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> ReferencePhotoHan
 
     std::vector<cv::KeyPoint> keypoints;
     cv::Mat descriptors;
-    //cv::Ptr<cv::SIFT> detector = cv::SIFT::create(0,1);
     cv::Ptr<cv::ORB> detector = cv::ORB::create(2000, 1.2f, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
     detector->detectAndCompute(cv_image_normalized, cv::noArray(), keypoints, descriptors);
 
@@ -188,12 +179,15 @@ std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> ReferencePhotoHan
     const float max_allowed_deviation = 20.0f;
     std::vector<LocalShift> selected_local_shifts;
     for (LocalShift shift : local_shifts) {
-        if (std::abs(shift.dx - median_shift_x) < max_allowed_deviation
-            && std::abs(shift.dy - median_shift_y) < max_allowed_deviation) {
-                shift.dx -= median_shift_x;
-                shift.dy -= median_shift_y;
+        const float distance_squared = (shift.dx - median_shift_x)*(shift.dx - median_shift_x) + (shift.dy - median_shift_y)*(shift.dy - median_shift_y);
+        if (distance_squared < max_allowed_deviation * max_allowed_deviation) {
+            shift.dx -= median_shift_x;
+            shift.dy -= median_shift_y;
 
-                selected_local_shifts.push_back(shift);
+            shift.x -= shift.dx;
+            shift.y -= shift.dy;
+
+            selected_local_shifts.push_back(shift);
         }
     }
 

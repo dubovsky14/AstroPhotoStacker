@@ -103,6 +103,9 @@ void CalibratedPhotoHandler::calibrate() {
             int y_int = int(y_original);
             if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {
                 const unsigned int index_shifted = y_shifted*m_width + x_shifted;
+
+                // This is intentionally the innermost loop, even though it makes things less cache friendly. The reason is that calculating local shifts is quite CPU intensive.
+                // For star alignment, the performance overhead is at the level of 1-2%, but for surface alignment it speeds up things by a factor of ~2x
                 for (int color = 0; color < 3; color++) {
                     m_data_shifted_color_interpolation[color][index_shifted] = m_input_frame_data_original->get_pixel_value(x_int, y_int, color);
                 }
