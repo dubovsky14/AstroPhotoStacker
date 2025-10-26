@@ -971,6 +971,9 @@ void MyFrame::add_image_preview()    {
 };
 
 void MyFrame::update_image_preview_file(size_t frame_index)  {
+    if (frame_index >= m_filelist_handler_gui_interface.get_number_of_shown_frames()) {
+        return;
+    }
     const InputFrame frame = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).input_frame;
     const int group_number = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).group_number;
     if (m_show_calibrated_preview)  {
