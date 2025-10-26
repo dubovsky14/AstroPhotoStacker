@@ -10,7 +10,6 @@
 
 #include <opencv2/features2d.hpp>
 
-
 #include <algorithm>
 
 using namespace AstroPhotoStacker;
@@ -85,8 +84,9 @@ void ReferencePhotoHandlerSurface::initialize_reference_features(const PixelType
 
 
     //cv::SIFT detector = cv::SIFT();
-    cv::Ptr<cv::SIFT> detector = cv::SIFT::create(0,1);
+    cv::Ptr<cv::ORB> detector = cv::ORB::create(2000, 1.2f, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
     detector->detectAndCompute(cv_image_normalized, cv::noArray(), m_reference_keypoints, m_reference_descriptors);
+    //cv::goodFeaturesToTrack(cv_image_normalized, m_reference_keypoints, 500, 0.01, 10);
 
     cout << "Detected " << m_reference_keypoints.size() << " keypoints in reference image." << endl;
     for (const cv::KeyPoint &kp : m_reference_keypoints) {
@@ -132,7 +132,8 @@ std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> ReferencePhotoHan
 
     std::vector<cv::KeyPoint> keypoints;
     cv::Mat descriptors;
-    cv::Ptr<cv::SIFT> detector = cv::SIFT::create(0,1);
+    //cv::Ptr<cv::SIFT> detector = cv::SIFT::create(0,1);
+    cv::Ptr<cv::ORB> detector = cv::ORB::create(2000, 1.2f, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
     detector->detectAndCompute(cv_image_normalized, cv::noArray(), keypoints, descriptors);
 
     // Match features
