@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../headers/ReferencePhotoHandlerBase.h"
-#include "../headers/AlignmentPointBoxGrid.h"
 #include "../headers/LocalShift.h"
 #include "../headers/ThreadSafeCacheSystem.h"
 
@@ -57,9 +56,6 @@ namespace AstroPhotoStacker   {
             virtual PlateSolvingResult calculate_alignment(const InputFrame &input_frame, float *ranking = nullptr) const override;
 
         protected:
-
-            std::unique_ptr<AlignmentPointBoxGrid> m_alignment_point_box_grid = nullptr;
-
             void initialize_reference_features(const PixelType *brightness_original);
 
             virtual void initialize(const PixelType *brightness, int width, int height, float threshold_fraction = 0.0005) override;

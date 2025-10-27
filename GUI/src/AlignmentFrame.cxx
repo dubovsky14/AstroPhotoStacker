@@ -5,7 +5,6 @@
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/thread_pool.h"
 #include "../../headers/InputFrame.h"
-#include "../../headers/AlignmentPointBox.h"
 #include "../../headers/AlignmentSettingsSurface.h"
 
 #include <wx/progdlg.h>
@@ -138,47 +137,6 @@ void AlignmentFrame::add_surface_method_settings()  {
             m_hidden_settings_sliders[alignment_method].push_back(std::move(this_slider));
     };
 
-
-    add_hidden_settings_slider(
-        "surface",
-        "Contrast threshold: ",
-        0,
-        1,
-        AlignmentPointBox::get_contrast_threshold(),
-        0.01,
-        2,
-        [](float value){AlignmentPointBox::set_contrast_threshold(value);
-    });
-
-    add_hidden_settings_slider(
-        "surface",
-        "Number of boxes: ",
-        0,
-        500,
-        alignment_settings_surface->get_number_of_boxes(),
-        1,
-        0,
-        [](float value){
-            AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
-            alignment_settings_surface->set_number_of_boxes(value+0.1);
-    });
-
-    add_hidden_settings_slider(
-        "surface",
-        "Maximal allowed overlap between alignment boxes: ",
-        0,
-        1,
-        alignment_settings_surface->get_max_overlap_between_boxes(),
-        0.01,
-        2,
-        [](float value){
-            AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
-            alignment_settings_surface->set_max_overlap_between_boxes(value);
-        }
-    );
-
-
-
     auto add_hidden_checkbox = [this, alignment_settings_surface](
             const std::string &alignment_method,
             const std::string &label,
@@ -203,19 +161,6 @@ void AlignmentFrame::add_surface_method_settings()  {
                     }
                     m_hidden_settings_checkboxes[alignment_method].push_back(checkbox);
     };
-
-    add_hidden_checkbox(
-        "surface",
-        "Use regular grid",
-        "If checked, APs will be placed in regular grid. If not checked, their positions will be random.",
-        alignment_settings_surface->get_regular_grid(),
-        [](bool value){
-            AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
-            alignment_settings_surface->set_regular_grid(value);
-        }
-    );
-
-
 
     m_main_sizer->Add(m_hidden_options_sizer, 2, wxEXPAND, 5);
 

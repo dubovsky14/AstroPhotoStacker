@@ -5,7 +5,6 @@
 #include "../headers/FloatingPointSlider.h"
 
 #include "../../headers/StackSettings.h"
-#include "../../headers/AlignmentPointBox.h"
 
 #include <wx/wx.h>
 #include <wx/spinctrl.h>

@@ -7,6 +7,7 @@
 #include "../headers/ProgressBarWindow.h"
 #include "../headers/PostProcessingToolGUI.h"
 #include "../headers/MetadataManager.h"
+#include "../headers/AlignmentPointsDrawing.h"
 
 
 #include "../headers/IndividualColorStretchingBlackMidtoneWhite.h"
@@ -15,7 +16,6 @@
 #include "../../headers/Common.h"
 #include "../../headers/thread_pool.h"
 #include "../../headers/StackerBase.h"
-#include "../../headers/AlignmentPointBoxGrid.h"
 #include "../../headers/ConvertToFitFile.h"
 #include "../../headers/PixelType.h"
 #include "../../headers/CalibratedPhotoHandler.h"
@@ -186,13 +186,13 @@ void MyFrame::add_alignment_menu()  {
 
 
     id = unique_counter();
-    alignment_menu->Append(id, "Show alignment boxes", "Show alignment boxes");
+    alignment_menu->Append(id, "Show alignment points", "Show alignment points");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         m_show_alignment_points = true;
     }, id);
 
     id = unique_counter();
-    alignment_menu->Append(id, "Hide alignment boxes", "Hide alignment boxes");
+    alignment_menu->Append(id, "Hide alignment points", "Hide alignment points");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         m_show_alignment_points = false;
         m_current_preview->remove_layer(c_alignment_boxes_preview_name);
@@ -998,7 +998,7 @@ void MyFrame::update_image_preview_file(size_t frame_index)  {
         if (m_show_alignment_points) {
             auto draw_boxes_lambda = [this, local_shifts](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
                 cout << "Drawing " << local_shifts.size() <<  " alignment boxes" << endl;
-                AstroPhotoStacker::AlignmentPointBoxGrid::draw_points_into_image(
+                draw_alignment_points_into_image(
                     local_shifts,
                     image_data,
                     width,
@@ -1017,7 +1017,7 @@ void MyFrame::update_image_preview_file(size_t frame_index)  {
         if (m_show_alignment_points) {
             auto draw_boxes_lambda = [this, local_shifts](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
                 cout << "Drawing " << local_shifts.size() <<  " alignment boxes" << endl;
-                AstroPhotoStacker::AlignmentPointBoxGrid::draw_points_into_image(
+                draw_alignment_points_into_image(
                     local_shifts,
                     image_data,
                     width,
