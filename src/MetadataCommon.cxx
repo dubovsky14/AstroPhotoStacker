@@ -12,7 +12,9 @@ using namespace AstroPhotoStacker;
 int AstroPhotoStacker::get_unix_timestamp(const std::string &time_string, const std::string timestamp_format)  {
     struct tm tm;
     strptime(time_string.c_str(), timestamp_format.c_str(), &tm);
-    return mktime(&tm);
+
+    // convert to UTC
+    return timegm(&tm);
 };
 
 std::string AstroPhotoStacker::get_string_timestamp_from_unix_time(int unix_time, const std::string timestamp_format)    {
