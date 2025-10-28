@@ -53,8 +53,6 @@ class AlignmentFrame : public wxFrame  {
             std::function<void(bool)> callback
         );
 
-
-
         void add_alignment_method_menu();
 
         void update_options_visibility(const std::string &alignment_method);

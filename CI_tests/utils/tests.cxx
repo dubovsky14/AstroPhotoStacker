@@ -62,8 +62,8 @@ int main(int argc, const char **argv)   {
         std::vector<std::tuple<int,int,int,int>>{
             {589,586,    6,  11},
             {1052, 274,  0,   0},
-            {1546, 237, -7,   1},
-            {554,  991,  0,  -7},
+            {1546, 237, -6,   1},
+            {554,  991,  0,  -6},
         });
 
     test_runner.run_test("Saving 6D Mark II raw file into into file", test_metadata_fit_file_saver,

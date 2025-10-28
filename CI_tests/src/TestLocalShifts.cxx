@@ -27,8 +27,8 @@ TestResult AstroPhotoStacker::test_predefined_alignment_boxes(  const InputFrame
         const int expected_dx = std::get<2>(expected_shift) + plate_solving_result.shift_x;
         const int expected_dy = std::get<3>(expected_shift) + plate_solving_result.shift_y;
 
-        int shifted_x, shifted_y;
-        bool valid = local_shifts_handler.calculate_shifted_coordinates(x, y, &shifted_x, &shifted_y);
+        float shifted_x(x), shifted_y(y);
+        bool valid = local_shifts_handler.calculate_shifted_coordinates(&shifted_x, &shifted_y);
         if (!valid) {
             error_message += "Alignment point box at (" + to_string(x) + ", " + to_string(y) + ") is invalid.\n";
             continue;

@@ -87,12 +87,8 @@ void CalibratedPhotoHandler::calibrate() {
 
             // seeing effect, accounting for local shifts
             if (!m_local_shifts_handler.empty()) {
-                int x_int = int(x_original);
-                int y_int = int(y_original);
                 float score = 1;
-                if (m_local_shifts_handler.calculate_shifted_coordinates(x_int, y_int, &x_int, &y_int, &score)) {
-                    x_original = x_int;
-                    y_original = y_int;
+                if (m_local_shifts_handler.calculate_shifted_coordinates(&x_original, &y_original, &score)) {
                     m_score_handler.set_local_score(x_shifted, y_shifted, score);
                 }
                 else {
