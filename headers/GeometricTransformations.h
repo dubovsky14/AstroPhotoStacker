@@ -74,6 +74,14 @@ namespace AstroPhotoStacker {
                 *y = -x_new*sinx + y_new*cosx + m_rotation_center_y;
             };
 
+            void get_parameters(float *shift_x, float *shift_y, float *rotation_center_x, float *rotation_center_y, float *rotation) const {
+                *shift_x = m_shift_x;
+                *shift_y = m_shift_y;
+                *rotation_center_x = m_rotation_center_x;
+                *rotation_center_y = m_rotation_center_y;
+                *rotation = m_rotation;
+            };
+
         private:
             float m_shift_x;
             float m_shift_y;
