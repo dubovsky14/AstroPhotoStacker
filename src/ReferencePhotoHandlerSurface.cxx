@@ -75,15 +75,22 @@ void ReferencePhotoHandlerSurface::initialize_reference_features(const PixelType
     image_data.width = m_width;
     image_data.height = m_height;
 
-    std::vector<PixelType> image_copy(brightness_original, brightness_original + m_width * m_height);
-    cv::Mat cv_image(m_height, m_width, CV_16UC1, image_copy.data());
-    const PixelType max_pixel_value = *std::max_element(image_copy.begin(), image_copy.end());
+    get_keypoints_and_descriptors(brightness_original, m_width, m_height, &m_reference_keypoints, &m_reference_descriptors);
+};
+
+void ReferencePhotoHandlerSurface::get_keypoints_and_descriptors(   const PixelType *brightness,
+                                                                    int width,
+                                                                    int height,
+                                                                    std::vector<cv::KeyPoint> *keypoints,
+                                                                    cv::Mat *descriptors) const    {
+
+    const cv::Mat cv_image(height, width, CV_16UC1, const_cast<PixelType*>(brightness)); // OpenCV needs non-const pointer, because if can moidify the data (it does not in this case though)
+    const PixelType max_pixel_value = *std::max_element(brightness, brightness + width * height);
     cv::Mat cv_image_normalized;
     cv_image.convertTo(cv_image_normalized, CV_8UC1, 255.0 / max_pixel_value);
 
     cv::Ptr<cv::ORB> detector = cv::ORB::create(2000, 1.2f, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
-    detector->detectAndCompute(cv_image_normalized, cv::noArray(), m_reference_keypoints, m_reference_descriptors);
-
+    detector->detectAndCompute(cv_image_normalized, cv::noArray(), *keypoints, *descriptors);
 };
 
 std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const InputFrame &input_frame) const   {
@@ -117,15 +124,10 @@ std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> ReferencePhotoHan
     const double sharpness = image_ranker.get_sharpness_score();
     const float ranking = 100./sharpness;
 
-    cv::Mat cv_image(height, width, CV_16UC1, static_cast<void*>(brightness.data()));
-    const PixelType max_pixel_value = *std::max_element(brightness.begin(), brightness.end());
-    cv::Mat cv_image_normalized;
-    cv_image.convertTo(cv_image_normalized, CV_8UC1, 255.0 / max_pixel_value);
-
     std::vector<cv::KeyPoint> keypoints;
     cv::Mat descriptors;
-    cv::Ptr<cv::ORB> detector = cv::ORB::create(2000, 1.2f, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
-    detector->detectAndCompute(cv_image_normalized, cv::noArray(), keypoints, descriptors);
+
+    get_keypoints_and_descriptors(brightness.data(), width, height, &keypoints, &descriptors);
 
     // Match features
     cv::BFMatcher matcher(cv::NORM_L2);

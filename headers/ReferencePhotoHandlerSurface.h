@@ -58,6 +58,8 @@ namespace AstroPhotoStacker   {
         protected:
             void initialize_reference_features(const PixelType *brightness_original);
 
+            void get_keypoints_and_descriptors(const PixelType *brightness, int width, int height, std::vector<cv::KeyPoint> *keypoints, cv::Mat *descriptors) const;
+
             virtual void initialize(const PixelType *brightness, int width, int height, float threshold_fraction = 0.0005) override;
 
 
