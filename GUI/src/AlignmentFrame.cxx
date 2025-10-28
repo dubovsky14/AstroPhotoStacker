@@ -102,70 +102,71 @@ void AlignmentFrame::add_alignment_method_menu()    {
 void AlignmentFrame::add_surface_method_settings()  {
     m_hidden_options_sizer = new wxBoxSizer(wxVERTICAL);
 
-    AlignmentSettingsSurface *alignment_settings_surface = AlignmentSettingsSurface::get_instance();
-
-    auto add_hidden_settings_slider = [this, alignment_settings_surface](
-            const std::string &alignment_method,
-            const std::string &label,
-            float min_value,
-            float max_value,
-            float initial_value,
-            float step,
-            int n_digits,
-            std::function<void(float)> callback
-        )   {
-            if (find(m_alignment_methods.begin(), m_alignment_methods.end(), alignment_method) == m_alignment_methods.end())    {
-                throw std::runtime_error("Attempted to use \'add_hidden_settings_slider\' function with unknown alignment method.");
-            }
-
-            auto this_slider = make_unique<FloatingPointSlider>(
-                    this,
-                    label,
-                    min_value,
-                    max_value,
-                    initial_value,
-                    step,
-                    n_digits,
-                    callback
-            );
-            this_slider->add_sizer(m_hidden_options_sizer, 0, wxEXPAND, 5);
-            this_slider->hide();
-
-            if (m_hidden_settings_sliders.find(alignment_method) == m_hidden_settings_sliders.end()) {
-                m_hidden_settings_sliders[alignment_method] = vector<unique_ptr<FloatingPointSlider>>();
-            }
-            m_hidden_settings_sliders[alignment_method].push_back(std::move(this_slider));
-    };
-
-    auto add_hidden_checkbox = [this, alignment_settings_surface](
-            const std::string &alignment_method,
-            const std::string &label,
-            const std::string &tooltip,
-            bool default_value,
-            std::function<void(bool)> callback)   {
-                    if (find(m_alignment_methods.begin(), m_alignment_methods.end(), alignment_method) == m_alignment_methods.end())    {
-                        throw std::runtime_error("Attempted to use \'add_hidden_settings_slider\' function with unknown alignment method.");
-                    }
-
-                    wxCheckBox* checkbox = new wxCheckBox(this, wxID_ANY, label);
-                    checkbox->SetValue(default_value);
-                    checkbox->SetToolTip(tooltip);
-                    checkbox->Bind(wxEVT_CHECKBOX, [callback, checkbox, this](wxCommandEvent&){
-                        const bool is_checked = checkbox->GetValue();
-                        callback(is_checked);
-                    });
-                    m_hidden_options_sizer->Add(checkbox, 0, wxEXPAND, 5);
-
-                    if (m_hidden_settings_checkboxes.find(alignment_method) == m_hidden_settings_checkboxes.end()) {
-                        m_hidden_settings_checkboxes[alignment_method] = vector<wxCheckBox*>();
-                    }
-                    m_hidden_settings_checkboxes[alignment_method].push_back(checkbox);
-    };
-
     m_main_sizer->Add(m_hidden_options_sizer, 2, wxEXPAND, 5);
 
     update_options_visibility(m_stack_settings->get_alignment_method());
 };
+
+
+void  AlignmentFrame::add_hidden_settings_slider(   const std::string &alignment_method,
+                                                    const std::string &label,
+                                                    float min_value,
+                                                    float max_value,
+                                                    float initial_value,
+                                                    float step,
+                                                    int n_digits,
+                                                    std::function<void(float)> callback)   {
+
+
+    if (find(m_alignment_methods.begin(), m_alignment_methods.end(), alignment_method) == m_alignment_methods.end())    {
+        throw std::runtime_error("Attempted to use \'add_hidden_settings_slider\' function with unknown alignment method.");
+    }
+
+    auto this_slider = make_unique<FloatingPointSlider>(
+            this,
+            label,
+            min_value,
+            max_value,
+            initial_value,
+            step,
+            n_digits,
+            callback
+    );
+    this_slider->add_sizer(m_hidden_options_sizer, 0, wxEXPAND, 5);
+    this_slider->hide();
+
+    if (m_hidden_settings_sliders.find(alignment_method) == m_hidden_settings_sliders.end()) {
+        m_hidden_settings_sliders[alignment_method] = vector<unique_ptr<FloatingPointSlider>>();
+    }
+    m_hidden_settings_sliders[alignment_method].push_back(std::move(this_slider));
+};
+
+
+void  AlignmentFrame::add_hidden_checkbox(  const std::string &alignment_method,
+                                            const std::string &label,
+                                            const std::string &tooltip,
+                                            bool default_value,
+                                            std::function<void(bool)> callback)   {
+
+    if (find(m_alignment_methods.begin(), m_alignment_methods.end(), alignment_method) == m_alignment_methods.end())    {
+        throw std::runtime_error("Attempted to use \'add_hidden_settings_slider\' function with unknown alignment method.");
+    }
+
+    wxCheckBox* checkbox = new wxCheckBox(this, wxID_ANY, label);
+    checkbox->SetValue(default_value);
+    checkbox->SetToolTip(tooltip);
+    checkbox->Bind(wxEVT_CHECKBOX, [callback, checkbox, this](wxCommandEvent&){
+        const bool is_checked = checkbox->GetValue();
+        callback(is_checked);
+    });
+    m_hidden_options_sizer->Add(checkbox, 0, wxEXPAND, 5);
+
+    if (m_hidden_settings_checkboxes.find(alignment_method) == m_hidden_settings_checkboxes.end()) {
+        m_hidden_settings_checkboxes[alignment_method] = vector<wxCheckBox*>();
+    }
+    m_hidden_settings_checkboxes[alignment_method].push_back(checkbox);
+};
+
 
 void AlignmentFrame::update_options_visibility(const std::string &selected_alignment_method)    {
     for (const auto &[available_method, vector_of_sliders] : m_hidden_settings_sliders)    {

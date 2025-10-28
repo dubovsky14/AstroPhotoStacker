@@ -34,6 +34,27 @@ class AlignmentFrame : public wxFrame  {
 
         void add_surface_method_settings();
 
+        void add_hidden_settings_slider(
+            const std::string &alignment_method,
+            const std::string &label,
+            float min_value,
+            float max_value,
+            float initial_value,
+            float step,
+            int n_digits,
+            std::function<void(float)> callback
+        );
+
+        void add_hidden_checkbox(
+            const std::string &alignment_method,
+            const std::string &label,
+            const std::string &tooltip,
+            bool default_value,
+            std::function<void(bool)> callback
+        );
+
+
+
         void add_alignment_method_menu();
 
         void update_options_visibility(const std::string &alignment_method);
