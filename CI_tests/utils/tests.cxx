@@ -4,6 +4,7 @@
 #include "../headers/ImageReadingTest.h"
 #include "../headers/TestLocalShifts.h"
 #include "../headers/TestFitFileSaver.h"
+#include "../headers/TestAlignmentResult.h"
 #include "../headers/AsterismHashTests.h"
 
 #include "../headers/TestUtils.h"
@@ -18,6 +19,8 @@ using namespace AstroPhotoStacker;
 
 int main(int argc, const char **argv)   {
     TestRunner test_runner;
+
+    test_runner.run_test("AlignmentResultPlateSolving",    test_alignment_result_plate_solving);
 
 
     test_runner.run_test("kd_tree",                 test_kd_tree);
