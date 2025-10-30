@@ -199,8 +199,6 @@ class MyFrame : public wxFrame  {
 
         static std::string s_gui_folder_path;
 
-        std::vector<std::pair<float,float>> m_alignment_point_vector_storage;
-
         int m_current_group = 0;
         bool m_show_calibrated_preview = false;
         bool m_show_alignment_points = false;

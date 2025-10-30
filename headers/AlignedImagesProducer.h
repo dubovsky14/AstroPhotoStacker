@@ -7,6 +7,7 @@
 #include "../headers/InputFrame.h"
 #include "../headers/StackerBase.h"
 #include "../headers/StackSettings.h"
+#include "../headers/AlignmentResultBase.h"
 
 #include <functional>
 #include <string>
@@ -17,10 +18,18 @@
 
 namespace AstroPhotoStacker {
     struct GroupToStack {
-        std::vector<InputFrame>                 input_frames;
-        std::vector<FileAlignmentInformation>   alignment_info;
-        StackSettings                           stack_settings;
+        std::vector<InputFrame>                             input_frames;
+        std::vector<std::unique_ptr<AlignmentResultBase>>   alignment_info;
+        StackSettings                                       stack_settings;
         std::vector<std::vector<std::shared_ptr<const CalibrationFrameBase> > > calibration_frame_handlers;
+
+        GroupToStack() = default;
+
+        GroupToStack(const GroupToStack&) = delete;
+
+        GroupToStack& operator=(const GroupToStack&) = delete;
+
+        GroupToStack(GroupToStack&&) = default;
     };
 
 
@@ -31,11 +40,11 @@ namespace AstroPhotoStacker {
             void limit_output_image_size(int top_left_corner_x, int top_left_corner_y, int width, int height);
 
             void add_image     (const InputFrame &input_frame,
-                                const FileAlignmentInformation &alignment_info = FileAlignmentInformation(),
+                                const AlignmentResultBase &alignment_result,
                                 const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers = {});
 
             void add_image_group_to_stack(  const std::vector<InputFrame> &input_frames,
-                                            const std::vector<FileAlignmentInformation> &alignment_info,
+                                            const std::vector<std::unique_ptr<AlignmentResultBase>> &alignment_info,
                                             const StackSettings &stack_settings,
                                             const std::vector<std::vector<std::shared_ptr<const CalibrationFrameBase> > > *calibration_frame_handlers = nullptr);
 
@@ -115,7 +124,7 @@ namespace AstroPhotoStacker {
             std::function<std::vector<std::vector<PixelType>>(const std::vector<std::vector<PixelType>>&, int, int)> m_post_processing_tool = nullptr;
 
             std::vector<InputFrame>                                                 m_frames_to_align;
-            std::vector<FileAlignmentInformation>                                   m_alignment_info;
+            std::vector<std::unique_ptr<AlignmentResultBase>>                       m_alignment_info;
 
             std::vector<std::vector<std::shared_ptr<const CalibrationFrameBase> > > m_calibration_frame_handlers;
             const HotPixelIdentifier *m_hot_pixel_identifier = nullptr;
@@ -123,7 +132,7 @@ namespace AstroPhotoStacker {
 
             std::pair<int,int> calculate_cropped_width_and_height(int width_original, int height_original) const;
 
-            void produce_aligned_image( const InputFrame &input_frame, const std::string &output_file_address, const FileAlignmentInformation &alignment_info, const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers);
+            void produce_aligned_image( const InputFrame &input_frame, const std::string &output_file_address, const AlignmentResultBase &alignment_info, const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers);
 
             void produce_aligned_image( const GroupToStack &group_to_stack, const std::string &output_file_address);
 

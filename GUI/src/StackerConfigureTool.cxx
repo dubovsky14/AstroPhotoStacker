@@ -61,13 +61,7 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
             const AlignmentFileInfo &alignment_info = light_frame.second.alignment_info;
             stacker->add_photo(input_frame, calibration_frames_handlers);
             stacker->add_alignment_info(    input_frame,
-                                            alignment_info.shift_x,
-                                            alignment_info.shift_y,
-                                            alignment_info.rotation_center_x,
-                                            alignment_info.rotation_center_y,
-                                            alignment_info.rotation,
-                                            alignment_info.ranking,
-                                            alignment_info.local_shifts_handler);
+                                            *alignment_info.alignment_result);
 
         }
     }

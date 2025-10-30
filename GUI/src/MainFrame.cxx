@@ -314,7 +314,7 @@ void MyFrame::add_aligned_images_producer_menu()  {
         if (!frames_aligned) {
             wxMessageDialog dialog(this, "Please align the frames first!", "Frames not aligned");
             if (dialog.ShowModal() == wxID_YES) {
-                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, static_cast<StackSettings *>(m_stack_settings.get()), &m_alignment_point_vector_storage);
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, static_cast<StackSettings *>(m_stack_settings.get()));
                 select_alignment_window->Show(true);
             }
             else {
@@ -610,7 +610,7 @@ void MyFrame::add_button_bar()   {
             dialog->ShowModal();
             return;
         }
-        AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, m_stack_settings.get(), &m_alignment_point_vector_storage);
+        AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, m_stack_settings.get());
         select_alignment_window->Show(true);
     });
 
@@ -679,7 +679,7 @@ void MyFrame::add_button_bar()   {
         if (!frames_aligned) {
             wxMessageDialog dialog(this, "Please align the files first!", "Files not aligned");
             if (dialog.ShowModal() == wxID_YES) {
-                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, static_cast<StackSettings *>(m_stack_settings.get()), &m_alignment_point_vector_storage);
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, static_cast<StackSettings *>(m_stack_settings.get()));
                 select_alignment_window->Show(true);
             }
             else {
@@ -968,19 +968,9 @@ void MyFrame::update_image_preview_file(size_t frame_index)  {
     const int group_number = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).group_number;
     const FrameType frame_type = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).type;
     if (m_show_calibrated_preview && frame_type == FrameType::LIGHT)  {
-        const AlignmentFileInfo &alignment_info = m_filelist_handler_gui_interface.get_alignment_info(group_number, frame);
-        const std::vector<AstroPhotoStacker::LocalShift> &local_shifts = alignment_info.local_shifts_handler.get_shifts();
+        const AlignmentResultBase &alignment_result = m_filelist_handler_gui_interface.get_alignment_info(group_number, frame);
         CalibratedPhotoHandler calibrated_photo_handler(frame, true);
-        calibrated_photo_handler.define_alignment(
-            alignment_info.shift_x,
-            alignment_info.shift_y,
-            alignment_info.rotation_center_x,
-            alignment_info.rotation_center_y,
-            alignment_info.rotation
-        );
-        if (!local_shifts.empty()) {
-            calibrated_photo_handler.define_local_shifts(alignment_info.local_shifts_handler);
-        }
+        calibrated_photo_handler.define_alignment(alignment_result);
         calibrated_photo_handler.calibrate();
 
         const int width = calibrated_photo_handler.get_width();
@@ -996,41 +986,40 @@ void MyFrame::update_image_preview_file(size_t frame_index)  {
             }
         }
 
-        if (m_show_alignment_points) {
-            auto draw_boxes_lambda = [this, local_shifts](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
-                cout << "Drawing " << local_shifts.size() <<  " alignment boxes" << endl;
-                draw_alignment_points_into_image(
-                    local_shifts,
-                    image_data,
-                    width,
-                    height,
-                    {0, 255, 0},
-                    {255,0,0});
-            };
-            m_current_preview->remove_layer(c_alignment_boxes_preview_name);
-            m_current_preview->add_layer(c_alignment_boxes_preview_name, draw_boxes_lambda);
-        }
-
+        //if (m_show_alignment_points) {
+        //    auto draw_boxes_lambda = [this, local_shifts](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
+        //        cout << "Drawing " << local_shifts.size() <<  " alignment boxes" << endl;
+        //        draw_alignment_points_into_image(
+        //            local_shifts,
+        //            image_data,
+        //            width,
+        //            height,
+        //            {0, 255, 0},
+        //            {255,0,0});
+        //    };
+        //    m_current_preview->remove_layer(c_alignment_boxes_preview_name);
+        //    m_current_preview->add_layer(c_alignment_boxes_preview_name, draw_boxes_lambda);
+        //}
 
         m_current_preview->read_preview_from_stacked_image(calibrated_image, width, height);
     }
     else {
-        if (m_show_alignment_points && frame_type == FrameType::LIGHT) {
-            const AlignmentFileInfo &alignment_info = m_filelist_handler_gui_interface.get_alignment_info(group_number, frame);
-            const std::vector<AstroPhotoStacker::LocalShift> &local_shifts = alignment_info.local_shifts_handler.get_shifts();
-            auto draw_boxes_lambda = [this, local_shifts](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
-                cout << "Drawing " << local_shifts.size() <<  " alignment boxes" << endl;
-                draw_alignment_points_into_image(
-                    local_shifts,
-                    image_data,
-                    width,
-                    height,
-                    {0, 255, 0},
-                    {255,0,0});
-            };
-            m_current_preview->remove_layer(c_alignment_boxes_preview_name);
-            m_current_preview->add_layer(c_alignment_boxes_preview_name, draw_boxes_lambda);
-        }
+        //if (m_show_alignment_points && frame_type == FrameType::LIGHT) {
+        //    const AlignmentFileInfo &alignment_info = m_filelist_handler_gui_interface.get_alignment_info(group_number, frame);
+        //    const std::vector<AstroPhotoStacker::LocalShift> &local_shifts = alignment_info.local_shifts_handler.get_shifts();
+        //    auto draw_boxes_lambda = [this, local_shifts](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
+        //        cout << "Drawing " << local_shifts.size() <<  " alignment boxes" << endl;
+        //        draw_alignment_points_into_image(
+        //            local_shifts,
+        //            image_data,
+        //            width,
+        //            height,
+        //            {0, 255, 0},
+        //            {255,0,0});
+        //    };
+        //    m_current_preview->remove_layer(c_alignment_boxes_preview_name);
+        //    m_current_preview->add_layer(c_alignment_boxes_preview_name, draw_boxes_lambda);
+        //}
 
         m_current_preview->read_preview_from_frame(frame);
     }

@@ -27,7 +27,7 @@ class AlignmentFrame : public wxFrame  {
          * @param filelist_handler_gio_interface pointer to the filelist handler GUI interface object
          * @param stack_settings pointer to the stack settings object
          */
-        AlignmentFrame(MyFrame *parent, FilelistHandlerGUIInterface *filelist_handler_gio_interface, AstroPhotoStacker::StackSettings *stack_settings, std::vector<std::pair<float,float>> *alignment_point_vector_storage = nullptr);
+        AlignmentFrame(MyFrame *parent, FilelistHandlerGUIInterface *filelist_handler_gio_interface, AstroPhotoStacker::StackSettings *stack_settings);
 
     private:
         void add_reference_file_selection_menu();
@@ -63,7 +63,6 @@ class AlignmentFrame : public wxFrame  {
 
         AstroPhotoStacker::StackSettings *m_stack_settings = nullptr;
         FilelistHandlerGUIInterface *m_filelist_handler_gui_interface = nullptr;
-        std::vector<std::pair<float,float>> *m_alignment_point_vector_storage = nullptr;
 
         wxBoxSizer *m_hidden_options_sizer = nullptr;
         wxBoxSizer *m_main_sizer = nullptr;

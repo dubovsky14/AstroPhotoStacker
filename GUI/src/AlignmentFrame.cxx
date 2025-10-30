@@ -17,14 +17,13 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandlerGUIInterface *filelist_handler_gui_interface, StackSettings *stack_settings, std::vector<std::pair<float,float>> *alignment_point_vector_storage)
+AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandlerGUIInterface *filelist_handler_gui_interface, StackSettings *stack_settings)
     :  wxFrame(parent, wxID_ANY, "Select alignment file")      {
 
     SetSize(m_window_size);
 
     m_stack_settings = stack_settings;
     m_filelist_handler_gui_interface = filelist_handler_gui_interface;
-    m_alignment_point_vector_storage = alignment_point_vector_storage;
     m_main_sizer = new wxBoxSizer(wxVERTICAL);
 
     initialize_list_of_frames_to_align();
@@ -207,10 +206,6 @@ void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
         AstroPhotoStacker::PhotoAlignmentHandler photo_alignment_handler;
         photo_alignment_handler.set_alignment_method(m_stack_settings->get_alignment_method());
         photo_alignment_handler.set_number_of_cpu_threads(m_stack_settings->get_n_cpus());
-        if (m_alignment_point_vector_storage != nullptr) {
-            m_alignment_point_vector_storage->clear();
-            photo_alignment_handler.set_alignment_point_vector_storage(m_alignment_point_vector_storage);
-        }
 
         if (m_stack_settings->get_alignment_method() == "comet") {
             std::map<InputFrame, std::pair<float,float>> comet_positions_storage;
@@ -240,25 +235,13 @@ void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
                                         "All files aligned", 100);
 
         const std::vector<AstroPhotoStacker::FileAlignmentInformation> &alignment_info = photo_alignment_handler.get_alignment_parameters_vector();
-        const std::vector<std::vector<AstroPhotoStacker::LocalShift>> &local_shifts    = photo_alignment_handler.get_local_shifts_vector();
 
         for (unsigned int i_selected_file = 0; i_selected_file < m_indices_frames_to_align.size(); ++i_selected_file) {
             const InputFrame &input_frame = m_frames_to_align[i_selected_file];
             const AstroPhotoStacker::FileAlignmentInformation &info = alignment_info[i_selected_file];
-            AlignmentFileInfo alignment_file_info;
-            alignment_file_info.shift_x = info.shift_x;
-            alignment_file_info.shift_y = info.shift_y;
-            alignment_file_info.rotation_center_x = info.rotation_center_x;
-            alignment_file_info.rotation_center_y = info.rotation_center_y;
-            alignment_file_info.rotation = info.rotation;
-            alignment_file_info.ranking = info.ranking;
-            alignment_file_info.initialized = true;
-            m_filelist_handler_gui_interface->set_alignment_info(input_frame, alignment_file_info);
+            const unique_ptr<AstroPhotoStacker::AlignmentResultBase> &alignment_result = info.alignment_result;
+            m_filelist_handler_gui_interface->set_alignment_info(input_frame, *alignment_result);
 
-            const std::vector<AstroPhotoStacker::LocalShift> &shifts = local_shifts[i_selected_file];
-            if (shifts.size() > 0) {
-                m_filelist_handler_gui_interface->set_local_shifts(input_frame, shifts);
-            }
         }
         parent->update_files_to_stack_checkbox();
         parent->update_alignment_status();

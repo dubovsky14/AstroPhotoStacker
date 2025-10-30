@@ -2,6 +2,8 @@
 
 #include "../headers/AlignmentResultSurface.h"
 #include "../headers/AlignmentResultPlateSolving.h"
+#include "../headers/AlignmentResultDummy.h"
+#include "../headers/AlignmentResultTranslationOnly.h"
 
 #include <stdexcept>
 
@@ -12,6 +14,8 @@ using namespace std;
 AlignmentResultFactory::AlignmentResultFactory()    {
     register_alignment_result_type<AlignmentResultSurface>();
     register_alignment_result_type<AlignmentResultPlateSolving>();
+    register_alignment_result_type<AlignmentResultDummy>();
+    register_alignment_result_type<AlignmentResultTranslationOnly>();
 };
 
 
