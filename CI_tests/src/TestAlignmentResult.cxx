@@ -14,10 +14,10 @@ TestResult AstroPhotoStacker::test_alignment_result_plate_solving() {
     std::unique_ptr<AlignmentResultBase> alignment_result = AlignmentResultFactory::get_instance().create_alignment_result_from_type(AlignmentResultPlateSolving::s_type_name);
     dynamic_cast<AlignmentResultPlateSolving*>(alignment_result.get())->set_parameters(10,15,1000,2300,0.02);
 
-    const std::string description_string = alignment_result->get_description_string(AlignmentResultPlateSolving::s_type_name);
+    const std::string description_string = alignment_result->get_description_string();
     std::unique_ptr<AlignmentResultBase> alignment_result_from_description = AlignmentResultFactory::get_instance().create_alignment_result_from_description_string(description_string);
 
-    const std::string description_string_2 = alignment_result_from_description->get_description_string(AlignmentResultPlateSolving::s_type_name);
+    const std::string description_string_2 = alignment_result_from_description->get_description_string();
 
     std::string message = "";
     if (description_string != description_string_2) {

@@ -17,22 +17,17 @@ TestResult AstroPhotoStacker::test_predefined_alignment_boxes(  const InputFrame
 
     ReferencePhotoHandlerSurface reference_photo_handler(reference_frame, 0.0005f);
 
-    PlateSolvingResult plate_solving_result = reference_photo_handler.calculate_alignment(alternative_frame);
-    const vector<LocalShift> local_shifts = reference_photo_handler.get_local_shifts(alternative_frame);
-    LocalShiftsHandler local_shifts_handler(local_shifts);
+    unique_ptr<AlignmentResultBase> plate_solving_result = reference_photo_handler.calculate_alignment(alternative_frame);
 
     for (const std::tuple<int,int,int,int> &expected_shift : expected_shifts) {
         const int x = std::get<0>(expected_shift);
         const int y = std::get<1>(expected_shift);
-        const int expected_dx = std::get<2>(expected_shift) + plate_solving_result.shift_x;
-        const int expected_dy = std::get<3>(expected_shift) + plate_solving_result.shift_y;
+        const int expected_dx = std::get<2>(expected_shift);
+        const int expected_dy = std::get<3>(expected_shift);
+
 
         float shifted_x(x), shifted_y(y);
-        bool valid = local_shifts_handler.calculate_shifted_coordinates(&shifted_x, &shifted_y);
-        if (!valid) {
-            error_message += "Alignment point box at (" + to_string(x) + ", " + to_string(y) + ") is invalid.\n";
-            continue;
-        }
+        plate_solving_result->transform_from_reference_to_shifted_frame(&shifted_x, &shifted_y);
         const int dx = shifted_x - x;
         const int dy = shifted_y - y;
 

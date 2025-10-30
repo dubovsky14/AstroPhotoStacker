@@ -41,9 +41,11 @@ AlignmentResultSurface::AlignmentResultSurface( float shift_x,
                                                 float rotation_center_x,
                                                 float rotation_center_y,
                                                 float rotation,
-                                                const std::vector<LocalShift> &local_shifts) :
+                                                const std::vector<LocalShift> &local_shifts,
+                                                float ranking_score) :
     AlignmentResultBase() {
     set_parameters(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation, local_shifts);
+    m_ranking_score = ranking_score;
 };
 
 

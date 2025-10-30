@@ -126,6 +126,22 @@ std::string AstroPhotoStacker::join_strings(const std::string &separator, const 
     return result;
 };
 
+int AstroPhotoStacker::find_nth_occurrence(const std::string &main_string, const std::string &substring, int n) {
+    size_t pos = 0;
+    int count = 0;
+
+    while (count < n) {
+        pos = main_string.find(substring, pos);
+        if (pos == std::string::npos) {
+            return -1; // Not found
+        }
+        count++;
+        pos += substring.length(); // Move past the last found occurrence
+    }
+
+    return static_cast<int>(pos - substring.length()); // Return the position of the n-th occurrence
+}
+
 std::vector<std::string> AstroPhotoStacker::get_frame_files_in_folder(const std::string &folder_address)  {
     vector<string> result;
     for (const auto &entry : filesystem::directory_iterator(folder_address)) {

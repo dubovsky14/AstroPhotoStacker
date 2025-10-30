@@ -167,13 +167,7 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
         const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers = group_to_stack.calibration_frame_handlers[i_frame];
         stacker->add_photo(input_frame, calibration_frame_handlers);
         stacker->add_alignment_info(    input_frame,
-                                        alignment_info.shift_x,
-                                        alignment_info.shift_y,
-                                        alignment_info.rotation_center_x,
-                                        alignment_info.rotation_center_y,
-                                        alignment_info.rotation,
-                                        alignment_info.ranking,
-                                        alignment_info.local_shifts_handler);
+                                        *alignment_info.alignment_result);
     }
 
     stacker->calculate_stacked_photo();
@@ -200,8 +194,7 @@ void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_fram
                                                     const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers)  {
 
     CalibratedPhotoHandler photo_handler(input_frame, true);
-    photo_handler.define_alignment(alignment_info.shift_x, alignment_info.shift_y, alignment_info.rotation_center_x, alignment_info.rotation_center_y, alignment_info.rotation);
-    photo_handler.define_local_shifts(alignment_info.local_shifts_handler);
+    photo_handler.define_alignment(*alignment_info.alignment_result);
 
     for (const auto &calibration_frame_handler : calibration_frame_handlers) {
         photo_handler.register_calibration_frame(calibration_frame_handler);

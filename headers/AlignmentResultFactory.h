@@ -12,9 +12,9 @@ namespace AstroPhotoStacker {
         public:
             static AlignmentResultFactory& get_instance();
 
-            std::unique_ptr<AlignmentResultBase> create_alignment_result_from_type(const std::string &type_string);
+            std::unique_ptr<AlignmentResultBase> create_alignment_result_from_type(const std::string &type_string)  const;
 
-            std::unique_ptr<AlignmentResultBase> create_alignment_result_from_description_string(const std::string &description_string);
+            std::unique_ptr<AlignmentResultBase> create_alignment_result_from_description_string(const std::string &description_string) const;
 
         private:
             AlignmentResultFactory();

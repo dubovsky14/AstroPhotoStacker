@@ -60,15 +60,10 @@ int main(int argc, const char **argv)   {
     photo_alignment_handler.align_files(reference_frame, {alternative_frame});
 
     const FileAlignmentInformation alignment_info = photo_alignment_handler.get_alignment_parameters(alternative_frame);
-    const std::vector<LocalShift> local_shifts = photo_alignment_handler.get_local_shifts(alternative_frame);
 
-    for (const LocalShift &shift : local_shifts) {
-        cout << "x = " << shift.x << ", y = " << shift.y << ", dx = " << shift.dx << ", dy = " << shift.dy << ", valid_ap = " << shift.valid_ap << ", score = " << shift.score << "\n";
-    }
 
     CalibratedPhotoHandler calibrated_photo_handler(alternative_frame, true);
-    calibrated_photo_handler.define_alignment(alignment_info.shift_x, alignment_info.shift_y, alignment_info.rotation_center_x, alignment_info.rotation_center_y, alignment_info.rotation);
-    calibrated_photo_handler.define_local_shifts(LocalShiftsHandler(local_shifts));
+    calibrated_photo_handler.define_alignment(*alignment_info.alignment_result);
     calibrated_photo_handler.calibrate();
 
 

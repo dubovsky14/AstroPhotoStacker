@@ -18,27 +18,18 @@ bool ReferencePhotoHandlerComet::add_comet_position(const InputFrame &input_fram
         return true;
     }
 
-    PlateSolvingResult plate_solving_result = ReferencePhotoHandlerStars::calculate_alignment(input_frame);
-    if (!plate_solving_result.is_valid) {
+    std::unique_ptr<AlignmentResultBase> plate_solving_result = ReferencePhotoHandlerStars::calculate_alignment(input_frame);
+    if (!plate_solving_result->is_valid()) {
         return false;
     }
 
-    GeometricTransformer geometric_transformer( plate_solving_result.shift_x,
-                                                plate_solving_result.shift_y,
-                                                plate_solving_result.rotation_center_x,
-                                                plate_solving_result.rotation_center_y,
-                                                plate_solving_result.rotation);
-
-    float x_ref = x;
-    float y_ref = y;
-    geometric_transformer.transform_to_reference_frame(&x_ref, &y_ref);
-
-    m_comet_positions[input_frame] = std::make_pair(x_ref, y_ref);
+    plate_solving_result->transform_to_reference_frame(&x, &y);
+    m_comet_positions[input_frame] = std::make_pair(x, y);
     return true;
 };
 
 
-PlateSolvingResult ReferencePhotoHandlerComet::calculate_alignment(const InputFrame &input_frame, float *ranking) const {
+std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerComet::calculate_alignment(const InputFrame &input_frame) const {
     try {
         InputFrameReader input_frame_reader(input_frame);
         const int width = input_frame_reader.get_width();
@@ -52,16 +43,8 @@ PlateSolvingResult ReferencePhotoHandlerComet::calculate_alignment(const InputFr
         sort_stars_by_size(&clusters);
         clusters.resize(min<int>(clusters.size(), 20));
 
-        if (ranking != nullptr) {
-            *ranking = PhotoRanker::calculate_frame_ranking(input_frame);
-        }
 
-        PlateSolvingResult plate_solving_result = plate_solve(clusters);
-        GeometricTransformer geometric_transformer( plate_solving_result.shift_x,
-                                                    plate_solving_result.shift_y,
-                                                    plate_solving_result.rotation_center_x,
-                                                    plate_solving_result.rotation_center_y,
-                                                    plate_solving_result.rotation);
+        std::unique_ptr<AlignmentResultPlateSolving> plate_solving_result = plate_solve(clusters);
 
         std::pair<float,float> expected_comet_position = calculate_expected_comet_position(input_frame_reader.get_metadata().timestamp);
         std::pair<float,float> closest_cluster;
@@ -69,7 +52,7 @@ PlateSolvingResult ReferencePhotoHandlerComet::calculate_alignment(const InputFr
         for (const std::tuple<float,float,int> &cluster : clusters) {
             float x = std::get<0>(cluster);
             float y = std::get<1>(cluster);
-            geometric_transformer.transform_to_reference_frame(&x, &y);
+            plate_solving_result->transform_to_reference_frame(&x, &y);
             const float dx = x - expected_comet_position.first;
             const float dy = y - expected_comet_position.second;
             const float distance_squared = dx*dx + dy*dy;
@@ -81,15 +64,20 @@ PlateSolvingResult ReferencePhotoHandlerComet::calculate_alignment(const InputFr
 
         const std::pair<float,float> comet_position = minimal_distance_squared < 25.0f ? closest_cluster : expected_comet_position;
 
-        plate_solving_result.shift_x -= comet_position.first - m_comet_position_reference_frame.first;
-        plate_solving_result.shift_y -= comet_position.second - m_comet_position_reference_frame.second;
+        float shift_x,shift_y,rotation_center_x,rotation_center_y,rotation;
+        plate_solving_result->get_parameters(&shift_x, &shift_y, &rotation_center_x, &rotation_center_y, &rotation);
+
+        shift_x -= comet_position.first - m_comet_position_reference_frame.first;
+        shift_y -= comet_position.second - m_comet_position_reference_frame.second;
+
+        plate_solving_result->set_parameters(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation);
+        plate_solving_result->set_ranking_score(PhotoRanker::calculate_frame_ranking(input_frame));
+
         return plate_solving_result;
     }
     catch (runtime_error &e)    {
         cout << "Error: " << e.what() << endl;
-        PlateSolvingResult plate_solving_result;
-        plate_solving_result.is_valid = false;
-        return plate_solving_result;
+        return make_unique<AlignmentResultPlateSolving>();
     }
 };
 

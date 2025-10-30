@@ -30,7 +30,7 @@ ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const PixelType *
     initialize(brightness, width, height, threshold_fraction);
 };
 
-PlateSolvingResult ReferencePhotoHandlerPlanetary::calculate_alignment(const InputFrame &input_frame, float *ranking) const{
+std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerPlanetary::calculate_alignment(const InputFrame &input_frame) const{
     int width, height;
     const vector<PixelType> brightness = read_image_monochrome(input_frame, &width, &height);
 
@@ -43,20 +43,21 @@ PlateSolvingResult ReferencePhotoHandlerPlanetary::calculate_alignment(const Inp
     const auto [center_of_mass_x, center_of_mass_y, eigenvec, eigenval] = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, m_threshold_fraction, &alignment_window);
     const double sin_angle = m_covariance_eigen_vectors[0][0]*eigenvec[0][1] - m_covariance_eigen_vectors[0][1]*eigenvec[0][0];
 
-    PlateSolvingResult plate_solving_result;
-    plate_solving_result.shift_x = m_center_of_mass_x - center_of_mass_x;
-    plate_solving_result.shift_y = m_center_of_mass_y - center_of_mass_y;
-    plate_solving_result.rotation_center_x = center_of_mass_x;
-    plate_solving_result.rotation_center_y = center_of_mass_y;
-    plate_solving_result.rotation = std::asin(sin_angle);
-    plate_solving_result.is_valid = true;
+    const float shift_x = m_center_of_mass_x - center_of_mass_x;
+    const float shift_y = m_center_of_mass_y - center_of_mass_y;
+    const float rotation_center_x = center_of_mass_x;
+    const float rotation_center_y = center_of_mass_y;
+    const float rotation = std::asin(sin_angle);
 
-    if (ranking != nullptr) {
-        //const double sharpness = get_sharpness_factor(brightness.data(), width, height, alignment_window);
-        ImageRanker image_ranker(brightness, width, height);
-        const double sharpness = image_ranker.get_sharpness_score();
-        *ranking = 100./sharpness;
-    }
+    std::unique_ptr<AlignmentResultPlateSolving> plate_solving_result = std::make_unique<AlignmentResultPlateSolving>(  shift_x,
+                                                                                                                        shift_y,
+                                                                                                                        rotation_center_x,
+                                                                                                                        rotation_center_y,
+                                                                                                                        rotation);
+
+    ImageRanker image_ranker(brightness, width, height);
+    const double sharpness = image_ranker.get_sharpness_score();
+    plate_solving_result->set_ranking_score(100./sharpness);
 
     return plate_solving_result;
 };

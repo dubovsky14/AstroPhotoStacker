@@ -1,8 +1,7 @@
 #pragma once
 
 #include "../headers/ReferencePhotoHandlerBase.h"
-#include "../headers/LocalShiftsHandler.h"
-#include "../headers/LocalShift.h"
+#include "../headers/AlignmentResultBase.h"
 #include "../headers/InputFrame.h"
 
 #include <memory>
@@ -15,13 +14,22 @@
 namespace   AstroPhotoStacker   {
     struct FileAlignmentInformation    {
         InputFrame input_frame;
-        float shift_x            = 0;
-        float shift_y            = 0;
-        float rotation_center_x  = 0;
-        float rotation_center_y  = 0;
-        float rotation           = 0;
-        float ranking            = 0;
-        LocalShiftsHandler local_shifts_handler;
+        std::unique_ptr<AlignmentResultBase> alignment_result = nullptr;
+
+        FileAlignmentInformation() = default;
+
+        FileAlignmentInformation(const FileAlignmentInformation &other) {
+            input_frame = other.input_frame;
+            alignment_result = other.alignment_result->clone();
+        };
+
+        FileAlignmentInformation& operator=(const FileAlignmentInformation &other) {
+            if (this != &other) {
+                input_frame = other.input_frame;
+                alignment_result = other.alignment_result->clone();
+            }
+            return *this;
+        };
     };
 
     /**
@@ -48,7 +56,7 @@ namespace   AstroPhotoStacker   {
              * @param rotation The rotation angle.
              * @param ranking The ranking of the alignment.
              */
-            void add_alignment_info(const InputFrame &input_frame, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler = LocalShiftsHandler());
+            void add_alignment_info(const InputFrame &input_frame, const AlignmentResultBase &alignment_result);
 
             /**
              * @brief Reads alignment information from a text file.
@@ -136,23 +144,17 @@ namespace   AstroPhotoStacker   {
              */
             const std::string& get_alignment_method() const {return m_alignment_method;};
 
-            std::vector<LocalShift> get_local_shifts(const InputFrame &input_frame) const;
-
-            const std::vector<std::vector<LocalShift>>& get_local_shifts_vector() const {return m_local_shifts_vector;};
-
-            void set_alignment_point_vector_storage(std::vector<std::pair<float,float>> *alignment_point_vector_storage) {m_alignment_point_vector_storage = alignment_point_vector_storage;};
-
             std::map<InputFrame, std::pair<float, float>>& get_comet_positions_map() {return m_comet_positions;};
 
         private:
             InputFrame m_reference_frame;
             std::vector<FileAlignmentInformation> m_alignment_information_vector;
-            std::vector<std::vector<LocalShift>> m_local_shifts_vector;
             std::atomic<int> m_n_files_aligned = 0;
             unsigned int m_n_cpu = 1;
             std::unique_ptr<ReferencePhotoHandlerBase> m_reference_photo_handler = nullptr;
             const std::string c_reference_file_header = "reference_file";
-            std::vector<std::pair<float,float>> *m_alignment_point_vector_storage = nullptr;
+
+            inline static const std::string c_separator_in_file = "|";
 
             std::string m_alignment_method = "stars";
 

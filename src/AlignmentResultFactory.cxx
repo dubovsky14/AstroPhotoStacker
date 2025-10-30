@@ -20,7 +20,7 @@ AlignmentResultFactory& AlignmentResultFactory::get_instance() {
     return instance;
 };
 
-std::unique_ptr<AlignmentResultBase> AlignmentResultFactory::create_alignment_result_from_type(const std::string &type_string) {
+std::unique_ptr<AlignmentResultBase> AlignmentResultFactory::create_alignment_result_from_type(const std::string &type_string)  const {
     auto it = m_alignment_result_constructors_empty.find(type_string);
     if (it != m_alignment_result_constructors_empty.end()) {
         return it->second();
@@ -28,7 +28,7 @@ std::unique_ptr<AlignmentResultBase> AlignmentResultFactory::create_alignment_re
     throw runtime_error("Unknown alignment result type: " + type_string);
 }
 
-std::unique_ptr<AlignmentResultBase> AlignmentResultFactory::create_alignment_result_from_description_string(const std::string &description_string) {
+std::unique_ptr<AlignmentResultBase> AlignmentResultFactory::create_alignment_result_from_description_string(const std::string &description_string) const {
     const std::pair<std::string, std::string> type_and_description = AlignmentResultBase::split_type_and_description(description_string);
     const std::string &type_string = type_and_description.first;
     const std::string &method_specific_description = type_and_description.second;

@@ -5,7 +5,7 @@
 #include "../headers/HotPixelIdentifier.h"
 #include "../headers/CalibrationFrameBase.h"
 #include "../headers/CalibratedPhotoHandler.h"
-#include "../headers/LocalShiftsHandler.h"
+#include "../headers/AlignmentResultBase.h"
 
 #include "../headers/InputFrame.h"
 #include "../headers/AdditionalStackerSetting.h"
@@ -56,14 +56,9 @@ namespace AstroPhotoStacker {
              * @brief Add alignment information for a file
              *
              * @param input frame - input frame data
-             * @param x_shift - horizontal shift
-             * @param y_shift - vertical shift
-             * @param rotation_center_x - x-coordinate of the rotation center
-             * @param rotation_center_y - y-coordinate of the rotation center
-             * @param rotation - rotation angle
-             * @param ranking - ranking of the alignment
+             * @param alignment_result - alignment result data
             */
-            void add_alignment_info(const InputFrame &input_frame, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler = LocalShiftsHandler());
+            void add_alignment_info(const InputFrame &input_frame, const AlignmentResultBase &alignment_result);
 
             /**
              * @brief Add a photo to the stack

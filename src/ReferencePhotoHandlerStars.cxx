@@ -3,6 +3,8 @@
 #include "../headers/AsterismHasher.h"
 #include "../headers/PhotoRanker.h"
 
+#include "../headers/AlignmentResultPlateSolving.h"
+
 #include <vector>
 #include <tuple>
 #include <algorithm>
@@ -40,8 +42,7 @@ void ReferencePhotoHandlerStars::initialize(const std::vector<std::tuple<float, 
     calculate_and_store_hashes();
     m_plate_solver = make_unique<PlateSolver>(m_kd_tree.get(), &m_stars, m_width, m_height);
 };
-
-PlateSolvingResult ReferencePhotoHandlerStars::calculate_alignment(const InputFrame &input_frame, float *ranking)   const    {
+std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerStars::calculate_alignment(const InputFrame &input_frame)   const    {
     try {
         int width, height;
         const vector<PixelType> brightness = read_image_monochrome(input_frame, &width, &height);
@@ -55,23 +56,17 @@ PlateSolvingResult ReferencePhotoHandlerStars::calculate_alignment(const InputFr
             stars.resize(25);
         }
 
-        if (ranking != nullptr) {
-            *ranking = PhotoRanker::calculate_frame_ranking(input_frame);
-        }
-
         return plate_solve(stars);
     }
     catch (runtime_error &e)    {
         cout << "Error: " << e.what() << endl;
-        PlateSolvingResult plate_solving_result;
-        plate_solving_result.is_valid = false;
-        return plate_solving_result;
+        return make_unique<AlignmentResultPlateSolving>();
     }
 };
 
 
-PlateSolvingResult ReferencePhotoHandlerStars::plate_solve(const std::vector<std::tuple<float, float, int> > &stars) const    {
-    return m_plate_solver->plate_solve(stars);
+std::unique_ptr<AlignmentResultPlateSolving> ReferencePhotoHandlerStars::plate_solve(const std::vector<std::tuple<float, float, int> > &stars) const    {
+    return std::make_unique<AlignmentResultPlateSolving>(m_plate_solver->plate_solve(stars));
 };
 
 void ReferencePhotoHandlerStars::calculate_and_store_hashes()  {

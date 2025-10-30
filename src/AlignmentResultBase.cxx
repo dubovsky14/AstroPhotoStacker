@@ -6,8 +6,8 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 
-std::string AlignmentResultBase::get_description_string(const std::string &type_name) const  {
-    return type_name + s_type_separator + get_method_specific_description_string();
+std::string AlignmentResultBase::get_description_string() const  {
+    return get_type_name() + s_type_separator + get_method_specific_description_string();
 };
 
 std::pair<std::string, std::string> AlignmentResultBase::split_type_and_description(const std::string &description_string) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 namespace AstroPhotoStacker {
     /**
@@ -27,7 +28,7 @@ namespace AstroPhotoStacker {
 
             virtual void transform_to_reference_frame(float *x, float *y) const = 0;
 
-            std::string get_description_string(const std::string &type_name) const;
+            virtual std::string get_description_string() const;
 
             virtual std::string get_method_specific_description_string() const = 0;
 
@@ -50,6 +51,10 @@ namespace AstroPhotoStacker {
             inline static const std::string s_type_separator = " | ";
 
             static std::pair<std::string, std::string> split_type_and_description(const std::string &description_string);
+
+            virtual std::unique_ptr<AlignmentResultBase> clone() const = 0;
+
+            virtual const std::string& get_type_name() const  = 0;
 
         protected:
             float   m_ranking_score = 0.0f;

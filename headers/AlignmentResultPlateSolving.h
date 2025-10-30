@@ -38,6 +38,12 @@ namespace AstroPhotoStacker {
 
             virtual std::string get_method_specific_description_string() const override;
 
+            void get_parameters(float *shift_x,
+                                float *shift_y,
+                                float *rotation_center_x,
+                                float *rotation_center_y,
+                                float *rotation) const;
+
             void set_parameters(float shift_x,
                                 float shift_y,
                                 float rotation_center_x,
@@ -45,6 +51,15 @@ namespace AstroPhotoStacker {
                                 float rotation);
 
             inline static const std::string s_type_name = "plate_solving";
+
+            virtual std::unique_ptr<AlignmentResultBase> clone() const override {
+                return std::make_unique<AlignmentResultPlateSolving>(*this);
+            };
+
+
+            virtual const std::string& get_type_name() const override {
+                return s_type_name;
+            };
 
         protected:
             std::unique_ptr<GeometricTransformer> m_geometric_transformer = nullptr;

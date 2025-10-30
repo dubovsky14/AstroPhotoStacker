@@ -26,7 +26,8 @@ namespace AstroPhotoStacker {
                                     float rotation_center_x,
                                     float rotation_center_y,
                                     float rotation,
-                                    const std::vector<LocalShift> &local_shifts);
+                                    const std::vector<LocalShift> &local_shifts,
+                                    float ranking_score);
 
             AlignmentResultSurface(const AlignmentResultSurface &other);
 
@@ -49,6 +50,15 @@ namespace AstroPhotoStacker {
                                 const std::vector<LocalShift> &local_shifts);
 
             inline static const std::string s_type_name = "surface";
+
+            virtual std::unique_ptr<AlignmentResultBase> clone() const override {
+                return std::make_unique<AlignmentResultSurface>(*this);
+            };
+
+            virtual const std::string& get_type_name() const override {
+                return s_type_name;
+            };
+
 
         protected:
             std::unique_ptr<GeometricTransformer> m_geometric_transformer = nullptr;

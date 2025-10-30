@@ -27,7 +27,6 @@ void SyntheticFlatCreator::create_and_save_synthetic_flat(const std::string &out
 
 void SyntheticFlatCreator::load_data(const InputFrame &input_frame) {
     CalibratedPhotoHandler calibrated_photo_handler(input_frame, true);
-    calibrated_photo_handler.define_alignment(0, 0, 0, 0, 0);
     calibrated_photo_handler.calibrate();
 
     m_height = calibrated_photo_handler.get_height();

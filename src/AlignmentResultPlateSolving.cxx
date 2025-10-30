@@ -68,6 +68,14 @@ string AlignmentResultPlateSolving::get_method_specific_description_string() con
             to_string(m_ranking_score);
 };
 
+void AlignmentResultPlateSolving::get_parameters(float *shift_x,
+                    float *shift_y,
+                    float *rotation_center_x,
+                    float *rotation_center_y,
+                    float *rotation) const {
+    m_geometric_transformer->get_parameters(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation);
+};
+
 void AlignmentResultPlateSolving::set_parameters(   float shift_x,
                                                     float shift_y,
                                                     float rotation_center_x,

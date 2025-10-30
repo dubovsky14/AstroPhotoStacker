@@ -20,11 +20,11 @@ void StackerBase::add_alignment_text_file(const string &alignment_file_address) 
     m_photo_alignment_handler->read_from_text_file(alignment_file_address);
 };
 
-void StackerBase::add_alignment_info(const InputFrame &input_frame, float x_shift, float y_shift, float rotation_center_x, float rotation_center_y, float rotation, float ranking, const LocalShiftsHandler &local_shifts_handler) {
+void StackerBase::add_alignment_info(const InputFrame &input_frame, const AlignmentResultBase &alignment_result) {
     if (m_photo_alignment_handler == nullptr) {
         m_photo_alignment_handler = make_unique<PhotoAlignmentHandler>();
     }
-    m_photo_alignment_handler->add_alignment_info(input_frame, x_shift, y_shift, rotation_center_x, rotation_center_y, rotation, ranking, local_shifts_handler);
+    m_photo_alignment_handler->add_alignment_info(input_frame, alignment_result);
 };
 
 void StackerBase::add_photo(const InputFrame &input_frame,
@@ -167,15 +167,12 @@ CalibratedPhotoHandler StackerBase::get_calibrated_photo(unsigned int i_file, in
     const InputFrame &input_frame = m_frames_to_stack[i_file];
     const bool apply_alignment = m_apply_alignment[i_file];
     const FileAlignmentInformation alignment_info = apply_alignment ? m_photo_alignment_handler->get_alignment_parameters(input_frame) : FileAlignmentInformation();
-    const float shift_x         = alignment_info.shift_x;
-    const float shift_y         = alignment_info.shift_y;
-    const float rot_center_x    = alignment_info.rotation_center_x;
-    const float rot_center_y    = alignment_info.rotation_center_y;
-    const float rotation        = alignment_info.rotation;
 
     CalibratedPhotoHandler calibrated_photo(input_frame, m_interpolate_colors);
-    calibrated_photo.define_alignment(shift_x, shift_y, rot_center_x, rot_center_y, rotation);
-    calibrated_photo.define_local_shifts(alignment_info.local_shifts_handler);
+    if (alignment_info.alignment_result != nullptr) {
+        calibrated_photo.define_alignment(*alignment_info.alignment_result);
+    }
+
     calibrated_photo.limit_y_range(y_min, y_max);
     if (m_hot_pixel_identifier != nullptr)  {
         calibrated_photo.register_hot_pixel_identifier(m_hot_pixel_identifier.get());

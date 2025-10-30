@@ -273,6 +273,15 @@ namespace AstroPhotoStacker {
      */
     std::string join_strings(const std::string &separator, const std::vector<std::string> &strings);
 
+    /**
+    * @brief Find the n-th occurrence of a substring in a string
+    *
+    * @param main_string The main string to search in
+    * @param substring The substring to search for
+    * @param n The occurrence number to find (1-based index)
+    * @return int The index of the n-th occurrence of the substring, or -1 if not found
+    */
+    int find_nth_occurrence(const std::string &main_string, const std::string &substring, int n);
 
     /**
      * @brief Get the list of raw files in a folder
