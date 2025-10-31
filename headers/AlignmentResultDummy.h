@@ -31,7 +31,7 @@ namespace AstroPhotoStacker {
 
             virtual std::string get_method_specific_description_string() const override {return s_type_name;};
 
-            inline static const std::string s_type_name = "translation_only";
+            inline static const std::string s_type_name = "dummy";
 
             virtual std::unique_ptr<AlignmentResultBase> clone() const override {
                 return std::make_unique<AlignmentResultDummy>(*this);
