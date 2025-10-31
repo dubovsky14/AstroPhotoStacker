@@ -11,7 +11,7 @@
 #include "../headers/StackerCenter.h"
 #include "../headers/StackerWeightedBestScore.h"
 #include "../headers/StackerQuantil.h"
-
+#include "../headers/StackerRMS.h"
 
 
 
@@ -44,6 +44,9 @@ std::unique_ptr<StackerBase> AstroPhotoStacker::create_stacker(const std::string
     }
     else if (stacker_type == "quantil") {
         return std::make_unique<StackerQuantil>(number_of_colors, width, height, interpolate_colors);
+    }
+    else if (stacker_type == "rms") {
+        return std::make_unique<StackerRMS>(number_of_colors, width, height, interpolate_colors);
     }
     else {
         throw std::runtime_error("Unknown stacker type: " + stacker_type);

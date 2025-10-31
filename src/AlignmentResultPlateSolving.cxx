@@ -31,6 +31,7 @@ AlignmentResultPlateSolving::AlignmentResultPlateSolving(const string &descripti
                                                                 rotation_center_x,
                                                                 rotation_center_y,
                                                                 rotation);
+    m_is_valid = true;
 };
 
 AlignmentResultPlateSolving::AlignmentResultPlateSolving(   float shift_x,
