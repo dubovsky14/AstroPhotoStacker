@@ -57,6 +57,11 @@ namespace AstroPhotoStacker {
             virtual const std::string& get_type_name() const  = 0;
 
         protected:
+            void copy_base_data(const AlignmentResultBase &other) {
+                m_ranking_score = other.m_ranking_score;
+                m_is_valid = other.m_is_valid;
+            };
+
             float   m_ranking_score = 0.0f;
             bool    m_is_valid = false;
 

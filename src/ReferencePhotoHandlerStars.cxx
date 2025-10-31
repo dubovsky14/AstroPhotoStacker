@@ -42,6 +42,7 @@ void ReferencePhotoHandlerStars::initialize(const std::vector<std::tuple<float, 
     calculate_and_store_hashes();
     m_plate_solver = make_unique<PlateSolver>(m_kd_tree.get(), &m_stars, m_width, m_height);
 };
+
 std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerStars::calculate_alignment(const InputFrame &input_frame)   const    {
     try {
         int width, height;
@@ -56,7 +57,9 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerStars::calculate_align
             stars.resize(25);
         }
 
-        return plate_solve(stars);
+        unique_ptr<AlignmentResultBase> result = plate_solve(stars);
+        result->set_ranking_score(PhotoRanker::calculate_frame_ranking(input_frame));
+        return result;
     }
     catch (runtime_error &e)    {
         cout << "Error: " << e.what() << endl;
