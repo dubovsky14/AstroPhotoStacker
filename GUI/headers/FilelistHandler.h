@@ -17,46 +17,44 @@
 #include <set>
 #include <atomic>
 
-
-/**
- * @brief Struct for storing alignment and ranking information for a single file
- * TODO: remove this struct and use AlignmentResultBase directly
- */
-struct AlignmentFileInfo {
-    std::unique_ptr<AstroPhotoStacker::AlignmentResultBase> alignment_result = std::make_unique<AstroPhotoStacker::AlignmentResultDummy>();
-
-    AlignmentFileInfo() = default;
-
-    AlignmentFileInfo(const AlignmentFileInfo &other) {
-        if (other.alignment_result != nullptr) {
-            alignment_result = other.alignment_result->clone();
-        }
-    };
-
-    AlignmentFileInfo& operator=(const AlignmentFileInfo &other) {
-        if (this != &other) {
-            if (other.alignment_result != nullptr) {
-                alignment_result = other.alignment_result->clone();
-            }
-            else {
-                alignment_result = nullptr;
-            }
-        }
-        return *this;
-    };
-};
-
 struct FrameInfo {
-    AlignmentFileInfo                       alignment_info;
+    std::unique_ptr<AstroPhotoStacker::AlignmentResultBase> alignment_result = std::make_unique<AstroPhotoStacker::AlignmentResultDummy>();
     AstroPhotoStacker::Metadata             metadata;
     AstroPhotoStacker::InputFrame           input_frame;
     AstroPhotoStacker::FrameStatistics      statistics;
     FrameType                               type;
     int                                     group_number;
     bool                                    is_checked = true;
+
+    FrameInfo() = default;
+
+    FrameInfo(const FrameInfo &other) {
+        input_frame = other.input_frame;
+        type = other.type;
+        group_number = other.group_number;
+        is_checked = other.is_checked;
+        metadata = other.metadata;
+        statistics = other.statistics;
+        alignment_result = other.alignment_result->clone();
+    };
+
+    FrameInfo& operator=(const FrameInfo &other) {
+        if (this != &other) {
+            input_frame = other.input_frame;
+            type = other.type;
+            group_number = other.group_number;
+            is_checked = other.is_checked;
+            metadata = other.metadata;
+            statistics = other.statistics;
+            alignment_result = other.alignment_result->clone();
+        }
+        return *this;
+    };
+
+    FrameInfo& operator=(FrameInfo &&other) = default;
 };
 
-std::ostream& operator<<(std::ostream& os, const AlignmentFileInfo& alignment_info);
+std::ostream& operator<<(std::ostream& os, const AstroPhotoStacker::AlignmentResultBase& alignment_result);
 
 /**
  * @brief Rearange vector ordering according to indices
@@ -101,9 +99,9 @@ class FilelistHandler   {
          * @param type type of the file
          * @param group number of the frame the file belongs to
          * @param checked whether the file is checked
-         * @param alignment_info alignment information for the file
+         * @param alignment_result alignment information for the file
         */
-        void add_frame(const AstroPhotoStacker::InputFrame &input_frame, FrameType type, int group, bool checked = false, const AlignmentFileInfo& alignment_info = AlignmentFileInfo(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
+        void add_frame(const AstroPhotoStacker::InputFrame &input_frame, FrameType type, int group, bool checked = false, const AstroPhotoStacker::AlignmentResultBase &alignment_result = AstroPhotoStacker::AlignmentResultDummy(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
 
         /**
          * @brief Add file to the list
@@ -112,9 +110,9 @@ class FilelistHandler   {
          * @param type type of the file
          * @param group number of the group the file belongs to
          * @param checked whether the file is checked
-         * @param alignment_info alignment information for the file
+         * @param alignment_result alignment information for the file
         */
-        void add_file(const std::string &file, FrameType type, int group, bool checked = false, const AlignmentFileInfo& alignment_info = AlignmentFileInfo(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
+        void add_file(const std::string &file, FrameType type, int group, bool checked = false, const AstroPhotoStacker::AlignmentResultBase &alignment_result = AstroPhotoStacker::AlignmentResultDummy(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
 
         /**
          * @brief Remove file from the list

@@ -1246,7 +1246,7 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FrameType type, const std::s
         for (auto path : paths) {
             const AstroPhotoStacker::Metadata metadata = metadata_manager.get_metadata(InputFrame(path.ToStdString()));
             const string str_path = path.ToStdString();
-            m_filelist_handler_gui_interface.add_file(path.ToStdString(), type, m_current_group, true, AlignmentFileInfo(), metadata);
+            m_filelist_handler_gui_interface.add_file(path.ToStdString(), type, m_current_group, true, AlignmentResultDummy(), metadata);
             m_recent_paths_handler->set_recent_file_path_from_file(type, path.ToStdString());
         }
     }

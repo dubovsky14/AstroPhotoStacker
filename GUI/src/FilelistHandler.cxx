@@ -13,8 +13,8 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
-std::ostream& operator<<(std::ostream& os, const AlignmentFileInfo& alignment_info) {
-    os <<   "(" << alignment_info.alignment_result->get_description_string() <<
+std::ostream& operator<<(std::ostream& os, const AstroPhotoStacker::AlignmentResultBase& alignment_result) {
+    os <<   "(" << alignment_result.get_description_string() <<
             ")";
     return os;
 }
@@ -29,7 +29,7 @@ FilelistHandler FilelistHandler::get_filelist_with_checked_frames() const {
             const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
             for (const auto &frame : frames)   {
                 if (frame.second.is_checked)   {
-                    filelist_with_checked_files.add_frame(frame.second.input_frame, type.first, group.first, true, frame.second.alignment_info, frame.second.metadata);
+                    filelist_with_checked_files.add_frame(frame.second.input_frame, type.first, group.first, true, *frame.second.alignment_result, frame.second.metadata);
                 }
             }
         }
@@ -37,7 +37,7 @@ FilelistHandler FilelistHandler::get_filelist_with_checked_frames() const {
     return filelist_with_checked_files;
 };
 
-void FilelistHandler::add_frame(const InputFrame &input_frame, FrameType type, int group, bool checked, const AlignmentFileInfo& alignment_info, const Metadata &metadata) {
+void FilelistHandler::add_frame(const InputFrame &input_frame, FrameType type, int group, bool checked, const AstroPhotoStacker::AlignmentResultBase &alignment_result, const Metadata &metadata) {
     if (m_frames_list.find(group) == m_frames_list.end())   {
         add_empty_group(group);
     }
@@ -47,22 +47,22 @@ void FilelistHandler::add_frame(const InputFrame &input_frame, FrameType type, i
     frame_info.input_frame = input_frame;
     frame_info.type = type;
     frame_info.group_number = group;
-    frame_info.alignment_info = alignment_info;
+    frame_info.alignment_result = alignment_result.clone();
     frame_info.metadata = metadata;
     frame_info.is_checked = checked;
 
-    frames[input_frame] = frame_info;
+    frames[input_frame] = std::move(frame_info);
 };
 
-void FilelistHandler::add_file(const std::string &file, FrameType type, int group, bool checked, const AlignmentFileInfo& alignment_info, const AstroPhotoStacker::Metadata &metadata)    {
+void FilelistHandler::add_file(const std::string &file, FrameType type, int group, bool checked, const AstroPhotoStacker::AlignmentResultBase &alignment_result, const AstroPhotoStacker::Metadata &metadata)    {
     if (is_valid_video_file(file))   {
         const std::vector<InputFrame> video_frames = get_video_frames(file);
         for (const InputFrame &video_frame : video_frames)   {
-            add_frame(video_frame, type, group, checked, alignment_info, metadata);
+            add_frame(video_frame, type, group, checked, alignment_result, metadata);
         }
     }
     else    {
-        add_frame(InputFrame(file), type, group, checked, alignment_info, metadata);
+        add_frame(InputFrame(file), type, group, checked, alignment_result, metadata);
     }
 };
 
@@ -205,9 +205,7 @@ void FilelistHandler::set_alignment_info(const InputFrame &input_frame, const Al
         if (light_frames.find(input_frame) == light_frames.end())   {
             continue;
         }
-        AlignmentFileInfo alignment_info;
-        alignment_info.alignment_result = alignment_result.clone();
-        light_frames[input_frame].alignment_info = alignment_info;
+        light_frames[input_frame].alignment_result = alignment_result.clone();
     }
 };
 
@@ -219,7 +217,7 @@ bool FilelistHandler::all_checked_frames_are_aligned() const {
 
         const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &light_frames = group.second.at(FrameType::LIGHT);
         for (const auto &frame : light_frames)   {
-            if (frame.second.is_checked && !frame.second.alignment_info.alignment_result->is_valid())  {
+            if (frame.second.is_checked && !frame.second.alignment_result->is_valid())  {
                 return false;
             }
         }
@@ -242,11 +240,11 @@ void FilelistHandler::get_alignment_info_tabular_data(std::vector<std::vector<st
         const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &light_frames = group.second.at(FrameType::LIGHT);
 
         for (const auto &frame : light_frames)   {
-            const AlignmentFileInfo &info = frame.second.alignment_info;
+            const AlignmentResultBase &alignment = *frame.second.alignment_result;
             const std::string file_description = frame.second.input_frame.is_video_frame() ?
                     frame.second.input_frame.get_file_address() + " #frame: " + std::to_string(frame.second.input_frame.get_frame_number()) :
                     frame.second.input_frame.get_file_address();
-            tabular_data->push_back({file_description, info.alignment_result->get_description_string()});
+            tabular_data->push_back({file_description, alignment.get_description_string()});
         }
     }
 };
@@ -274,7 +272,7 @@ const AstroPhotoStacker::AlignmentResultBase&  FilelistHandler::get_alignment_in
     if (m_frames_list.at(group).at(FrameType::LIGHT).find(input_frame) == m_frames_list.at(group).at(FrameType::LIGHT).end())   {
         throw std::runtime_error("FilelistHandler::get_alignment_info: frame not found");
     }
-    return *m_frames_list.at(group).at(FrameType::LIGHT).at(input_frame).alignment_info.alignment_result;
+    return *m_frames_list.at(group).at(FrameType::LIGHT).at(input_frame).alignment_result;
 };
 
 void FilelistHandler::save_alignment_to_file(const std::string &output_address)  {
@@ -287,13 +285,13 @@ void FilelistHandler::save_alignment_to_file(const std::string &output_address) 
         const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &light_frames = group.second.at(FrameType::LIGHT);
 
         for (const auto &frame : light_frames)   {
-            const AlignmentFileInfo &info = frame.second.alignment_info;
-            if (!info.alignment_result->is_valid())  {
+            const AlignmentResultBase &alignment = *frame.second.alignment_result;
+            if (!alignment.is_valid())  {
                 continue;
             }
             output_file << frame.second.input_frame.get_file_address() << c_separator_in_file
                         << frame.second.input_frame.get_frame_number() << c_separator_in_file
-                        << info.alignment_result->get_description_string() << std::endl;
+                        << alignment.get_description_string() << std::endl;
         }
     }
 };
@@ -351,7 +349,7 @@ void FilelistHandler::keep_best_n_frames(unsigned int n)   {
     }
 
     std::sort(light_frames.begin(), light_frames.end(), [](const FrameInfo &a, const FrameInfo &b) {
-        return a.alignment_info.alignment_result->get_ranking_score() < b.alignment_info.alignment_result->get_ranking_score();
+        return a.alignment_result->get_ranking_score() < b.alignment_result->get_ranking_score();
     });
 
     light_frames.resize(n);
@@ -369,7 +367,7 @@ void FilelistHandler::set_dummy_alignment_for_all_frames()  {
         }
         std::map<AstroPhotoStacker::InputFrame, FrameInfo> &light_frames = group.second[FrameType::LIGHT];
         for (auto &frame : light_frames)   {
-            frame.second.alignment_info.alignment_result->set_is_valid(true);
+            frame.second.alignment_result->set_is_valid(true);
         }
     }
 };
@@ -465,7 +463,7 @@ void FilelistHandler::load_filelist_from_file(const std::string &input_address) 
 
         const InputFrame input_frame(file_address, frame_number);
         const Metadata metadata        = AstroPhotoStacker::read_metadata(input_frame);
-        add_frame(input_frame, type, group_number, is_checked, AlignmentFileInfo(), metadata);
+        add_frame(input_frame, type, group_number, is_checked, AlignmentResultDummy(), metadata);
     }
 };
 

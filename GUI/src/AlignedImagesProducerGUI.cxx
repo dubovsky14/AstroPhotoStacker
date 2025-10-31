@@ -138,7 +138,7 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
 
     auto add_file_to_aligned_images_produced = [this, &light_frames, calibration_handlers_map](size_t i_file) {
         const InputFrame frame = light_frames[i_file].input_frame;
-        const AlignmentFileInfo &alignment_info_gui = light_frames[i_file].alignment_info;
+        const AlignmentResultBase &alignment_result = *light_frames[i_file].alignment_result;
         const int calibration_group_number = light_frames[i_file].group_number;
         std::vector<std::shared_ptr<const CalibrationFrameBase> > calibration_frame_handlers = {};
 
@@ -146,8 +146,8 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
             calibration_frame_handlers = calibration_handlers_map.at(calibration_group_number);
         }
 
-        if (has_valid_alignment(alignment_info_gui)) {
-            m_aligned_images_producer->add_image(frame, *alignment_info_gui.alignment_result, calibration_frame_handlers);
+        if (alignment_result.is_valid()) {
+            m_aligned_images_producer->add_image(frame, alignment_result, calibration_frame_handlers);
         }
     };
 
@@ -155,10 +155,10 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
         PhotoGroupingTool photo_grouping_tool;
         for (const FrameInfo &frame_info : light_frames) {
             const InputFrame &frame = frame_info.input_frame;
-            const AlignmentFileInfo &alignment_info_gui = frame_info.alignment_info;
+            const AlignmentResultBase &alignment_result = *frame_info.alignment_result;
             const Metadata &metadata = frame_info.metadata;
-            if (has_valid_alignment(alignment_info_gui)) {
-                photo_grouping_tool.add_file(frame, metadata.timestamp, alignment_info_gui.alignment_result->get_ranking_score());
+            if (alignment_result.is_valid()) {
+                photo_grouping_tool.add_file(frame, metadata.timestamp, alignment_result.get_ranking_score());
             }
         }
 
@@ -198,9 +198,9 @@ InputFrame AlignedImagesProducerGUI::get_reference_frame() const  {
     InputFrame best_frame;
     for (const FrameInfo &frame_info : light_frames) {
         const InputFrame &frame                     = frame_info.input_frame;
-        const AlignmentFileInfo &alignment_info_gui = frame_info.alignment_info;
+        const AlignmentResultBase &alignment_result = *frame_info.alignment_result;
         float x(x_orig), y(y_orig);
-        alignment_info_gui.alignment_result->transform_from_reference_to_shifted_frame(&x, &y);
+        alignment_result.transform_from_reference_to_shifted_frame(&x, &y);
 
         const double distance = (x - x_orig) * (x - x_orig) + (y - y_orig) * (y - y_orig);
         if (distance < min_distance) {
@@ -370,9 +370,7 @@ void AlignedImagesProducerGUI::add_group_to_stack(  const vector<size_t> &group,
         const size_t i_file_group = group[i_file];
         const FrameInfo &frame_info = light_frames[i_file_group];
         const InputFrame &frame = frame_info.input_frame;
-        const AlignmentFileInfo &alignment_info_gui = frame_info.alignment_info;
-
-        unique_ptr<AlignmentResultBase> alignment_result = alignment_info_gui.alignment_result->clone();
+        unique_ptr<AlignmentResultBase> alignment_result = frame_info.alignment_result->clone();
 
         selected_frames.push_back(frame);
         selected_alignment_info.push_back(std::move(alignment_result));
@@ -413,8 +411,4 @@ std::map<int, std::vector<std::shared_ptr<const CalibrationFrameBase> > > Aligne
             }
     }
     return calibration_frame_handlers_map;
-};
-
-bool AlignedImagesProducerGUI::has_valid_alignment(const AlignmentFileInfo &alignment_info) const  {
-    return alignment_info.alignment_result && alignment_info.alignment_result->is_valid();
 };
