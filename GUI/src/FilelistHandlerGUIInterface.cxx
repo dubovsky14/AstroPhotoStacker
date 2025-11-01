@@ -3,6 +3,7 @@
 #include "../../headers/Common.h"
 
 #include <algorithm>
+#include <numeric>
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -158,8 +159,11 @@ void FilelistHandlerGUIInterface::sort_by_ranking_internal()    {
     std::vector<std::tuple<size_t, float, FrameType>> index_ranking_type_vector;
     for (size_t i = 0; i < m_shown_frames.size(); ++i) {
         const FrameType type = m_shown_frames[i].second.type;
-        const float ranking = type == FrameType::LIGHT ?
-                              get_alignment_info(m_shown_frames[i].second.group_number, m_shown_frames[i].second.input_frame).get_ranking_score() : 0;
+        float ranking = 0;
+        if (type == FrameType::LIGHT) {
+            const AlignmentResultBase& alignment_result = get_alignment_info(m_shown_frames[i].second.group_number, m_shown_frames[i].second.input_frame);
+            ranking = alignment_result.is_valid() ? alignment_result.get_ranking_score() : std::numeric_limits<float>::max();
+        }
         index_ranking_type_vector.push_back({
             i,
             ranking,
