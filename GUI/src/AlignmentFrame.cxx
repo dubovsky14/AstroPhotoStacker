@@ -234,15 +234,12 @@ void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
                                         },
                                         "All files aligned", 100);
 
-        const std::vector<AstroPhotoStacker::FileAlignmentInformation> &alignment_info = photo_alignment_handler.get_alignment_parameters_vector();
+        const std::map<InputFrame, std::unique_ptr<AlignmentResultBase>> &alignment_info_map = photo_alignment_handler.get_alignment_results_map();
 
-        for (unsigned int i_selected_file = 0; i_selected_file < m_indices_frames_to_align.size(); ++i_selected_file) {
-            const InputFrame &input_frame = m_frames_to_align[i_selected_file];
-            const AstroPhotoStacker::FileAlignmentInformation &info = alignment_info[i_selected_file];
-            const unique_ptr<AstroPhotoStacker::AlignmentResultBase> &alignment_result = info.alignment_result;
-            m_filelist_handler_gui_interface->set_alignment_info(input_frame, *alignment_result);
-
+        for (const auto &[input_frame, alignment_result_ptr] : alignment_info_map) {
+            m_filelist_handler_gui_interface->set_alignment_info(input_frame, *alignment_result_ptr);
         }
+
         parent->update_files_to_stack_checkbox();
         parent->update_alignment_status();
         this->Close();

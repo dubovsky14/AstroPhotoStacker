@@ -59,11 +59,11 @@ int main(int argc, const char **argv)   {
     photo_alignment_handler.set_alignment_method("surface");
     photo_alignment_handler.align_files(reference_frame, {alternative_frame});
 
-    const FileAlignmentInformation alignment_info = photo_alignment_handler.get_alignment_parameters(alternative_frame);
+    std::unique_ptr<AlignmentResultBase> alignment_info = photo_alignment_handler.get_alignment_parameters(alternative_frame);
 
 
     CalibratedPhotoHandler calibrated_photo_handler(alternative_frame, true);
-    calibrated_photo_handler.define_alignment(*alignment_info.alignment_result);
+    calibrated_photo_handler.define_alignment(*alignment_info);
     calibrated_photo_handler.calibrate();
 
 

@@ -12,26 +12,6 @@
 #include <optional>
 
 namespace   AstroPhotoStacker   {
-    struct FileAlignmentInformation    {
-        InputFrame input_frame;
-        std::unique_ptr<AlignmentResultBase> alignment_result = nullptr;
-
-        FileAlignmentInformation() = default;
-
-        FileAlignmentInformation(const FileAlignmentInformation &other) {
-            input_frame = other.input_frame;
-            alignment_result = other.alignment_result->clone();
-        };
-
-        FileAlignmentInformation& operator=(const FileAlignmentInformation &other) {
-            if (this != &other) {
-                input_frame = other.input_frame;
-                alignment_result = other.alignment_result->clone();
-            }
-            return *this;
-        };
-    };
-
     /**
      * @class PhotoAlignmentHandler
      * @brief Handles the alignment info for individual photos.
@@ -100,13 +80,13 @@ namespace   AstroPhotoStacker   {
              * @param file_address The address of the file.
              * @return The alignment parameters for the file.
              */
-            FileAlignmentInformation get_alignment_parameters(const InputFrame &input_frame) const;
+            std::unique_ptr<AlignmentResultBase> get_alignment_parameters(const InputFrame &input_frame) const;
 
             /**
              * @brief Gets the vector of alignment parameters for all files.
-             * @return The vector of alignment parameters.
+             * @return The map of alignment results
              */
-            const std::vector<FileAlignmentInformation>& get_alignment_parameters_vector() const;
+            const std::map<InputFrame, std::unique_ptr<AlignmentResultBase>>& get_alignment_results_map() const;
 
             /**
              * @brief Gets the addresses of all files.
@@ -148,7 +128,7 @@ namespace   AstroPhotoStacker   {
 
         private:
             InputFrame m_reference_frame;
-            std::vector<FileAlignmentInformation> m_alignment_information_vector;
+            std::map<InputFrame, std::unique_ptr<AlignmentResultBase>> m_alignment_results_map;
             std::atomic<int> m_n_files_aligned = 0;
             unsigned int m_n_cpu = 1;
             std::unique_ptr<ReferencePhotoHandlerBase> m_reference_photo_handler = nullptr;
