@@ -421,8 +421,19 @@ void MyFrame::add_files_to_stack_checkbox()  {
             update_files_to_stack_checkbox();
         }
     });
-
     header_sizer->Add(button_keep_best, 0, wxTOP, 5);
+
+
+    wxButton *button_check_unaligned= new wxButton(header_panel, wxID_ANY, "Check unaligned frames", wxDefaultPosition, wxDefaultSize);
+    button_check_unaligned->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        m_filelist_handler_gui_interface.check_unaligned_frames();
+        for (unsigned int i = 0; i < m_files_to_stack_checkbox->GetCount(); ++i) {
+            m_files_to_stack_checkbox->Check(i, m_filelist_handler_gui_interface.frame_is_checked(i));
+        }
+    });
+    header_sizer->Add(button_check_unaligned, 0, wxTOP, 5);
+
+
 
     // show metadata checkbox
     wxCheckBox *checkbox_show_metadata = new wxCheckBox(header_panel, wxID_ANY, "Show Metadata");

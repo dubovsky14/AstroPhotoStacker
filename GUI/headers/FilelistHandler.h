@@ -269,6 +269,8 @@ class FilelistHandler   {
 
         bool statistics_calculated_for_all_frames() const;
 
+        void check_unaligned_frames();
+
     protected:
         const std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     &get_frames_list() const {
             return m_frames_list;

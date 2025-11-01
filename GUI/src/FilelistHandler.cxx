@@ -529,3 +529,19 @@ bool FilelistHandler::statistics_calculated_for_all_frames() const {
     }
     return true;
 }
+
+void FilelistHandler::check_unaligned_frames() {
+    for (auto &group : m_frames_list)   {
+        for (auto &type : group.second)   {
+            std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
+            for (auto &frame : frames)   {
+                if (type.first != FrameType::LIGHT) {
+                    frame.second.is_checked = false;
+                }
+                else  {
+                    frame.second.is_checked = !frame.second.alignment_result->is_valid();
+                }
+            }
+        }
+    }
+};
