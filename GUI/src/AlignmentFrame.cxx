@@ -202,7 +202,6 @@ void AlignmentFrame::update_options_visibility(const std::string &selected_align
 void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
     wxButton* button_ok = new wxButton(this, wxID_ANY, "Align files");
     button_ok->Bind(wxEVT_BUTTON, [this, parent](wxCommandEvent&){
-        // TODO
         AstroPhotoStacker::PhotoAlignmentHandler photo_alignment_handler;
         photo_alignment_handler.set_alignment_method(m_stack_settings->get_alignment_method());
         photo_alignment_handler.set_number_of_cpu_threads(m_stack_settings->get_n_cpus());

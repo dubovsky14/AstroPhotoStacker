@@ -109,8 +109,8 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
     const float median_shift_x = shift_sizes_x[shift_sizes_x.size()/2];
     const float median_shift_y = shift_sizes_y[shift_sizes_y.size()/2];
 
-   const float overall_shift_x = -median_shift_x;
-   const float overall_shift_y = -median_shift_y;
+    const float overall_shift_x = -median_shift_x;
+    const float overall_shift_y = -median_shift_y;
 
     const float max_allowed_deviation = 20.0f;
     std::vector<LocalShift> selected_local_shifts;
