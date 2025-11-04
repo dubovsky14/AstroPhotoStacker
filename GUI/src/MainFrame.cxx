@@ -997,40 +997,21 @@ void MyFrame::update_image_preview_file(size_t frame_index)  {
             }
         }
 
-        //if (m_show_alignment_points) {
-        //    auto draw_boxes_lambda = [this, local_shifts](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
-        //        cout << "Drawing " << local_shifts.size() <<  " alignment boxes" << endl;
-        //        draw_alignment_points_into_image(
-        //            local_shifts,
-        //            image_data,
-        //            width,
-        //            height,
-        //            {0, 255, 0},
-        //            {255,0,0});
-        //    };
-        //    m_current_preview->remove_layer(c_alignment_boxes_preview_name);
-        //    m_current_preview->add_layer(c_alignment_boxes_preview_name, draw_boxes_lambda);
-        //}
 
         m_current_preview->read_preview_from_stacked_image(calibrated_image, width, height);
     }
     else {
-        //if (m_show_alignment_points && frame_type == FrameType::LIGHT) {
-        //    const AlignmentFileInfo &alignment_info = m_filelist_handler_gui_interface.get_alignment_info(group_number, frame);
-        //    const std::vector<AstroPhotoStacker::LocalShift> &local_shifts = alignment_info.local_shifts_handler.get_shifts();
-        //    auto draw_boxes_lambda = [this, local_shifts](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
-        //        cout << "Drawing " << local_shifts.size() <<  " alignment boxes" << endl;
-        //        draw_alignment_points_into_image(
-        //            local_shifts,
-        //            image_data,
-        //            width,
-        //            height,
-        //            {0, 255, 0},
-        //            {255,0,0});
-        //    };
-        //    m_current_preview->remove_layer(c_alignment_boxes_preview_name);
-        //    m_current_preview->add_layer(c_alignment_boxes_preview_name, draw_boxes_lambda);
-        //}
+        if (m_show_alignment_points && frame_type == FrameType::LIGHT) {
+            const AlignmentResultBase &alignment_result = m_filelist_handler_gui_interface.get_alignment_info(group_number, frame);
+            auto draw_boxes_lambda = [this, &alignment_result](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
+                alignment_result.draw_on_image(
+                    image_data,
+                    width,
+                    height);
+            };
+            m_current_preview->remove_layer(c_alignment_boxes_preview_name);
+            m_current_preview->add_layer(c_alignment_boxes_preview_name, draw_boxes_lambda);
+        }
 
         m_current_preview->read_preview_from_frame(frame);
     }

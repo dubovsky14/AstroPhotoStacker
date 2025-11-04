@@ -21,13 +21,7 @@ namespace AstroPhotoStacker {
 
             AlignmentResultSurface(const std::string &description_string);
 
-            AlignmentResultSurface( float shift_x,
-                                    float shift_y,
-                                    float rotation_center_x,
-                                    float rotation_center_y,
-                                    float rotation,
-                                    const std::vector<LocalShift> &local_shifts,
-                                    float ranking_score);
+            AlignmentResultSurface( const std::vector<LocalShift> &local_shifts, float ranking_score);
 
             AlignmentResultSurface(const AlignmentResultSurface &other);
 
@@ -42,12 +36,7 @@ namespace AstroPhotoStacker {
 
             virtual std::string get_method_specific_description_string() const override;
 
-            void set_parameters(float shift_x,
-                                float shift_y,
-                                float rotation_center_x,
-                                float rotation_center_y,
-                                float rotation,
-                                const std::vector<LocalShift> &local_shifts);
+            void set_parameters(const std::vector<LocalShift> &local_shifts);
 
             inline static const std::string s_type_name = "surface";
 
@@ -59,9 +48,9 @@ namespace AstroPhotoStacker {
                 return s_type_name;
             };
 
+            virtual void draw_on_image(std::vector<std::vector<PixelType>> *image_data, int width, int height, bool image_in_reference_frame = false) const override;
 
         protected:
-            std::unique_ptr<GeometricTransformer> m_geometric_transformer = nullptr;
             std::unique_ptr<LocalShiftsHandler> m_local_shifts_handler = nullptr;
 
             const std::string c_separator_in_description = " | ";

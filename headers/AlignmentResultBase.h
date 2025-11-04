@@ -1,7 +1,10 @@
 #pragma once
 
+#include "../headers/PixelType.h"
+
 #include <string>
 #include <memory>
+#include <vector>
 
 namespace AstroPhotoStacker {
     /**
@@ -55,6 +58,8 @@ namespace AstroPhotoStacker {
             virtual std::unique_ptr<AlignmentResultBase> clone() const = 0;
 
             virtual const std::string& get_type_name() const  = 0;
+
+            virtual void draw_on_image(std::vector<std::vector<PixelType>> *image_data, int width, int height, bool image_in_reference_frame = false) const {};
 
         protected:
             void copy_base_data(const AlignmentResultBase &other) {

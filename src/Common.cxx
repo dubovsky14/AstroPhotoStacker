@@ -226,3 +226,23 @@ std::vector<std::string> AstroPhotoStacker::get_formated_table(const std::vector
     }
     return result;
 };
+
+void AstroPhotoStacker::draw_filled_circle_on_image(std::vector<std::vector<PixelType>> *image_data, int width, int height, int center_x, int center_y, int radius, const std::vector<int> &color) {
+    const int radius_squared = radius * radius;
+    const int x_start = std::max(0, center_x - radius);
+    const int x_end = std::min(width - 1, center_x + radius);
+    const int y_start = std::max(0, center_y - radius);
+    const int y_end = std::min(height - 1, center_y + radius);
+
+    for (int y = y_start; y <= y_end; ++y) {
+        for (int x = x_start; x <= x_end; ++x) {
+            const int dx = x - center_x;
+            const int dy = y - center_y;
+            if (dx * dx + dy * dy <= radius_squared) {
+                for (size_t c = 0; c < color.size(); ++c) {
+                    (*image_data)[c][y * width + x] = static_cast<PixelType>(color[c]);
+                }
+            }
+        }
+    }
+};

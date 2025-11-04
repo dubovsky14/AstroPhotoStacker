@@ -109,30 +109,16 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
     const float median_shift_x = shift_sizes_x[shift_sizes_x.size()/2];
     const float median_shift_y = shift_sizes_y[shift_sizes_y.size()/2];
 
-    const float overall_shift_x = -median_shift_x;
-    const float overall_shift_y = -median_shift_y;
-
     const float max_allowed_deviation = 20.0f;
     std::vector<LocalShift> selected_local_shifts;
     for (LocalShift shift : local_shifts) {
         const float distance_squared = (shift.dx - median_shift_x)*(shift.dx - median_shift_x) + (shift.dy - median_shift_y)*(shift.dy - median_shift_y);
         if (distance_squared < max_allowed_deviation * max_allowed_deviation) {
-            shift.dx -= median_shift_x;
-            shift.dy -= median_shift_y;
-
-            shift.x -= shift.dx;
-            shift.y -= shift.dy;
-
             selected_local_shifts.push_back(shift);
         }
     }
 
-    return make_unique<AlignmentResultSurface>( overall_shift_x,
-                                                overall_shift_y,
-                                                0,
-                                                0,
-                                                0.0f,
-                                                selected_local_shifts,
+    return make_unique<AlignmentResultSurface>( selected_local_shifts,
                                                 ranking);
 };
 
