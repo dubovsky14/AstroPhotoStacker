@@ -24,7 +24,7 @@ namespace AstroPhotoStacker {
                 return m_shifts;
             };
 
-            bool calculate_shifted_coordinates(int x, int y, int *shifted_x, int *shifted_y, float *score = nullptr);
+            bool calculate_shifted_coordinates(float *x, float *y, float *score = nullptr);
 
             inline bool empty() const { return m_empty; };
 

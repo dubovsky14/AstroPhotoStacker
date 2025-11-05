@@ -17,15 +17,15 @@ PlateSolver::PlateSolver(   const KDTree<float, 4, std::tuple<unsigned, unsigned
     m_reference_photo_height(reference_photo_height)  {};
 
 
-PlateSolvingResult PlateSolver::plate_solve(const std::vector<std::tuple<float,float,int> > &stars) const {
-    const PlateSolvingResult plate_solving_result = plate_solve(stars, 3, 0.5);
-    if (plate_solving_result.is_valid) {
-        return plate_solving_result;
+AlignmentResultPlateSolving PlateSolver::plate_solve(const std::vector<std::tuple<float,float,int> > &stars) const {
+    AlignmentResultPlateSolving plate_solving_result = plate_solve(stars, 3, 0.5);
+    if (plate_solving_result.is_valid()) {
+        return AlignmentResultPlateSolving(plate_solving_result);
     }
-    return plate_solve(stars, 10, 0.6);
+    return AlignmentResultPlateSolving(plate_solve(stars, 10, 0.6));
 };
 
-PlateSolvingResult PlateSolver::plate_solve(const std::vector<std::tuple<float,float,int> > &stars, float position_tolerance, float fraction_of_matched_stars) const {
+AlignmentResultPlateSolving PlateSolver::plate_solve(const std::vector<std::tuple<float,float,int> > &stars, float position_tolerance, float fraction_of_matched_stars) const {
     for (unsigned int i_star1 = 0; i_star1 < stars.size(); i_star1++)   {
         for (unsigned int i_star2 = i_star1+1; i_star2 < stars.size(); i_star2++)   {
             for (unsigned int i_star3 = i_star2+1; i_star3 < stars.size(); i_star3++)   {
@@ -54,15 +54,17 @@ PlateSolvingResult PlateSolver::plate_solve(const std::vector<std::tuple<float,f
                         const tuple<float,float,int> &this_photo_star_B = stars[four_stars_indices[starB]];
 
                         // calculate shift and rotation
-                        PlateSolvingResult plate_solving_result;
-                        plate_solving_result.shift_x = get<0>(reference_star_A) - get<0>(this_photo_star_A);
-                        plate_solving_result.shift_y = get<1>(reference_star_A) - get<1>(this_photo_star_A);
-                        plate_solving_result.rotation_center_x = get<0>(this_photo_star_A);
-                        plate_solving_result.rotation_center_y = get<1>(this_photo_star_A);
-                        plate_solving_result.rotation = atan2(get<1>(reference_star_B) - get<1>(reference_star_A), get<0>(reference_star_B) - get<0>(reference_star_A)) -
+                        const float shift_x = get<0>(reference_star_A) - get<0>(this_photo_star_A);
+                        const float shift_y = get<1>(reference_star_A) - get<1>(this_photo_star_A);
+                        const float rotation_center_x = get<0>(this_photo_star_A);
+                        const float rotation_center_y = get<1>(this_photo_star_A);
+                        const float rotation = atan2(get<1>(reference_star_B) - get<1>(reference_star_A), get<0>(reference_star_B) - get<0>(reference_star_A)) -
                             atan2(get<1>(this_photo_star_B) - get<1>(this_photo_star_A), get<0>(this_photo_star_B) - get<0>(this_photo_star_A));
-                        plate_solving_result.is_valid = true;
-
+                        AlignmentResultPlateSolving plate_solving_result(   shift_x,
+                                                                            shift_y,
+                                                                            rotation_center_x,
+                                                                            rotation_center_y,
+                                                                            rotation);
                         if (validate_hypothesis(stars, plate_solving_result, position_tolerance, fraction_of_matched_stars))   {
                             return plate_solving_result;
                         }
@@ -71,21 +73,19 @@ PlateSolvingResult PlateSolver::plate_solve(const std::vector<std::tuple<float,f
             }
         }
     }
-    PlateSolvingResult plate_solving_result;
-    plate_solving_result.is_valid = false;
-    return plate_solving_result;
+
+    return AlignmentResultPlateSolving();
 };
 
 
 bool PlateSolver::validate_hypothesis(  const std::vector<std::tuple<float,float,int> > &stars,
-                                        const PlateSolvingResult &plate_solving_result, float position_tolerance, float fraction_of_matched_stars) const   {
-    const GeometricTransformer geometric_transformer(plate_solving_result);
+                                        const AlignmentResultPlateSolving &plate_solving_result, float position_tolerance, float fraction_of_matched_stars) const   {
     unsigned int n_stars_in_reference_frame(0), n_stars_in_reference_frame_paired(0);
 
     for (const tuple<float,float,int> &star : stars)   {
         float x = get<0>(star);
         float y = get<1>(star);
-        geometric_transformer.transform_to_reference_frame(&x, &y);
+        plate_solving_result.transform_to_reference_frame(&x, &y);
         if (x >= 0 && x < m_reference_photo_width && y >= 0 && y < m_reference_photo_height)   {
             n_stars_in_reference_frame++;
             if (has_paired_star(x,y, position_tolerance))   {

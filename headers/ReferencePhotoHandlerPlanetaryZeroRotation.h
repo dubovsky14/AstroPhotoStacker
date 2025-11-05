@@ -43,8 +43,8 @@ namespace AstroPhotoStacker   {
              * @param file_address - path to the file to be plate-solved
              * @param ranking - pointer to the variable where the ranking of the plate will be stored
              *
-             * @return PlateSolvingResult
+             * @return std::unique_ptr<AlignmentResultBase>
             */
-           virtual PlateSolvingResult calculate_alignment(const InputFrame &input_frame, float *ranking = nullptr) const override;
+           virtual std::unique_ptr<AlignmentResultBase> calculate_alignment(const InputFrame &input_frame) const override;
     };
 }

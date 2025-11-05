@@ -6,7 +6,7 @@
 #include "../headers/PlateSolver.h"
 #include "../headers/MonochromeImageData.h"
 #include "../headers/InputFrame.h"
-#include "../headers/PlateSolvingResult.h"
+#include "../headers/AlignmentResultBase.h"
 
 #include <memory>
 #include <string>
@@ -63,9 +63,9 @@ namespace AstroPhotoStacker   {
              * @param file_address - path to the file to be plate-solved
              * @param ranking - pointer to the variable where the ranking of the plate will be stored
              *
-             * @return PlateSolvingResult
+             * @return std::unique_ptr<AlignmentResultBase>
             */
-            virtual PlateSolvingResult calculate_alignment(const InputFrame &input_frame, float *ranking = nullptr) const = 0;
+            virtual std::unique_ptr<AlignmentResultBase> calculate_alignment(const InputFrame &input_frame) const = 0;
 
         protected:
             ReferencePhotoHandlerBase() {};

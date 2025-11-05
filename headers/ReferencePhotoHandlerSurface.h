@@ -40,20 +40,8 @@ namespace AstroPhotoStacker   {
             */
             ReferencePhotoHandlerSurface(const PixelType *brightness, int width, int height, float threshold_fraction);
 
-            std::vector<LocalShift> get_local_shifts(const InputFrame &input_frame) const;
 
-
-            const std::vector<std::pair<float,float>> get_alignment_points() const;
-
-            /**
-             * @brief Calculate how the photo should be rotated and shifted to match the reference photo
-             *
-             * @param file_address - path to the file to be plate-solved
-             * @param ranking - pointer to the variable where the ranking of the plate will be stored
-             *
-             * @return PlateSolvingResult
-            */
-            virtual PlateSolvingResult calculate_alignment(const InputFrame &input_frame, float *ranking = nullptr) const override;
+            virtual std::unique_ptr<AlignmentResultBase> calculate_alignment(const InputFrame &input_frame) const override;
 
         protected:
             void initialize_reference_features(const PixelType *brightness_original);
@@ -66,10 +54,6 @@ namespace AstroPhotoStacker   {
             float m_blur_sigma = 1.;
             int   m_blur_window_size = 5;
             float m_threshold_fraction = 0.0005;
-
-            mutable ThreadSafeCacheSystem<InputFrame, std::tuple<std::vector<LocalShift>, PlateSolvingResult, float>> m_local_shifts_cache;
-
-            std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> compute_local_shifts_and_alignment(const InputFrame &input_frame) const;
 
             std::vector<cv::KeyPoint> m_reference_keypoints;
             cv::Mat                   m_reference_descriptors;

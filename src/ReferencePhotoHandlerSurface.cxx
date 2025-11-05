@@ -7,6 +7,7 @@
 #include "../headers/ImageRanking.h"
 
 #include "../headers/AlignmentSettingsSurface.h"
+#include "../headers/AlignmentResultSurface.h"
 
 #include <opencv2/features2d.hpp>
 
@@ -19,7 +20,6 @@ using namespace std;
 ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &reference_frame, float threshold_fraction) : ReferencePhotoHandlerBase(reference_frame, threshold_fraction) {
     m_threshold_fraction = threshold_fraction;
     CalibratedPhotoHandler calibrated_photo_handler(reference_frame, true);
-    calibrated_photo_handler.define_alignment(0,0,0,0,0);
     calibrated_photo_handler.calibrate();
 
     m_width  = calibrated_photo_handler.get_width();
@@ -47,69 +47,8 @@ ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const PixelType *brig
     initialize(brightness, width, height, threshold_fraction);
 };
 
+std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_alignment(const InputFrame &input_frame) const {
 
-PlateSolvingResult ReferencePhotoHandlerSurface::calculate_alignment(const InputFrame &input_frame, float *ranking) const {
-    std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> result = m_local_shifts_cache.get(input_frame, [this, &input_frame]() {
-        return compute_local_shifts_and_alignment(input_frame);
-    });
-
-    if (ranking) {
-        *ranking = std::get<2>(result);
-    }
-
-    return std::get<1>(result);
-};
-
-
-void ReferencePhotoHandlerSurface::initialize(const PixelType *brightness, int width, int height, float threshold_fraction)  {
-    m_width = width;
-    m_height = height;
-    m_threshold_fraction = threshold_fraction;
-    initialize_reference_features(brightness);
-};
-
-
-void ReferencePhotoHandlerSurface::initialize_reference_features(const PixelType *brightness_original) {
-    MonochromeImageData image_data;
-    image_data.brightness = brightness_original;
-    image_data.width = m_width;
-    image_data.height = m_height;
-
-    get_keypoints_and_descriptors(brightness_original, m_width, m_height, &m_reference_keypoints, &m_reference_descriptors);
-};
-
-void ReferencePhotoHandlerSurface::get_keypoints_and_descriptors(   const PixelType *brightness,
-                                                                    int width,
-                                                                    int height,
-                                                                    std::vector<cv::KeyPoint> *keypoints,
-                                                                    cv::Mat *descriptors) const    {
-
-    const cv::Mat cv_image(height, width, CV_16UC1, const_cast<PixelType*>(brightness)); // OpenCV needs non-const pointer, because if can moidify the data (it does not in this case though)
-    const PixelType max_pixel_value = *std::max_element(brightness, brightness + width * height);
-    cv::Mat cv_image_normalized;
-    cv_image.convertTo(cv_image_normalized, CV_8UC1, 255.0 / max_pixel_value);
-
-    cv::Ptr<cv::ORB> detector = cv::ORB::create(2000, 1.2f, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
-    detector->detectAndCompute(cv_image_normalized, cv::noArray(), *keypoints, *descriptors);
-};
-
-std::vector<LocalShift> ReferencePhotoHandlerSurface::get_local_shifts( const InputFrame &input_frame) const   {
-    std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> result = m_local_shifts_cache.get(input_frame, [this, &input_frame]() {
-        return compute_local_shifts_and_alignment(input_frame);
-    });
-
-    return std::get<0>(result);
-};
-
-const std::vector<std::pair<float,float>> ReferencePhotoHandlerSurface::get_alignment_points() const {
-    vector<std::pair<float,float>> alignment_points;
-    for (const cv::KeyPoint &kp : m_reference_keypoints) {
-        alignment_points.push_back({kp.pt.x, kp.pt.y});
-    }
-    return alignment_points;
-};
-
-std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> ReferencePhotoHandlerSurface::compute_local_shifts_and_alignment(const InputFrame &input_frame) const {
     InputFrameReader reader(input_frame);
     std::vector<PixelType> brightness = reader.get_monochrome_data();
     const int width = reader.get_width();
@@ -160,38 +99,57 @@ std::tuple<std::vector<LocalShift>, PlateSolvingResult, float> ReferencePhotoHan
     }
 
     if (local_shifts.size() == 0) {
-        PlateSolvingResult plate_solving_result;
-        plate_solving_result.is_valid = false;
-        return {local_shifts, plate_solving_result, ranking};
+        return std::make_unique<AlignmentResultSurface>();
     }
 
     std::sort(shift_sizes_x.begin(), shift_sizes_x.end());
     std::sort(shift_sizes_y.begin(), shift_sizes_y.end());
 
 
-    PlateSolvingResult plate_solving_result;
-    plate_solving_result.is_valid = true;
-
     const float median_shift_x = shift_sizes_x[shift_sizes_x.size()/2];
     const float median_shift_y = shift_sizes_y[shift_sizes_y.size()/2];
-
-    plate_solving_result.shift_x = -median_shift_x;
-    plate_solving_result.shift_y = -median_shift_y;
 
     const float max_allowed_deviation = 20.0f;
     std::vector<LocalShift> selected_local_shifts;
     for (LocalShift shift : local_shifts) {
         const float distance_squared = (shift.dx - median_shift_x)*(shift.dx - median_shift_x) + (shift.dy - median_shift_y)*(shift.dy - median_shift_y);
         if (distance_squared < max_allowed_deviation * max_allowed_deviation) {
-            shift.dx -= median_shift_x;
-            shift.dy -= median_shift_y;
-
-            shift.x -= shift.dx;
-            shift.y -= shift.dy;
-
             selected_local_shifts.push_back(shift);
         }
     }
 
-    return {selected_local_shifts, plate_solving_result, ranking};
+    return make_unique<AlignmentResultSurface>( selected_local_shifts,
+                                                ranking);
+};
+
+void ReferencePhotoHandlerSurface::initialize(const PixelType *brightness, int width, int height, float threshold_fraction)  {
+    m_width = width;
+    m_height = height;
+    m_threshold_fraction = threshold_fraction;
+    initialize_reference_features(brightness);
+};
+
+
+void ReferencePhotoHandlerSurface::initialize_reference_features(const PixelType *brightness_original) {
+    MonochromeImageData image_data;
+    image_data.brightness = brightness_original;
+    image_data.width = m_width;
+    image_data.height = m_height;
+
+    get_keypoints_and_descriptors(brightness_original, m_width, m_height, &m_reference_keypoints, &m_reference_descriptors);
+};
+
+void ReferencePhotoHandlerSurface::get_keypoints_and_descriptors(   const PixelType *brightness,
+                                                                    int width,
+                                                                    int height,
+                                                                    std::vector<cv::KeyPoint> *keypoints,
+                                                                    cv::Mat *descriptors) const    {
+
+    const cv::Mat cv_image(height, width, CV_16UC1, const_cast<PixelType*>(brightness)); // OpenCV needs non-const pointer, because if can moidify the data (it does not in this case though)
+    const PixelType max_pixel_value = *std::max_element(brightness, brightness + width * height);
+    cv::Mat cv_image_normalized;
+    cv_image.convertTo(cv_image_normalized, CV_8UC1, 255.0 / max_pixel_value);
+
+    cv::Ptr<cv::ORB> detector = cv::ORB::create(2000, 1.2f, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
+    detector->detectAndCompute(cv_image_normalized, cv::noArray(), *keypoints, *descriptors);
 };

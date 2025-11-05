@@ -4,6 +4,7 @@
 #include "../headers/KDTree.h"
 #include "../headers/PlateSolver.h"
 #include "../headers/ReferencePhotoHandlerBase.h"
+#include "../headers/AlignmentResultPlateSolving.h"
 
 #include <memory>
 #include <string>
@@ -54,18 +55,18 @@ namespace AstroPhotoStacker   {
              * @param file_address - path to the file to be plate-solved
              * @param ranking - pointer to the variable where the ranking of the plate will be stored
              *
-             * @return PlateSolvingResult
+             * @return std::unique_ptr<AlignmentResultBase>
             */
-            virtual PlateSolvingResult calculate_alignment(const InputFrame &input_frame, float *ranking = nullptr) const override;
+            virtual std::unique_ptr<AlignmentResultBase> calculate_alignment(const InputFrame &input_frame) const override;
 
             /**
              * @brief Plate-solve a photo - calculate how it should be rotated and shifted to match the reference photo
              *
              * @param std::vector<std::tuple<float, float, int> > stars - x-coordinate, y-coordinate, number of pixels forming the star
              *
-             * @return PlateSolvingResult
+             * @return std::unique_ptr<AlignmentResultPlateSolving>
             */
-            PlateSolvingResult plate_solve(const std::vector<std::tuple<float, float, int> > &stars) const;
+            std::unique_ptr<AlignmentResultPlateSolving> plate_solve(const std::vector<std::tuple<float, float, int> > &stars) const;
 
         protected:
 

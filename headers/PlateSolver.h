@@ -1,7 +1,9 @@
 #pragma once
 
 #include "../headers/KDTree.h"
-#include "../headers/PlateSolvingResult.h"
+
+#include "../headers/AlignmentResultBase.h"
+#include "../headers/AlignmentResultPlateSolving.h"
 
 #include <vector>
 #include <tuple>
@@ -31,9 +33,9 @@ namespace AstroPhotoStacker {
              * @brief Calculate the shift, rotation and rotation center of the photo to match the reference photo
              *
              * @param stars - vector of tuples containing the x and y coordinates of the stars and number of their pixels
-             * @return PlateSolvingResult - struct containing the shift, rotation and rotation center of the photo to match the reference photo
+             * @return AlignmentResultPlateSolving - struct containing the shift, rotation and rotation center of the photo to match the reference photo
             */
-            PlateSolvingResult plate_solve(const std::vector<std::tuple<float,float,int> > &stars) const;
+            AlignmentResultPlateSolving plate_solve(const std::vector<std::tuple<float,float,int> > &stars) const;
 
 
         private:
@@ -43,12 +45,12 @@ namespace AstroPhotoStacker {
             unsigned int m_reference_photo_height;
 
             bool validate_hypothesis(   const std::vector<std::tuple<float,float,int> > &stars,
-                                        const PlateSolvingResult &plate_solving_result, float position_tolerance, float fraction_of_matched_stars) const;
+                                        const AlignmentResultPlateSolving &plate_solving_result, float position_tolerance, float fraction_of_matched_stars) const;
 
             bool has_paired_star(float x, float y, float position_error)    const;
 
 
-            PlateSolvingResult plate_solve(const std::vector<std::tuple<float,float,int> > &stars, float position_tolerance, float fraction_of_matched_stars) const;
+            AlignmentResultPlateSolving plate_solve(const std::vector<std::tuple<float,float,int> > &stars, float position_tolerance, float fraction_of_matched_stars) const;
     };
 }
 

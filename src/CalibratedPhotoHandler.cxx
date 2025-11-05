@@ -13,12 +13,8 @@ CalibratedPhotoHandler::CalibratedPhotoHandler(const InputFrame &input_frame, bo
     m_y_max = m_height;
 };
 
-void CalibratedPhotoHandler::define_alignment(float shift_x, float shift_y, float rotation_center_x, float rotation_center_y, float rotation)   {
-    m_geometric_transformer = make_unique<GeometricTransformer>(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation);
-};
-
-void CalibratedPhotoHandler::define_local_shifts(const LocalShiftsHandler &local_shifts_handler)   {
-    m_local_shifts_handler = local_shifts_handler;
+void CalibratedPhotoHandler::define_alignment(const AlignmentResultBase &alignment_result)   {
+    m_alignment_result = alignment_result.clone();
 };
 
 void CalibratedPhotoHandler::limit_y_range(int y_min, int y_max) {
@@ -48,10 +44,6 @@ void CalibratedPhotoHandler::set_bit_depth(unsigned short int bit_depth)    {
 };
 
 void CalibratedPhotoHandler::calibrate() {
-    if (!m_local_shifts_handler.empty()) {
-        m_score_handler.initialize_local_scores(m_width, m_height, 1);
-    }
-
     vector<std::vector<PixelType>*> data_for_calibration = m_input_frame_data_original->get_all_data_for_calibration();
     // firstly apply the calibration frames on the original data
     for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler : m_calibration_frames) {
@@ -83,22 +75,10 @@ void CalibratedPhotoHandler::calibrate() {
             float x_original = x_shifted;
             float y_original = y_shifted;
             // translations and rotations
-            m_geometric_transformer->transform_from_reference_to_shifted_frame(&x_original, &y_original);
-
-            // seeing effect, accounting for local shifts
-            if (!m_local_shifts_handler.empty()) {
-                int x_int = int(x_original);
-                int y_int = int(y_original);
-                float score = 1;
-                if (m_local_shifts_handler.calculate_shifted_coordinates(x_int, y_int, &x_int, &y_int, &score)) {
-                    x_original = x_int;
-                    y_original = y_int;
-                    m_score_handler.set_local_score(x_shifted, y_shifted, score);
-                }
-                else {
-                    continue;
-                }
+            if (m_alignment_result != nullptr) {
+                m_alignment_result->transform_from_reference_to_shifted_frame(&x_original, &y_original);
             }
+
             int x_int = int(x_original);
             int y_int = int(y_original);
             if (x_int >= 0 && x_int < m_width && y_int >= 0 && y_int < m_height) {

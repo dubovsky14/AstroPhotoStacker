@@ -17,7 +17,6 @@ using namespace std;
 
 ThreadSafeCacheSystem<std::string, InputFormatType> InputFormatTypeGetter::s_format_type_cache;
 
-// TODO: caching of the results to avoid multiple checks for the same file
 InputFormatType InputFormatTypeGetter::get_input_format_type(const InputFrame &input_frame)   {
     const string file_address = input_frame.get_file_address();
     return get_input_format_type(file_address);

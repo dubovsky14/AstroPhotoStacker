@@ -81,6 +81,4 @@ class AlignedImagesProducerGUI : public wxFrame  {
         float m_fraction_to_stack = 0.5;
 
         AstroPhotoStacker::TimeLapseVideoSettings m_timelapse_video_settings;
-
-        bool has_valid_alignment(const AlignmentFileInfo &alignment_info) const;
 };

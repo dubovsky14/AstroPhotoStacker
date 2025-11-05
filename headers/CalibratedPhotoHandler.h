@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/GeometricTransformations.h"
+#include "../headers/AlignmentResultBase.h"
 #include "../headers/CalibrationFrameBase.h"
 #include "../headers/HotPixelIdentifier.h"
 #include "../headers/LocalShiftsHandler.h"
@@ -38,14 +38,7 @@ namespace AstroPhotoStacker {
              * @param rotation_center_y The y coordinate of the rotation center.
              * @param rotation The rotation angle in radians.
             */
-            void define_alignment(float shift_x, float shift_y, float rotation_center_x, float rotation_center_y, float rotation);
-
-            /**
-             * @brief Define local shifts to compensate for effect of the seeing in case of planetary and Lunar images.
-             *
-             * @param local_shift_handler: LocalShiftHandler object with local shifts (or empty).
-            */
-            void define_local_shifts(const LocalShiftsHandler &local_shift_handler);
+            void define_alignment(const AlignmentResultBase &alignment_result);
 
             /**
              * @brief Set the bit depth of the raw file.
@@ -129,8 +122,6 @@ namespace AstroPhotoStacker {
                 return m_data_shifted_color_interpolation;
             };
 
-            const LocalShiftsHandler& get_local_shifts_handler()    { return m_local_shifts_handler; };
-
             bool has_score() const    { return !m_score_handler.empty(); };
 
             float get_global_score() const    { return m_score_handler.get_global_score(); };
@@ -151,8 +142,7 @@ namespace AstroPhotoStacker {
             std::vector<std::shared_ptr<const CalibrationFrameBase>> m_calibration_frames;
             CalibratedPhotoScoreHandler m_score_handler;
 
-            std::unique_ptr<GeometricTransformer> m_geometric_transformer   = nullptr;
-            LocalShiftsHandler m_local_shifts_handler;
+            std::unique_ptr<AlignmentResultBase> m_alignment_result = nullptr;
             std::unique_ptr<InputFrameReader> m_input_frame_data_original = nullptr;
 
             bool m_use_color_interpolation = false;

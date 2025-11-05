@@ -3,6 +3,7 @@
 #include "../../headers/Common.h"
 
 #include <algorithm>
+#include <numeric>
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -53,8 +54,7 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
     const FrameInfo &frame_info = get_frames_list().at(frame_id.group_number).at(type).at(frame_id.input_frame);
 
     const AstroPhotoStacker::Metadata &metadata = frame_info.metadata;
-    const AlignmentFileInfo &alignment_info     = frame_info.alignment_info;
-    const float alignment_score                 = alignment_info.ranking;
+    const float alignment_score                 = frame_info.alignment_result->get_ranking_score();
     const std::string exposure_string = metadata.exposure_time > 0.5 ?
                                         AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s" :
                                         AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time * 1000) + " ms";
@@ -64,7 +64,9 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
         result.push_back(exposure_string);
         result.push_back(to_string(metadata.iso) + " ISO");
     }
-    const string score_string = (type == FrameType::LIGHT) ? "score: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3) : "";
+    const string score_string = (type == FrameType::LIGHT) ?
+                                (frame_info.alignment_result->is_valid() ? "score: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3) : "invalid alignment") :
+                                "";
     result.push_back(score_string);
 
 
@@ -157,8 +159,11 @@ void FilelistHandlerGUIInterface::sort_by_ranking_internal()    {
     std::vector<std::tuple<size_t, float, FrameType>> index_ranking_type_vector;
     for (size_t i = 0; i < m_shown_frames.size(); ++i) {
         const FrameType type = m_shown_frames[i].second.type;
-        const float ranking = type == FrameType::LIGHT ?
-                              get_alignment_info(m_shown_frames[i].second.group_number, m_shown_frames[i].second.input_frame).ranking : 0;
+        float ranking = 0;
+        if (type == FrameType::LIGHT) {
+            const AlignmentResultBase& alignment_result = get_alignment_info(m_shown_frames[i].second.group_number, m_shown_frames[i].second.input_frame);
+            ranking = alignment_result.is_valid() ? alignment_result.get_ranking_score() : std::numeric_limits<float>::max();
+        }
         index_ranking_type_vector.push_back({
             i,
             ranking,

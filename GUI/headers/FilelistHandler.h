@@ -4,6 +4,8 @@
 #include "../../headers/LocalShiftsHandler.h"
 #include "../../headers/Metadata.h"
 #include "../../headers/InputFrame.h"
+#include "../../headers/AlignmentResultBase.h"
+#include "../../headers/AlignmentResultDummy.h"
 #include "../headers/FrameType.h"
 
 #include <string>
@@ -15,32 +17,44 @@
 #include <set>
 #include <atomic>
 
-
-/**
- * @brief Struct for storing alignment and ranking information for a single file
-*/
-struct AlignmentFileInfo {
-    float shift_x            = 0;
-    float shift_y            = 0;
-    float rotation_center_x  = 0;
-    float rotation_center_y  = 0;
-    float rotation           = 0;
-    float ranking            = 0;
-    bool  initialized        = false;
-    AstroPhotoStacker::LocalShiftsHandler local_shifts_handler;
-};
-
 struct FrameInfo {
-    AlignmentFileInfo                       alignment_info;
+    std::unique_ptr<AstroPhotoStacker::AlignmentResultBase> alignment_result = std::make_unique<AstroPhotoStacker::AlignmentResultDummy>();
     AstroPhotoStacker::Metadata             metadata;
     AstroPhotoStacker::InputFrame           input_frame;
     AstroPhotoStacker::FrameStatistics      statistics;
     FrameType                               type;
     int                                     group_number;
     bool                                    is_checked = true;
+
+    FrameInfo() = default;
+
+    FrameInfo(const FrameInfo &other) {
+        input_frame = other.input_frame;
+        type = other.type;
+        group_number = other.group_number;
+        is_checked = other.is_checked;
+        metadata = other.metadata;
+        statistics = other.statistics;
+        alignment_result = other.alignment_result->clone();
+    };
+
+    FrameInfo& operator=(const FrameInfo &other) {
+        if (this != &other) {
+            input_frame = other.input_frame;
+            type = other.type;
+            group_number = other.group_number;
+            is_checked = other.is_checked;
+            metadata = other.metadata;
+            statistics = other.statistics;
+            alignment_result = other.alignment_result->clone();
+        }
+        return *this;
+    };
+
+    FrameInfo& operator=(FrameInfo &&other) = default;
 };
 
-std::ostream& operator<<(std::ostream& os, const AlignmentFileInfo& alignment_info);
+std::ostream& operator<<(std::ostream& os, const AstroPhotoStacker::AlignmentResultBase& alignment_result);
 
 /**
  * @brief Rearange vector ordering according to indices
@@ -85,9 +99,9 @@ class FilelistHandler   {
          * @param type type of the file
          * @param group number of the frame the file belongs to
          * @param checked whether the file is checked
-         * @param alignment_info alignment information for the file
+         * @param alignment_result alignment information for the file
         */
-        void add_frame(const AstroPhotoStacker::InputFrame &input_frame, FrameType type, int group, bool checked = false, const AlignmentFileInfo& alignment_info = AlignmentFileInfo(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
+        void add_frame(const AstroPhotoStacker::InputFrame &input_frame, FrameType type, int group, bool checked = false, const AstroPhotoStacker::AlignmentResultBase &alignment_result = AstroPhotoStacker::AlignmentResultDummy(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
 
         /**
          * @brief Add file to the list
@@ -96,9 +110,9 @@ class FilelistHandler   {
          * @param type type of the file
          * @param group number of the group the file belongs to
          * @param checked whether the file is checked
-         * @param alignment_info alignment information for the file
+         * @param alignment_result alignment information for the file
         */
-        void add_file(const std::string &file, FrameType type, int group, bool checked = false, const AlignmentFileInfo& alignment_info = AlignmentFileInfo(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
+        void add_file(const std::string &file, FrameType type, int group, bool checked = false, const AstroPhotoStacker::AlignmentResultBase &alignment_result = AstroPhotoStacker::AlignmentResultDummy(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
 
         /**
          * @brief Remove file from the list
@@ -176,9 +190,9 @@ class FilelistHandler   {
          * @brief Get the alignment info for a single frame
          *
          * @param file_index total index of the frame
-         * @return const AlignmentFileInfo& alignment information for the frame
+         * @return const AlignmentResultBase& alignment information for the frame
         */
-        void set_alignment_info(const AstroPhotoStacker::InputFrame &input_frame, const AlignmentFileInfo& alignment_info);
+        void set_alignment_info(const AstroPhotoStacker::InputFrame &input_frame, const AstroPhotoStacker::AlignmentResultBase& alignment_info);
 
         /**
          * @brief Order the frames according to the file types ordering - which type of frames should be first, second etc.
@@ -207,9 +221,9 @@ class FilelistHandler   {
          *
          * @param group number of the group the frame belongs to
          * @param input_frame input frame data
-         * @return const AlignmentFileInfo& alignment information for the frame, if frame does not exist, return empty AlignmentFileInfo
+         * @return const AlignmentResultBase&  alignment information for the frame
         */
-        const AlignmentFileInfo &get_alignment_info(int group, const AstroPhotoStacker::InputFrame &input_frame) const;
+        const AstroPhotoStacker::AlignmentResultBase& get_alignment_info(int group, const AstroPhotoStacker::InputFrame &input_frame) const;
 
         /**
          * @brief Save alignment information to a text file
@@ -235,8 +249,6 @@ class FilelistHandler   {
          */
         void keep_best_n_frames(unsigned int n);
 
-        void set_local_shifts(const AstroPhotoStacker::InputFrame &input_frame, const std::vector<AstroPhotoStacker::LocalShift> &shifts);
-
         void set_dummy_alignment_for_all_frames();
 
         std::vector<int> get_group_numbers() const;
@@ -257,6 +269,8 @@ class FilelistHandler   {
 
         bool statistics_calculated_for_all_frames() const;
 
+        void check_unaligned_frames();
+
     protected:
         const std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     &get_frames_list() const {
             return m_frames_list;
@@ -266,6 +280,8 @@ class FilelistHandler   {
     private:
         std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     m_frames_list;
 
+
+        inline static const std::string c_separator_in_file = " | ";
         void add_empty_group(int group_number);
 
 };

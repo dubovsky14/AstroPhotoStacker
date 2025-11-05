@@ -126,6 +126,22 @@ std::string AstroPhotoStacker::join_strings(const std::string &separator, const 
     return result;
 };
 
+int AstroPhotoStacker::find_nth_occurrence(const std::string &main_string, const std::string &substring, int n) {
+    size_t pos = 0;
+    int count = 0;
+
+    while (count < n) {
+        pos = main_string.find(substring, pos);
+        if (pos == std::string::npos) {
+            return -1; // Not found
+        }
+        count++;
+        pos += substring.length(); // Move past the last found occurrence
+    }
+
+    return static_cast<int>(pos - substring.length()); // Return the position of the n-th occurrence
+}
+
 std::vector<std::string> AstroPhotoStacker::get_frame_files_in_folder(const std::string &folder_address)  {
     vector<string> result;
     for (const auto &entry : filesystem::directory_iterator(folder_address)) {
@@ -209,4 +225,24 @@ std::vector<std::string> AstroPhotoStacker::get_formated_table(const std::vector
         result.push_back(AstroPhotoStacker::join_strings(separator, formatted_row));
     }
     return result;
+};
+
+void AstroPhotoStacker::draw_filled_circle_on_image(std::vector<std::vector<PixelType>> *image_data, int width, int height, int center_x, int center_y, int radius, const std::vector<int> &color) {
+    const int radius_squared = radius * radius;
+    const int x_start = std::max(0, center_x - radius);
+    const int x_end = std::min(width - 1, center_x + radius);
+    const int y_start = std::max(0, center_y - radius);
+    const int y_end = std::min(height - 1, center_y + radius);
+
+    for (int y = y_start; y <= y_end; ++y) {
+        for (int x = x_start; x <= x_end; ++x) {
+            const int dx = x - center_x;
+            const int dy = y - center_y;
+            if (dx * dx + dy * dy <= radius_squared) {
+                for (size_t c = 0; c < color.size(); ++c) {
+                    (*image_data)[c][y * width + x] = static_cast<PixelType>(color[c]);
+                }
+            }
+        }
+    }
 };

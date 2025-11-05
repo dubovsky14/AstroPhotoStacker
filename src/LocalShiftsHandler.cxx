@@ -11,12 +11,12 @@ LocalShiftsHandler::LocalShiftsHandler(const std::vector<LocalShift> &shifts)  {
     initialize(shifts);
 };
 
-bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifted_x, int *shifted_y, float *score)   {
+bool LocalShiftsHandler::calculate_shifted_coordinates(float *x, float *y, float *score)   {
     if (empty()) {
         return false;
     }
     const int n_neighbors = 3;
-    const int query_point[2] = {x, y};
+    const int query_point[2] = {int(*x), int(*y)};
     const std::vector<std::tuple<std::array<int, 2>, std::tuple<int,int,bool,float>>> &closest_nodes = m_kd_tree_shifts.get_k_nearest_neighbors_buffer(query_point, n_neighbors);
     if (closest_nodes.size() == 0) {
         return false;
@@ -44,10 +44,10 @@ bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifte
             score_leading = get<3>(value);
         }
 
-        const float dist2 = (x - coordinates[0]) * (x - coordinates[0]) + (y - coordinates[1]) * (y - coordinates[1]);
+        const float dist2 = ((*x) - coordinates[0]) * ((*x) - coordinates[0]) + ((*y) - coordinates[1]) * ((*y) - coordinates[1]);
         if (dist2 == 0) {
-            *shifted_x = coordinates[0];
-            *shifted_y = coordinates[1];
+            *x = coordinates[0];
+            *y = coordinates[1];
             return true;
         }
         const float weight = 1.0 / dist2;
@@ -60,8 +60,8 @@ bool LocalShiftsHandler::calculate_shifted_coordinates(int x, int y, int *shifte
         return false;
     }
 
-    *shifted_x = x + sum_x / sum_weights;
-    *shifted_y = y + sum_y / sum_weights;
+    *x += sum_x / sum_weights;
+    *y += sum_y / sum_weights;
     if (score != nullptr) {
         *score = score_leading;
     }
