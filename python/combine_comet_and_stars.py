@@ -27,18 +27,6 @@ def combine_images(comet_stack, comet_rms, stars_stack, stars_rms):
 
     return combined_stack
 
-    # Combine images based on RMS values
-    for y in range(comet_stack.shape[0]):
-        for x in range(comet_stack.shape[1]):
-            for i_color in range(comet_stack.shape[2]):
-                relative_rms_comet = comet_rms[y, x, i_color] / (comet_stack[y, x, i_color] + 1e-6)
-                relative_rms_stars = stars_rms[y, x, i_color] / (stars_stack[y, x, i_color] + 1e-6)
-                if relative_rms_comet < relative_rms_stars:
-                    combined_stack[y, x, i_color] = comet_stack[y, x, i_color]
-                else:
-                    combined_stack[y, x, i_color] = stars_stack[y, x, i_color]
-
-    return combined_stack
 if __name__ == "__main__":
     if len(sys.argv) != 6:
         print("Usage: python combine_comet_and_stars.py <comet_image_stack> <comet_image_rms> <stars_image_stack> <stars_image_rms> <output_image>")
