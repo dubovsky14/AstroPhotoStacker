@@ -9,6 +9,7 @@ using namespace AstroPhotoStacker;
 
 AlignmentResultSurface::AlignmentResultSurface() :
     AlignmentResultBase() {
+        m_local_shifts_handler = make_unique<LocalShiftsHandler>();
 };
 
 AlignmentResultSurface::AlignmentResultSurface(const string &description_string) :
