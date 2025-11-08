@@ -349,6 +349,9 @@ void FilelistHandler::keep_best_n_frames(unsigned int n)   {
     }
 
     std::sort(light_frames.begin(), light_frames.end(), [](const FrameInfo &a, const FrameInfo &b) {
+        if (a.alignment_result->is_valid() != b.alignment_result->is_valid())   {
+            return a.alignment_result->is_valid();
+        }
         return a.alignment_result->get_ranking_score() < b.alignment_result->get_ranking_score();
     });
 

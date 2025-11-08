@@ -8,21 +8,13 @@ namespace AstroPhotoStacker {
         public:
             static AlignmentSettingsSurface *get_instance();
 
-            float get_contrast_threshold() const;
+            float get_maximal_allowed_distance_in_pixels() const;
 
-            void set_contrast_threshold(float contrast_threshold);
+            void set_maximal_allowed_distance_in_pixels(float distance);
 
-            float get_max_overlap_between_boxes() const;
+            bool use_sift_detector() const;
 
-            void set_max_overlap_between_boxes(float max_overlap_between_boxes);
-
-            int get_number_of_boxes() const;
-
-            void set_number_of_boxes(int number_of_boxes);
-
-            bool get_regular_grid() const;
-
-            void set_regular_grid(bool regular_grid);
+            void set_use_sift_detector(bool use);
 
         private:
             static std::unique_ptr<AlignmentSettingsSurface> s_singleton_instance;
@@ -33,10 +25,9 @@ namespace AstroPhotoStacker {
 
             static std::mutex s_initializer_mutex;
 
-            float m_contrast_threshold        = 0.4;
-            float m_max_overlap_between_boxes = 0.3;
-            int   m_number_of_boxes           = 100;
-            bool  m_regular_grid              = true;
+            float m_maximal_allowed_distance_in_pixels = 20.0f;
+
+            bool m_use_sift_detector = false;
 
     };
 }

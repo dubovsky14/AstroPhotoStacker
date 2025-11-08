@@ -21,36 +21,18 @@ AlignmentSettingsSurface* AlignmentSettingsSurface::get_instance() {
 }
 
 
-float AlignmentSettingsSurface::get_contrast_threshold() const {
-    return m_contrast_threshold;
-}
-
-void AlignmentSettingsSurface::set_contrast_threshold(float contrast_threshold) {
-    m_contrast_threshold = contrast_threshold;
-}
-
-
-float AlignmentSettingsSurface::get_max_overlap_between_boxes() const {
-    return m_max_overlap_between_boxes;
-}
-
-void AlignmentSettingsSurface::set_max_overlap_between_boxes(float max_overlap_between_boxes) {
-    m_max_overlap_between_boxes = max_overlap_between_boxes;
-}
-
-
-int AlignmentSettingsSurface::get_number_of_boxes() const {
-    return m_number_of_boxes;
-}
-
-void AlignmentSettingsSurface::set_number_of_boxes(int number_of_boxes) {
-    m_number_of_boxes = number_of_boxes;
-}
-
-bool AlignmentSettingsSurface::get_regular_grid() const {
-    return m_regular_grid;
+float AlignmentSettingsSurface::get_maximal_allowed_distance_in_pixels() const {
+    return m_maximal_allowed_distance_in_pixels;
 };
 
-void AlignmentSettingsSurface::set_regular_grid(bool regular_grid)  {
-    m_regular_grid = regular_grid;
+void AlignmentSettingsSurface::set_maximal_allowed_distance_in_pixels(float distance) {
+    m_maximal_allowed_distance_in_pixels = distance;
+};
+
+bool AlignmentSettingsSurface::use_sift_detector() const {
+    return m_use_sift_detector;
+};
+
+void AlignmentSettingsSurface::set_use_sift_detector(bool use) {
+    m_use_sift_detector = use;
 };

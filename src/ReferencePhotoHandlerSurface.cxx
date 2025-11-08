@@ -109,13 +109,18 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
     const float median_shift_x = shift_sizes_x[shift_sizes_x.size()/2];
     const float median_shift_y = shift_sizes_y[shift_sizes_y.size()/2];
 
-    const float max_allowed_deviation = 20.0f;
+    const float max_allowed_deviation = AlignmentSettingsSurface::get_instance()->get_maximal_allowed_distance_in_pixels();
+    const float max_allowed_deviation_squared = max_allowed_deviation * max_allowed_deviation;
     std::vector<LocalShift> selected_local_shifts;
     for (LocalShift shift : local_shifts) {
         const float distance_squared = (shift.dx - median_shift_x)*(shift.dx - median_shift_x) + (shift.dy - median_shift_y)*(shift.dy - median_shift_y);
-        if (distance_squared < max_allowed_deviation * max_allowed_deviation) {
+        if (distance_squared < max_allowed_deviation_squared) {
             selected_local_shifts.push_back(shift);
         }
+    }
+
+    if (selected_local_shifts.size() < 10) {
+        return std::make_unique<AlignmentResultSurface>();
     }
 
     return make_unique<AlignmentResultSurface>( selected_local_shifts,
@@ -150,6 +155,12 @@ void ReferencePhotoHandlerSurface::get_keypoints_and_descriptors(   const PixelT
     cv::Mat cv_image_normalized;
     cv_image.convertTo(cv_image_normalized, CV_8UC1, 255.0 / max_pixel_value);
 
+    const bool use_sift = AlignmentSettingsSurface::get_instance()->use_sift_detector();
+    if (use_sift) {
+        cv::Ptr<cv::SIFT> detector = cv::SIFT::create(2000);
+        detector->detectAndCompute(cv_image_normalized, cv::noArray(), *keypoints, *descriptors);
+        return;
+    }
     cv::Ptr<cv::ORB> detector = cv::ORB::create(2000, 1.2f, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
     detector->detectAndCompute(cv_image_normalized, cv::noArray(), *keypoints, *descriptors);
 };

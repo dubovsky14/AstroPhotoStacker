@@ -103,6 +103,25 @@ void AlignmentFrame::add_surface_method_settings()  {
 
     m_main_sizer->Add(m_hidden_options_sizer, 2, wxEXPAND, 5);
 
+    add_hidden_settings_slider(  "surface",
+                                "Maximal allowed distance in pixels:",
+                                1.0f,
+                                200.0f,
+                                AlignmentSettingsSurface::get_instance()->get_maximal_allowed_distance_in_pixels(),
+                                1.0f,
+                                1,
+                                [](float value){
+                                    AlignmentSettingsSurface::get_instance()->set_maximal_allowed_distance_in_pixels(value);
+                                });
+
+    add_hidden_checkbox(   "surface",
+                          "Use SIFT feature detector",
+                          "Use SIFT feature detector for better results on images with less details. But it is slower and needs more memory.",
+                          AlignmentSettingsSurface::get_instance()->use_sift_detector(),
+                          [](bool use){
+                              AlignmentSettingsSurface::get_instance()->set_use_sift_detector(use);
+                          });
+
     update_options_visibility(m_stack_settings->get_alignment_method());
 };
 
