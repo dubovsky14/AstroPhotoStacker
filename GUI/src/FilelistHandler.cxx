@@ -303,7 +303,7 @@ void FilelistHandler::load_alignment_from_file(const std::string &input_address)
     const AstroPhotoStacker::AlignmentResultFactory &alignment_result_factory = AstroPhotoStacker::AlignmentResultFactory::get_instance();
     while (std::getline(input_file, line))   {
         vector<string> elements = split_string(line, c_separator_in_file);
-        if (elements.size() < 8)   {
+        if (elements.size() < 3)   {
             continue;
         }
         const std::string file_address = elements[0];
