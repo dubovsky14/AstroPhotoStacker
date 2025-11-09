@@ -76,8 +76,9 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
     std::vector<float> shift_sizes_x, shift_sizes_y;
 
     std::vector<LocalShift> local_shifts;
+    const float match_distance_threshold = AlignmentSettingsSurface::get_instance()->get_match_distance_threshold();
     for (const cv::DMatch &match : matches) {
-        if (match.distance > 200.0f) {
+        if (match.distance > match_distance_threshold) {
             continue;
         }
 
@@ -90,7 +91,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
         shift.dx = img_kp.pt.x - ref_kp.pt.x;
         shift.dy = img_kp.pt.y - ref_kp.pt.y;
         shift.valid_ap = true;
-        shift.score = 1.0f - (match.distance / 300.0f);
+        shift.score = 1.0f - (match.distance / (match_distance_threshold+100));
 
         local_shifts.push_back(shift);
 

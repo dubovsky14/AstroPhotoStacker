@@ -37,6 +37,7 @@ class AlignmentFrame : public wxFrame  {
         void add_hidden_settings_slider(
             const std::string &alignment_method,
             const std::string &label,
+            const std::string &tooltip,
             float min_value,
             float max_value,
             float initial_value,

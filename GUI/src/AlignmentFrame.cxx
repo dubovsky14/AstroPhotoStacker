@@ -104,7 +104,8 @@ void AlignmentFrame::add_surface_method_settings()  {
     m_main_sizer->Add(m_hidden_options_sizer, 2, wxEXPAND, 5);
 
     add_hidden_settings_slider(  "surface",
-                                "Maximal allowed distance in pixels:",
+                                "Maximal allowed shift in pixels:",
+                                "Maximal allowed shift in pixels feature in reference image and aligned image (after accounting for overall photo shift).",
                                 1.0f,
                                 200.0f,
                                 AlignmentSettingsSurface::get_instance()->get_maximal_allowed_distance_in_pixels(),
@@ -112,6 +113,18 @@ void AlignmentFrame::add_surface_method_settings()  {
                                 1,
                                 [](float value){
                                     AlignmentSettingsSurface::get_instance()->set_maximal_allowed_distance_in_pixels(value);
+                                });
+
+    add_hidden_settings_slider(  "surface",
+                                "Match distance threshold:",
+                                "match.distance threshold to use for feature matching (200 is usually a good starting point).",
+                                50.0f,
+                                1000.0f,
+                                AlignmentSettingsSurface::get_instance()->get_match_distance_threshold(),
+                                10.0f,
+                                1,
+                                [](float value){
+                                    AlignmentSettingsSurface::get_instance()->set_match_distance_threshold(value);
                                 });
 
     add_hidden_checkbox(   "surface",
@@ -128,6 +141,7 @@ void AlignmentFrame::add_surface_method_settings()  {
 
 void  AlignmentFrame::add_hidden_settings_slider(   const std::string &alignment_method,
                                                     const std::string &label,
+                                                    const std::string &tooltip,
                                                     float min_value,
                                                     float max_value,
                                                     float initial_value,
@@ -151,6 +165,7 @@ void  AlignmentFrame::add_hidden_settings_slider(   const std::string &alignment
             callback
     );
     this_slider->add_sizer(m_hidden_options_sizer, 0, wxEXPAND, 5);
+    this_slider->set_tool_tip(tooltip);
     this_slider->hide();
 
     if (m_hidden_settings_sliders.find(alignment_method) == m_hidden_settings_sliders.end()) {

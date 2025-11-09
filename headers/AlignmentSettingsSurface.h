@@ -16,6 +16,10 @@ namespace AstroPhotoStacker {
 
             void set_use_sift_detector(bool use);
 
+            float get_match_distance_threshold() const;
+
+            void set_match_distance_threshold(float threshold);
+
         private:
             static std::unique_ptr<AlignmentSettingsSurface> s_singleton_instance;
 
@@ -26,6 +30,8 @@ namespace AstroPhotoStacker {
             static std::mutex s_initializer_mutex;
 
             float m_maximal_allowed_distance_in_pixels = 20.0f;
+
+            float m_match_distance_threshold = 200.0f;
 
             bool m_use_sift_detector = false;
 

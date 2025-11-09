@@ -36,3 +36,11 @@ bool AlignmentSettingsSurface::use_sift_detector() const {
 void AlignmentSettingsSurface::set_use_sift_detector(bool use) {
     m_use_sift_detector = use;
 };
+
+float AlignmentSettingsSurface::get_match_distance_threshold() const {
+    return m_match_distance_threshold;
+};
+
+void AlignmentSettingsSurface::set_match_distance_threshold(float threshold) {
+    m_match_distance_threshold = threshold;
+};
