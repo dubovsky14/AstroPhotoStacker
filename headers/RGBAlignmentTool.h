@@ -28,7 +28,7 @@ namespace AstroPhotoStacker {
                 m_data_shifted = m_data_original.clone();
             };
 
-            void calculate_shifted_image(const std::pair<int,int> &shift_red, const std::pair<int,int> &shift_blue) {
+            void calculate_shifted_image(const std::pair<float,float> &shift_red, const std::pair<float,float> &shift_blue) {
                 cv::Mat trans_mat_red = (cv::Mat_<double>(2,3) << 1, 0, shift_red.first, 0, 1, shift_red.second);
                 cv::Mat trans_mat_blue = (cv::Mat_<double>(2,3) << 1, 0, shift_blue.first, 0, 1, shift_blue.second);
 

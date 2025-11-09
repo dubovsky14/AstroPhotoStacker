@@ -44,23 +44,23 @@ bool PostProcessingTool::get_apply_rgb_alignment() const {
     return m_apply_rgb_alignment;
 };
 
-void PostProcessingTool::set_rgb_alignment_parameters(const std::pair<int,int> &shift_red, const std::pair<int,int> &shift_blue) {
+void PostProcessingTool::set_rgb_alignment_parameters(const std::pair<float,float> &shift_red, const std::pair<float,float> &shift_blue) {
     m_shift_red = shift_red;
     m_shift_blue = shift_blue;
 };
 
-void PostProcessingTool::set_shift_red(const std::pair<int,int> &shift_red) {
+void PostProcessingTool::set_shift_red(const std::pair<float,float> &shift_red) {
     m_shift_red = shift_red;
 };
 
-std::pair<int,int> PostProcessingTool::get_shift_red() const {
+std::pair<float,float> PostProcessingTool::get_shift_red() const {
     return m_shift_red;
 };
 
-void PostProcessingTool::set_shift_blue(const std::pair<int,int> &shift_blue) {
+void PostProcessingTool::set_shift_blue(const std::pair<float,float> &shift_blue) {
     m_shift_blue = shift_blue;
 };
 
-std::pair<int,int> PostProcessingTool::get_shift_blue() const {
+std::pair<float,float> PostProcessingTool::get_shift_blue() const {
     return m_shift_blue;
 };

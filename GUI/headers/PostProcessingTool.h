@@ -29,15 +29,15 @@ class PostProcessingTool    {
 
         bool get_apply_rgb_alignment() const;
 
-        void set_rgb_alignment_parameters(const std::pair<int,int> &shift_red, const std::pair<int,int> &shift_blue);
+        void set_rgb_alignment_parameters(const std::pair<float,float> &shift_red, const std::pair<float,float> &shift_blue);
 
-        void set_shift_red(const std::pair<int,int> &shift_red);
+        void set_shift_red(const std::pair<float,float> &shift_red);
 
-        std::pair<int,int> get_shift_red() const;
+        std::pair<float,float> get_shift_red() const;
 
-        void set_shift_blue(const std::pair<int,int> &shift_blue);
+        void set_shift_blue(const std::pair<float,float> &shift_blue);
 
-        std::pair<int,int> get_shift_blue() const;
+        std::pair<float,float> get_shift_blue() const;
 
         template<typename PixelType>
         std::vector<std::vector<PixelType>> post_process_image(const std::vector<std::vector<PixelType>> &image, int width, int height) const {
@@ -63,8 +63,8 @@ class PostProcessingTool    {
         float m_center_value = 0.35;
 
         bool m_apply_rgb_alignment = false;
-        std::pair<int,int> m_shift_red = {0,0};
-        std::pair<int,int> m_shift_blue = {0,0};
+        std::pair<float,float> m_shift_red = {0,0};
+        std::pair<float,float> m_shift_blue = {0,0};
 
 
 };

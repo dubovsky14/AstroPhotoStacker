@@ -73,10 +73,10 @@ void PostProcessingToolGUI::add_rgb_alignment_settings()    {
     m_main_vertical_sizer->Add(use_rgb_alignment_checkbox, 0, wxEXPAND, 5);
 
     FloatingPointSlider* red_shift_x_slider = new FloatingPointSlider(
-        this, "Red shift x-coordinate: ", -10, 10, m_post_processing_tool->get_shift_red().first, 1, 0, [this](float shift_x){
-            std::pair<int,int> shift_red = m_post_processing_tool->get_shift_red();
+        this, "Red shift x-coordinate: ", -10, 10, m_post_processing_tool->get_shift_red().first, 0.1, 1, [this](float shift_x){
+            std::pair<float,float> shift_red = m_post_processing_tool->get_shift_red();
             shift_red.first = shift_x;
-            std::pair<int,int> shift_blue = std::pair<int,int>(-shift_red.first, -shift_red.second);
+            std::pair<float,float> shift_blue = std::pair<float,float>(-shift_red.first, -shift_red.second);
             m_post_processing_tool->set_shift_red(shift_red);
             m_post_processing_tool->set_shift_blue(shift_blue);
         }
@@ -85,10 +85,10 @@ void PostProcessingToolGUI::add_rgb_alignment_settings()    {
     red_shift_x_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
 
     FloatingPointSlider* red_shift_y_slider = new FloatingPointSlider(
-        this, "Red shift y-coordinate: ", -10, 10, m_post_processing_tool->get_shift_red().second, 1, 0, [this](float shift_y){
-            std::pair<int,int> shift_red = m_post_processing_tool->get_shift_red();
+        this, "Red shift y-coordinate: ", -10, 10, m_post_processing_tool->get_shift_red().second, 0.1, 1, [this](float shift_y){
+            std::pair<float,float> shift_red = m_post_processing_tool->get_shift_red();
             shift_red.second = shift_y;
-            std::pair<int,int> shift_blue = std::pair<int,int>(-shift_red.first, -shift_red.second);
+            std::pair<float,float> shift_blue = std::pair<float,float>(-shift_red.first, -shift_red.second);
             m_post_processing_tool->set_shift_red(shift_red);
             m_post_processing_tool->set_shift_blue(shift_blue);
         }
