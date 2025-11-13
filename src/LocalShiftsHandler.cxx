@@ -11,13 +11,22 @@ LocalShiftsHandler::LocalShiftsHandler(const std::vector<LocalShift> &shifts)  {
     initialize(shifts);
 };
 
-bool LocalShiftsHandler::calculate_shifted_coordinates(float *x, float *y, float *score)   {
+
+bool LocalShiftsHandler::transform_from_reference_to_shifted_frame(float *x, float *y, float *score) {
+    return calculate_shifted_coordinates(x, y, m_kd_tree_shifts_in_reference_coordinates, score);
+};
+
+bool LocalShiftsHandler::transform_from_shifted_to_reference_frame(float *x, float *y, float *score) {
+    return calculate_shifted_coordinates(x, y, m_kd_tree_shifts_in_shifted_coordinates, score);
+};
+
+bool LocalShiftsHandler::calculate_shifted_coordinates(float *x, float *y, KDTreeWithBuffer<int,2,std::tuple<int,int,bool,float>> &kd_tree_shifts, float *score)   {
     if (empty()) {
         return false;
     }
-    const int n_neighbors = std::min<int>(3, m_kd_tree_shifts.get_n_nodes());
+    const int n_neighbors = std::min<int>(3, kd_tree_shifts.get_n_nodes());
     const int query_point[2] = {int(*x), int(*y)};
-    const std::vector<std::tuple<std::array<int, 2>, std::tuple<int,int,bool,float>>> &closest_nodes = m_kd_tree_shifts.get_k_nearest_neighbors_buffer(query_point, n_neighbors);
+    const std::vector<std::tuple<std::array<int, 2>, std::tuple<int,int,bool,float>>> &closest_nodes = kd_tree_shifts.get_k_nearest_neighbors_buffer(query_point, n_neighbors);
     if (closest_nodes.size() == 0) {
         return false;
     }
@@ -146,11 +155,18 @@ void LocalShiftsHandler::initialize(const std::vector<LocalShift> &shifts)  {
     }
 
     for (const auto &shift : shifts) {
-        const std::vector<int> coordinate = {shift.x, shift.y};
+        const std::vector<int> coordinate = {shift.x - shift.dx, shift.y - shift.dy};
         const std::tuple<int,int,bool,float> value = std::tuple<int,int,bool,float>(shift.dx, shift.dy, shift.valid_ap, shift.score);
-
-        m_kd_tree_shifts.add_point(coordinate, value);
+        m_kd_tree_shifts_in_reference_coordinates.add_point(coordinate, value);
     }
-    m_kd_tree_shifts.build_tree_structure();
+
+    for (const auto &shift : shifts) {
+        const std::vector<int> coordinate = {shift.x, shift.y};
+        const std::tuple<int,int,bool,float> value = std::tuple<int,int,bool,float>(-shift.dx, -shift.dy, shift.valid_ap, shift.score);
+        m_kd_tree_shifts_in_shifted_coordinates.add_point(coordinate, value);
+    }
+
+    m_kd_tree_shifts_in_reference_coordinates.build_tree_structure();
+    m_kd_tree_shifts_in_shifted_coordinates.build_tree_structure();
     m_empty = false;
 };

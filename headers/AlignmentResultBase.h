@@ -35,6 +35,14 @@ namespace AstroPhotoStacker {
 
             virtual std::string get_method_specific_description_string() const = 0;
 
+            virtual float get_local_score(float x, float y) const {
+                return 1;
+            };
+
+            virtual bool has_local_scores() const {
+                return false;
+            };
+
             void set_ranking_score(float ranking_score) {
                 m_ranking_score = ranking_score;
             };

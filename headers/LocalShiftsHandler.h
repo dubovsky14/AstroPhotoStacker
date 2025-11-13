@@ -24,7 +24,10 @@ namespace AstroPhotoStacker {
                 return m_shifts;
             };
 
-            bool calculate_shifted_coordinates(float *x, float *y, float *score = nullptr);
+            bool transform_from_reference_to_shifted_frame(float *x, float *y, float *score = nullptr);
+
+            bool transform_from_shifted_to_reference_frame(float *x, float *y, float *score = nullptr);
+
 
             inline bool empty() const { return m_empty; };
 
@@ -35,11 +38,15 @@ namespace AstroPhotoStacker {
             std::string to_string() const;
 
         private:
+            bool calculate_shifted_coordinates(float *x, float *y, KDTreeWithBuffer<int,2,std::tuple<int,int,bool,float>> &kd_tree_shifts, float *score = nullptr);
+
             std::vector<LocalShift> m_shifts;
 
             void initialize(const std::vector<LocalShift> &shifts);
 
-            KDTreeWithBuffer<int,2,std::tuple<int,int,bool,float>> m_kd_tree_shifts;  // dx, dy, valid_ap, score
+            KDTreeWithBuffer<int,2,std::tuple<int,int,bool,float>> m_kd_tree_shifts_in_shifted_coordinates;  // dx, dy, valid_ap, score
+
+            KDTreeWithBuffer<int,2,std::tuple<int,int,bool,float>> m_kd_tree_shifts_in_reference_coordinates;  // dx, dy, valid_ap, score
 
             bool m_empty = true;
     };

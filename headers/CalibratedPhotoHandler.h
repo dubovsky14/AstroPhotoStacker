@@ -122,12 +122,6 @@ namespace AstroPhotoStacker {
                 return m_data_shifted_color_interpolation;
             };
 
-            bool has_score() const    { return !m_score_handler.empty(); };
-
-            float get_global_score() const    { return m_score_handler.get_global_score(); };
-
-            float get_score(int x, int y) const    { return m_score_handler.get_local_score(x, y); };
-
         private:
             int m_width;
             int m_height;

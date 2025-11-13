@@ -36,6 +36,12 @@ namespace AstroPhotoStacker {
 
             virtual std::string get_method_specific_description_string() const override;
 
+            virtual float get_local_score(float x, float y) const;
+
+            virtual bool has_local_scores() const {
+                return true;
+            };
+
             void set_parameters(const std::vector<LocalShift> &local_shifts);
 
             inline static const std::string s_type_name = "surface";

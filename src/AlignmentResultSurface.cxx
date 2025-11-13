@@ -38,22 +38,22 @@ AlignmentResultSurface::AlignmentResultSurface(const AlignmentResultSurface &oth
 };
 
 void AlignmentResultSurface::transform_from_reference_to_shifted_frame(float *x, float *y) const {
-    m_local_shifts_handler->calculate_shifted_coordinates(x, y);
+    m_local_shifts_handler->transform_from_reference_to_shifted_frame(x, y);
 };
 
 void AlignmentResultSurface::transform_to_reference_frame(float *x, float *y) const {
-    float x_original = *x;
-    float y_original = *y;
-    m_local_shifts_handler->calculate_shifted_coordinates(&x_original, &y_original);
-    const float dx = *x - x_original;
-    const float dy = *y - y_original;
-    *x -= dx;
-    *y -= dy;
+    m_local_shifts_handler->transform_from_shifted_to_reference_frame(x, y);
 };
 
 string AlignmentResultSurface::get_method_specific_description_string() const {
     return  to_string(m_ranking_score) + c_separator_in_description +
             m_local_shifts_handler->to_string();
+};
+
+float AlignmentResultSurface::get_local_score(float x, float y) const   {
+    float score = 0;
+    m_local_shifts_handler->transform_from_reference_to_shifted_frame(&x, &y, &score);
+    return score;
 };
 
 void AlignmentResultSurface::set_parameters(const std::vector<LocalShift> &local_shifts) {

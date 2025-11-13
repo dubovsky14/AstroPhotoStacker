@@ -50,6 +50,8 @@ namespace AstroPhotoStacker   {
 
             virtual void initialize(const PixelType *brightness, int width, int height, float threshold_fraction = 0.0005) override;
 
+            std::vector<float> evalulate_local_sharpness( const MonochromeImageData &image_data_input, const std::vector<std::pair<int,int>> &keypoint_positions) const;
+
 
             float m_blur_sigma = 1.;
             int   m_blur_window_size = 5;
