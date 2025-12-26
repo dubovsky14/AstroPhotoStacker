@@ -35,6 +35,10 @@ class AlignedImagesProducerGUI : public wxFrame  {
          */
         AlignedImagesProducerGUI(MyFrame *parent, const PostProcessingTool *post_processing_tool);
 
+        void set_color_stretcher(const CombinedColorStrecherTool &color_stretcher) {
+            m_color_stretcher = color_stretcher;
+        };
+
     private:
         MyFrame *m_parent = nullptr;
         const PostProcessingTool *m_post_processing_tool = nullptr;
@@ -48,7 +52,8 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
         std::unique_ptr<AstroPhotoStacker::AlignedImagesProducer> m_aligned_images_producer = nullptr;
         std::unique_ptr<ImagePreviewCropTool> m_image_preview_crop_tool = nullptr;
-        CombinedColorStrecherTool m_color_stretcher; // for exposure correction
+        CombinedColorStrecherTool m_exposure_stretcher; // for exposure correction
+        CombinedColorStrecherTool m_color_stretcher;
 
         std::string m_output_folder_address;
 

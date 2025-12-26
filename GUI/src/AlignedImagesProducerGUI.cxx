@@ -35,12 +35,12 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent, const PostPr
         wxFrame(parent, wxID_ANY, "Produce aligned images", wxDefaultPosition, wxSize(1000, 1000)),
         m_parent(parent), m_post_processing_tool(post_processing_tool)    {
 
-    m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackCorrectionWhite>());
+    m_exposure_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackCorrectionWhite>());
 
     m_main_vertical_sizer = new wxBoxSizer(wxVERTICAL);
 
     m_image_preview_crop_tool = make_unique<ImagePreviewCropTool>(this, 600, 400, 255, true);
-    m_image_preview_crop_tool->set_stretcher(&m_color_stretcher);
+    m_image_preview_crop_tool->set_stretcher(&m_exposure_stretcher);
 
     // TODO: add alignment preview
     const InputFrame reference_frame = get_reference_frame();
@@ -104,7 +104,8 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent, const PostPr
         run_task_with_progress_dialog("Producing aligned images", "Finished", "", tasks_processed, tasks_total, [this](){
             if (m_apply_color_stretcher) {
                 m_aligned_images_producer->set_image_stretching_function([this](std::vector<std::vector<PixelType>> *image, PixelType max_value){
-                    m_color_stretcher.stretch_image(image, max_value, true);
+                    m_exposure_stretcher.stretch_image(image, max_value, true);
+                    m_color_stretcher.stretch_image(image, max_value, false);
                 });
             }
             m_aligned_images_producer->produce_aligned_images(m_output_folder_address);
@@ -225,7 +226,7 @@ void AlignedImagesProducerGUI::add_exposure_correction_spin_ctrl()   {
         0.1,
         1,
         [this](float value){
-            IndividualColorStretchingToolBase &luminance_stretcher = m_color_stretcher.get_luminance_stretcher(0);
+            IndividualColorStretchingToolBase &luminance_stretcher = m_exposure_stretcher.get_luminance_stretcher(0);
             (dynamic_cast<IndividualColorStretchingBlackCorrectionWhite&>(luminance_stretcher)).set_stretching_parameters(0,value,1);
             m_image_preview_crop_tool->update_preview_bitmap();
         }
