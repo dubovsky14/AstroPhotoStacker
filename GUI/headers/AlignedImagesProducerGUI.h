@@ -39,6 +39,10 @@ class AlignedImagesProducerGUI : public wxFrame  {
             m_color_stretcher = color_stretcher;
         };
 
+        void set_default_path(const std::string &path) {
+            m_default_path = path;
+        };
+
     private:
         MyFrame *m_parent = nullptr;
         const PostProcessingTool *m_post_processing_tool = nullptr;
@@ -48,7 +52,7 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
         std::unique_ptr<FloatingPointSlider> m_fraction_to_stack_slider     = nullptr;
         std::unique_ptr<FloatingPointSlider> m_exposure_correction_slider   = nullptr;
-
+        std::string m_default_path = "";
 
         std::unique_ptr<AstroPhotoStacker::AlignedImagesProducer> m_aligned_images_producer = nullptr;
         std::unique_ptr<ImagePreviewCropTool> m_image_preview_crop_tool = nullptr;

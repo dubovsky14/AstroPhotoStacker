@@ -323,6 +323,7 @@ void MyFrame::add_aligned_images_producer_menu()  {
         }
 
         AlignedImagesProducerGUI *aligned_images_producer_gui = new AlignedImagesProducerGUI(this, &m_post_processing_tool);
+        aligned_images_producer_gui->set_default_path(m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, ""));
         if (m_stack_settings->apply_color_stretching()) {
             aligned_images_producer_gui->set_color_stretcher(m_color_stretcher);
         }
