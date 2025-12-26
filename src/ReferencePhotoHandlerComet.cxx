@@ -36,7 +36,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerComet::calculate_align
         const int height = input_frame_reader.get_height();
 
         const vector<PixelType> brightness = input_frame_reader.get_monochrome_data();
-        const PixelType threshold = get_threshold_value(brightness.data(), width*height, 0.0005);
+        const PixelType threshold = get_threshold_value(brightness.data(), width*height, 0.002);
 
         vector<tuple<float,float,int> > clusters = get_stars(brightness.data(), width, height, threshold); // one if these "stars" should be the comet
         keep_only_stars_above_size(&clusters, 9);

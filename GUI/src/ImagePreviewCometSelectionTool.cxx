@@ -40,7 +40,7 @@ std::vector<std::pair<float,float>> ImagePreviewCometSelectionTool::calculate_st
             monochrome_image.at(i_pixel) += static_cast<float>(m_original_image[i_color][i_pixel])/3.0f;
         }
     }
-    const float threshold = AstroPhotoStacker::get_threshold_value(monochrome_image.data(), monochrome_image.size(), 0.0005);
+    const float threshold = AstroPhotoStacker::get_threshold_value(monochrome_image.data(), monochrome_image.size(), 0.002);
     std::vector<std::tuple<float,float,int>> stars = AstroPhotoStacker::get_stars(  monochrome_image.data(),
                                                                 m_image_resize_tool.get_width_original(),
                                                                 m_image_resize_tool.get_height_original(),
