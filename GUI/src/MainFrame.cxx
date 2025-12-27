@@ -126,7 +126,7 @@ void MyFrame::add_filelist_menu()    {
     filelist_menu->Append(id, "Save filelist", "Save filelist");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
-        wxFileDialog dialog(this, "Save filelist", "", default_path + "/filelist.txt", "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        wxFileDialog dialog(this, "Save filelist", "", default_path + "/filelist.txt", "*.txt", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_filelist_handler_gui_interface.save_filelist_to_file(file_address);
@@ -137,7 +137,7 @@ void MyFrame::add_filelist_menu()    {
     filelist_menu->Append(id, "Load filelist", "Load filelist");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
-        wxFileDialog dialog(this, "Load filelist", "", default_path, "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        wxFileDialog dialog(this, "Load filelist", "", default_path, "*.txt", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_filelist_handler_gui_interface.load_filelist_from_file(file_address);
@@ -157,7 +157,7 @@ void MyFrame::add_alignment_menu()  {
     alignment_menu->Append(id, "Save alignment info", "Save alignment info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
-        wxFileDialog dialog(this, "Save alignment info", "", default_path + "/" + m_filelist_handler_gui_interface.get_default_alignment_txt_file_name(), "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        wxFileDialog dialog(this, "Save alignment info", "", default_path + "/" + m_filelist_handler_gui_interface.get_default_alignment_txt_file_name(), "*.txt", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_filelist_handler_gui_interface.save_alignment_to_file(file_address);
@@ -168,7 +168,7 @@ void MyFrame::add_alignment_menu()  {
     alignment_menu->Append(id, "Load alignment info", "Load alignment info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
-        wxFileDialog dialog(this, "Load alignment info", "", default_path, "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        wxFileDialog dialog(this, "Load alignment info", "", default_path, "*.txt", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_filelist_handler_gui_interface.load_alignment_from_file(file_address);
@@ -277,7 +277,7 @@ void MyFrame::add_hot_pixel_menu()  {
             return;
         }
         const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
-        wxFileDialog dialog(this, "Save hot pixel info", "", default_path, "*['.txt']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        wxFileDialog dialog(this, "Save hot pixel info", "", default_path, "*.txt", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_hot_pixel_identifier->save_hot_pixels_to_file(file_address);
@@ -288,7 +288,7 @@ void MyFrame::add_hot_pixel_menu()  {
     hot_pixel_menu->Append(id, "Load hot pixel info", "Load hot pixel info");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
-        wxFileDialog dialog(this, "Load hot pixel info", "", default_path, "*['.txt']", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        wxFileDialog dialog(this, "Load hot pixel info", "", default_path, "*.txt", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             if (m_hot_pixel_identifier == nullptr)  {
