@@ -48,6 +48,6 @@ void StackerKappaSigmaBase::apply_kappa_sigma_clipping(PixelType **ordered_array
             new_number_of_stacked_pixels++;
         }
     }
-    *number_of_stacked_pixels = new_number_of_stacked_pixels;
     *ordered_array_begin = *ordered_array_begin + *number_of_stacked_pixels - new_number_of_stacked_pixels;
+    *number_of_stacked_pixels = new_number_of_stacked_pixels;
 };
