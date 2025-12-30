@@ -232,8 +232,6 @@ void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address)
             exif_timestamp = std::string(buffer);
         }
 
-
-        cout << "Adding date time to EXIF: " << exif_timestamp << endl;
         exif_data["Exif.Image.DateTime"] = exif_timestamp;
         exif_data["Exif.Photo.DateTimeOriginal"] = exif_timestamp;
         exif_data["Exif.Photo.DateTimeDigitized"] = exif_timestamp;
