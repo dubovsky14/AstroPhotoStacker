@@ -1317,11 +1317,17 @@ void MyFrame::on_save_selected_as_fit(wxCommandEvent& event) {
         wxString selected = dialog_bit_depth.GetStringSelection();
         output_bit_depth = std::stoi(selected.ToStdString());
     }
+    else {
+        return;
+    }
 
     wxDirDialog dialog_folder(this, "Select folder for output images", "");
     string output_folder = ".";
     if (dialog_folder.ShowModal() == wxID_OK) {
         output_folder = dialog_folder.GetPath().ToStdString();
+    }
+    else {
+        return;
     }
 
     const vector<InputFrame> selected_frames = m_filelist_handler_gui_interface.get_selected_frames();

@@ -223,9 +223,20 @@ void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address)
     }
 
     if (metadata.date_time != "") {
-        exif_data["Exif.Image.DateTime"] = metadata.date_time;
-        exif_data["Exif.Photo.DateTimeOriginal"] = metadata.date_time;
-        exif_data["Exif.Photo.DateTimeDigitized"] = metadata.date_time;
+        string exif_timestamp = "";
+        if (metadata.timestamp > 0) {
+            std::time_t t = static_cast<std::time_t>(metadata.timestamp);
+            std::tm* tm_ptr = std::gmtime(&t);
+            char buffer[20];
+            std::strftime(buffer, sizeof(buffer), "%Y:%m:%d %H:%M:%S", tm_ptr);
+            exif_timestamp = std::string(buffer);
+        }
+
+
+        cout << "Adding date time to EXIF: " << exif_timestamp << endl;
+        exif_data["Exif.Image.DateTime"] = exif_timestamp;
+        exif_data["Exif.Photo.DateTimeOriginal"] = exif_timestamp;
+        exif_data["Exif.Photo.DateTimeDigitized"] = exif_timestamp;
     }
 
     exif_data["Exif.Image.ImageDescription"] = join_strings("; ", get_overall_frames_summary());
