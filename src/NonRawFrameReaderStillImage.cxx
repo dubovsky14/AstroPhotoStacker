@@ -12,7 +12,7 @@ NonRawFrameReaderStillImage::NonRawFrameReaderStillImage(const InputFrame &input
 
 vector<vector<PixelType>> NonRawFrameReaderStillImage::get_pixels_data(int *width, int *height) {
     const string input_file = m_input_frame.get_file_address();
-    cv::Mat image = cv::imread(input_file, cv::IMREAD_COLOR);
+    cv::Mat image = cv::imread(input_file, cv::IMREAD_COLOR | cv::IMREAD_ANYDEPTH);
     if (image.empty()) {
         throw std::runtime_error("Unable to open image file: " + input_file);
     }
@@ -51,7 +51,7 @@ std::vector<PixelType> NonRawFrameReaderStillImage::get_pixels_data_monochrome(i
 void NonRawFrameReaderStillImage::get_photo_resolution(int *width, int *height) {
     if (m_width < 0 || m_height < 0) {
         const string input_file = m_input_frame.get_file_address();
-        cv::Mat image = cv::imread(input_file, cv::IMREAD_COLOR);
+        cv::Mat image = cv::imread(input_file, cv::IMREAD_COLOR | cv::IMREAD_ANYDEPTH);
         m_width = image.cols;
         m_height = image.rows;
     }

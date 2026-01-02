@@ -1411,16 +1411,16 @@ void MyFrame::stack_calibration_frames() {
             }
 
             // add frames to new filelist handler
-            FilelistHandler calibration_frames_handler;
+            FilelistHandler calibration_filelist_handler;
             for (const auto &frame : frames_to_stack) {
                 // LIGHT is not a bug - we do not use frames as correction here, we are stacking them
-                calibration_frames_handler.add_frame(frame, FrameType::LIGHT, 0, true);
+                calibration_filelist_handler.add_frame(frame, FrameType::LIGHT, 0, true);
             }
 
             // create a separate stacker
             StackSettings calibration_frames_settings = *m_stack_settings;
             calibration_frames_settings.set_use_color_interpolation(false);
-            std::unique_ptr<AstroPhotoStacker::StackerBase> calibration_stacker = get_configured_stacker(calibration_frames_settings, calibration_frames_handler);
+            std::unique_ptr<AstroPhotoStacker::StackerBase> calibration_stacker = get_configured_stacker(calibration_frames_settings, calibration_filelist_handler);
 
             const string file_type_name = to_string(type);
             const int tasks_total = calibration_stacker->get_tasks_total();
@@ -1438,7 +1438,14 @@ void MyFrame::stack_calibration_frames() {
 
             const std::string last_frame_name = frames_to_stack.back().get_file_address();
             const string master_frame_name = last_frame_name.substr(0, last_frame_name.find_last_of('.')) + "_master" + file_type_name + ".tif";
-            calibration_stacker->save_stacked_photo(master_frame_name, CV_16U);
+            if (type == FrameType::DARK || type == FrameType::BIAS) {
+
+                // It is important here to save it as signed 16 bit! If we saved as unsigned, the calibration frame would be scaled down by 2x during its reading to avoid integer overflow - we certainly do not want this for biases or darks
+                calibration_stacker->save_stacked_photo_as_calibration_frame(master_frame_name, CV_16S);
+            }
+            else {
+                calibration_stacker->save_stacked_photo(master_frame_name, CV_16S);
+            }
 
             // remove original calibration frames from filelist handler
             m_filelist_handler_gui_interface.remove_all_frames_of_type_and_group(type, group_number);

@@ -46,6 +46,28 @@ void StackerBase::save_stacked_photo(const string &file_address, int image_optio
     save_stacked_photo(file_address, m_stacked_image, m_width, m_height, image_options);
 };
 
+void StackerBase::save_stacked_photo_as_calibration_frame(const std::string &file_address, int image_options) const {
+    if (m_frames_to_stack.empty()) {
+        throw std::runtime_error("Cannot save stacked photo as calibration frame - no frames have been stacked yet.");
+    }
+    const InputFrame &first_frame = m_frames_to_stack[0];
+    InputFrameReader input_frame_reader(first_frame);
+    if (!input_frame_reader.is_raw_file()) {
+        cout << "Cannot save stacked photo as calibration frame - the input frame is not a raw file. Saving as a regular image instead." << endl;
+        save_stacked_photo(file_address, image_options);
+        return;
+    }
+
+    std::vector<double> monochrome_stacked_image(m_width*m_height, 0.);
+    for (int i_line = 0; i_line < m_height; i_line++) {
+        for (int i_pixel = 0; i_pixel < m_width; i_pixel++) {
+            const int color = input_frame_reader.get_raw_color(i_pixel, i_line);
+            monochrome_stacked_image[i_line*m_width + i_pixel] = m_stacked_image[color][i_line*m_width + i_pixel];
+        }
+    }
+    create_gray_scale_image(&monochrome_stacked_image[0], m_width, m_height, file_address, image_options);
+}
+
 void StackerBase::save_stacked_photo(const std::string &file_address, const std::vector<std::vector<double> > &stacked_image, int width, int height, int image_options)   {
     std::vector<std::vector<double> > data_for_plotting = stacked_image;
 

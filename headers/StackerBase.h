@@ -17,6 +17,7 @@
 #include <atomic>
 #include <tuple>
 #include <map>
+#include <opencv2/opencv.hpp>
 
 
 namespace AstroPhotoStacker {
@@ -85,6 +86,14 @@ namespace AstroPhotoStacker {
              * @param image_options - options for saving the image. See OpenCV documentation for details
             */
             virtual void save_stacked_photo(const std::string &file_address, int image_options = 18) const;
+
+            /**
+             * @brief Save the stacked photo as monochrome calibration frame (without color interpolation)
+             *
+             * @param file_address - path to the file
+             * @param image_options - options for saving the image. See OpenCV documentation for details
+            */
+            void save_stacked_photo_as_calibration_frame(const std::string &file_address, int image_options = CV_16UC1) const;
 
             /**
              * @brief Save the stacked photo
