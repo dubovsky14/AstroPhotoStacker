@@ -1,5 +1,6 @@
 #include "../headers/NonRawFrameReaderStillImage.h"
 #include "../headers/MetadataCommon.h"
+#include "../headers/Common.h"
 
 #include <exiv2/exiv2.hpp>
 #include <opencv2/opencv.hpp>
@@ -81,13 +82,6 @@ Metadata NonRawFrameReaderStillImage::read_metadata_without_cache() {
             throw Exiv2::Error(Exiv2::kerErrorMessage, error);
         }
 
-
-        // print list of keys
-        for (const auto& key : exifData) {
-            std::cout << key.key() << " " << key.value() << std::endl;
-        }
-
-
         // Aperture
         const auto aperture = exifData.findKey(Exiv2::ExifKey("Exif.Photo.FNumber"));
         if (aperture != exifData.end()) {
@@ -129,6 +123,24 @@ Metadata NonRawFrameReaderStillImage::read_metadata_without_cache() {
         const auto cameraModel = exifData.findKey(Exiv2::ExifKey("Exif.Image.Model"));
         if (cameraModel != exifData.end()) {
             metadata.camera_model = cameraModel->toString();
+        }
+
+        // user comment - used for temperature
+        const auto userComment = exifData.findKey(Exiv2::ExifKey("Exif.Photo.UserComment"));
+        if (userComment != exifData.end()) {
+            std::string comment = userComment->toString();
+            if (starts_with(comment, "Temperature:") && ends_with(comment, "C")) {
+                vector<string> parts = split_string(comment, ":");
+                if (parts.size() == 2) {
+                    std::string temp_string = parts[1];
+                    strip_string(&temp_string, " C");
+                    try {
+                        metadata.temperature = convert_string_to<float>(temp_string);
+                    } catch (...) {
+                        // ignore conversion errors
+                    }
+                }
+            }
         }
 
     } catch (Exiv2::AnyError& e) {

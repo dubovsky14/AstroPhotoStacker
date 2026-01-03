@@ -122,6 +122,9 @@ std::vector<std::string> SummaryYamlCreator::get_group_and_type_summary(int grou
         if (metadata.date_time != "") {
             result.push_back(2*s_indent + "date_time: \"" + metadata.date_time + "\"");
         }
+        if (metadata.temperature > -273) {
+            result.push_back(2*s_indent + "temperature: " + AstroPhotoStacker::round_and_convert_to_string(metadata.temperature,1));
+        }
 
     }
     if (n_frames == 0 || result.size() == 0)   {
@@ -222,6 +225,8 @@ void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address)
         exif_data["Exif.Photo.FocalLength"] = to_string(focal_length_times_10) + "/10";
     }
 
+    const string temperature_string =  metadata.temperature > -273 ? ("Temperature: " + AstroPhotoStacker::round_and_convert_to_string(metadata.temperature,1) + "C") : "";
+
     if (metadata.date_time != "") {
         string exif_timestamp = "";
         if (metadata.timestamp > 0) {
@@ -239,7 +244,7 @@ void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address)
 
     exif_data["Exif.Image.ImageDescription"] = join_strings("; ", get_overall_frames_summary());
     exif_data["Exif.Image.Software"] = "AstroPhotoStacker";
-    exif_data["Exif.Photo.UserComment"] = metadata.date_time;
+    exif_data["Exif.Photo.UserComment"] = temperature_string;
 
     Exiv2::XmpData &xmpData = img->xmpData();
     xmpData["Xmp.dc.full_yaml_data"] = get_yaml_summary();
