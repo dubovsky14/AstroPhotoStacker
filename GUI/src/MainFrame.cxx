@@ -1447,6 +1447,10 @@ void MyFrame::stack_calibration_frames() {
                 calibration_stacker->save_stacked_photo(master_frame_name, CV_16S);
             }
 
+
+            unique_ptr<SummaryYamlCreator> summary_yaml_creator = make_unique<SummaryYamlCreator>(calibration_filelist_handler, *m_stack_settings);
+            summary_yaml_creator->add_as_exif_metadata(master_frame_name);
+
             // remove original calibration frames from filelist handler
             m_filelist_handler_gui_interface.remove_all_frames_of_type_and_group(type, group_number);
             m_filelist_handler_gui_interface.add_file(master_frame_name, type, group_number, true);

@@ -32,6 +32,7 @@ def convert_firecapture_txt_to_zwo_txt(firecapture_txt_file : str, zwo_txt_file 
         output_file.write("Debayer Type = RGGB\n")
         output_file.write(f'White Balance (B) = {settings["WBlue"]}\n')
         output_file.write(f'White Balance (R) = {settings["WRed"]}\n')
+        output_file.write(f'Temperature = {settings.get("Sensor temperature", "-300")}\n')
 
 def get_list_of_input_files_and_output_files(input_folder : str) -> list[tuple[str, str]]:
     result = []

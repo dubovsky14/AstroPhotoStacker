@@ -13,6 +13,7 @@ namespace AstroPhotoStacker {
         int timestamp           = 0;
         int max_value           = 0;
         bool monochrome         = false;
+        float temperature       = -300;
 
         bool is_raw             = false;
         std::string camera_model = "";

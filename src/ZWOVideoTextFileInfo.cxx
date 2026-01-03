@@ -27,6 +27,7 @@ Metadata ZWOVideoTextFileInfo::get_metadata() const {
     metadata.date_time = m_timestamp_string;
     metadata.is_raw = true;
     metadata.camera_model = m_camera_model;
+    metadata.temperature = m_temperature;
 
     if (m_bayer_matrix[0] >= 0) {
         metadata.bayer_matrix = convert_bayer_int_array_to_string(m_bayer_matrix);
@@ -65,6 +66,9 @@ void ZWOVideoTextFileInfo::read_data(std::ifstream *file)   {
         }
         else if (compare_case_insensitive(key, "Debayer Type")) {
             read_bayer_matrix(value);
+        }
+        else if (compare_case_insensitive(key, "Temperature")) {
+            m_temperature = convert_string_to<float>(value);
         }
     }
 };

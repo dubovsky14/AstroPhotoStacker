@@ -81,6 +81,13 @@ Metadata NonRawFrameReaderStillImage::read_metadata_without_cache() {
             throw Exiv2::Error(Exiv2::kerErrorMessage, error);
         }
 
+
+        // print list of keys
+        for (const auto& key : exifData) {
+            std::cout << key.key() << " " << key.value() << std::endl;
+        }
+
+
         // Aperture
         const auto aperture = exifData.findKey(Exiv2::ExifKey("Exif.Photo.FNumber"));
         if (aperture != exifData.end()) {

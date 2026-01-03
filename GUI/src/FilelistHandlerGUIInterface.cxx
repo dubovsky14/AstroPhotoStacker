@@ -63,6 +63,8 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
         result.push_back("f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture));
         result.push_back(exposure_string);
         result.push_back(to_string(metadata.iso) + " ISO");
+        const std::string temperature_string = (metadata.temperature > -273) ? AstroPhotoStacker::round_and_convert_to_string(metadata.temperature,1) + " C" : " ";
+        result.push_back(temperature_string);
     }
     const string score_string = (type == FrameType::LIGHT) ?
                                 (frame_info.alignment_result->is_valid() ? "score: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3) : "invalid alignment") :
