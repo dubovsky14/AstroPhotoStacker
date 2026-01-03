@@ -65,6 +65,13 @@ void StackerBase::save_stacked_photo_as_calibration_frame(const std::string &fil
             monochrome_stacked_image[i_line*m_width + i_pixel] = m_stacked_image[color][i_line*m_width + i_pixel];
         }
     }
+
+    if ((image_options & CV_16U) == CV_16U) {
+        for (double &value : monochrome_stacked_image) {
+            value *= 2.; // convert from 15-bit to 16-bit
+        }
+    }
+
     create_gray_scale_image(&monochrome_stacked_image[0], m_width, m_height, file_address, image_options);
 }
 

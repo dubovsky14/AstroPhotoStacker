@@ -1398,10 +1398,10 @@ void MyFrame::stack_calibration_frames() {
             // get vector of checked files
 
             const std::map<InputFrame, FrameInfo> &calibrationf_frame_map = m_filelist_handler_gui_interface.get_frames(type, group_number);
-            vector<InputFrame> frames_to_stack;
+            vector<pair<InputFrame, Metadata>> frames_to_stack;
             for (const auto &frame : calibrationf_frame_map) {
                 if (frame.second.is_checked) {
-                    frames_to_stack.push_back(frame.first);
+                    frames_to_stack.push_back({frame.first, frame.second.metadata});
                 }
             }
 
@@ -1414,7 +1414,7 @@ void MyFrame::stack_calibration_frames() {
             FilelistHandler calibration_filelist_handler;
             for (const auto &frame : frames_to_stack) {
                 // LIGHT is not a bug - we do not use frames as correction here, we are stacking them
-                calibration_filelist_handler.add_frame(frame, FrameType::LIGHT, 0, true);
+                calibration_filelist_handler.add_frame(frame.first, FrameType::LIGHT, 0, true, AlignmentResultDummy(), frame.second);
             }
 
             // create a separate stacker
@@ -1436,24 +1436,27 @@ void MyFrame::stack_calibration_frames() {
                                     },
                                     "Calculating final "  + file_type_name + " frame ...");
 
-            const std::string last_frame_name = frames_to_stack.back().get_file_address();
+            const std::string last_frame_name = frames_to_stack.back().first.get_file_address();
             const string master_frame_name = last_frame_name.substr(0, last_frame_name.find_last_of('.')) + "_master" + file_type_name + ".tif";
             if (type == FrameType::DARK || type == FrameType::BIAS) {
-
-                // It is important here to save it as signed 16 bit! If we saved as unsigned, the calibration frame would be scaled down by 2x during its reading to avoid integer overflow - we certainly do not want this for biases or darks
-                calibration_stacker->save_stacked_photo_as_calibration_frame(master_frame_name, CV_16S);
+                calibration_stacker->save_stacked_photo_as_calibration_frame(master_frame_name, CV_16U);
             }
             else {
-                calibration_stacker->save_stacked_photo(master_frame_name, CV_16S);
+                calibration_stacker->save_stacked_photo(master_frame_name, CV_16U);
             }
 
 
             unique_ptr<SummaryYamlCreator> summary_yaml_creator = make_unique<SummaryYamlCreator>(calibration_filelist_handler, *m_stack_settings);
+            summary_yaml_creator->create_and_save_yaml_file(master_frame_name + ".yaml", nullptr);
             summary_yaml_creator->add_as_exif_metadata(master_frame_name);
 
             // remove original calibration frames from filelist handler
             m_filelist_handler_gui_interface.remove_all_frames_of_type_and_group(type, group_number);
-            m_filelist_handler_gui_interface.add_file(master_frame_name, type, group_number, true);
+
+            // load metadata and add master frame to filelist handler
+            MetadataManager metadata_manager;
+            AstroPhotoStacker::Metadata metadata = metadata_manager.get_metadata(InputFrame(master_frame_name));
+            m_filelist_handler_gui_interface.add_file(master_frame_name, type, group_number, true, AlignmentResultDummy(), metadata);
             update_files_to_stack_checkbox();
         }
     }
