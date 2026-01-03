@@ -27,11 +27,11 @@ int main(int argc, const char **argv)   {
 
     test_runner.run_test("Metadata reading - Canon 6D MarkII",    test_metadata_reading,
                         "AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2",
-                        6.3, 180.80f, 1600, 600.f, "RGGB", "Canon 6D Mark II", -1);
+                        6.3, 180.80f, 1600, 600.f, "RGGB", "Canon 6D Mark II", -1, 23);
 
     test_runner.run_test("Metadata reading ZWO678MC",    test_metadata_reading,
                             "AstroPhotoStacker_test_files/data/ZWO678MC_horse_head/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001.fit",
-                            0, 180.0f, 100, 1197.f, "RGGB", "ZWO 678MC", 1735168177);
+                            0, 180.0f, 100, 1197.f, "RGGB", "ZWO 678MC", 1735168177, 0.3);
 
     test_runner.run_test(   "Image reading - raw Canon 6D Mark II", test_image_reading_raw,
                             InputFrame("AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2"),

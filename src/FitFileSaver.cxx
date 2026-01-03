@@ -50,6 +50,11 @@ std::string FitFileSaver::get_header_string() const {
         header_string += get_header_line("INSTRUME", camera_model, "Camera model");
     }
 
+    const bool valid_temperature = m_metadata.has_value() ? m_metadata->temperature > -273 : false;
+    if (valid_temperature) {
+        header_string += get_header_line("CCD-TEMP", std::to_string(m_metadata->temperature), "Sensor temperature in Celsius");
+    }
+
 
     header_string += get_metadata_header_string();
 

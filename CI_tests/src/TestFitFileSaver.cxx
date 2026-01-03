@@ -74,7 +74,9 @@ TestResult AstroPhotoStacker::test_metadata_match(const Metadata &metadata_origi
     if (metadata_original.bayer_matrix != metadata_fit.bayer_matrix)   {
         error_message += "Bayer matrix mismatch: original = " + metadata_original.bayer_matrix + ", fit = " + metadata_fit.bayer_matrix + "\n";
     }
-
+    if (std::abs(metadata_original.temperature - metadata_fit.temperature) > 0.1) {
+        error_message += "Camera temperature mismatch: expected " + std::to_string(metadata_fit.temperature) + ", got " + std::to_string(metadata_original.temperature) + "\n";
+    }
     if (error_message.empty())   {
         return TestResult(true, "");
     }

@@ -14,7 +14,8 @@ TestResult AstroPhotoStacker::test_metadata_reading(const std::string &input_fil
                                                     float expected_focal_length,
                                                     const std::string &expected_bayer_matrix,
                                                     const std::string &expected_camera_model,
-                                                    int expected_unix_time)    {
+                                                    int expected_unix_time,
+                                                    float expected_camera_temperature)    {
 
     const Metadata metadata = read_metadata(InputFrame(input_file));
     std::string error_message = "";
@@ -39,6 +40,9 @@ TestResult AstroPhotoStacker::test_metadata_reading(const std::string &input_fil
     }
     if (compare_case_insensitive(metadata.camera_model, expected_camera_model)) {
         error_message += "Camera model mismatch: expected '" + expected_camera_model + "', got '" + metadata.camera_model + "'\n";
+    }
+    if (std::abs(metadata.temperature - expected_camera_temperature) > 0.1 && expected_camera_temperature > -273) {
+        error_message += "Camera temperature mismatch: expected " + std::to_string(expected_camera_temperature) + ", got " + std::to_string(metadata.temperature) + "\n";
     }
     if (error_message.empty()) {
         return TestResult(true, "Metadata reading test passed.");
