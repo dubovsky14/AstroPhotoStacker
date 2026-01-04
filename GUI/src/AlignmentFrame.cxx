@@ -1,6 +1,7 @@
 #include "../headers/AlignmentFrame.h"
 #include "../headers/ProgressBarWindow.h"
 #include "../headers/CometSelectionFrame.h"
+#include "../headers/SettingsCustomization.h"
 
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/thread_pool.h"
@@ -56,9 +57,10 @@ void AlignmentFrame::initialize_list_of_frames_to_align()   {
     }
 
     const unsigned int max_number_of_frames_for_gui = 2000; // without this, it would freeze for planetary videos
+    const bool show_full_frame_paths = SettingsCustomization::get_instance().other_settings_customization.show_full_frame_paths;
     for (unsigned int i = 0; i < checked_light_frames.size(); ++i) {
         if (i < max_number_of_frames_for_gui) {
-            m_available_light_frames.push_back(checked_light_frames[i].second.input_frame.to_gui_string());
+            m_available_light_frames.push_back(checked_light_frames[i].second.input_frame.to_gui_string(show_full_frame_paths));
         }
         m_indices_frames_to_align.push_back(i);
         m_frames_to_align.push_back(checked_light_frames[i].second.input_frame);

@@ -48,7 +48,8 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
         result.push_back("Group #" + std::to_string(frame_id.group_number));
     }
 
-    const string frame_description = frame_id.input_frame.to_gui_string();
+    const SettingsCustomization &settings_customization = SettingsCustomization::get_instance();
+    const string frame_description = frame_id.input_frame.to_gui_string(settings_customization.other_settings_customization.show_full_frame_paths);
     const FrameType type = frame_id.type;
     result.push_back(to_string(type));
     result.push_back(frame_description);
@@ -61,7 +62,6 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
                                         AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s" :
                                         AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time * 1000) + " ms";
 
-    const SettingsCustomization &settings_customization = SettingsCustomization::get_instance();
     const MetadataViewSettings &metadata_view_settings = settings_customization.metadata_view_settings;
     const FrameStatisticsViewSettings &frame_statistics_view_settings = settings_customization.frame_statistics_view_settings;
 

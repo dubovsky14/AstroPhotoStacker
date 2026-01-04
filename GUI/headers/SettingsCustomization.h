@@ -60,10 +60,27 @@ struct FrameStatisticsViewSettings {
     explicit FrameStatisticsViewSettings(const std::string &settings_string);
 };
 
+struct OtherSettingsCustomization {
+    bool show_full_frame_paths = true;
+
+    std::map<std::string, bool*> get_boolean_map() {
+        std::map<std::string, bool*> result;
+        result["show_full_frame_paths"] = &show_full_frame_paths;
+        return result;
+    };
+
+    std::string to_string();
+
+    OtherSettingsCustomization() = default;
+
+    explicit OtherSettingsCustomization(const std::string &settings_string);
+};
+
 class SettingsCustomization {
     public:
         MetadataViewSettings        metadata_view_settings;
         FrameStatisticsViewSettings frame_statistics_view_settings;
+        OtherSettingsCustomization   other_settings_customization;
 
         static void initialize_instance(const std::string &settings_text_file_path);
 

@@ -22,6 +22,7 @@ class SettingsCustomizationGUI : public wxFrame {
         MyFrame *m_parent = nullptr;
         MetadataViewSettings *m_metadata_view_settings = nullptr;
         FrameStatisticsViewSettings *m_frame_statistics_view_settings = nullptr;
+        OtherSettingsCustomization *m_other_settings_customization = nullptr;
 
         wxCheckBox *m_show_exposure_time_checkbox = nullptr;
         wxCheckBox *m_show_iso_checkbox = nullptr;
@@ -34,6 +35,10 @@ class SettingsCustomizationGUI : public wxFrame {
         wxCheckBox *m_show_stddev_checkbox = nullptr;
         wxCheckBox *m_show_min_checkbox = nullptr;
         wxCheckBox *m_show_max_checkbox = nullptr;
+
+        wxCheckBox *m_show_full_frame_paths_checkbox = nullptr;
+
+
 
         void add_checkbox(wxBoxSizer *sizer, const std::string &label, bool *value_pointer, wxCheckBox **checkbox_pointer, const std::string &tooltip = "");
 

@@ -1,6 +1,7 @@
 #include "../headers/CometSelectionFrame.h"
 #include "../headers/FloatingPointSlider.h"
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
+#include "../headers/SettingsCustomization.h"
 
 #include "../../headers/InputFrameReader.h"
 
@@ -80,8 +81,9 @@ void CometSelectionFrame::add_frames_dropdown_menu() {
     select_file_text->SetFont(wxFont(15, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
 
     std::vector<wxString> frame_names;
+    const bool show_full_frame_paths = SettingsCustomization::get_instance().other_settings_customization.show_full_frame_paths;
     for (const InputFrame &frame : m_frames_to_select_from) {
-        frame_names.push_back(frame.to_gui_string());
+        frame_names.push_back(frame.to_gui_string(show_full_frame_paths));
     }
     wxChoice* choice_box_frame = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, frame_names.size(), frame_names.data());
     choice_box_frame->SetSelection(0);

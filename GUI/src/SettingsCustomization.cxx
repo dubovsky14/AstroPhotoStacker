@@ -60,6 +60,15 @@ void SettingsCustomization::initialize_instance(const std::string &settings_text
     s_singleton_instance = std::unique_ptr<SettingsCustomization>(new SettingsCustomization(settings_text_file_path));
 };
 
+std::string OtherSettingsCustomization::to_string() {
+    return boolean_map_to_string( get_boolean_map() );
+};
+
+OtherSettingsCustomization::OtherSettingsCustomization(const std::string &settings_string) {
+    const std::map<std::string, bool*> boolean_map = get_boolean_map();
+    set_boolean_map_from_string(settings_string, boolean_map);
+};
+
 SettingsCustomization::SettingsCustomization(const std::string &settings_text_file_path) : m_settings_text_file_path(settings_text_file_path) {
     ifstream input_file (m_settings_text_file_path);
     if (input_file.is_open())    {
@@ -84,6 +93,9 @@ SettingsCustomization::SettingsCustomization(const std::string &settings_text_fi
             else if (setting_name == "FrameStatisticsViewSettings") {
                 frame_statistics_view_settings = FrameStatisticsViewSettings(setting_value);
             }
+            else if (setting_name == "OtherSettingsCustomization") {
+                other_settings_customization = OtherSettingsCustomization(setting_value);
+            }
         }
         input_file.close();
     }
@@ -94,6 +106,7 @@ SettingsCustomization::~SettingsCustomization() {
     if (output_file.is_open())    {
         output_file << "MetadataViewSettings | " << metadata_view_settings.to_string() << std::endl;
         output_file << "FrameStatisticsViewSettings | " << frame_statistics_view_settings.to_string() << std::endl;
+        output_file << "OtherSettingsCustomization | " << other_settings_customization.to_string() << std::endl;
     }
     output_file.close();
 }

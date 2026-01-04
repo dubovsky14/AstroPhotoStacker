@@ -45,6 +45,16 @@ SettingsCustomizationGUI::SettingsCustomizationGUI(MyFrame *parent, const std::f
 
     main_sizer->Add(frame_stats_sizer, 0, wxEXPAND | wxALL, 10);
 
+    wxBoxSizer *other_settings_sizer = new wxBoxSizer(wxVERTICAL);
+    wxStaticText *other_settings_label = new wxStaticText(this, wxID_ANY, "Other Settings:");
+    other_settings_sizer->Add(other_settings_label, 0, wxALL, 5);
+    m_other_settings_customization = &settings_customization.other_settings_customization;
+    add_checkbox(other_settings_sizer, "Show Full Frame Paths", &m_other_settings_customization->show_full_frame_paths, &m_show_full_frame_paths_checkbox,
+        "If checked, full file paths will be shown in the file list. Otherwise, only file names will be shown.");
+
+    main_sizer->Add(other_settings_sizer, 0, wxEXPAND | wxALL, 10);
+
+
     this->SetSizer(main_sizer);
     this->Layout();
 }
