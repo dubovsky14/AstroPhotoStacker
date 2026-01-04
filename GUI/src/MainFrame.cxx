@@ -8,6 +8,8 @@
 #include "../headers/PostProcessingToolGUI.h"
 #include "../headers/MetadataManager.h"
 #include "../headers/AlignmentPointsDrawing.h"
+#include "../headers/SettingsCustomizationGUI.h"
+
 
 
 #include "../headers/IndividualColorStretchingBlackMidtoneWhite.h"
@@ -358,6 +360,21 @@ void MyFrame::add_postprocessing_menu() {
     m_menu_bar->Append(postprocessing_menu, "&Postprocessing");
 };
 
+void MyFrame::add_customization_menu() {
+    wxMenu *customization_menu = new wxMenu;
+
+    int id = unique_counter();
+    customization_menu->Append(id, "Settings customization", "Settings customization");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        SettingsCustomizationGUI *settings_customization_gui = new SettingsCustomizationGUI(this, [this](){
+            update_files_to_stack_checkbox();
+        });
+        settings_customization_gui->Show(true);
+    }, id);
+
+    m_menu_bar->Append(customization_menu, "&Customization");
+};
+
 void MyFrame::add_menu_bar()    {
     m_menu_bar = new wxMenuBar;
 
@@ -368,6 +385,7 @@ void MyFrame::add_menu_bar()    {
     add_hot_pixel_menu();
     add_aligned_images_producer_menu();
     add_postprocessing_menu();
+    add_customization_menu();
 
     SetMenuBar(m_menu_bar);
 };

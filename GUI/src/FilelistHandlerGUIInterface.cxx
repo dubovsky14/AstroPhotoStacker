@@ -1,5 +1,7 @@
 #include "../headers/FilelistHandlerGUIInterface.h"
 
+#include "../headers/SettingsCustomization.h"
+
 #include "../../headers/Common.h"
 
 #include <algorithm>
@@ -59,12 +61,18 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
                                         AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time) + " s" :
                                         AstroPhotoStacker::round_and_convert_to_string(metadata.exposure_time * 1000) + " ms";
 
+    const SettingsCustomization &settings_customization = SettingsCustomization::get_instance();
+    const MetadataViewSettings &metadata_view_settings = settings_customization.metadata_view_settings;
+    const FrameStatisticsViewSettings &frame_statistics_view_settings = settings_customization.frame_statistics_view_settings;
+
     if (show_metadata()) {
-        result.push_back("f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture));
-        result.push_back(exposure_string);
-        result.push_back(to_string(metadata.iso) + " ISO");
+        if (metadata_view_settings.show_aperture)       result.push_back("f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture));
+        if (metadata_view_settings.show_exposure_time)  result.push_back(exposure_string);
+        if (metadata_view_settings.show_iso)            result.push_back(to_string(metadata.iso) + " ISO");
+        if (metadata_view_settings.show_focal_length)   result.push_back(AstroPhotoStacker::round_and_convert_to_string(metadata.focal_length) + " mm");
+
         const std::string temperature_string = (metadata.temperature > -273) ? AstroPhotoStacker::round_and_convert_to_string(metadata.temperature,1) + " C" : " ";
-        result.push_back(temperature_string);
+        if (metadata_view_settings.show_temperature) result.push_back(temperature_string);
     }
     const string score_string = (type == FrameType::LIGHT) ?
                                 (frame_info.alignment_result->is_valid() ? "score: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3) : "invalid alignment") :
@@ -74,8 +82,18 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
 
     std::string statistics_string = "";
     if (m_show_statistics) {
-        result.push_back("mean: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_avg));
-        result.push_back("std: "  + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_std));
+        if (frame_statistics_view_settings.show_mean) {
+            result.push_back("mean: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_avg));
+        }
+        if (frame_statistics_view_settings.show_stddev) {
+            result.push_back("std: "  + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_std));
+        }
+        if (frame_statistics_view_settings.show_min) {
+            result.push_back("min: "  + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_min));
+        }
+        if (frame_statistics_view_settings.show_max) {
+            result.push_back("max: "  + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_max));
+        }
     }
 
     return result;
