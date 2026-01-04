@@ -13,7 +13,7 @@ SettingsCustomizationGUI::SettingsCustomizationGUI(MyFrame *parent, const std::f
 
 
     this->SetTitle("Settings Customization");
-    this->SetSize(wxSize(400, 400));
+    this->SetSize(wxSize(400, 600));
     this->SetMinSize(wxSize(400, 400));
 
 
@@ -21,16 +21,22 @@ SettingsCustomizationGUI::SettingsCustomizationGUI(MyFrame *parent, const std::f
 
     wxBoxSizer *metadata_sizer = new wxBoxSizer(wxVERTICAL);
 
+    wxStaticText *metadata_label = new wxStaticText(this, wxID_ANY, "Metadata View Settings:");
+    metadata_sizer->Add(metadata_label, 0, wxALL, 5);
+
     add_checkbox(metadata_sizer, "Show Exposure Time", &m_metadata_view_settings->show_exposure_time, &m_show_exposure_time_checkbox);
     add_checkbox(metadata_sizer, "Show ISO", &m_metadata_view_settings->show_iso, &m_show_iso_checkbox);
     add_checkbox(metadata_sizer, "Show Aperture", &m_metadata_view_settings->show_aperture, &m_show_aperture_checkbox);
     add_checkbox(metadata_sizer, "Show Temperature", &m_metadata_view_settings->show_temperature, &m_show_temperature_checkbox);
     add_checkbox(metadata_sizer, "Show Focal Length", &m_metadata_view_settings->show_focal_length, &m_show_focal_length_checkbox);
-    add_checkbox(metadata_sizer, "Show Resolution", &m_metadata_view_settings->show_resolution, &m_show_resolution_checkbox);
+    //add_checkbox(metadata_sizer, "Show Resolution", &m_metadata_view_settings->show_resolution, &m_show_resolution_checkbox);
 
     main_sizer->Add(metadata_sizer, 0, wxEXPAND | wxALL, 10);
 
     wxBoxSizer *frame_stats_sizer = new wxBoxSizer(wxVERTICAL);
+
+    wxStaticText *frame_stats_label = new wxStaticText(this, wxID_ANY, "Frame Statistics View Settings:");
+    frame_stats_sizer->Add(frame_stats_label, 0, wxALL, 5);
 
     add_checkbox(frame_stats_sizer, "Show Mean", &m_frame_statistics_view_settings->show_mean, &m_show_mean_checkbox);
     add_checkbox(frame_stats_sizer, "Show Standard Deviation", &m_frame_statistics_view_settings->show_stddev, &m_show_stddev_checkbox);

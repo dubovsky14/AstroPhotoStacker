@@ -1,6 +1,12 @@
 #include "../headers/SettingsCustomization.h"
 
+#include "../../headers/Common.h"
+
+#include <fstream>
+#include <stdexcept>
+
 using namespace std;
+using namespace AstroPhotoStacker;
 
 std::string boolean_map_to_string(const std::map<std::string, bool*> &boolean_map)  {
     std::string settings_string;
@@ -44,3 +50,50 @@ FrameStatisticsViewSettings::FrameStatisticsViewSettings(const std::string &sett
     set_boolean_map_from_string(settings_string, boolean_map);
 };
 
+
+std::unique_ptr<SettingsCustomization> SettingsCustomization::s_singleton_instance = nullptr;
+
+void SettingsCustomization::initialize_instance(const std::string &settings_text_file_path) {
+    if (s_singleton_instance) {
+        throw std::runtime_error("SettingsCustomization singleton instance is already initialized.");
+    }
+    s_singleton_instance = std::unique_ptr<SettingsCustomization>(new SettingsCustomization(settings_text_file_path));
+};
+
+SettingsCustomization::SettingsCustomization(const std::string &settings_text_file_path) : m_settings_text_file_path(settings_text_file_path) {
+    ifstream input_file (m_settings_text_file_path);
+    if (input_file.is_open())    {
+        std::string line;
+        while ( getline (input_file,line) )        {
+            strip_string(&line);
+            if (line.length() == 0) {
+                continue;
+            }
+
+            const std::vector<std::string> parts = split_and_strip_string(line, "|");
+            if (parts.size() != 2) {
+                continue;
+            }
+
+            const std::string &setting_name = parts[0];
+            const std::string &setting_value = parts[1];
+
+            if (setting_name == "MetadataViewSettings") {
+                metadata_view_settings = MetadataViewSettings(setting_value);
+            }
+            else if (setting_name == "FrameStatisticsViewSettings") {
+                frame_statistics_view_settings = FrameStatisticsViewSettings(setting_value);
+            }
+        }
+        input_file.close();
+    }
+}
+
+SettingsCustomization::~SettingsCustomization() {
+    ofstream output_file(m_settings_text_file_path);
+    if (output_file.is_open())    {
+        output_file << "MetadataViewSettings | " << metadata_view_settings.to_string() << std::endl;
+        output_file << "FrameStatisticsViewSettings | " << frame_statistics_view_settings.to_string() << std::endl;
+    }
+    output_file.close();
+}

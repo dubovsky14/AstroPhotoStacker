@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 #include <map>
-
+#include <memory>
+#include <stdexcept>
 
 std::string boolean_map_to_string(const std::map<std::string, bool*> &boolean_map);
 
@@ -64,17 +65,25 @@ class SettingsCustomization {
         MetadataViewSettings        metadata_view_settings;
         FrameStatisticsViewSettings frame_statistics_view_settings;
 
+        static void initialize_instance(const std::string &settings_text_file_path);
+
         static SettingsCustomization &get_instance() {
-            static SettingsCustomization instance;
-            return instance;
+            if (!s_singleton_instance) {
+                throw std::runtime_error("SettingsCustomization singleton instance is not initialized.");
+            }
+            return *s_singleton_instance;
         };
 
-
+        ~SettingsCustomization();
 
     private:
 
-        SettingsCustomization() = default;
-        ~SettingsCustomization() = default;
+        static std::unique_ptr<SettingsCustomization> s_singleton_instance;
+
+        std::string m_settings_text_file_path = "";
+
+        SettingsCustomization() = delete;
+        explicit SettingsCustomization(const std::string &settings_text_file_path);
         SettingsCustomization(SettingsCustomization&&) = default;
         SettingsCustomization(const SettingsCustomization&) = delete;
         SettingsCustomization& operator=(const SettingsCustomization&) = delete;

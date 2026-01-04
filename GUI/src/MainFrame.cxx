@@ -9,6 +9,7 @@
 #include "../headers/MetadataManager.h"
 #include "../headers/AlignmentPointsDrawing.h"
 #include "../headers/SettingsCustomizationGUI.h"
+#include "../headers/SettingsCustomization.h"
 
 
 
@@ -50,6 +51,7 @@ MyFrame::MyFrame()
 
     m_recent_paths_handler = make_unique<RecentPathsHandler>(s_gui_folder_path + "data/recent_paths/");
     m_stack_settings = make_unique<StackSettingsSaver>(s_gui_folder_path + "data/stack_settings.txt");
+    SettingsCustomization::initialize_instance(s_gui_folder_path + "data/settings_customization.txt");
 
     // full screen
     SetSize(wxGetDisplaySize());

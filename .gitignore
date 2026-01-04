@@ -1,5 +1,6 @@
 .vscode
 bin
 GUI/data/stack_settings.txt
+GUI/data/settings_customization.txt
 output/
 output_tests/
