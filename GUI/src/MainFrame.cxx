@@ -176,6 +176,7 @@ void MyFrame::add_alignment_menu()  {
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_filelist_handler_gui_interface.load_alignment_from_file(file_address);
+            update_files_to_stack_checkbox();
             update_alignment_status();
         }
     }, id);
