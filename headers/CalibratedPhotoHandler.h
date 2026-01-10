@@ -8,6 +8,7 @@
 #include "../headers/InputFrame.h"
 #include "../headers/InputFrameReader.h"
 #include "../headers/PixelType.h"
+#include "../headers/LensCorrectionsTool.h"
 
 #include <memory>
 #include <vector>
@@ -135,6 +136,8 @@ namespace AstroPhotoStacker {
             const HotPixelIdentifier *m_hot_pixel_identifier    = nullptr;
             std::vector<std::shared_ptr<const CalibrationFrameBase>> m_calibration_frames;
             CalibratedPhotoScoreHandler m_score_handler;
+
+            std::shared_ptr<const AstroPhotoStacker::LensCorrectionsTool> m_lens_corrections_tool = nullptr;
 
             std::unique_ptr<AlignmentResultBase> m_alignment_result = nullptr;
             std::unique_ptr<InputFrameReader> m_input_frame_data_original = nullptr;

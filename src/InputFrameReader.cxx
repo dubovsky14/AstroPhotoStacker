@@ -178,3 +178,19 @@ void InputFrameReader::read_non_raw() {
     m_is_raw_file = false;
 };
 
+void  InputFrameReader::apply_lens_corrections(const LensCorrectionsTool &lens_corrections_tool) {
+    if (!m_data_are_loaded) {
+        load_input_frame_data();
+    }
+
+    lens_corrections_tool.check_resolution_consistency(m_width, m_height);
+
+    if (m_is_raw_before_debayering)  {
+        lens_corrections_tool.apply_correction_to_data(m_raw_data.data());
+    }
+    else {
+        for (std::vector<PixelType> &channel_data : m_rgb_data) {
+            lens_corrections_tool.apply_correction_to_data(channel_data.data());
+        }
+    }
+};

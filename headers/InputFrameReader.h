@@ -4,6 +4,7 @@
 
 #include "../headers/InputFrame.h"
 #include "../headers/Metadata.h"
+#include "../headers/LensCorrectionsTool.h"
 
 #include <string>
 #include <vector>
@@ -64,6 +65,8 @@ namespace AstroPhotoStacker {
             char get_raw_color(int x, int y) const;
 
             std::array<char, 4> get_bayer_pattern() const { return m_bayer_pattern; };
+
+            void apply_lens_corrections(const LensCorrectionsTool &lens_corrections_tool);
 
         private:
             InputFrame m_input_frame;
