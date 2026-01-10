@@ -211,7 +211,10 @@ const std::atomic<int>& PhotoAlignmentHandler::get_number_of_aligned_files() con
 
 unique_ptr<ReferencePhotoHandlerBase> PhotoAlignmentHandler::reference_photo_handler_factory(const InputFrame& input_frame)   const  {
     if (m_alignment_method == "stars") {
-        return make_unique<ReferencePhotoHandlerStars>(input_frame);
+        return make_unique<ReferencePhotoHandlerStars>(input_frame, 0.0005, false);
+    }
+    else if (m_alignment_method == "stars with variable zoom") {
+        return make_unique<ReferencePhotoHandlerStars>(input_frame, 0.0005, true);
     }
     else if (m_alignment_method == "planetary") {
         return make_unique<ReferencePhotoHandlerPlanetary>(input_frame, 0.05);

@@ -14,9 +14,10 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 
-ReferencePhotoHandlerStars::ReferencePhotoHandlerStars(const InputFrame &input_frame, float threshold_fraction) :
+ReferencePhotoHandlerStars::ReferencePhotoHandlerStars(const InputFrame &input_frame, float threshold_fraction, bool variable_zoom) :
     ReferencePhotoHandlerBase(input_frame, threshold_fraction) {
     const vector<PixelType> brightness = read_image_monochrome(input_frame, &m_width, &m_height);
+    m_variable_zoom = variable_zoom;
     initialize(brightness.data(), m_width, m_height, threshold_fraction);
 };
 
@@ -40,7 +41,7 @@ void ReferencePhotoHandlerStars::initialize(const std::vector<std::tuple<float, 
     m_width = width;
     m_height = height;
     calculate_and_store_hashes();
-    m_plate_solver = make_unique<PlateSolver>(m_kd_tree.get(), &m_stars, m_width, m_height);
+    m_plate_solver = make_unique<PlateSolver>(m_kd_tree.get(), &m_stars, m_width, m_height, m_variable_zoom);
 };
 
 std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerStars::calculate_alignment(const InputFrame &input_frame)   const    {

@@ -8,7 +8,7 @@
 namespace AstroPhotoStacker {
     /**
      * @class AlignmentResultPlateSolving
-     * @brief Class for storing alignment results based on plate solving, without scale transformation.
+     * @brief Class for storing alignment results based on plate solving, including scale transformation (by default zoom=1.0f, i.e. no scaling).
      */
     class AlignmentResultPlateSolving : public AlignmentResultBase {
         public:
@@ -23,7 +23,8 @@ namespace AstroPhotoStacker {
                                         float shift_y,
                                         float rotation_center_x,
                                         float rotation_center_y,
-                                        float rotation);
+                                        float rotation,
+                                        float zoom = 1.0f);
 
             AlignmentResultPlateSolving(const AlignmentResultPlateSolving &other);
 
@@ -42,13 +43,15 @@ namespace AstroPhotoStacker {
                                 float *shift_y,
                                 float *rotation_center_x,
                                 float *rotation_center_y,
-                                float *rotation) const;
+                                float *rotation,
+                                float *zoom = nullptr) const;
 
             void set_parameters(float shift_x,
                                 float shift_y,
                                 float rotation_center_x,
                                 float rotation_center_y,
-                                float rotation);
+                                float rotation,
+                                float zoom = 1.0f);
 
             inline static const std::string s_type_name = "plate_solving";
 

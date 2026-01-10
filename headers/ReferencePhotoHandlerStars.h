@@ -27,7 +27,7 @@ namespace AstroPhotoStacker   {
              * @param input_frame - input frame data
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerStars(const InputFrame &input_frame, float threshold_fraction = 0.0005);
+            ReferencePhotoHandlerStars(const InputFrame &input_frame, float threshold_fraction = 0.0005, bool variable_zoom = false);
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -37,8 +37,9 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerStars(const PixelType *brightness, int width, int height, float threshold_fraction = 0.0005)  :
+            ReferencePhotoHandlerStars(const PixelType *brightness, int width, int height, float threshold_fraction = 0.0005, bool variable_zoom = false)  :
                 ReferencePhotoHandlerBase(brightness, width, height, threshold_fraction) {
+                m_variable_zoom = variable_zoom;
                 initialize(brightness, width, height, threshold_fraction);
             };
 
@@ -64,7 +65,7 @@ namespace AstroPhotoStacker   {
              *
              * @param std::vector<std::tuple<float, float, int> > stars - x-coordinate, y-coordinate, number of pixels forming the star
              *
-             * @return std::unique_ptr<AlignmentResultPlateSolving>
+             * @return std::unique_ptr<AlignmentResultBase>
             */
             std::unique_ptr<AlignmentResultPlateSolving> plate_solve(const std::vector<std::tuple<float, float, int> > &stars) const;
 
@@ -73,6 +74,7 @@ namespace AstroPhotoStacker   {
             std::vector<std::tuple<float, float, int> > m_stars;
             std::unique_ptr<KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>>> m_kd_tree = nullptr;
             std::unique_ptr<PlateSolver> m_plate_solver = nullptr;
+            bool m_variable_zoom = false;
 
             int m_minimal_number_of_pixels_per_star = -1;
 

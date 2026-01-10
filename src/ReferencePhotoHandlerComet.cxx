@@ -64,13 +64,13 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerComet::calculate_align
 
         const std::pair<float,float> comet_position = minimal_distance_squared < 25.0f ? closest_cluster : expected_comet_position;
 
-        float shift_x,shift_y,rotation_center_x,rotation_center_y,rotation;
-        plate_solving_result->get_parameters(&shift_x, &shift_y, &rotation_center_x, &rotation_center_y, &rotation);
+        float shift_x,shift_y,rotation_center_x,rotation_center_y,rotation, zoom;
+        plate_solving_result->get_parameters(&shift_x, &shift_y, &rotation_center_x, &rotation_center_y, &rotation, &zoom);
 
         shift_x -= comet_position.first - m_comet_position_reference_frame.first;
         shift_y -= comet_position.second - m_comet_position_reference_frame.second;
 
-        plate_solving_result->set_parameters(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation);
+        plate_solving_result->set_parameters(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation, zoom);
         plate_solving_result->set_ranking_score(PhotoRanker::calculate_frame_ranking(input_frame));
 
         return plate_solving_result;

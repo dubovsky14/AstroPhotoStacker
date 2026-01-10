@@ -27,7 +27,7 @@ namespace AstroPhotoStacker {
             */
             PlateSolver(const KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>> *kdtree,
                         const std::vector<std::tuple<float,float,int> > *reference_stars,
-                        unsigned int reference_photo_width, unsigned int reference_photo_height);
+                        unsigned int reference_photo_width, unsigned int reference_photo_height, bool variable_zoom = false);
 
             /**
              * @brief Calculate the shift, rotation and rotation center of the photo to match the reference photo
@@ -43,9 +43,10 @@ namespace AstroPhotoStacker {
             const std::vector<std::tuple<float,float,int> > *m_reference_stars;
             unsigned int m_reference_photo_width;
             unsigned int m_reference_photo_height;
+            bool m_variable_zoom;
 
             bool validate_hypothesis(   const std::vector<std::tuple<float,float,int> > &stars,
-                                        const AlignmentResultPlateSolving &plate_solving_result, float position_tolerance, float fraction_of_matched_stars) const;
+                                        const AlignmentResultBase &plate_solving_result, float position_tolerance, float fraction_of_matched_stars) const;
 
             bool has_paired_star(float x, float y, float position_error)    const;
 

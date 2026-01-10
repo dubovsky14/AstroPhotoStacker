@@ -3,6 +3,8 @@
 #include "../headers/AsterismHasher.h"
 #include "../headers/Common.h"
 
+#include "../headers/AlignmentResultPlateSolving.h"
+
 using namespace AstroPhotoStacker;
 using namespace std;
 
@@ -10,19 +12,20 @@ using StarIndices = tuple<unsigned, unsigned, unsigned, unsigned>;
 
 PlateSolver::PlateSolver(   const KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>> *kdtree,
                             const vector<tuple<float,float,int> > *stars,
-                            unsigned int reference_photo_width, unsigned int reference_photo_height) :
+                            unsigned int reference_photo_width, unsigned int reference_photo_height, bool variable_zoom) :
     m_kdtree(kdtree),
     m_reference_stars(stars),
     m_reference_photo_width(reference_photo_width),
-    m_reference_photo_height(reference_photo_height)  {};
+    m_reference_photo_height(reference_photo_height),
+    m_variable_zoom(variable_zoom)  {};
 
 
 AlignmentResultPlateSolving PlateSolver::plate_solve(const std::vector<std::tuple<float,float,int> > &stars) const {
     AlignmentResultPlateSolving plate_solving_result = plate_solve(stars, 3, 0.5);
     if (plate_solving_result.is_valid()) {
-        return AlignmentResultPlateSolving(plate_solving_result);
+        return plate_solving_result;
     }
-    return AlignmentResultPlateSolving(plate_solve(stars, 10, 0.6));
+    return plate_solve(stars, 10, 0.6);
 };
 
 AlignmentResultPlateSolving PlateSolver::plate_solve(const std::vector<std::tuple<float,float,int> > &stars, float position_tolerance, float fraction_of_matched_stars) const {
@@ -60,11 +63,18 @@ AlignmentResultPlateSolving PlateSolver::plate_solve(const std::vector<std::tupl
                         const float rotation_center_y = get<1>(this_photo_star_A);
                         const float rotation = atan2(get<1>(reference_star_B) - get<1>(reference_star_A), get<0>(reference_star_B) - get<0>(reference_star_A)) -
                             atan2(get<1>(this_photo_star_B) - get<1>(this_photo_star_A), get<0>(this_photo_star_B) - get<0>(this_photo_star_A));
+
+                        const float reference_stars_ab_distance = sqrt( pow2(get<0>(reference_star_B) - get<0>(reference_star_A)) + pow2(get<1>(reference_star_B) - get<1>(reference_star_A)) );
+                        const float this_photo_stars_ab_distance = sqrt( pow2(get<0>(this_photo_star_B) - get<0>(this_photo_star_A)) + pow2(get<1>(this_photo_star_B) - get<1>(this_photo_star_A)) );
+                        const float zoom = m_variable_zoom ? this_photo_stars_ab_distance / reference_stars_ab_distance : 1.0f;
+
                         AlignmentResultPlateSolving plate_solving_result(   shift_x,
                                                                             shift_y,
                                                                             rotation_center_x,
                                                                             rotation_center_y,
-                                                                            rotation);
+                                                                            rotation,
+                                                                            zoom);
+
                         if (validate_hypothesis(stars, plate_solving_result, position_tolerance, fraction_of_matched_stars))   {
                             return plate_solving_result;
                         }
@@ -79,7 +89,7 @@ AlignmentResultPlateSolving PlateSolver::plate_solve(const std::vector<std::tupl
 
 
 bool PlateSolver::validate_hypothesis(  const std::vector<std::tuple<float,float,int> > &stars,
-                                        const AlignmentResultPlateSolving &plate_solving_result, float position_tolerance, float fraction_of_matched_stars) const   {
+                                        const AlignmentResultBase &plate_solving_result, float position_tolerance, float fraction_of_matched_stars) const   {
     unsigned int n_stars_in_reference_frame(0), n_stars_in_reference_frame_paired(0);
 
     for (const tuple<float,float,int> &star : stars)   {
