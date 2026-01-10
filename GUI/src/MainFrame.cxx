@@ -4,6 +4,7 @@
 #include "../headers/StackerConfigureTool.h"
 #include "../headers/ThreePointSlider.h"
 #include "../headers/AlignedImagesProducerGUI.h"
+#include "../headers/LensCorrectionsTooolGUI.h"
 #include "../headers/ProgressBarWindow.h"
 #include "../headers/PostProcessingToolGUI.h"
 #include "../headers/MetadataManager.h"
@@ -363,6 +364,27 @@ void MyFrame::add_postprocessing_menu() {
     m_menu_bar->Append(postprocessing_menu, "&Postprocessing");
 };
 
+void MyFrame::add_lens_corrections_menu() {
+    wxMenu *lens_corrections_menu = new wxMenu;
+
+    int id = unique_counter();
+    lens_corrections_menu->Append(id, "Open lens corrections tool", "Open lens corrections tool");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        int selected_frame_index = m_filelist_handler_gui_interface.selected_frame_index();
+        if (selected_frame_index < 0) {
+            wxMessageDialog dialog(this, "No frame selected!", "No frames");
+            dialog.ShowModal();
+            return;
+        }
+        const InputFrame reference_frame = m_filelist_handler_gui_interface.get_frame_by_index(static_cast<size_t>(selected_frame_index)).input_frame;
+
+        LensCorrectionsToolGUI *lens_corrections_tool_gui = new LensCorrectionsToolGUI(this, reference_frame);
+        lens_corrections_tool_gui->Show(true);
+    }, id);
+
+    m_menu_bar->Append(lens_corrections_menu, "&Lens Corrections");
+};
+
 void MyFrame::add_customization_menu() {
     wxMenu *customization_menu = new wxMenu;
 
@@ -388,6 +410,7 @@ void MyFrame::add_menu_bar()    {
     add_hot_pixel_menu();
     add_aligned_images_producer_menu();
     add_postprocessing_menu();
+    add_lens_corrections_menu();
     add_customization_menu();
 
     SetMenuBar(m_menu_bar);

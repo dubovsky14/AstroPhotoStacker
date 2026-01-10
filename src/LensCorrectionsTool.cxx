@@ -13,6 +13,7 @@ LensCorrectionsTool::LensCorrectionsTool(int image_width, int image_height) {
     m_image_height = image_height;
     m_center_x = image_width / 2.0;
     m_center_y = image_height / 2.0;
+    m_image_diagonal_in_pixels_squared = static_cast<double>(image_width) * image_width + static_cast<double>(image_height) * image_height;
 };
 
 void LensCorrectionsTool::check_resolution_consistency(int image_width, int image_height) const {
@@ -103,7 +104,8 @@ int LensCorrectionsTool::get_corrected_index(int distorted_index) const {
 
 
 double LensCorrectionsTool::calculate_correction_scale_factor(double r_distorted_squared) const {
-    return 1 + m_k1 * r_distorted_squared + m_k2 * r_distorted_squared * r_distorted_squared + m_k3 * r_distorted_squared * r_distorted_squared * r_distorted_squared;
+    const double r_normalized_squared = r_distorted_squared / m_image_diagonal_in_pixels_squared;
+    return 1 + m_k1 * r_normalized_squared + m_k2 * r_normalized_squared * r_normalized_squared + m_k3 * r_normalized_squared * r_normalized_squared * r_normalized_squared;
 };
 
 double LensCorrectionsTool::calculate_correction_scale_factor(int x_distorted, int y_distorted) const {

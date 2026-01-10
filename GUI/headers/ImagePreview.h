@@ -5,6 +5,7 @@
 
 #include "../../headers/InputFrame.h"
 #include "../../headers/PixelType.h"
+#include "../../headers/LensCorrectionsTool.h"
 
 #include <vector>
 #include <string>
@@ -70,12 +71,12 @@ class ImagePreview {
         /**
          * @brief Load an image data from a file in a disk
         */
-        void read_preview_from_file(const std::string &path);
+        void read_preview_from_file(const std::string &path, const AstroPhotoStacker::LensCorrectionsTool *lens_corrections_tool = nullptr);
 
         /**
          * @brief Load an image data from a file in a disk
         */
-        void read_preview_from_frame(const AstroPhotoStacker::InputFrame &input_frame);
+        void read_preview_from_frame(const AstroPhotoStacker::InputFrame &input_frame, const AstroPhotoStacker::LensCorrectionsTool *lens_corrections_tool = nullptr);
 
         /**
          * @brief Load preview from a stacked image

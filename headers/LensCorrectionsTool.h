@@ -75,6 +75,7 @@ namespace AstroPhotoStacker {
 
             int m_image_width = 0;
             int m_image_height = 0;
+            double m_image_diagonal_in_pixels_squared = 0.0;
 
             std::vector<int> m_corrected_indices_cache; // index = distorted index, value = corrected index, -1 if out of bounds
 

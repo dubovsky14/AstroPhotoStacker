@@ -48,9 +48,12 @@ void ImagePreview::initialize_bitmap()    {
     m_parent->Bind(wxEVT_MOUSEWHEEL, &ImagePreview::on_mouse_wheel, this);
 };
 
-void ImagePreview::read_preview_from_frame(const InputFrame &input_frame)  {
+void ImagePreview::read_preview_from_frame(const InputFrame &input_frame, const LensCorrectionsTool *lens_corrections_tool)  {
     InputFrameReader input_frame_data(input_frame);
     input_frame_data.debayer();
+    if (lens_corrections_tool != nullptr)   {
+        input_frame_data.apply_lens_corrections(*lens_corrections_tool);
+    }
     std::vector<std::vector<PixelType>> original_image = input_frame_data.get_rgb_data();
     const int width_original = input_frame_data.get_width();
     const int height_original = input_frame_data.get_height();
@@ -58,8 +61,8 @@ void ImagePreview::read_preview_from_frame(const InputFrame &input_frame)  {
     update_original_image(std::move(original_image), width_original, height_original);
 };
 
-void ImagePreview::read_preview_from_file(const std::string &path)  {
-    read_preview_from_frame(InputFrame(path));
+void ImagePreview::read_preview_from_file(const std::string &path, const LensCorrectionsTool *lens_corrections_tool)  {
+    read_preview_from_frame(InputFrame(path), lens_corrections_tool);
 };
 
 void ImagePreview::update_original_image(const std::vector<std::vector<PixelType>> &original_image, int width, int height)   {
