@@ -59,12 +59,11 @@ void ImageResizeTool::update()    {
         y_center = m_height_original - m_height_original/(m_zoom_factor*2);
     }
 
-    m_i_x_resized_min = max<int>(0, x_center - m_width_original/(m_zoom_factor*2));
-    m_i_x_resized_max = min<int>(m_width_original, x_center + m_width_original/(m_zoom_factor*2));
+    m_i_x_resized_min = max<int>(0, 0.5 + x_center - m_width_original/(m_zoom_factor*2));
+    m_i_x_resized_max = min<int>(m_width_original, 0.5 + x_center + m_width_original/(m_zoom_factor*2));
 
-    m_i_y_resized_min = max<int>(0, y_center - m_height_original/(m_zoom_factor*2));
-    m_i_y_resized_max = min<int>(m_height_original, y_center + m_height_original/(m_zoom_factor*2));
-
+    m_i_y_resized_min = max<int>(0, 0.5 + y_center - m_height_original/(m_zoom_factor*2));
+    m_i_y_resized_max = min<int>(m_height_original, 0.5 + y_center + m_height_original/(m_zoom_factor*2));
 };
 
 int ImageResizeTool::get_preview_coordinate_x(int x_original) const {
