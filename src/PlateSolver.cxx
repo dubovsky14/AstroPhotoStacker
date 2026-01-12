@@ -29,6 +29,8 @@ AlignmentResultPlateSolving PlateSolver::plate_solve(const std::vector<std::tupl
 };
 
 AlignmentResultPlateSolving PlateSolver::plate_solve(const std::vector<std::tuple<float,float,int> > &stars, float position_tolerance, float fraction_of_matched_stars) const {
+    AlignmentResultPlateSolving result;
+    float highest_distance = 0;
     for (unsigned int i_star1 = 0; i_star1 < stars.size(); i_star1++)   {
         for (unsigned int i_star2 = i_star1+1; i_star2 < stars.size(); i_star2++)   {
             for (unsigned int i_star3 = i_star2+1; i_star3 < stars.size(); i_star3++)   {
@@ -75,8 +77,11 @@ AlignmentResultPlateSolving PlateSolver::plate_solve(const std::vector<std::tupl
                                                                             rotation,
                                                                             zoom);
 
-                        if (validate_hypothesis(stars, plate_solving_result, position_tolerance, fraction_of_matched_stars))   {
-                            return plate_solving_result;
+                        if (validate_hypothesis(stars, plate_solving_result, position_tolerance, fraction_of_matched_stars)) {
+                            if (reference_stars_ab_distance > highest_distance) {
+                                result = AlignmentResultPlateSolving(plate_solving_result);
+                                highest_distance = reference_stars_ab_distance;
+                            }
                         }
                     }
                 }
@@ -84,7 +89,7 @@ AlignmentResultPlateSolving PlateSolver::plate_solve(const std::vector<std::tupl
         }
     }
 
-    return AlignmentResultPlateSolving();
+    return result;
 };
 
 

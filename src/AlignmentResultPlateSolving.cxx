@@ -58,6 +58,15 @@ AlignmentResultPlateSolving::AlignmentResultPlateSolving(const AlignmentResultPl
     m_geometric_transformer(make_unique<GeometricTransformer>(*other.m_geometric_transformer))  {
 };
 
+AlignmentResultPlateSolving& AlignmentResultPlateSolving::operator=(const AlignmentResultPlateSolving &other) {
+    if (this != &other) {
+        copy_base_data(other);
+        m_geometric_transformer = std::make_unique<GeometricTransformer>(*other.m_geometric_transformer);
+    }
+    return *this;
+};
+
+
 void AlignmentResultPlateSolving::transform_from_reference_to_shifted_frame(float *x, float *y) const {
     m_geometric_transformer->transform_from_reference_to_shifted_frame(x, y);
 };

@@ -10,7 +10,9 @@ namespace AstroPhotoStacker {
     */
     class GeometricTransformer {
         public:
-            GeometricTransformer() = delete;
+            GeometricTransformer() = default;
+
+            GeometricTransformer(const GeometricTransformer &other) = default;
 
             /**
              * @brief Construct a new Geometric Transformer object
@@ -70,12 +72,13 @@ namespace AstroPhotoStacker {
             };
 
         private:
-            float m_shift_x;
-            float m_shift_y;
-            float m_rotation;
-            float m_rotation_center_x;
-            float m_rotation_center_y;
+            float m_shift_x = 0;
+            float m_shift_y = 0;
+            float m_rotation = 0;
+            float m_rotation_center_x = 0;
+            float m_rotation_center_y = 0;
             float m_zoom = 1.0f;
-            float m_cosx, m_sinx;
+            float m_cosx = 1;
+            float m_sinx = 0;
     };
 }

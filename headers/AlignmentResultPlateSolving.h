@@ -28,6 +28,9 @@ namespace AstroPhotoStacker {
 
             AlignmentResultPlateSolving(const AlignmentResultPlateSolving &other);
 
+            AlignmentResultPlateSolving& operator=(const AlignmentResultPlateSolving &other);
+
+
             /**
              * @brief Virtual destructor for the AlignmentResultPlateSolving class.
              */
