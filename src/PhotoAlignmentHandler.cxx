@@ -13,6 +13,7 @@
 #include "../headers/AlignmentResultFactory.h"
 
 #include <fstream>
+#include <filesystem>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -84,7 +85,9 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
         if (std::get<0>(alignment_info).get_file_address() == "")  {   // plate-solving failed
             continue;
         }
-        alignment_file  <<          std::get<0>(alignment_info).get_file_address()
+        const string file_address = std::get<0>(alignment_info).get_file_address();
+        const string absolute_path_to_file = std::filesystem::absolute(file_address).string();
+        alignment_file  <<          absolute_path_to_file
                         << c_separator_in_file << std::get<0>(alignment_info).get_frame_number()
                         << c_separator_in_file << std::get<1>(alignment_info)->get_description_string() << endl;
     }
