@@ -20,7 +20,7 @@ int main(int argc, const char **argv) {
         const string method                     = input_arguments_parser.get_optional_argument<string>("method", "stars");
         const string directory_with_raw_files   = input_arguments_parser.get_optional_argument<string>("raw_files_dir", "");
         const string file_to_align              = input_arguments_parser.get_optional_argument<string>("file_to_align", "");
-        if (directory_with_raw_files == "" && file_to_align == "") {
+        if ((directory_with_raw_files == "") == (file_to_align == "")) {
             throw runtime_error("Either 'raw_files_dir' or 'file_to_align' argument must be provided.");
         }
 

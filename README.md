@@ -93,13 +93,19 @@ Where the following options are mandatory:
 
 ```reference_file``` -> this is address of the reference photo. The final stacked image will have this field of view - i.e. all other pictures will be aligned to this photo.
 
+Exactly one of these is mandatory:
+
 ```raw_files_dir``` -> directory with the raw files. It can contain only raw files or some text files, nothing else.
+
+```file_to_align``` -> file to align with the reference file. It can be also a video.
 
 Few arguments are optional:
 
 ```alignment_file``` -> address of the output text file with the alignments. If not specified, file called ```alignment.txt``` will be created in the raw files directory.
 
 ```n_cpu``` -> number of CPUs to run on
+
+```method``` -> alignment method, the default one is "stars"
 
 **Hot pixel identification (optional)**
 
