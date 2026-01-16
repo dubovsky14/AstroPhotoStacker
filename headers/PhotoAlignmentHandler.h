@@ -126,13 +126,14 @@ namespace   AstroPhotoStacker   {
 
             std::map<InputFrame, std::pair<float, float>>& get_comet_positions_map() {return m_comet_positions;};
 
+            inline static const std::string c_reference_file_header = "!reference_file!";
+
         private:
             InputFrame m_reference_frame;
             std::map<InputFrame, std::unique_ptr<AlignmentResultBase>> m_alignment_results_map;
             std::atomic<int> m_n_files_aligned = 0;
             unsigned int m_n_cpu = 1;
             std::unique_ptr<ReferencePhotoHandlerBase> m_reference_photo_handler = nullptr;
-            const std::string c_reference_file_header = "reference_file";
 
             inline static const std::string c_separator_in_file = " | ";
 

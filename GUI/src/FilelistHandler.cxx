@@ -4,6 +4,7 @@
 #include "../../headers/TaskScheduler.hxx"
 #include "../../headers/MetadataReader.h"
 #include "../../headers/AlignmentResultFactory.h"
+#include "../../headers/PhotoAlignmentHandler.h"
 
 #include <algorithm>
 #include <fstream>
@@ -302,6 +303,10 @@ void FilelistHandler::load_alignment_from_file(const std::string &input_address)
 
     const AstroPhotoStacker::AlignmentResultFactory &alignment_result_factory = AstroPhotoStacker::AlignmentResultFactory::get_instance();
     while (std::getline(input_file, line))   {
+        strip_string(&line);
+        if (starts_with(line, "#") || starts_with(line, AstroPhotoStacker::PhotoAlignmentHandler::c_reference_file_header))   {
+            continue;
+        }
         vector<string> elements = split_string(line, c_separator_in_file);
         if (elements.size() < 3)   {
             continue;
