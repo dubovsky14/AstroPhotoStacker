@@ -79,15 +79,13 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
         return get<1>(a)->get_ranking_score() < get<1>(b)->get_ranking_score();
     });
     ofstream alignment_file(alignment_file_address);
-    alignment_file << c_reference_file_header << c_separator_in_file << m_reference_frame.to_string() << endl;
+    alignment_file << c_reference_file_header << c_separator_in_file << m_reference_frame.get_file_address() << c_separator_in_file << m_reference_frame.get_frame_number() << endl;
     alignment_file << "# File address | frame_number | alignment_info" << endl;
     for (const tuple<InputFrame, std::unique_ptr<AlignmentResultBase>> &alignment_info : sorted_frames_alignment_vector) {
         if (std::get<0>(alignment_info).get_file_address() == "")  {   // plate-solving failed
             continue;
         }
-        const string file_address = std::get<0>(alignment_info).get_file_address();
-        const string absolute_path_to_file = std::filesystem::absolute(file_address).string();
-        alignment_file  <<          absolute_path_to_file
+        alignment_file  << std::get<0>(alignment_info).get_file_address()
                         << c_separator_in_file << std::get<0>(alignment_info).get_frame_number()
                         << c_separator_in_file << std::get<1>(alignment_info)->get_description_string() << endl;
     }
