@@ -32,5 +32,5 @@ if __name__ == "__main__":
             video_file_name   = os.path.basename(video_file)
             output_alignment_file = os.path.join(video_file_folder, f"{os.path.splitext(video_file_name)[0]}_alignment.txt")
 
-            command_template = f'"{executable_path}" -reference_file "{reference_file}" -file_to_align "{video_file}" -n_cpu {n_cpu} -method {method} -alignment_file "{output_alignment_file}"'
+            command_template = f'"{executable_path}" -reference_file "{reference_file}" -file_to_align "{video_file}" -n_cpu {n_cpu} -method "{method}" -alignment_file "{output_alignment_file}"'
             os.system(command_template)
