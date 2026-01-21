@@ -126,6 +126,7 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
     const FilelistHandlerGUIInterface *filelist_handler_gui_interface = &m_parent->get_filelist_handler_gui_interface();
     m_aligned_images_producer = make_unique<AlignedImagesProducer>(stack_settings->get_n_cpus(), stack_settings->get_max_memory());
     m_aligned_images_producer->set_add_datetime(m_add_datetime);
+    m_aligned_images_producer->set_save_also_tif_files(m_save_also_tif_files);
     m_aligned_images_producer->set_post_processing_tool([this](const std::vector<std::vector<PixelType>> &image, int width, int height){
         return m_post_processing_tool->post_process_image(image, width, height);
     });
@@ -154,6 +155,7 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
 
     if (m_use_grouping) {
         PhotoGroupingTool photo_grouping_tool;
+        photo_grouping_tool.set_group_by_files(m_group_by_files);
         for (const FrameInfo &frame_info : light_frames) {
             const InputFrame &frame = frame_info.input_frame;
             const AlignmentResultBase &alignment_result = *frame_info.alignment_result;
@@ -252,16 +254,33 @@ void AlignedImagesProducerGUI::add_checkboxes()   {
         m_apply_color_stretcher = is_checked;
     });
     m_main_vertical_sizer->Add(apply_color_stretcher, 0, wxEXPAND, 5);
+
+    wxCheckBox* save_also_tif_files_checkbox = new wxCheckBox(this, wxID_ANY, "Save also TIFF files");
+    save_also_tif_files_checkbox->SetValue(false);
+    save_also_tif_files_checkbox->SetToolTip("If checked, the aligned images will be saved also as TIFF files in addition to the default format.");
+    save_also_tif_files_checkbox->Bind(wxEVT_CHECKBOX, [save_also_tif_files_checkbox, this](wxCommandEvent&){
+        m_save_also_tif_files = save_also_tif_files_checkbox->GetValue();
+    });
+    m_main_vertical_sizer->Add(save_also_tif_files_checkbox, 0, wxEXPAND, 5);
 };
 
 void AlignedImagesProducerGUI::add_advanced_settings()    {
     wxSizer *advanced_settings_sizer = new wxBoxSizer(wxVERTICAL);
     m_main_vertical_sizer->Add(advanced_settings_sizer, 0, wxEXPAND, 5);
 
-    wxStaticText* advanced_settings_text = new wxStaticText(this, wxID_ANY, "Advanced settings:");
+    wxStaticText* advanced_settings_text = new wxStaticText(this, wxID_ANY, "Grouping and stacking settings:");
     set_text_size(advanced_settings_text, 20);
     advanced_settings_sizer->Add(advanced_settings_text, 0, wxCENTER, 5);
 
+    wxSizer *horizontal_sizer = new wxBoxSizer(wxHORIZONTAL);
+    advanced_settings_sizer->Add(horizontal_sizer, 0, wxEXPAND, 5);
+
+    //////////////////////////////////
+    /// LEFT VERTICAL SIZER //////////
+    //////////////////////////////////
+
+    wxSizer *left_vertical_sizer = new wxBoxSizer(wxVERTICAL);
+    horizontal_sizer->Add(left_vertical_sizer, 1, wxEXPAND, 5);
 
     wxCheckBox* use_grouping_checkbox = new wxCheckBox(this, wxID_ANY, "Use grouping");
     use_grouping_checkbox->SetValue(m_use_grouping);
@@ -270,36 +289,8 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
         const bool is_checked = use_grouping_checkbox->GetValue();
         m_use_grouping = is_checked;
     });
+    left_vertical_sizer->Add(use_grouping_checkbox, 0, wxEXPAND, 5);
 
-    advanced_settings_sizer->Add(use_grouping_checkbox, 0, wxEXPAND, 5);
-
-    wxStaticText* grouping_time_text = new wxStaticText(this, wxID_ANY, "Grouping time interval [s]:");
-    advanced_settings_sizer->Add(grouping_time_text, 0, wxEXPAND, 5);
-
-    wxSpinCtrl* spin_ctrl_grouping_time = new wxSpinCtrl(this, wxID_ANY, "0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 180, 0);
-    spin_ctrl_grouping_time->SetToolTip("Maximum time difference between photos in a group.");
-    spin_ctrl_grouping_time->Bind(wxEVT_SPINCTRL, [spin_ctrl_grouping_time, this](wxCommandEvent&){
-        int current_value = spin_ctrl_grouping_time->GetValue();
-        m_grouping_time_interval = current_value;
-    });
-    advanced_settings_sizer->Add(spin_ctrl_grouping_time, 0, wxEXPAND, 5);
-
-    wxStaticText *timestemp_offset_text = new wxStaticText(this, wxID_ANY, "Timestamp offset [s]:");
-    advanced_settings_sizer->Add(timestemp_offset_text, 0, wxEXPAND, 5);
-
-    wxSpinCtrl* spin_ctrl_timestamp_offset = new wxSpinCtrl(this, wxID_ANY, "0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -24*3600, 24*3600, 0);
-    spin_ctrl_timestamp_offset->SetToolTip("If datetime in metadata is wrong, you can set an offset to correct it (it will be added to time from metadata). ");
-    spin_ctrl_timestamp_offset->Bind(wxEVT_SPINCTRL, [spin_ctrl_timestamp_offset, this](wxCommandEvent&){
-        int current_value = spin_ctrl_timestamp_offset->GetValue();
-        m_timestamp_offset = current_value;
-    });
-    advanced_settings_sizer->Add(spin_ctrl_timestamp_offset, 0, wxEXPAND, 5);
-
-
-    // Stacking options
-    wxStaticText* stack_settings_text = new wxStaticText(this, wxID_ANY, "Stack settings:");
-    set_text_size(stack_settings_text, 20);
-    advanced_settings_sizer->Add(stack_settings_text, 0, wxCENTER, 5);
 
     wxCheckBox* stack_images_checkbox = new wxCheckBox(this, wxID_ANY, "Stack images");
     stack_images_checkbox->SetValue(m_stack_images);
@@ -308,7 +299,51 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
         const bool is_checked = stack_images_checkbox->GetValue();
         m_stack_images = is_checked;
     });
-    advanced_settings_sizer->Add(stack_images_checkbox, 0, wxEXPAND, 5);
+    left_vertical_sizer->Add(stack_images_checkbox, 0, wxEXPAND, 5);
+
+
+    wxCheckBox* group_by_files_checkbox = new wxCheckBox(this, wxID_ANY, "Group by files");
+    group_by_files_checkbox->SetValue(m_group_by_files);
+    group_by_files_checkbox->SetToolTip("Use this option if you have multiple input videos and you want each input video to be stacked into one output frame.");
+    group_by_files_checkbox->Bind(wxEVT_CHECKBOX, [group_by_files_checkbox, this](wxCommandEvent&){
+        const bool is_checked = group_by_files_checkbox->GetValue();
+        m_group_by_files = is_checked;
+    });
+    left_vertical_sizer->Add(group_by_files_checkbox, 0, wxEXPAND, 5);
+
+
+
+    //////////////////////////////////
+    /// RIGHT VERTICAL SIZER /////////
+    //////////////////////////////////
+
+    wxSizer *right_vertical_sizer = new wxBoxSizer(wxVERTICAL);
+    horizontal_sizer->Add(right_vertical_sizer, 1, wxEXPAND, 5);
+
+    wxStaticText* grouping_time_text = new wxStaticText(this, wxID_ANY, "Grouping time interval [s]:");
+    right_vertical_sizer->Add(grouping_time_text, 0, wxEXPAND, 5);
+
+    wxSpinCtrl* spin_ctrl_grouping_time = new wxSpinCtrl(this, wxID_ANY, "0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 180, 0);
+    spin_ctrl_grouping_time->SetToolTip("Maximum time difference between photos in a group.");
+    spin_ctrl_grouping_time->Bind(wxEVT_SPINCTRL, [spin_ctrl_grouping_time, this](wxCommandEvent&){
+        int current_value = spin_ctrl_grouping_time->GetValue();
+        m_grouping_time_interval = current_value;
+    });
+    right_vertical_sizer->Add(spin_ctrl_grouping_time, 0, wxEXPAND, 5);
+
+
+
+    wxStaticText *timestamp_offset_text = new wxStaticText(this, wxID_ANY, "Timestamp offset [s]:");
+    right_vertical_sizer->Add(timestamp_offset_text, 0, wxEXPAND, 5);
+
+    wxSpinCtrl* spin_ctrl_timestamp_offset = new wxSpinCtrl(this, wxID_ANY, "0", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, -24*3600, 24*3600, 0);
+    spin_ctrl_timestamp_offset->SetToolTip("If datetime in metadata is wrong, you can set an offset to correct it (it will be added to time from metadata). ");
+    spin_ctrl_timestamp_offset->Bind(wxEVT_SPINCTRL, [spin_ctrl_timestamp_offset, this](wxCommandEvent&){
+        int current_value = spin_ctrl_timestamp_offset->GetValue();
+        m_timestamp_offset = current_value;
+    });
+    right_vertical_sizer->Add(spin_ctrl_timestamp_offset, 0, wxEXPAND, 5);
+
 
     m_fraction_to_stack_slider = make_unique<FloatingPointSlider>(
         this,
@@ -323,7 +358,7 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
         }
     );
     m_fraction_to_stack_slider->set_tool_tip("Fraction of images from each group which will be stacked.");
-    m_fraction_to_stack_slider->add_sizer(advanced_settings_sizer, 0, wxEXPAND, 5);
+    m_fraction_to_stack_slider->add_sizer(right_vertical_sizer, 0, wxEXPAND, 5);
 
 
 };
@@ -336,27 +371,41 @@ void AlignedImagesProducerGUI::add_video_settings()   {
     set_text_size(video_settings_text, 20);
     video_settings_sizer->Add(video_settings_text, 0, wxCENTER, 5);
 
-    // fps
+    wxSizer *horizontal_sizer = new wxBoxSizer(wxHORIZONTAL);
+    video_settings_sizer->Add(horizontal_sizer, 0, wxEXPAND, 5);
+
+
+    ////////////
+    // fps  ////
+    ////////////
+    wxSizer *left_vertical_sizer = new wxBoxSizer(wxVERTICAL);
+    horizontal_sizer->Add(left_vertical_sizer, 1, wxEXPAND, 5);
+
     wxStaticText *fps_text = new wxStaticText(this, wxID_ANY, "Frame rate per second (fps):");
-    video_settings_sizer->Add(fps_text, 0, wxEXPAND, 5);
+    left_vertical_sizer->Add(fps_text, 0, wxEXPAND, 5);
     m_timelapse_video_settings.set_fps(25);
     wxSpinCtrl* spin_fps = new wxSpinCtrl(this, wxID_ANY, "25", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 60, 25);
     spin_fps->Bind(wxEVT_SPINCTRL, [spin_fps, this](wxCommandEvent&){
         int current_value = spin_fps->GetValue();
         m_timelapse_video_settings.set_fps(current_value);
     });
-    video_settings_sizer->Add(spin_fps, 0, wxEXPAND, 5);
+    left_vertical_sizer->Add(spin_fps, 0, wxEXPAND, 5);
 
-    // n_repeat
+    /////////////////
+    // n_repeat  ////
+    /////////////////
+    wxSizer *right_vertical_sizer = new wxBoxSizer(wxVERTICAL);
+    horizontal_sizer->Add(right_vertical_sizer, 1, wxEXPAND, 5);
+
     wxStaticText *n_repeat_text = new wxStaticText(this, wxID_ANY, "Number of repeats:");
-    video_settings_sizer->Add(n_repeat_text, 0, wxEXPAND, 5);
+    right_vertical_sizer->Add(n_repeat_text, 0, wxEXPAND, 5);
     m_timelapse_video_settings.set_n_repeat(3);
     wxSpinCtrl* spin_n_repeat = new wxSpinCtrl(this, wxID_ANY, "3", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 50, 3);
     spin_n_repeat->Bind(wxEVT_SPINCTRL, [spin_n_repeat, this](wxCommandEvent&){
         int current_value = spin_n_repeat->GetValue();
         m_timelapse_video_settings.set_n_repeat(current_value);
     });
-    video_settings_sizer->Add(spin_n_repeat, 0, wxEXPAND, 5);
+    right_vertical_sizer->Add(spin_n_repeat, 0, wxEXPAND, 5);
 };
 
 void AlignedImagesProducerGUI::add_group_to_stack(  const vector<size_t> &group,

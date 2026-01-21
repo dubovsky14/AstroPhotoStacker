@@ -59,6 +59,9 @@ class AlignedImagesProducerGUI : public wxFrame  {
         CombinedColorStrecherTool m_exposure_stretcher; // for exposure correction
         CombinedColorStrecherTool m_color_stretcher;
 
+        bool m_save_also_tif_files  = false;
+        bool m_group_by_files       = false;
+
         std::string m_output_folder_address;
 
         void initialize_aligned_images_producer();

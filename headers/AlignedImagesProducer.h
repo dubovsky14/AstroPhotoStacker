@@ -89,6 +89,13 @@ namespace AstroPhotoStacker {
                 m_max_height = height;
             };
 
+            void set_save_also_tif_files(bool save_also_tif_files) {
+                m_save_also_tif_files = save_also_tif_files;
+            };
+
+            bool get_save_also_tif_files() const {
+                return m_save_also_tif_files;
+            };
 
             static std::string get_output_file_name(const InputFrame &input_frame);
 
@@ -119,6 +126,8 @@ namespace AstroPhotoStacker {
             float m_datetime_pos_frac_y   = 0.9;
 
             int m_timestamp_offset = 0;
+
+            bool m_save_also_tif_files = false;
 
             std::function<void(std::vector<std::vector<PixelType>>*, PixelType max_value)> m_image_stretching_function = nullptr;
             std::function<std::vector<std::vector<PixelType>>(const std::vector<std::vector<PixelType>>&, int, int)> m_post_processing_tool = nullptr;

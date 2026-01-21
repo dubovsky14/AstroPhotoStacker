@@ -376,5 +376,7 @@ namespace AstroPhotoStacker {
     std::vector<std::string> get_formated_table(const std::vector<std::vector<std::string>> &data, const std::string &separator);
 
     void draw_filled_circle_on_image(std::vector<std::vector<PixelType>> *image_data, int width, int height, int center_x, int center_y, int radius, const std::vector<int> &color);
+
+    std::string replace_file_extension(const std::string &file_address, const std::string &new_extension);
 }
 

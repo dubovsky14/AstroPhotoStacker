@@ -237,7 +237,7 @@ class FilelistHandler   {
          *
          * @param input_address path to the input file
         */
-        void load_alignment_from_file(const std::string &input_address);
+        void load_alignment_from_file(const std::string &input_address, std::atomic<int> *counter = nullptr);
 
         /**
          * @brief Remove all files of a given type

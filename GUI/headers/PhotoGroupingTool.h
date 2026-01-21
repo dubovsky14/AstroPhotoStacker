@@ -31,6 +31,14 @@ class  PhotoGroupingTool {
 
         void define_maximum_time_difference_in_group(int time_interval);
 
+        void set_group_by_files(bool group_by_files) {
+            m_group_by_files = group_by_files;
+        };
+
+        bool get_group_by_files() const {
+            return m_group_by_files;
+        };
+
         void run_grouping();
 
         std::vector<std::vector<AstroPhotoStacker::InputFrame>> get_groups() const;
@@ -41,4 +49,6 @@ class  PhotoGroupingTool {
         std::vector<PhotoInfo> m_photos;
         int m_time_interval = 0;
         std::vector<std::vector<size_t>> m_groups;
+
+        bool m_group_by_files = true;
 };

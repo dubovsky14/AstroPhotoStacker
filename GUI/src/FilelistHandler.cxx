@@ -297,12 +297,17 @@ void FilelistHandler::save_alignment_to_file(const std::string &output_address) 
     }
 };
 
-void FilelistHandler::load_alignment_from_file(const std::string &input_address)    {
+void FilelistHandler::load_alignment_from_file(const std::string &input_address, std::atomic<int> *counter)    {
     std::ifstream input_file(input_address);
     std::string line;
 
+    int internal_counter = 0; // to avoid using atomic operations too often
     const AstroPhotoStacker::AlignmentResultFactory &alignment_result_factory = AstroPhotoStacker::AlignmentResultFactory::get_instance();
     while (std::getline(input_file, line))   {
+        internal_counter++;
+        if (counter && (internal_counter % 100 == 0)) {
+            (*counter) = internal_counter;
+        }
         strip_string(&line);
         if (starts_with(line, "#") || starts_with(line, AstroPhotoStacker::PhotoAlignmentHandler::c_reference_file_header))   {
             continue;

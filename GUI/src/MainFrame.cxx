@@ -175,7 +175,16 @@ void MyFrame::add_alignment_menu()  {
         wxFileDialog dialog(this, "Load alignment info", "", default_path, "*.txt", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
-            m_filelist_handler_gui_interface.load_alignment_from_file(file_address);
+            std::atomic counter = 0;
+
+            run_task_with_progress_dialog(  "Loading alignment info",
+                                            "Processed lines: ",
+                                            "",
+                                            counter,
+                                            -1,
+                                            [this, &counter, file_address](){
+                                                m_filelist_handler_gui_interface.load_alignment_from_file(file_address, &counter);
+                                            });
             update_files_to_stack_checkbox();
             update_alignment_status();
         }

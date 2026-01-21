@@ -246,3 +246,10 @@ void AstroPhotoStacker::draw_filled_circle_on_image(std::vector<std::vector<Pixe
         }
     }
 };
+
+
+std::string AstroPhotoStacker::replace_file_extension(const std::string &file_address, const std::string &new_extension) {
+    std::filesystem::path p(file_address);
+    p.replace_extension(new_extension);
+    return p.string();
+}

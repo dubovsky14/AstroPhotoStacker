@@ -23,8 +23,10 @@ void run_task_with_progress_dialog( const std::string &window_title,
         pool.submit(task);
 
         while (pool.get_tasks_total()) {
-
-            if (tasks_processed < tasks_total) {
+            if (tasks_total <= 0) {
+                progress_bar.Update(tasks_processed, message_begin + " " + std::to_string(tasks_processed) + " " + message_end);
+            }
+            else if (tasks_processed < tasks_total) {
                 progress_bar.Update(tasks_processed, message_begin + " " + std::to_string(tasks_processed) + " / " + std::to_string(tasks_total) + " " + message_end);
             }
             else {

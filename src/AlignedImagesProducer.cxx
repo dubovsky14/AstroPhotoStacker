@@ -174,6 +174,13 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
     }
 
     stacker->calculate_stacked_photo();
+
+    if (m_save_also_tif_files) {
+        cout << "Saving intermediate stacked TIFF file: " << output_file_address << "\n";
+        const std::string tif_file_address = replace_file_extension(output_file_address, "tif");
+        stacker->save_stacked_photo(tif_file_address);
+    }
+
     const std::vector<std::vector<double>> &stacked_image_double = stacker->get_stacked_image();
 
     const auto [width_crop, height_crop] = calculate_cropped_width_and_height(width_original, height_original);
