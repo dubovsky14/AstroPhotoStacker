@@ -7,6 +7,9 @@
 #include "../headers/TimeLapseVideoCreator.h"
 #include "../headers/StackerFactory.h"
 #include "../headers/TaskScheduler.hxx"
+#include "../headers/SummaryYamlCreator.h"
+
+#include "../headers/FilelistHandler.h"
 
 #include "../headers/thread_pool.h"
 
@@ -129,7 +132,7 @@ string AlignedImagesProducer::get_output_file_name(const InputFrame &input_frame
         return input_file_name + ".jpg";
     }
 
-    return input_file_name + "_frame_" + to_string(input_frame.get_frame_number()) + ".jpg";
+    return input_file_name + "_frame_" + std::to_string(input_frame.get_frame_number()) + ".jpg";
 };
 
 
@@ -163,7 +166,7 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
     InputFrameReader reader(first_frame);
     reader.get_photo_resolution(&width_original, &height_original);
     std::unique_ptr<StackerBase> stacker = create_stacker(group_to_stack.stack_settings, 3, width_original, height_original);
-
+    FilelistHandler filelist_handler_for_metadata; // we need this to initialize SummaryYamlCreator
     for (unsigned int i_frame = 0; i_frame < group_to_stack.input_frames.size(); i_frame++) {
         const InputFrame &input_frame                   = group_to_stack.input_frames[i_frame];
         const std::unique_ptr<AlignmentResultBase> &alignment_result       = group_to_stack.alignment_info[i_frame];
@@ -171,14 +174,18 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
         stacker->add_photo(input_frame, calibration_frame_handlers);
         stacker->add_alignment_info(    input_frame,
                                         *alignment_result);
+
+        filelist_handler_for_metadata.add_frame(input_frame, FrameType::LIGHT, 0, true, *alignment_result, read_metadata(input_frame));
     }
 
     stacker->calculate_stacked_photo();
 
+    SummaryYamlCreator summary_yaml_creator(filelist_handler_for_metadata, group_to_stack.stack_settings);
     if (m_save_also_tif_files) {
         cout << "Saving intermediate stacked TIFF file: " << output_file_address << "\n";
         const std::string tif_file_address = replace_file_extension(output_file_address, "tif");
         stacker->save_stacked_photo(tif_file_address);
+        summary_yaml_creator.add_as_exif_metadata(tif_file_address);
     }
 
     const std::vector<std::vector<double>> &stacked_image_double = stacker->get_stacked_image();
@@ -196,6 +203,7 @@ void AlignedImagesProducer::produce_aligned_image(const GroupToStack &group_to_s
     }
 
     process_save_and_update_counter_and_image_list(&output_image, width_crop, height_crop, output_file_address, first_frame);
+    summary_yaml_creator.add_as_exif_metadata(output_file_address);
 };
 
 void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_frame,

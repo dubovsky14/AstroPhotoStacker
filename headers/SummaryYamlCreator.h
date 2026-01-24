@@ -18,7 +18,7 @@ namespace AstroPhotoStacker {
 
             void create_and_save_yaml_file(const std::string &output_address, const PostProcessingTool *post_processing_tool = nullptr) const;
 
-            void add_as_exif_metadata(const std::string &output_address) const;
+            void add_as_exif_metadata(const std::string &output_address, const PostProcessingTool *post_processing_tool = nullptr) const;
 
         private:
 

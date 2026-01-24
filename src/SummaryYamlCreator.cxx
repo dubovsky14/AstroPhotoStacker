@@ -190,7 +190,7 @@ std::string SummaryYamlCreator::block_to_string(const std::vector<std::string> &
     return result;
 };
 
-void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address) const  {
+void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address, const PostProcessingTool *post_processing_tool) const  {
     // Open with Exiv2
     Exiv2::Image::AutoPtr img = Exiv2::ImageFactory::open(output_address);
     img->readMetadata();
@@ -247,7 +247,7 @@ void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address)
     exif_data["Exif.Photo.UserComment"] = temperature_string;
 
     Exiv2::XmpData &xmpData = img->xmpData();
-    xmpData["Xmp.dc.full_yaml_data"] = get_yaml_summary();
+    xmpData["Xmp.dc.full_yaml_data"] = get_yaml_summary(post_processing_tool);
     xmpData["Xmp.dc.creator"] = "AstroPhotoStacker";
     img->setXmpData(xmpData);
 
