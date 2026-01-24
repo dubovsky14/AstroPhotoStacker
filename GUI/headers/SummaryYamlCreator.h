@@ -1,9 +1,10 @@
 #pragma once
 
-#include "../headers/FilelistHandlerGUIInterface.h"
 #include "../headers/PostProcessingTool.h"
+
 #include "../../headers/Metadata.h"
 #include "../../headers/StackSettings.h"
+#include "../../headers/FilelistHandler.h"
 
 #include <map>
 #include <string>
@@ -11,7 +12,7 @@
 
 class SummaryYamlCreator {
     public:
-        SummaryYamlCreator(const FilelistHandlerGUIInterface &filelist_handler_gui, const AstroPhotoStacker::StackSettings &stack_settings);
+        SummaryYamlCreator(const AstroPhotoStacker::FilelistHandler &filelist_handler_gui, const AstroPhotoStacker::StackSettings &stack_settings);
 
         std::string get_yaml_summary(const PostProcessingTool *post_processing_tool = nullptr) const;
 
@@ -25,13 +26,13 @@ class SummaryYamlCreator {
 
         std::vector<std::string> get_group_summary(int group_number) const;
 
-        std::vector<std::string> get_group_and_type_summary(int group_number, FrameType frame_type) const;
+        std::vector<std::string> get_group_and_type_summary(int group_number, AstroPhotoStacker::FrameType frame_type) const;
 
         std::vector<std::string> get_post_processing_summary(const PostProcessingTool *post_processing_tool) const;
 
         std::vector<std::string> get_stack_settings_summary() const;
 
-        FilelistHandlerGUIInterface m_filelist_handler_gui;
+        AstroPhotoStacker::FilelistHandler m_filelist_handler;
         AstroPhotoStacker::StackSettings m_stack_settings;
 
         std::string block_to_string(const std::vector<std::string> &block, const std::string &indent) const;

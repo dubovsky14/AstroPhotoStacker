@@ -13,7 +13,7 @@ RecentPathsHandler::RecentPathsHandler(const std::string &storage_folder)   :
 
 };
 
-std::string RecentPathsHandler::get_recent_file_path(FrameType frame_type, const std::string &default_value)  const  {
+std::string RecentPathsHandler::get_recent_file_path(AstroPhotoStacker::FrameType frame_type, const std::string &default_value)  const  {
     const std::string file_address = m_storage_path + "/" + m_frame_type_to_txt_file.at(frame_type);
     string line;
     ifstream input_file (file_address);
@@ -30,7 +30,7 @@ std::string RecentPathsHandler::get_recent_file_path(FrameType frame_type, const
     return default_value;
 };
 
-void RecentPathsHandler::set_recent_file_path(FrameType frame_type, const std::string &recent_path)     const {
+void RecentPathsHandler::set_recent_file_path(AstroPhotoStacker::FrameType frame_type, const std::string &recent_path)     const {
     const std::string file_address = m_storage_path + "/" + m_frame_type_to_txt_file.at(frame_type);
     ofstream output_file(file_address);
     if (output_file.is_open())    {
@@ -39,7 +39,7 @@ void RecentPathsHandler::set_recent_file_path(FrameType frame_type, const std::s
     output_file.close();
 };
 
-void RecentPathsHandler::set_recent_file_path_from_file(FrameType frame_type, const std::string &recent_file_path) const    {
+void RecentPathsHandler::set_recent_file_path_from_file(AstroPhotoStacker::FrameType frame_type, const std::string &recent_file_path) const    {
     // drop everything behind last "/"
     const size_t last_slash_idx = recent_file_path.find_last_of("\\/");
     if (std::string::npos != last_slash_idx)    {

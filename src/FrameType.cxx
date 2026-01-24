@@ -1,6 +1,8 @@
 #include "../headers/FrameType.h"
 
-std::string to_string(FrameType type)   {
+using namespace AstroPhotoStacker;
+
+std::string AstroPhotoStacker::to_string(FrameType type)   {
     switch (type)   {
         case FrameType::FLAT:
             return "FLAT";
@@ -16,7 +18,7 @@ std::string to_string(FrameType type)   {
     return "UNKNOWN";
 };
 
-FrameType string_to_filetype(const std::string& type)   {
+FrameType AstroPhotoStacker::string_to_filetype(const std::string& type)   {
     if (type == "FLAT")     {
         return FrameType::FLAT;
     }

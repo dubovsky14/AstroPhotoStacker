@@ -13,11 +13,11 @@ using namespace std;
 const std::string SummaryYamlCreator::s_indent = "  ";
 const std::string SummaryYamlCreator::s_indent_new_item = "-" + s_indent.substr(1);
 
-SummaryYamlCreator::SummaryYamlCreator(const FilelistHandlerGUIInterface &filelist_handler_gui, const AstroPhotoStacker::StackSettings &stack_settings) :
-    m_filelist_handler_gui(filelist_handler_gui),
+SummaryYamlCreator::SummaryYamlCreator(const AstroPhotoStacker::FilelistHandler &filelist_handler, const AstroPhotoStacker::StackSettings &stack_settings) :
+    m_filelist_handler(filelist_handler),
     m_stack_settings(stack_settings) {
 
-        m_group_numbers = m_filelist_handler_gui.get_group_numbers();
+        m_group_numbers = m_filelist_handler.get_group_numbers();
 };
 
 std::string SummaryYamlCreator::get_yaml_summary(const PostProcessingTool *post_processing_tool) const{
@@ -40,8 +40,8 @@ std::string SummaryYamlCreator::get_yaml_summary(const PostProcessingTool *post_
 std::vector<std::string> SummaryYamlCreator::get_overall_frames_summary() const  {
     std::vector<std::string> result;
     result.push_back("total_frames:");
-    for (FrameType frame_type : FilelistHandler::s_file_types_ordering)   {
-        const int n_frames = m_filelist_handler_gui.get_number_of_checked_frames(frame_type);
+    for (AstroPhotoStacker::FrameType frame_type : FilelistHandler::s_file_types_ordering)   {
+        const int n_frames = m_filelist_handler.get_number_of_checked_frames(frame_type);
         if (n_frames == 0)   {
             continue;
         }
@@ -61,7 +61,7 @@ void SummaryYamlCreator::create_and_save_yaml_file(const std::string &output_add
 std::vector<std::string> SummaryYamlCreator::get_group_summary(int group_number) const   {
     std::vector<std::string> result;
     result.push_back(s_indent_new_item +  "group_number: " + to_string(group_number));
-    for (FrameType frame_type : FilelistHandler::s_file_types_ordering)   {
+    for (AstroPhotoStacker::FrameType frame_type : FilelistHandler::s_file_types_ordering)   {
         const std::vector<std::string> group_and_type_summary = get_group_and_type_summary(group_number, frame_type);
         if (group_and_type_summary.empty())   {
             continue;
@@ -75,12 +75,12 @@ std::vector<std::string> SummaryYamlCreator::get_group_summary(int group_number)
     return result;
 };
 
-std::vector<std::string> SummaryYamlCreator::get_group_and_type_summary(int group_number, FrameType frame_type) const    {
+std::vector<std::string> SummaryYamlCreator::get_group_and_type_summary(int group_number,  AstroPhotoStacker::FrameType frame_type) const    {
     if (std::find(m_group_numbers.begin(), m_group_numbers.end(), group_number) == m_group_numbers.end())   {
         return {};
     }
 
-    const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames_map = m_filelist_handler_gui.get_frames(frame_type, group_number);
+    const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames_map = m_filelist_handler.get_frames(frame_type, group_number);
     if (frames_map.empty())   {
         return {};
     }
@@ -258,7 +258,7 @@ void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address)
 
 Metadata SummaryYamlCreator::get_metadata_of_first_light() const {
     for (int group_number : m_group_numbers)   {
-        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames_map = m_filelist_handler_gui.get_frames(FrameType::LIGHT, group_number);
+        const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &frames_map = m_filelist_handler.get_frames(AstroPhotoStacker::FrameType::LIGHT, group_number);
         if (frames_map.empty())   {
             continue;
         }

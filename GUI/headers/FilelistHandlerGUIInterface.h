@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../headers/FilelistHandler.h"
+#include "../../headers/FilelistHandler.h"
 
 #include <string>
 #include <vector>
@@ -9,10 +9,10 @@
 
 struct FrameID  {
     AstroPhotoStacker::InputFrame   input_frame;
-    FrameType                       type;
+    AstroPhotoStacker::FrameType    type;
     int                             group_number;
 
-    FrameID(const FrameInfo &frame_info) {
+    FrameID(const AstroPhotoStacker::FrameInfo &frame_info) {
         input_frame = frame_info.input_frame;
         type = frame_info.type;
         group_number = frame_info.group_number;
@@ -20,7 +20,7 @@ struct FrameID  {
 };
 
 
-class FilelistHandlerGUIInterface : public FilelistHandler  {
+class FilelistHandlerGUIInterface : public AstroPhotoStacker::FilelistHandler  {
     enum class SortType {
         NAME,
         RANKING,

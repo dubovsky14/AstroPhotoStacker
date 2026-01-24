@@ -1,10 +1,10 @@
 #include "../headers/FilelistHandler.h"
-#include "../../headers/Common.h"
-#include "../../headers/VideoReader.h"
-#include "../../headers/TaskScheduler.hxx"
-#include "../../headers/MetadataReader.h"
-#include "../../headers/AlignmentResultFactory.h"
-#include "../../headers/PhotoAlignmentHandler.h"
+#include "../headers/Common.h"
+#include "../headers/VideoReader.h"
+#include "../headers/TaskScheduler.hxx"
+#include "../headers/MetadataReader.h"
+#include "../headers/AlignmentResultFactory.h"
+#include "../headers/PhotoAlignmentHandler.h"
 
 #include <algorithm>
 #include <fstream>

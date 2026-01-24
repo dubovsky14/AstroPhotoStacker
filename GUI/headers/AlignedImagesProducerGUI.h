@@ -77,7 +77,7 @@ class AlignedImagesProducerGUI : public wxFrame  {
         void add_video_settings();
 
         void add_group_to_stack(const std::vector<size_t> &group,
-                                const std::vector<FrameInfo> &light_frames,
+                                const std::vector<AstroPhotoStacker::FrameInfo> &light_frames,
                                 const std::map<int, std::vector<std::shared_ptr<const AstroPhotoStacker::CalibrationFrameBase> > > &calibration_handlers_map)   const;
 
         std::map<int, std::vector<std::shared_ptr<const AstroPhotoStacker::CalibrationFrameBase> > > get_calibration_frame_handlers_map() const;
