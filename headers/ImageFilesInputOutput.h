@@ -142,6 +142,26 @@ namespace AstroPhotoStacker {
         }
     }
 
+    /**
+     * @brief Create a color image from an array of pixel values
+     *
+     * @tparam pixel_values_type The type of the pixel values
+     * @param arr_red The array of red pixel values
+     * @param arr_green The array of green pixel values
+     * @param arr_blue The array of blue pixel values
+     * @param width The width of the image
+     * @param height The height of the image
+     * @param filename The filename of the image
+     * @param image_settings The settings of the image
+    */
+    template <typename pixel_values_type>
+    void create_color_image( const pixel_values_type* arr_red, const pixel_values_type* arr_green, const pixel_values_type* arr_blue,
+                            int width, int height, const std::string& filename, int image_settings = CV_8UC3) {
+
+        cv::Mat image = get_opencv_color_image(arr_red, arr_green, arr_blue, width, height, image_settings);
+        cv::imwrite(filename, image);
+    }
+
 
     /**
      * @brief Create a color image from an array of pixel values
@@ -161,26 +181,6 @@ namespace AstroPhotoStacker {
             throw std::runtime_error("Input image must have 3 channels");
         }
         create_color_image(input_image[0].data(), input_image[1].data(), input_image[2].data(), width, height, filename, image_settings);
-    }
-
-    /**
-     * @brief Create a color image from an array of pixel values
-     *
-     * @tparam pixel_values_type The type of the pixel values
-     * @param arr_red The array of red pixel values
-     * @param arr_green The array of green pixel values
-     * @param arr_blue The array of blue pixel values
-     * @param width The width of the image
-     * @param height The height of the image
-     * @param filename The filename of the image
-     * @param image_settings The settings of the image
-    */
-    template <typename pixel_values_type>
-    void create_color_image( const pixel_values_type* arr_red, const pixel_values_type* arr_green, const pixel_values_type* arr_blue,
-                            int width, int height, const std::string& filename, int image_settings = CV_8UC3) {
-
-        cv::Mat image = get_opencv_color_image(arr_red, arr_green, arr_blue, width, height, image_settings);
-        cv::imwrite(filename, image);
     }
 
     /**

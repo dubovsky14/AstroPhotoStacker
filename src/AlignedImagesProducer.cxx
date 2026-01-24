@@ -241,7 +241,20 @@ void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_fram
         }
     }
 
+    FilelistHandler filelist_handler_for_metadata; // we need this to initialize SummaryYamlCreator
+    filelist_handler_for_metadata.add_frame(input_frame, FrameType::LIGHT, 0, true, alignment_result, read_metadata(input_frame));
+    SummaryYamlCreator summary_yaml_creator(filelist_handler_for_metadata, StackSettings());
+
+    if (m_save_also_tif_files) {
+        cout << "Saving intermediate calibrated TIFF file: " << output_file_address << "\n";
+        const std::string tif_file_address = replace_file_extension(output_file_address, "tif");
+        //create_color_image(output_image[0].data(), output_image[1].data(), output_image[2].data(), width, height, tif_file_address, CV_16UC3);
+        create_color_image(output_image, width, height, tif_file_address, CV_16UC3);
+        summary_yaml_creator.add_as_exif_metadata(tif_file_address);
+    }
+
     process_save_and_update_counter_and_image_list(&output_image, width, height, output_file_address, input_frame);
+    summary_yaml_creator.add_as_exif_metadata(output_file_address);
 };
 
 void AlignedImagesProducer::process_save_and_update_counter_and_image_list(
