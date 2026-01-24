@@ -1,13 +1,13 @@
 #include "../headers/SummaryYamlCreator.h"
-#include "../../headers/Common.h"
+#include "../headers/Common.h"
 
 #include <exiv2/exiv2.hpp>
 
 #include <fstream>
 #include <algorithm>
 
-using namespace AstroPhotoStacker;
 using namespace std;
+using namespace AstroPhotoStacker;
 
 
 const std::string SummaryYamlCreator::s_indent = "  ";
@@ -45,7 +45,7 @@ std::vector<std::string> SummaryYamlCreator::get_overall_frames_summary() const 
         if (n_frames == 0)   {
             continue;
         }
-        result.push_back(s_indent +  to_string(frame_type) + ": " + to_string(n_frames));
+        result.push_back(s_indent +  to_string(frame_type) + ": " + std::to_string(n_frames));
     }
     return result;
 };
@@ -60,7 +60,7 @@ void SummaryYamlCreator::create_and_save_yaml_file(const std::string &output_add
 
 std::vector<std::string> SummaryYamlCreator::get_group_summary(int group_number) const   {
     std::vector<std::string> result;
-    result.push_back(s_indent_new_item +  "group_number: " + to_string(group_number));
+    result.push_back(s_indent_new_item +  "group_number: " + std::to_string(group_number));
     for (AstroPhotoStacker::FrameType frame_type : FilelistHandler::s_file_types_ordering)   {
         const std::vector<std::string> group_and_type_summary = get_group_and_type_summary(group_number, frame_type);
         if (group_and_type_summary.empty())   {
@@ -97,7 +97,7 @@ std::vector<std::string> SummaryYamlCreator::get_group_and_type_summary(int grou
 
         int frame_number = frame.first.get_frame_number();
         if (frame_number >= 0) {
-            result.push_back(2*s_indent + "frame_number: " + to_string(frame_number));
+            result.push_back(2*s_indent + "frame_number: " + std::to_string(frame_number));
         }
 
         const Metadata &metadata = frame.second.metadata;
@@ -111,7 +111,7 @@ std::vector<std::string> SummaryYamlCreator::get_group_and_type_summary(int grou
             result.push_back(2*s_indent + "exposure_time: \"" + exposure_string + "\"");
         }
         if (metadata.iso > 0) {
-            result.push_back(2*s_indent + "iso: " + to_string(metadata.iso));
+            result.push_back(2*s_indent + "iso: " + std::to_string(metadata.iso));
         }
         if (metadata.focal_length > 0) {
             result.push_back(2*s_indent + "focal_length: " + AstroPhotoStacker::round_and_convert_to_string(metadata.focal_length));
@@ -130,7 +130,7 @@ std::vector<std::string> SummaryYamlCreator::get_group_and_type_summary(int grou
     if (n_frames == 0 || result.size() == 0)   {
         return {};
     }
-    result.insert(result.begin() + 1, s_indent + "number_of_frames: " + to_string(n_frames));
+    result.insert(result.begin() + 1, s_indent + "number_of_frames: " + std::to_string(n_frames));
     return result;
 };
 
@@ -143,13 +143,13 @@ std::vector<std::string> SummaryYamlCreator::get_post_processing_summary(const P
     if (post_processing_tool->get_apply_rgb_alignment()) {
         result.push_back(s_indent + "rgb_alignment:");
         const std::pair<int,int> red_shift = post_processing_tool->get_shift_red();
-        result.push_back(s_indent*2 + "red_shift_x: " + to_string(red_shift.first));
-        result.push_back(s_indent*2 + "red_shift_y: " + to_string(red_shift.second));
+        result.push_back(s_indent*2 + "red_shift_x: " + std::to_string(red_shift.first));
+        result.push_back(s_indent*2 + "red_shift_y: " + std::to_string(red_shift.second));
     }
 
     if (post_processing_tool->get_apply_sharpening()) {
         result.push_back(s_indent + "sharpening:");
-        result.push_back(s_indent*2 + "kernel_size: " + to_string(post_processing_tool->get_kernel_size()));
+        result.push_back(s_indent*2 + "kernel_size: " + std::to_string(post_processing_tool->get_kernel_size()));
         result.push_back(s_indent*2 + "gauss_width: " + AstroPhotoStacker::round_and_convert_to_string(post_processing_tool->get_gauss_width()));
         result.push_back(s_indent*2 + "center_value: " + AstroPhotoStacker::round_and_convert_to_string(post_processing_tool->get_center_value(), 2));
     }
@@ -201,15 +201,15 @@ void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address)
     if (metadata.exposure_time > 0) {
         if (metadata.exposure_time >= 1.0) {
             int seconds = static_cast<int>(metadata.exposure_time + 0.5);
-            exif_data["Exif.Photo.ExposureTime"] = to_string(seconds) + "/1"; // e.g. 30s
+            exif_data["Exif.Photo.ExposureTime"] = std::to_string(seconds) + "/1"; // e.g. 30s
         } else {
             int denominator = static_cast<int>(1.0 / metadata.exposure_time + 0.5);
-            exif_data["Exif.Photo.ExposureTime"] = "1/" + to_string(denominator); // e.g. 1/30s
+            exif_data["Exif.Photo.ExposureTime"] = "1/" + std::to_string(denominator); // e.g. 1/30s
         }
     }
     if (metadata.aperture > 0) {
         int aperture_times_10 = static_cast<int>(metadata.aperture * 10 + 0.5);
-        exif_data["Exif.Photo.FNumber"] = to_string(aperture_times_10) + "/10";
+        exif_data["Exif.Photo.FNumber"] = std::to_string(aperture_times_10) + "/10";
     }
 
     if (metadata.iso > 0) {
@@ -222,7 +222,7 @@ void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address)
 
     if (metadata.focal_length > 0) {
         int focal_length_times_10 = static_cast<int>(metadata.focal_length * 10 + 0.5);
-        exif_data["Exif.Photo.FocalLength"] = to_string(focal_length_times_10) + "/10";
+        exif_data["Exif.Photo.FocalLength"] = std::to_string(focal_length_times_10) + "/10";
     }
 
     const string temperature_string =  metadata.temperature > -273 ? ("Temperature: " + AstroPhotoStacker::round_and_convert_to_string(metadata.temperature,1) + "C") : "";

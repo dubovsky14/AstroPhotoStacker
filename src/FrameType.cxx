@@ -2,7 +2,7 @@
 
 using namespace AstroPhotoStacker;
 
-std::string AstroPhotoStacker::to_string(FrameType type)   {
+std::string AstroPhotoStacker::to_string(const FrameType &type)   {
     switch (type)   {
         case FrameType::FLAT:
             return "FLAT";

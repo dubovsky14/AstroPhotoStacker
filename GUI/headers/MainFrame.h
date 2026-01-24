@@ -7,15 +7,15 @@
 #include "../headers/CombinedColorStrecherTool.h"
 #include "../headers/ThreePointSlider.h"
 #include "../headers/FloatingPointSlider.h"
-#include "../headers/SummaryYamlCreator.h"
 
 #include "../headers/HistogramDataTool.h"
 #include "../headers/HistogramDataToolGUI.h"
-#include "../headers/PostProcessingTool.h"
 
+#include "../../headers/PostProcessingTool.h"
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/HotPixelIdentifier.h"
 #include "../../headers/StackerBase.h"
+#include "../../headers/SummaryYamlCreator.h"
 
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
@@ -167,7 +167,7 @@ class MyFrame : public wxFrame  {
         std::unique_ptr<StackSettingsSaver>    m_stack_settings = nullptr;
         std::unique_ptr<AstroPhotoStacker::HotPixelIdentifier>  m_hot_pixel_identifier = nullptr;
         std::unique_ptr<AstroPhotoStacker::StackerBase>         m_stacker = nullptr;
-        std::unique_ptr<SummaryYamlCreator> m_summary_yaml_creator = nullptr;
+        std::unique_ptr<AstroPhotoStacker::SummaryYamlCreator> m_summary_yaml_creator = nullptr;
 
         void on_open_frames(wxCommandEvent& event, AstroPhotoStacker::FrameType type, const std::string& title);
         void on_open_lights(wxCommandEvent& event);
@@ -188,7 +188,7 @@ class MyFrame : public wxFrame  {
         ThreePointSlider *m_luminance_stretching_slider = nullptr;
         CombinedColorStrecherTool m_color_stretcher;
 
-        PostProcessingTool m_post_processing_tool;
+        AstroPhotoStacker::PostProcessingTool m_post_processing_tool;
 
         ThreePointSlider *m_stretching_slider_red = nullptr;
         ThreePointSlider *m_stretching_slider_green = nullptr;

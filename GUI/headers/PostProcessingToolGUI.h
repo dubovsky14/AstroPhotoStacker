@@ -1,9 +1,10 @@
 #pragma once
 
+#include "../../headers/PostProcessingTool.h"
+
 #include "../headers/MainFrame.h"
 #include "../headers/ImagePreview.h"
 #include "../headers/FloatingPointSlider.h"
-#include "../headers/PostProcessingTool.h"
 
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
@@ -13,13 +14,13 @@
 
 class PostProcessingToolGUI : public wxFrame  {
     public:
-        PostProcessingToolGUI(MyFrame *parent, const std::vector<std::vector<double>> &stacked_image, int width, int height, PostProcessingTool *post_processing_tool);
+        PostProcessingToolGUI(MyFrame *parent, const std::vector<std::vector<double>> &stacked_image, int width, int height, AstroPhotoStacker::PostProcessingTool *post_processing_tool);
 
 
     private:
         MyFrame *m_parent = nullptr;
         const std::vector<std::vector<double>> *m_stacked_image = nullptr;
-        PostProcessingTool *m_post_processing_tool = nullptr;
+        AstroPhotoStacker::PostProcessingTool *m_post_processing_tool = nullptr;
         int m_width;
         int m_height;
 

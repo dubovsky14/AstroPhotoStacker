@@ -6,8 +6,8 @@
 #include "../headers/CombinedColorStrecherTool.h"
 #include "../headers/TimeLapseVideoSettings.h"
 #include "../headers/FloatingPointSlider.h"
-#include "../headers/PostProcessingTool.h"
 
+#include "../../headers/PostProcessingTool.h"
 #include "../../headers/AlignedImagesProducer.h"
 #include "../../headers/InputFrame.h"
 
@@ -33,7 +33,7 @@ class AlignedImagesProducerGUI : public wxFrame  {
          * @param parent pointer to the parent frame (main frame)
          * @param aligned_images_producer pointer to the aligned images producer object
          */
-        AlignedImagesProducerGUI(MyFrame *parent, const PostProcessingTool *post_processing_tool);
+        AlignedImagesProducerGUI(MyFrame *parent, const AstroPhotoStacker::PostProcessingTool *post_processing_tool);
 
         void set_color_stretcher(const CombinedColorStrecherTool &color_stretcher) {
             m_color_stretcher = color_stretcher;
@@ -45,7 +45,7 @@ class AlignedImagesProducerGUI : public wxFrame  {
 
     private:
         MyFrame *m_parent = nullptr;
-        const PostProcessingTool *m_post_processing_tool = nullptr;
+        const AstroPhotoStacker::PostProcessingTool *m_post_processing_tool = nullptr;
         wxBoxSizer *m_main_vertical_sizer = nullptr;
         wxBoxSizer *m_basic_settings_sizer = nullptr;
         wxBoxSizer *m_image_preview_sizer = nullptr;

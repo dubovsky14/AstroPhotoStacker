@@ -2,6 +2,7 @@
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 
 using namespace std;
+using namespace AstroPhotoStacker;
 
 PostProcessingToolGUI::PostProcessingToolGUI(MyFrame *parent, const std::vector<std::vector<double>> &stacked_image, int width, int height, PostProcessingTool *post_processing_tool) :
         wxFrame(parent, wxID_ANY, "Post processing tool", wxDefaultPosition, wxSize(800, 800))  {

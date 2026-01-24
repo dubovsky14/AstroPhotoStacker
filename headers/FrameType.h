@@ -21,7 +21,7 @@ namespace AstroPhotoStacker {
      * @param type FrameType enum
      * @return std::string string representation of the FrameType enum
     */
-    std::string to_string(FrameType type);
+    std::string to_string(const FrameType &type);
 
     /**
      * @brief Convert string to FrameType enum
