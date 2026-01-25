@@ -253,3 +253,47 @@ std::string AstroPhotoStacker::replace_file_extension(const std::string &file_ad
     p.replace_extension(new_extension);
     return p.string();
 }
+
+unsigned short AstroPhotoStacker::get_otsu_threshold(const unsigned short *brightness, int n_pixels)    {
+    // Compute histogram
+    const int n_bins = 65536;
+    std::vector<unsigned int> histogram(n_bins, 0);
+    for (int i = 0; i < n_pixels; i++) {
+        histogram[brightness[i]]++;
+    }
+
+    double sum = 0;
+    for (int t = 0; t < n_bins; t++) {
+        sum += t * histogram[t];
+    }
+
+    double sumB = 0;
+    unsigned int wB = 0;
+    unsigned int wF = 0;
+
+    double varMax = 0;
+    unsigned short threshold = 0;
+
+    for (int threshold = 0; threshold < n_bins; threshold++) {
+        wB += histogram[threshold];               // Weight Background
+        if (wB == 0) continue;
+
+        wF = n_pixels - wB;                 // Weight Foreground
+        if (wF == 0) break;
+
+        sumB += static_cast<double>(threshold * histogram[threshold]);
+
+        double mB = sumB / wB;            // Mean Background
+        double mF = (sum - sumB) / wF;    // Mean Foreground
+
+        // Calculate Between Class Variance
+        double varBetween = static_cast<double>(wB) * static_cast<double>(wF) * (mB - mF) * (mB - mF);
+
+        // Check if new maximum found
+        if (varBetween > varMax) {
+            varMax = varBetween;
+            threshold = threshold;
+        }
+    }
+    return threshold;
+};

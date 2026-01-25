@@ -402,5 +402,7 @@ namespace AstroPhotoStacker {
         }
         return result;
     };
+
+    unsigned short get_otsu_threshold(const unsigned short *brightness, int n_pixels);
 }
 

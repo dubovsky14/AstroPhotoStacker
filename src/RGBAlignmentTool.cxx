@@ -1,6 +1,7 @@
 #include "../headers/RGBAlignmentTool.h"
 
 #include "../headers/StarFinder.h"
+#include "../headers/Common.h"
 
 
 using namespace std;
@@ -18,7 +19,10 @@ void RGBAlignmentTool::get_blue_shift_and_red_shift_internal(   std::pair<float,
     std::pair<float,float> colors_center_of_mass[3];
 
     for (int i_color = 0; i_color < 3; i_color++) {
-        const unsigned short threshold = 5*std::max<unsigned short>(get_threshold_value(image[i_color].data(), width*height, 0.5f), 1);
+        const unsigned short otsu_threshold = max<unsigned short>(get_otsu_threshold(image[i_color].data(), width*height), 1);
+        const unsigned short max_value = *max_element(image[i_color].data(), image[i_color].data() + width*height);
+        const unsigned short threshold = max<unsigned short>(0.05*max_value, otsu_threshold);
+
         std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters_non_recursive(image[i_color].data(), width, height, threshold);
         std::sort(clusters.begin(), clusters.end(), []
                                     (const std::vector<std::tuple<int, int> > &a, const std::vector<std::tuple<int, int> > &b)

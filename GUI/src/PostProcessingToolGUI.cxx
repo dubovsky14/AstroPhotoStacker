@@ -119,8 +119,6 @@ void PostProcessingToolGUI::add_rgb_alignment_settings()    {
     );
     red_shift_y_slider->set_tool_tip("Shifts the red channel in y-coordinate (positive direction points downwards). Blue channel will be shifted in opposite direction by the same amount.");
     red_shift_y_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
-
-
 };
 
 void PostProcessingToolGUI::add_sharpening_settings()   {

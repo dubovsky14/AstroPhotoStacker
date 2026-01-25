@@ -4,6 +4,7 @@
 #include "../headers/StarFinder.h"
 #include "../headers/SharpnessRanker.h"
 #include "../headers/ImageRanking.h"
+#include "../headers/Common.h"
 
 #include <memory>
 #include <string>
@@ -172,10 +173,14 @@ std::tuple<float,float,vector<vector<double>>,vector<double>> ReferencePhotoHand
     const int width = image_data.width;
     const int height = image_data.height;
 
-    const PixelType max_value = *max_element(brightness, brightness + width*height);
-    const PixelType min_value = *min_element(brightness, brightness + width*height);
+    vector<unsigned short> brightness_copy(width*height);
+    for (int i = 0; i < width*height; i++) {
+        brightness_copy[i] = max<short>(brightness[i], 0);
+    }
 
-    const PixelType threshold = min_value + threshold_fraction * (max_value - min_value);
+    const PixelType max_value = *max_element(brightness, brightness + width*height);
+    const PixelType otsu_threshold = get_otsu_threshold(brightness_copy.data(), width*height);
+    const PixelType threshold = max<PixelType>(0.05*max_value, otsu_threshold);
 
     const AlignmentWindow alignment_window = get_alignment_window(image_data, threshold);
     if (window_coordinates != nullptr) {
