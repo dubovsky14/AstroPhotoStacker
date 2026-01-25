@@ -50,5 +50,5 @@ class  PhotoGroupingTool {
         int m_time_interval = 0;
         std::vector<std::vector<size_t>> m_groups;
 
-        bool m_group_by_files = true;
+        bool m_group_by_files = false;
 };

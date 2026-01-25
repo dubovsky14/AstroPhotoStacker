@@ -267,31 +267,32 @@ unsigned short AstroPhotoStacker::get_otsu_threshold(const unsigned short *brigh
         sum += t * histogram[t];
     }
 
-    double sumB = 0;
-    unsigned int wB = 0;
-    unsigned int wF = 0;
+    double sum_background = 0;
+    unsigned int weight_sum_background = 0;
+    unsigned int weight_sum_foreground = 0;
 
-    double varMax = 0;
+    double maximal_variation = 0;
     unsigned short threshold = 0;
 
     for (int threshold = 0; threshold < n_bins; threshold++) {
-        wB += histogram[threshold];               // Weight Background
-        if (wB == 0) continue;
+        weight_sum_background += histogram[threshold];                  // Weight Background
+        if (weight_sum_background == 0) continue;
 
-        wF = n_pixels - wB;                 // Weight Foreground
-        if (wF == 0) break;
+        weight_sum_foreground = n_pixels - weight_sum_background;       // Weight Foreground
+        if (weight_sum_foreground == 0) break;
 
-        sumB += static_cast<double>(threshold * histogram[threshold]);
+        sum_background += static_cast<double>(threshold * histogram[threshold]);
 
-        double mB = sumB / wB;            // Mean Background
-        double mF = (sum - sumB) / wF;    // Mean Foreground
+        double mean_background = sum_background / weight_sum_background;          // Mean Background
+        double mean_foreground = (sum - sum_background) / weight_sum_foreground;  // Mean Foreground
 
         // Calculate Between Class Variance
-        double varBetween = static_cast<double>(wB) * static_cast<double>(wF) * (mB - mF) * (mB - mF);
-
+        double var_between =    static_cast<double>(weight_sum_background) *
+                                static_cast<double>(weight_sum_foreground) *
+                                (mean_background - mean_foreground) * (mean_background - mean_foreground);
         // Check if new maximum found
-        if (varBetween > varMax) {
-            varMax = varBetween;
+        if (var_between > maximal_variation) {
+            maximal_variation = var_between;
             threshold = threshold;
         }
     }
