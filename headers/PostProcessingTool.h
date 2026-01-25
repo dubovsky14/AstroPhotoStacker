@@ -40,13 +40,24 @@ namespace AstroPhotoStacker {
 
             std::pair<float,float> get_shift_blue() const;
 
+            void set_use_auto_rgb_alignment(bool use_auto_rgb_alignment);
+
+            bool get_use_auto_rgb_alignment() const;
+
             template<typename PixelType>
             std::vector<std::vector<PixelType>> post_process_image(const std::vector<std::vector<PixelType>> &image, int width, int height) const {
                 std::vector<std::vector<PixelType>> processed_image = image;
 
                 if (m_apply_rgb_alignment) {
                     AstroPhotoStacker::RGBAlignmentTool rgb_alignment_tool = AstroPhotoStacker::RGBAlignmentTool(processed_image, width, height);
-                    rgb_alignment_tool.calculate_shifted_image(m_shift_red, m_shift_blue);
+                    if (m_use_auto_rgb_alignment) {
+                        std::pair<float,float> auto_shift_red, auto_shift_blue;
+                        rgb_alignment_tool.get_blue_shift_and_red_shift(&auto_shift_blue, &auto_shift_red, processed_image, width, height);
+                        rgb_alignment_tool.calculate_shifted_image(auto_shift_red, auto_shift_blue);
+                    }
+                    else {
+                        rgb_alignment_tool.calculate_shifted_image(m_shift_red, m_shift_blue);
+                    }
                     processed_image = rgb_alignment_tool.get_shifted_image<PixelType>();
                 }
 
@@ -66,6 +77,8 @@ namespace AstroPhotoStacker {
             bool m_apply_rgb_alignment = false;
             std::pair<float,float> m_shift_red = {0,0};
             std::pair<float,float> m_shift_blue = {0,0};
+
+            bool m_use_auto_rgb_alignment = false;
 
     };
 }

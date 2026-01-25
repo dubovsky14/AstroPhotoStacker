@@ -64,3 +64,11 @@ void PostProcessingTool::set_shift_blue(const std::pair<float,float> &shift_blue
 std::pair<float,float> PostProcessingTool::get_shift_blue() const {
     return m_shift_blue;
 };
+
+void PostProcessingTool::set_use_auto_rgb_alignment(bool use_auto_rgb_alignment) {
+    m_use_auto_rgb_alignment = use_auto_rgb_alignment;
+};
+
+bool PostProcessingTool::get_use_auto_rgb_alignment() const {
+    return m_use_auto_rgb_alignment;
+};

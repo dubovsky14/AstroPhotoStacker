@@ -96,6 +96,16 @@ void PostProcessingToolGUI::add_rgb_alignment_settings()    {
     );
     red_shift_y_slider->set_tool_tip("Shifts the red channel in y-coordinate (positive direction points downwards). Blue channel will be shifted in opposite direction by the same amount.");
     red_shift_y_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
+
+    wxCheckBox* use_auto_rgb_alignment_checkbox = new wxCheckBox(this, wxID_ANY, "Apply auto rgb alignment");
+    use_auto_rgb_alignment_checkbox->SetValue(m_post_processing_tool->get_use_auto_rgb_alignment());
+    use_auto_rgb_alignment_checkbox->SetToolTip("Automatically calculates and applies shifts for red and blue channels to compensate for atmospheric dispersion.");
+    use_auto_rgb_alignment_checkbox->Bind(wxEVT_CHECKBOX, [use_auto_rgb_alignment_checkbox, this](wxCommandEvent&){
+        const bool is_checked = use_auto_rgb_alignment_checkbox->GetValue();
+        m_post_processing_tool->set_use_auto_rgb_alignment(is_checked);
+    });
+    m_main_vertical_sizer->Add(use_auto_rgb_alignment_checkbox, 0, wxEXPAND, 5);
+
 };
 
 void PostProcessingToolGUI::add_sharpening_settings()   {

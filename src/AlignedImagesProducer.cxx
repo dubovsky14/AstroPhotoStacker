@@ -248,7 +248,6 @@ void AlignedImagesProducer::produce_aligned_image(  const InputFrame &input_fram
     if (m_save_also_tif_files) {
         cout << "Saving intermediate calibrated TIFF file: " << output_file_address << "\n";
         const std::string tif_file_address = replace_file_extension(output_file_address, "tif");
-        //create_color_image(output_image[0].data(), output_image[1].data(), output_image[2].data(), width, height, tif_file_address, CV_16UC3);
         create_color_image(output_image, width, height, tif_file_address, CV_16UC3);
         summary_yaml_creator.add_as_exif_metadata(tif_file_address);
     }
@@ -288,12 +287,12 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<Pixe
     }
 
 
-    if (max_value > 255) {
-        scale_down_image(stacked_image, max_value, 255);
+    if (m_post_processing_tool) {
+        *stacked_image = m_post_processing_tool->post_process_image(*stacked_image, width, height);
     }
 
-    if (m_post_processing_tool) {
-        *stacked_image = m_post_processing_tool(*stacked_image, width, height);
+    if (max_value > 255) {
+        scale_down_image(stacked_image, max_value, 255);
     }
 
     for (vector<PixelType> &color_channel : *stacked_image) {

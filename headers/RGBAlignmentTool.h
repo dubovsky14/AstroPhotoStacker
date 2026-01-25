@@ -2,11 +2,16 @@
 
 #include "../headers/ImageFilesInputOutput.h"
 
+#include "../headers/Common.h"
+
+
 #include <opencv2/opencv.hpp>
 
 #include <vector>
 #include <string>
 #include <iostream>
+#include <stdexcept>
+#include <algorithm>
 
 namespace AstroPhotoStacker {
 
@@ -44,6 +49,16 @@ namespace AstroPhotoStacker {
                 cv::merge(color_channels_shifted, 3, m_data_shifted);
             };
 
+            template<typename PixelType>
+            void get_blue_shift_and_red_shift(  std::pair<float,float> *blue_shift,
+                                                std::pair<float,float> *red_shift,
+                                                const std::vector<std::vector<PixelType>> &image, int width, int height) const {
+
+                std::vector<std::vector<unsigned short>> scaled_image = scale_image_to_16bit_int(image);
+                get_blue_shift_and_red_shift_internal(blue_shift, red_shift, scaled_image, width, height);
+
+            };
+
             int get_width() const  {
                 return m_data_original.cols;
             };
@@ -66,5 +81,9 @@ namespace AstroPhotoStacker {
         private:
             cv::Mat m_data_original;
             cv::Mat m_data_shifted;
+
+
+            void get_blue_shift_and_red_shift_internal( std::pair<float,float> *blue_shift, std::pair<float,float> *red_shift,
+                                                        const std::vector<std::vector<unsigned short>> &image, int width, int height) const;
     };
 }

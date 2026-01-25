@@ -127,9 +127,9 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
     m_aligned_images_producer = make_unique<AlignedImagesProducer>(stack_settings->get_n_cpus(), stack_settings->get_max_memory());
     m_aligned_images_producer->set_add_datetime(m_add_datetime);
     m_aligned_images_producer->set_save_also_tif_files(m_save_also_tif_files);
-    m_aligned_images_producer->set_post_processing_tool([this](const std::vector<std::vector<PixelType>> &image, int width, int height){
-        return m_post_processing_tool->post_process_image(image, width, height);
-    });
+    if (m_post_processing_tool) {
+        m_aligned_images_producer->set_post_processing_tool(*m_post_processing_tool);
+    }
     m_aligned_images_producer->set_timestamp_offset(m_timestamp_offset);
     *m_aligned_images_producer->get_timelapse_video_settings() = m_timelapse_video_settings;
 

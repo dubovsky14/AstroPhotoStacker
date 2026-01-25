@@ -378,5 +378,29 @@ namespace AstroPhotoStacker {
     void draw_filled_circle_on_image(std::vector<std::vector<PixelType>> *image_data, int width, int height, int center_x, int center_y, int radius, const std::vector<int> &color);
 
     std::string replace_file_extension(const std::string &file_address, const std::string &new_extension);
+
+    template<typename InptutPixelType>
+    std::vector<std::vector<unsigned short>> scale_image_to_16bit_int(const std::vector<std::vector<InptutPixelType>> &input_image) {
+        std::vector<std::vector<unsigned short>> result;
+        InptutPixelType max_value = 0;
+        for (const std::vector<InptutPixelType> &input_channel : input_image) {
+            for (InptutPixelType value : input_channel) {
+                if (value > max_value) {
+                    max_value = value;
+                }
+            }
+            result.push_back(std::vector<unsigned short>(input_channel.size()));
+        }
+        const double scale_factor = 65535.0f / max_value;
+
+        for (size_t i_channel = 0; i_channel < input_image.size(); i_channel++) {
+            const std::vector<InptutPixelType> &input_channel = input_image[i_channel];
+            std::vector<unsigned short> &output_channel = result[i_channel];
+            for (size_t i = 0; i < input_channel.size(); i++) {
+                output_channel[i] = static_cast<unsigned short>(input_channel[i] * scale_factor);
+            }
+        }
+        return result;
+    };
 }
 

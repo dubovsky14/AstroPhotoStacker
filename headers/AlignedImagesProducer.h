@@ -8,6 +8,7 @@
 #include "../headers/StackerBase.h"
 #include "../headers/StackSettings.h"
 #include "../headers/AlignmentResultBase.h"
+#include "../headers/PostProcessingTool.h"
 
 #include <functional>
 #include <string>
@@ -103,8 +104,8 @@ namespace AstroPhotoStacker {
 
             void produce_video(const std::string &output_video_address)   const;
 
-            void set_post_processing_tool(const std::function<std::vector<std::vector<PixelType>>(const std::vector<std::vector<PixelType>> &, int, int)> &post_processing_tool) {
-                m_post_processing_tool = post_processing_tool;
+            void set_post_processing_tool(const PostProcessingTool &post_processing_tool) {
+                m_post_processing_tool = std::make_unique<PostProcessingTool>(post_processing_tool);
             };
 
             TimeLapseVideoSettings *get_timelapse_video_settings();
@@ -130,7 +131,7 @@ namespace AstroPhotoStacker {
             bool m_save_also_tif_files = false;
 
             std::function<void(std::vector<std::vector<PixelType>>*, PixelType max_value)> m_image_stretching_function = nullptr;
-            std::function<std::vector<std::vector<PixelType>>(const std::vector<std::vector<PixelType>>&, int, int)> m_post_processing_tool = nullptr;
+            std::unique_ptr<PostProcessingTool> m_post_processing_tool = nullptr;
 
             std::vector<InputFrame>                                                 m_frames_to_align;
             std::vector<std::unique_ptr<AlignmentResultBase>>                       m_alignment_info;
