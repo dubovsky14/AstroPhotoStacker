@@ -14,11 +14,11 @@ namespace AstroPhotoStacker {
         int max_value           = 0;
         bool monochrome         = false;
         float temperature       = -300;
+        int bit_depth           = 16;
 
         bool is_raw             = false;
         std::string camera_model = "";
         std::string bayer_matrix = "";
         float video_fps         = -1;
-
     };
 }

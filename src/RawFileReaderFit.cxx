@@ -107,6 +107,8 @@ void RawFileReaderFit::read_data_8bit(std::ifstream *file) {
     std::transform(signed_char_buffer.begin(), signed_char_buffer.end(), m_data.begin(), [this](char pixel_value) -> unsigned short int {
         return static_cast<short unsigned int>(static_cast<PixelType>(pixel_value) + m_zero_point);
     });
+
+    scale_8bit_image_to_16bit(&m_data);
 };
 
 

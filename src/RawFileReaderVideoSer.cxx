@@ -60,6 +60,10 @@ std::vector<PixelType> RawFileReaderVideoSer::read_raw_file(int *width, int *hei
 
     std::vector<PixelType> result(*width*(*height),0);
     std::transform(result_unsigned_short.begin(), result_unsigned_short.end(), result.begin(), [](unsigned short int x) -> PixelType { return static_cast<PixelType>(x); } );
+
+    if (bit_depth == 8) {
+        scale_8bit_image_to_16bit(&result);
+    }
     return result;
 };
 

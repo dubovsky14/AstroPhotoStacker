@@ -28,3 +28,17 @@ Metadata FrameReaderBase::read_metadata() {
     metadata.timestamp += int(frame_number / fps); // add time in video to to the original timestamp
     return metadata;
 };
+
+void FrameReaderBase::scale_8bit_image_to_16bit(std::vector<std::vector<PixelType>> *image_data) {
+    for (auto &channel : *image_data) {
+        for (auto &pixel_value : channel) {
+            pixel_value = static_cast<PixelType>(pixel_value * 128);
+        }
+    }
+}
+
+void FrameReaderBase::scale_8bit_image_to_16bit(std::vector<PixelType> *image_data) {
+    for (auto &pixel_value : *image_data) {
+        pixel_value = static_cast<PixelType>(pixel_value * 128);
+    }
+}

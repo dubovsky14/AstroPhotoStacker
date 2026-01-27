@@ -3,6 +3,7 @@
 #include "../headers/InputFrame.h"
 #include "../headers/Metadata.h"
 #include "../headers/ThreadSafeCacheSystem.h"
+#include "../headers/PixelType.h"
 
 #include <string>
 #include <vector>
@@ -30,5 +31,9 @@ namespace AstroPhotoStacker {
             virtual Metadata read_metadata_without_cache() = 0;
 
             static ThreadSafeCacheSystem<std::string, Metadata> s_metadata_cache;
+
+            void scale_8bit_image_to_16bit(std::vector<std::vector<PixelType>> *image_data);
+
+            void scale_8bit_image_to_16bit(std::vector<PixelType> *image_data);
     };
 }

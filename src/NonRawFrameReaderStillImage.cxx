@@ -18,7 +18,11 @@ vector<vector<PixelType>> NonRawFrameReaderStillImage::get_pixels_data(int *widt
         throw std::runtime_error("Unable to open image file: " + input_file);
     }
 
-    vector<vector<PixelType>> result = opencv_rgb_image_to_vector_vector_short(image, &m_width, &m_height);
+    int bit_depth = 0;
+    vector<vector<PixelType>> result = opencv_rgb_image_to_vector_vector_short(image, &m_width, &m_height, &bit_depth);
+    if (bit_depth == 8) {
+        scale_8bit_image_to_16bit(&result);
+    }
 
     if (width != nullptr) {
         *width = m_width;
@@ -37,7 +41,11 @@ std::vector<PixelType> NonRawFrameReaderStillImage::get_pixels_data_monochrome(i
         throw std::runtime_error("Unable to open image file: " + input_file);
     }
 
-    vector<PixelType> result = opencv_grayscale_image_to_vector_short(image, &m_width, &m_height);
+    int bit_depth = 0;
+    vector<PixelType> result = opencv_grayscale_image_to_vector_short(image, &m_width, &m_height, &bit_depth);
+    if (bit_depth == 8) {
+        scale_8bit_image_to_16bit(&result);
+    }
 
     if (width != nullptr) {
         *width = m_width;

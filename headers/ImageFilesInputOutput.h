@@ -17,6 +17,32 @@
 namespace AstroPhotoStacker {
 
 
+    inline int get_bit_depth_from_opencv_type(int opencv_type) {
+        const int mask = 0b111;
+        const int depth = opencv_type & mask;
+        if (depth == CV_8U || depth == CV_8S) {
+            return 8;
+        }
+        else if (depth == CV_16U || depth == CV_16S) {
+            return 16;
+        }
+        else if (depth == CV_32S) {
+            return 32;
+        }
+        else if (depth == CV_32F) {
+            return 32;
+        }
+        else if (depth == CV_64F) {
+            return 64;
+        }
+        else if (depth == CV_16F) {
+            return 16;
+        }
+        else {
+            throw std::runtime_error("Unsupported OpenCV type");
+        }
+    };
+
     /**
      * @brief Create a gray scale image from an array of pixel values
      *
@@ -228,21 +254,21 @@ namespace AstroPhotoStacker {
 
 
     template<class ValueType>
-    std::vector<std::vector<ValueType> > opencv_rgb_image_to_vector_vector(const cv::Mat &image, int *width, int *height) {
+    std::vector<std::vector<ValueType> > opencv_rgb_image_to_vector_vector(const cv::Mat &image, int *width, int *height, int *bit_depth = nullptr) {
         *width = image.cols;
         *height = image.rows;
         std::vector<std::vector<ValueType>> result(3, std::vector<ValueType>(*width*(*height)));
-        const int bit_depth = image.depth();
+        const int bit_depth_internal = image.depth();
         for (int y = 0; y < *height; y++) {
             for (int x = 0; x < *width; x++) {
                 for (int color = 0; color < 3; color++) {
-                    if (bit_depth == CV_8U) {
+                    if (bit_depth_internal == CV_8U) {
                         result[color][y*(*width) + x] = image.at<cv::Vec3b>(y, x)[2-color];
                     }
-                    else if (bit_depth == CV_16U) {
+                    else if (bit_depth_internal == CV_16U) {
                         result[color][y*(*width) + x] = image.at<cv::Vec3w>(y, x)[2-color];
                     }
-                    else if (bit_depth == CV_16S) {
+                    else if (bit_depth_internal == CV_16S) {
                         result[color][y*(*width) + x] = image.at<cv::Vec3s>(y, x)[2-color];
                     }
                     else {
@@ -251,32 +277,38 @@ namespace AstroPhotoStacker {
                 }
             }
         }
+
+
+        if (bit_depth != nullptr) {
+            *bit_depth = get_bit_depth_from_opencv_type(bit_depth_internal);
+        }
+
         return result;
     };
 
 
     template<class ValueType>
-    std::vector<std::vector<ValueType> > read_still_rgb_image(const std::string &input_file, int *width, int *height) {
+    std::vector<std::vector<ValueType> > read_still_rgb_image(const std::string &input_file, int *width, int *height, int *bit_depth = nullptr) {
         cv::Mat image = cv::imread(input_file, cv::IMREAD_COLOR);
-        return opencv_rgb_image_to_vector_vector<ValueType>(image, width, height);
+        return opencv_rgb_image_to_vector_vector<ValueType>(image, width, height, bit_depth);
     };
 
     template<class ValueType>
-    std::vector<ValueType> read_still_rgb_image_as_gray_scale(const std::string &input_file, int *width, int *height) {
+    std::vector<ValueType> read_still_rgb_image_as_gray_scale(const std::string &input_file, int *width, int *height, int *bit_depth = nullptr) {
         cv::Mat image = cv::imread(input_file, cv::IMREAD_ANYDEPTH);
         *width = image.cols;
         *height = image.rows;
-        const int bit_depth = image.depth();
+        const int bit_depth_internal = image.depth();
         std::vector<ValueType> result((*width)*(*height),0);
         for (int y = 0; y < (*height); y++) {
             for (int x = 0; x < (*width); x++) {
-                if (bit_depth == CV_8U) {
+                if (bit_depth_internal == CV_8U) {
                     result[y*(*width) + x] = image.at<unsigned char>(y, x);
                 }
-                else if (bit_depth == CV_16U) {
+                else if (bit_depth_internal == CV_16U) {
                     result[y*(*width) + x] = image.at<ushort>(y, x);
                 }
-                else if (bit_depth == CV_16S) {
+                else if (bit_depth_internal == CV_16S) {
                     result[y*(*width) + x] = image.at<short>(y, x);
                 }
                 else {
@@ -284,6 +316,12 @@ namespace AstroPhotoStacker {
                 }
             }
         }
+
+
+        if (bit_depth != nullptr) {
+            *bit_depth = get_bit_depth_from_opencv_type(bit_depth_internal);
+        }
+
         return result;
     };
 

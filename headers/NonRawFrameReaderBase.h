@@ -28,8 +28,8 @@ namespace AstroPhotoStacker {
 
 
         protected:
-            std::vector<std::vector<PixelType>> opencv_rgb_image_to_vector_vector_short(const cv::Mat &image, int *width, int *height);
+            std::vector<std::vector<PixelType>> opencv_rgb_image_to_vector_vector_short(const cv::Mat &image, int *width, int *height, int *bith_depth = nullptr);
 
-            std::vector<PixelType> opencv_grayscale_image_to_vector_short(const cv::Mat &image, int *width, int *height);
+            std::vector<PixelType> opencv_grayscale_image_to_vector_short(const cv::Mat &image, int *width, int *height, int *bith_depth = nullptr);
     };
 }
