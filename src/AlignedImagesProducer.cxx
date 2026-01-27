@@ -8,6 +8,7 @@
 #include "../headers/StackerFactory.h"
 #include "../headers/TaskScheduler.hxx"
 #include "../headers/SummaryYamlCreator.h"
+#include "../headers/CommonImageOperations.h"
 
 #include "../headers/FilelistHandler.h"
 

@@ -343,26 +343,6 @@ namespace AstroPhotoStacker {
 
     std::string unix_time_to_string(int unix_time);
 
-    template <typename PixelValueTypeInput, typename PixelValueTypeOutput = PixelValueTypeInput>
-    std::vector<PixelValueTypeOutput> convert_color_to_monochrome(const std::vector<std::vector<PixelValueTypeInput>> &color_image, int width, int height) {
-        const unsigned int n_pixels = width * height;
-        const unsigned int n_colors = color_image.size();
-
-        std::vector<float> temp_result(n_pixels,0);
-        for (unsigned int i_color = 0; i_color < n_colors; i_color++) {
-            const std::vector<PixelValueTypeInput> &color_channel = color_image[i_color];
-            for (unsigned int i_pixel = 0; i_pixel < n_pixels; i_pixel++) {
-                temp_result[i_pixel] += color_channel[i_pixel];
-            }
-        }
-
-        std::vector<PixelValueTypeOutput> result(n_pixels);
-        for (unsigned int i_pixel = 0; i_pixel < n_pixels; i_pixel++) {
-            result[i_pixel] = static_cast<PixelValueTypeOutput>(temp_result[i_pixel] / n_colors);
-        }
-        return result;
-    }
-
     std::string get_filename_from_path(const std::string &path);
 
     std::string get_filename_without_extension(const std::string &path);
@@ -379,30 +359,5 @@ namespace AstroPhotoStacker {
 
     std::string replace_file_extension(const std::string &file_address, const std::string &new_extension);
 
-    template<typename InptutPixelType>
-    std::vector<std::vector<unsigned short>> scale_image_to_16bit_int(const std::vector<std::vector<InptutPixelType>> &input_image) {
-        std::vector<std::vector<unsigned short>> result;
-        InptutPixelType max_value = 0;
-        for (const std::vector<InptutPixelType> &input_channel : input_image) {
-            for (InptutPixelType value : input_channel) {
-                if (value > max_value) {
-                    max_value = value;
-                }
-            }
-            result.push_back(std::vector<unsigned short>(input_channel.size()));
-        }
-        const double scale_factor = 65535.0f / max_value;
-
-        for (size_t i_channel = 0; i_channel < input_image.size(); i_channel++) {
-            const std::vector<InptutPixelType> &input_channel = input_image[i_channel];
-            std::vector<unsigned short> &output_channel = result[i_channel];
-            for (size_t i = 0; i < input_channel.size(); i++) {
-                output_channel[i] = static_cast<unsigned short>(input_channel[i] * scale_factor);
-            }
-        }
-        return result;
-    };
-
-    unsigned short get_otsu_threshold(const unsigned short *brightness, int n_pixels);
 }
 

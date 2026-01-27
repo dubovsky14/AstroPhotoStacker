@@ -2,6 +2,7 @@
 
 #include "../headers/StarFinder.h"
 #include "../headers/Common.h"
+#include "../headers/CommonImageOperations.h"
 
 
 using namespace std;

@@ -3,6 +3,7 @@
 #include "../headers/ImageFilesInputOutput.h"
 
 #include "../headers/Common.h"
+#include "../headers/CommonImageOperations.h"
 
 
 #include <opencv2/opencv.hpp>
@@ -54,7 +55,7 @@ namespace AstroPhotoStacker {
                                                 std::pair<float,float> *red_shift,
                                                 const std::vector<std::vector<PixelType>> &image, int width, int height) const {
 
-                std::vector<std::vector<unsigned short>> scaled_image = scale_image_to_16bit_int(image);
+                std::vector<std::vector<unsigned short>> scaled_image = scale_image_to_16bit_uint(image);
                 get_blue_shift_and_red_shift_internal(blue_shift, red_shift, scaled_image, width, height);
 
             };

@@ -5,6 +5,7 @@
 #include "../headers/SharpnessRanker.h"
 #include "../headers/ImageRanking.h"
 #include "../headers/Common.h"
+#include "../headers/CommonImageOperations.h"
 
 #include <memory>
 #include <string>
