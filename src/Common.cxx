@@ -158,6 +158,8 @@ std::vector<std::string> AstroPhotoStacker::get_frame_files_in_folder(const std:
 };
 
 std::string AstroPhotoStacker::round_and_convert_to_string(double x, int digits_after_decimal_point) {
+    const bool is_negative = (x < 0);
+    x = abs(x);
     const double factor = pow(10, digits_after_decimal_point);
     const long int y = round(factor*x);
 
@@ -169,6 +171,9 @@ std::string AstroPhotoStacker::round_and_convert_to_string(double x, int digits_
         string_rounded = string_rounded + "0";
     }
     string_rounded = string_rounded + to_string(rounded_fraction);
+    if (is_negative) {
+        string_rounded = "-" + string_rounded;
+    }
     return string_rounded;
 };
 

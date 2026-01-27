@@ -106,6 +106,24 @@ Metadata RawFileReaderVideoSer::read_metadata_without_cache() {
         metadata.camera_model = metadata.camera_model.substr(equal_sign_position + 1);
     }
 
+    // now the temperature
+    if (temp_position != std::string::npos) {
+        const string string_buffer_temp(string_buffer);
+        const std::string string_after_equal_sign = string_buffer_temp.substr(temp_position + 5);
+        string temperature_string;
+        for (char c : string_after_equal_sign) {
+            if ((c >= '0' && c <= '9') || c == '.' || c == '-') {
+                temperature_string += c;
+            }
+            else {
+                break;
+            }
+        }
+        if (!temperature_string.empty()) {
+            metadata.temperature = std::stof(temperature_string);
+        }
+    }
+
     // metadata in format "fps=36.23gain=300exp=5.00             "
     file.seekg(122, std::ios::beg);
     file.read(string_buffer, 40);
