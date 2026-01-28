@@ -1,6 +1,11 @@
 #include "../headers/PostProcessingToolGUI.h"
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 
+#include "../../headers/PixelType.h"
+#include "../../headers/CommonImageOperations.h"
+
+#include <limits>
+
 using namespace std;
 using namespace AstroPhotoStacker;
 
@@ -170,7 +175,8 @@ void PostProcessingToolGUI::add_sharpening_settings()   {
 void PostProcessingToolGUI::add_apply_button() {
     wxButton *button_stack_files    = new wxButton(this, wxID_ANY, "Apply post processing", wxDefaultPosition, wxSize(200, 50));
     button_stack_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
-        const vector<vector<double>> &processed_image = m_post_processing_tool->post_process_image(*m_stacked_image, m_width, m_height);
+        vector<vector<double>> processed_image = m_post_processing_tool->post_process_image(*m_stacked_image, m_width, m_height);
+        scale_image_to_maximum(&processed_image, std::numeric_limits<PixelType>::max());
         m_image_preview->read_preview_from_stacked_image(processed_image, m_width, m_height);
         m_image_preview->update_preview_bitmap();
     });

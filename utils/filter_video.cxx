@@ -76,6 +76,13 @@ int main(int argc, const char **argv) {
         }
         n_frames_to_keep = std::min(n_frames_to_keep, n_frames_total);
 
+        frames_and_scores.resize(n_frames_to_keep);
+
+        // sort back by frame number
+        std::sort(frames_and_scores.begin(), frames_and_scores.end(), [](const std::pair<InputFrame, float> &a, const std::pair<InputFrame, float> &b) {
+            return a.first.get_frame_number() < b.first.get_frame_number();
+        });
+
         cout << "Total frames in input video: " << n_frames_total << endl;
         cout << "Frames to keep in output video: " << n_frames_to_keep << endl;
 
@@ -106,7 +113,7 @@ int main(int argc, const char **argv) {
 
             if (output_bit_depth == 8) {
                 std::vector<unsigned char> frame_data_8bit(frame_data.size(), 0);
-                std::transform(frame_data.begin(), frame_data.end(), frame_data_8bit.begin(), [](PixelType x) -> unsigned char { return static_cast<unsigned char>(x / 256); });
+                std::transform(frame_data.begin(), frame_data.end(), frame_data_8bit.begin(), [](PixelType x) -> unsigned char { return static_cast<unsigned char>(x / 128); });
                 video_writer.write_frame(frame_data_8bit);
             }
             else if (output_bit_depth == 16) {

@@ -57,4 +57,24 @@ namespace AstroPhotoStacker {
         return result;
     };
 
+    template<typename InputPixelType>
+    void scale_image_to_maximum(std::vector<std::vector<InputPixelType>> *input_image, double desired_max_value) {
+        InputPixelType max_value = 0;
+        for (const std::vector<InputPixelType> &input_channel : *input_image) {
+            for (InputPixelType value : input_channel) {
+                if (value > max_value) {
+                    max_value = value;
+                }
+            }
+        }
+        const double scale_factor = double(desired_max_value) / max_value;
+
+        for (size_t i_channel = 0; i_channel < input_image->size(); i_channel++) {
+            std::vector<InputPixelType> &input_channel = (*input_image)[i_channel];
+            for (size_t i = 0; i < input_channel.size(); i++) {
+                input_channel[i] = static_cast<InputPixelType>(input_channel[i] * scale_factor);
+            }
+        }
+    };
+
 }
