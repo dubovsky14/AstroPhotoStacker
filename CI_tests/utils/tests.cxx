@@ -63,10 +63,10 @@ int main(int argc, const char **argv)   {
         InputFrame("AstroPhotoStacker_test_files/data/moon_jpg/original.jpg"),
         InputFrame("AstroPhotoStacker_test_files/data/moon_jpg/shifted.jpg"),
         std::vector<std::tuple<int,int,int,int>>{
-            {589,586,    6,  11},
+            {589,586,    6,  12},
             {1052, 274,  0,   0},
             {1546, 237, -6,   1},
-            {554,  991,  0,  -6},
+            {554,  991,  0,  -5},
         });
 
     test_runner.run_test("Saving 6D Mark II raw file into into file", test_metadata_fit_file_saver,

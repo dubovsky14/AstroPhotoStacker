@@ -17,16 +17,14 @@ void AstroPhotoStacker::convert_to_fit_file(const InputFrame &input_frame, const
     const Metadata metadata_reader = read_metadata(input_frame);
 
     if (output_bit_depth == 16)    {
-        if(input_frame.is_video_frame())    {
-            std::transform(image_data.begin(), image_data.end(), image_data.begin(), [](PixelType value) {
-                return value * 256;
-            });
-        }
-        else   {
-            std::transform(image_data.begin(), image_data.end(), image_data.begin(), [](PixelType value) {
-                return value * 2;
-            });
-        }
+        std::transform(image_data.begin(), image_data.end(), image_data.begin(), [](PixelType value) {
+            return value * 2;
+        });
+    }
+    else if (output_bit_depth == 8)    {
+        std::transform(image_data.begin(), image_data.end(), image_data.begin(), [](PixelType value) {
+            return static_cast<PixelType>(value / 128);
+        });
     }
 
     FitFileSaver fit_file_saver(width, height);
