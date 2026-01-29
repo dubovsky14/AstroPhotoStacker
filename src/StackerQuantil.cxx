@@ -4,7 +4,7 @@
 StackerQuantil::StackerQuantil(int number_of_colors, int width, int height, bool interpolate_colors) :
     StackerMedian(number_of_colors, width, height, interpolate_colors)    {
 
-    add_additional_setting("quantil_fraction", &m_quantil_fraction, 0.0, 0.45, 0.01);
+    m_configurable_algorithm_settings.add_additional_setting_numerical("quantil_fraction", &m_quantil_fraction, 0.0, 0.45, 0.01);
 };
 
 double StackerQuantil::get_stacked_value_from_pixel_array(PixelType *ordered_array_begin, unsigned int number_of_stacked_pixels) {

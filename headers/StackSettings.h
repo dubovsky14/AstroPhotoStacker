@@ -1,7 +1,8 @@
 #pragma once
 
 #include "../headers/InputFrame.h"
-#include "../headers/AdditionalStackerSetting.h"
+#include "../headers/AdditionalStackerSettingNumerical.h"
+#include "../headers/ConfigurableAlgorithmSettings.h"
 
 #include <string>
 #include <thread>
@@ -67,7 +68,7 @@ namespace AstroPhotoStacker {
                 return m_algorithm_specific_settings;
             };
 
-            std::vector<AdditionalStackerSetting> get_algorithm_specific_settings_defaults() const;
+            std::vector<AdditionalStackerSettingNumerical> get_algorithm_specific_settings_defaults() const;
 
         private:
             AstroPhotoStacker::InputFrame m_alignment_frame;

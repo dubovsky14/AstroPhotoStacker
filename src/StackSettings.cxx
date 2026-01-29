@@ -88,12 +88,12 @@ bool StackSettings::apply_color_stretching() const   {
     return m_apply_color_stretching;
 };
 
-std::vector<AdditionalStackerSetting> StackSettings::get_algorithm_specific_settings_defaults() const {
+std::vector<AdditionalStackerSettingNumerical> StackSettings::get_algorithm_specific_settings_defaults() const {
     std::unique_ptr<StackerBase> stacker = create_stacker(m_stacking_algorithm, m_n_cpus, 3, 2, m_use_color_interpolation);
-    vector<string> keys = stacker->get_additional_setting_keys();
-    std::vector<AdditionalStackerSetting> settings;
+    vector<string> keys = stacker->get_configurable_algorithm_settings().get_additional_setting_keys_numerical();
+    std::vector<AdditionalStackerSettingNumerical> settings;
     for (const auto &key : keys) {
-        settings.push_back(stacker->get_additional_setting(key));
+        settings.push_back(stacker->get_configurable_algorithm_settings().get_additional_setting_numerical(key));
     }
     return settings;
 }

@@ -22,6 +22,7 @@
 #include "../../headers/ConvertToFitFile.h"
 #include "../../headers/PixelType.h"
 #include "../../headers/CalibratedPhotoHandler.h"
+#include "../../headers/AdditionalStackerSettingNumerical.h"
 
 #include <wx/spinctrl.h>
 #include <wx/progdlg.h>
@@ -869,7 +870,7 @@ void MyFrame::add_stacking_algorithm_choice_box()  {
 };
 
 void MyFrame::update_algorithm_specific_settings_gui()  {
-    vector<AdditionalStackerSetting> specific_settings = m_stack_settings->get_algorithm_specific_settings_defaults();
+    vector<AdditionalStackerSettingNumerical> specific_settings = m_stack_settings->get_algorithm_specific_settings_defaults();
 
     for (wxStaticText* text : m_algorithm_specific_settings_texts) {
         m_sizer_algorithm_specific_settings->Detach(text);
@@ -886,7 +887,7 @@ void MyFrame::update_algorithm_specific_settings_gui()  {
     m_stack_settings->clear_algorithm_specific_settings();
 
 
-    for (const AstroPhotoStacker::AdditionalStackerSetting &setting : specific_settings) {
+    for (const AstroPhotoStacker::AdditionalStackerSettingNumerical &setting : specific_settings) {
         wxStaticText* label = new wxStaticText(this, wxID_ANY, setting.get_name() + ":");
 
         const double current_value = m_stack_settings->has_algorithm_specific_setting_from_previous_session(setting.get_name()) ?

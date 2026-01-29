@@ -8,8 +8,8 @@ using namespace AstroPhotoStacker;
 StackerKappaSigmaBase::StackerKappaSigmaBase(int number_of_colors, int width, int height, bool interpolate_colors) :
     StackerMedian(number_of_colors, width, height, interpolate_colors)    {
 
-        add_additional_setting("kappa", &m_kappa, 0.1, 10.0, 0.1);
-        add_additional_setting("n_iterations", &m_n_iterations, 1, 20, 1);
+        m_configurable_algorithm_settings.add_additional_setting_numerical("kappa", &m_kappa, 0.1, 10.0, 0.1);
+        m_configurable_algorithm_settings.add_additional_setting_numerical("n_iterations", &m_n_iterations, 1, 20, 1);
 };
 
 

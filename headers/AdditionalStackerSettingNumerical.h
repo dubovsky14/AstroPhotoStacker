@@ -4,9 +4,9 @@
 #include <functional>
 
 namespace AstroPhotoStacker {
-    class AdditionalStackerSetting {
+    class AdditionalStackerSettingNumerical {
         public:
-            AdditionalStackerSetting() = delete;
+            AdditionalStackerSettingNumerical() = delete;
 
             /**
              * @brief Construct a new Additional Stacker Setting object
@@ -17,7 +17,7 @@ namespace AstroPhotoStacker {
              * @param step - step size for the setting
             */
            template<typename ValueType>
-            AdditionalStackerSetting(const std::string &name, ValueType* value_address, double min_value, double max_value, double step)
+            AdditionalStackerSettingNumerical(const std::string &name, ValueType* value_address, double min_value, double max_value, double step)
                 : m_name(name), m_range(std::make_pair(min_value, max_value)), m_step(step) {
                     m_set_value_function = [value_address, min_value, max_value](double v) {
                         if (v < min_value) {

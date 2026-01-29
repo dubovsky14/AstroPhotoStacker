@@ -122,7 +122,7 @@ void configure_stacker_with_optional_arguments(StackerBase *stacker, const Input
                 algorithm_specific_settings[key] = value;
             }
         }
-        stacker->configure_stacker(algorithm_specific_settings);
+        stacker->get_configurable_algorithm_settings().configure_with_settings_numerical(algorithm_specific_settings);
         if (print_info) {
             cout << "Algorithm specific settings:\n";
             for (const auto &pair : algorithm_specific_settings) {
