@@ -7,7 +7,7 @@
 
 using namespace AstroPhotoStacker;
 
-TestResult AstroPhotoStacker::test_metadata_reading(const std::string &input_file,
+TestResult AstroPhotoStacker::test_metadata_reading(const InputFrame &input_frame,
                                                     float expected_aperture,
                                                     float expected_exposure_time,
                                                     int expected_iso,
@@ -17,7 +17,7 @@ TestResult AstroPhotoStacker::test_metadata_reading(const std::string &input_fil
                                                     int expected_unix_time,
                                                     float expected_camera_temperature)    {
 
-    const Metadata metadata = read_metadata(InputFrame(input_file));
+    const Metadata metadata = read_metadata(input_frame);
     std::string error_message = "";
 
     if (metadata.aperture != expected_aperture) {

@@ -3,9 +3,11 @@
 #include <string>
 
 #include "../headers/TestUtils.h"
+#include "../../headers/InputFrame.h"
+
 
 namespace AstroPhotoStacker {
-    TestResult test_metadata_reading(   const std::string &input_file,
+    TestResult test_metadata_reading(   const InputFrame &input_frame,
                                         float expected_aperture,
                                         float expected_exposure_time,
                                         int expected_iso,

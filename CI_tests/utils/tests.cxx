@@ -26,12 +26,16 @@ int main(int argc, const char **argv)   {
     test_runner.run_test("kd_tree",                 test_kd_tree);
 
     test_runner.run_test("Metadata reading - Canon 6D MarkII",    test_metadata_reading,
-                        "AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2",
+                        InputFrame("AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2"),
                         6.3, 180.80f, 1600, 600.f, "RGGB", "Canon 6D Mark II", -1, 23);
 
     test_runner.run_test("Metadata reading ZWO678MC",    test_metadata_reading,
-                            "AstroPhotoStacker_test_files/data/ZWO678MC_horse_head/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001.fit",
+                            InputFrame("AstroPhotoStacker_test_files/data/ZWO678MC_horse_head/Light_FOV_180.0s_Bin1_678MC_20241226-001229_0001.fit"),
                             0, 180.0f, 100, 1197.f, "RGGB", "ZWO 678MC", 1735168177, 0.3);
+
+    test_runner.run_test("Metadata reading ZWO678MC ser video",    test_metadata_reading,
+                            InputFrame("AstroPhotoStacker_test_files/data/Jupiter_video/Jupiter_short.ser", 0),
+                            0, 0.01f, 230, 0, "BGGR", "ZWO 678MC", 1768775054, -0.8);
 
     test_runner.run_test(   "Image reading - raw Canon 6D Mark II", test_image_reading_raw,
                             InputFrame("AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/IMG_9138.CR2"),
@@ -58,6 +62,15 @@ int main(int argc, const char **argv)   {
                                {2212, 2013, 1968, 1},
                            });
 
+    test_runner.run_test(   "Image reading - raw ZWO 678MC ser video", test_image_reading_raw,
+                            InputFrame("AstroPhotoStacker_test_files/data/Jupiter_video/Jupiter_short.ser", 0),
+                            std::pair<int,int>{1920, 1080},
+                            std::vector<std::tuple<int, int, PixelType, char>>{
+                               {0, 0, 0, 2},
+                               {960, 540, 22400, 2},
+                               {961, 540, 23808, 1},
+                               {865, 521, 18688, 0},
+                           });
 
     test_runner.run_test(   "Local shifts calculation: Moon", test_predefined_alignment_boxes,
         InputFrame("AstroPhotoStacker_test_files/data/moon_jpg/original.jpg"),
