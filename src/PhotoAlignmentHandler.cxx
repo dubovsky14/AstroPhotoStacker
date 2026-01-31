@@ -11,6 +11,7 @@
 #include "../headers/VideoReader.h"
 
 #include "../headers/AlignmentResultFactory.h"
+#include "../headers/ReferencePhotoHandlerFactory.h"
 
 #include <fstream>
 #include <filesystem>
@@ -93,7 +94,7 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
 };
 
 void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const std::vector<InputFrame> &files) {
-    m_reference_photo_handler = reference_photo_handler_factory(reference_frame);
+    m_reference_photo_handler = ReferencePhotoHandlerFactory::get_reference_photo_handler(reference_frame, m_alignment_method, ConfigurableAlgorithmSettingsMap{});
     m_reference_frame = reference_frame;
 
     ReferencePhotoHandlerComet *comet_handler = dynamic_cast<ReferencePhotoHandlerComet*>(m_reference_photo_handler.get());
@@ -208,28 +209,4 @@ void PhotoAlignmentHandler::limit_fraction_of_files(float fraction) {
 
 const std::atomic<int>& PhotoAlignmentHandler::get_number_of_aligned_files() const {
     return m_n_files_aligned;
-};
-
-unique_ptr<ReferencePhotoHandlerBase> PhotoAlignmentHandler::reference_photo_handler_factory(const InputFrame& input_frame)   const  {
-    if (m_alignment_method == "stars") {
-        return make_unique<ReferencePhotoHandlerStars>(input_frame, 0.0005, false);
-    }
-    else if (m_alignment_method == "stars with variable zoom") {
-        return make_unique<ReferencePhotoHandlerStars>(input_frame, 0.0005, true);
-    }
-    else if (m_alignment_method == "planetary") {
-        return make_unique<ReferencePhotoHandlerPlanetary>(input_frame, 0.05);
-    }
-    else if (m_alignment_method == "planetary without rotation")    {
-        return make_unique<ReferencePhotoHandlerPlanetaryZeroRotation>(input_frame, 0.05);
-    }
-    else if (m_alignment_method == "surface") {
-        return make_unique<ReferencePhotoHandlerSurface>(input_frame, 0.05);
-    }
-    else if (m_alignment_method == "comet") {
-        return  make_unique<ReferencePhotoHandlerComet>(input_frame);
-    }
-    else {
-        throw runtime_error("Invalid alignment method: " + m_alignment_method);
-    }
 };

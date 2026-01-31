@@ -18,6 +18,8 @@ namespace AstroPhotoStacker   {
      */
     class ReferencePhotoHandlerPlanetary : public ReferencePhotoHandlerBase {
         public:
+            friend class ReferencePhotoHandlerFactory;
+
             ReferencePhotoHandlerPlanetary(const ReferencePhotoHandlerPlanetary&) = delete;
 
             /**
@@ -26,7 +28,7 @@ namespace AstroPhotoStacker   {
              * @param input_frame - path to the raw file
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetary(const InputFrame &input_frame, float threshold_fraction);
+            ReferencePhotoHandlerPlanetary(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap());
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -36,7 +38,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetary(const PixelType *brightness, int width, int height, float threshold_fraction);
+            ReferencePhotoHandlerPlanetary(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap());
 
             /**
              * @brief Calculate how the photo should be rotated and shifted to match the reference photo
@@ -49,7 +51,7 @@ namespace AstroPhotoStacker   {
             virtual std::unique_ptr<AlignmentResultBase> calculate_alignment(const InputFrame &input_frame) const override;
 
         protected:
-            ReferencePhotoHandlerPlanetary() : ReferencePhotoHandlerBase() {};
+            ReferencePhotoHandlerPlanetary() : ReferencePhotoHandlerBase() { define_configuration_settings(); };
 
             /**
              * @brief Get coordinates of the window where the alignment should be calculated - surrounding the planet
@@ -77,9 +79,9 @@ namespace AstroPhotoStacker   {
              */
             std::tuple<double,double> get_center_of_mass(const MonochromeImageData &image_data, PixelType threshold, const AlignmentWindow &window_coordinates) const;
 
-            std::tuple<float,float,std::vector<std::vector<double>>,std::vector<double>> get_center_of_mass_eigenvectors_and_eigenvalues(const MonochromeImageData &image_data, float threshold_fraction, AlignmentWindow *window_coordinates = nullptr) const;
+            std::tuple<float,float,std::vector<std::vector<double>>,std::vector<double>> get_center_of_mass_eigenvectors_and_eigenvalues(const MonochromeImageData &image_data,AlignmentWindow *window_coordinates = nullptr) const;
 
-            virtual void initialize(const PixelType *brightness, int width, int height, float threshold_fraction) override;
+            virtual void initialize(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map)   override;
 
             static void calculate_eigenvectors_and_eigenvalues(const std::vector<std::vector<double>> &covariance_matrix, std::vector<double> *eigenvalues, std::vector<std::vector<double>> *eigenvectors);
 
@@ -91,6 +93,8 @@ namespace AstroPhotoStacker   {
             std::vector<double> m_covariance_eigen_values;
 
             AlignmentWindow m_alignment_window;
+
+            double m_gaussian_sigma = 6.0;
 
 
     };

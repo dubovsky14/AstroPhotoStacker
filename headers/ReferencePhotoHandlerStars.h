@@ -18,16 +18,17 @@ namespace AstroPhotoStacker   {
     */
     class ReferencePhotoHandlerStars : public ReferencePhotoHandlerBase {
         public:
-            ReferencePhotoHandlerStars()                             = delete;
+            friend class ReferencePhotoHandlerFactory;
+
             ReferencePhotoHandlerStars(const ReferencePhotoHandlerStars&) = delete;
 
             /**
              * @brief Construct a new Reference Photo Handler object
              *
              * @param input_frame - input frame data
-             * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
+             * @param configuration_map - values of free parameters of the algorithm
             */
-            ReferencePhotoHandlerStars(const InputFrame &input_frame, float threshold_fraction = 0.0005, bool variable_zoom = false);
+            ReferencePhotoHandlerStars(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap());
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -35,12 +36,11 @@ namespace AstroPhotoStacker   {
              * @param brightness - pointer to the array containing the brightness of the pixels
              * @param width - width of the photo
              * @param height - height of the photo
-             * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
+             * @param configuration_map - values of free parameters of the algorithm
             */
-            ReferencePhotoHandlerStars(const PixelType *brightness, int width, int height, float threshold_fraction = 0.0005, bool variable_zoom = false)  :
-                ReferencePhotoHandlerBase(brightness, width, height, threshold_fraction) {
-                m_variable_zoom = variable_zoom;
-                initialize(brightness, width, height, threshold_fraction);
+            ReferencePhotoHandlerStars(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap())  :
+                ReferencePhotoHandlerBase(brightness, width, height, configuration_map) {
+                initialize(brightness, width, height, configuration_map);
             };
 
             /**
@@ -70,6 +70,10 @@ namespace AstroPhotoStacker   {
             std::unique_ptr<AlignmentResultPlateSolving> plate_solve(const std::vector<std::tuple<float, float, int> > &stars) const;
 
         protected:
+            ReferencePhotoHandlerStars() : ReferencePhotoHandlerBase() { define_configuration_settings(); };
+
+            virtual void define_configuration_settings() override;
+
 
             std::vector<std::tuple<float, float, int> > m_stars;
             std::unique_ptr<KDTree<float, 4, std::tuple<unsigned, unsigned, unsigned, unsigned>>> m_kd_tree = nullptr;
@@ -77,8 +81,9 @@ namespace AstroPhotoStacker   {
             bool m_variable_zoom = false;
 
             int m_minimal_number_of_pixels_per_star = -1;
+            float m_threshold_fraction = 0.0005;
 
-            virtual void initialize(const PixelType *brightness, int width, int height, float threshold_fraction = 0.0005) override;
+            virtual void initialize(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map) override;
 
             void initialize(const std::vector<std::tuple<float, float, int> > &stars, int width, int height);
 

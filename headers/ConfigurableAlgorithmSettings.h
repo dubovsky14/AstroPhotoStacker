@@ -7,6 +7,11 @@
 #include <map>
 
 namespace AstroPhotoStacker {
+    struct ConfigurableAlgorithmSettingsMap  {
+        std::map<std::string, double> numerical_settings;
+        std::map<std::string, bool>   bool_settings;
+    };
+
 
     /**
      * @brief Settings for configurable algorithms
@@ -16,7 +21,14 @@ namespace AstroPhotoStacker {
         public:
             ConfigurableAlgorithmSettings() = default;
 
-            virtual ~ConfigurableAlgorithmSettings() = default;
+            ~ConfigurableAlgorithmSettings() = default;
+
+
+            /**
+             * @brief Copy values from another instance of ConfigurableAlgorithmSettings
+             */
+            void set_values_from_configuration_map(const ConfigurableAlgorithmSettingsMap &configuration_map);
+
 
             ////////////////////////////////////////////
             /// Additional settings - numerical type ///
@@ -48,7 +60,7 @@ namespace AstroPhotoStacker {
             ///////////////////////////////////////
 
             void add_additional_setting_bool(const std::string &name, bool *default_value) {
-                m_additional_settings_bool[name] = *default_value;
+                m_additional_settings_bool[name] = default_value;
             };
 
             std::vector<std::string> get_additional_setting_keys_bool() const;
@@ -63,11 +75,7 @@ namespace AstroPhotoStacker {
 
             std::map<std::string, AdditionalStackerSettingNumerical> m_additional_settings_numerical;
 
-            std::map<std::string, bool> m_additional_settings_bool;
-
-
-
+            std::map<std::string, bool*> m_additional_settings_bool;
 
     };
-
 }

@@ -11,12 +11,11 @@
 using namespace AstroPhotoStacker;
 
 
-ReferencePhotoHandlerPlanetaryZeroRotation::ReferencePhotoHandlerPlanetaryZeroRotation(const InputFrame &input_frame, float threshold_fraction)  :
-    ReferencePhotoHandlerPlanetary(input_frame, threshold_fraction) {};
+ReferencePhotoHandlerPlanetaryZeroRotation::ReferencePhotoHandlerPlanetaryZeroRotation(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map)  :
+    ReferencePhotoHandlerPlanetary(input_frame, configuration_map) {};
 
-ReferencePhotoHandlerPlanetaryZeroRotation::ReferencePhotoHandlerPlanetaryZeroRotation(const PixelType *brightness, int width, int height, float threshold_fraction) :
-    ReferencePhotoHandlerPlanetary(brightness, width, height, threshold_fraction) {};
-
+ReferencePhotoHandlerPlanetaryZeroRotation::ReferencePhotoHandlerPlanetaryZeroRotation(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map) :
+    ReferencePhotoHandlerPlanetary(brightness, width, height, configuration_map) {};
 
 std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerPlanetaryZeroRotation::calculate_alignment(const InputFrame &input_frame) const{
     std::unique_ptr<AlignmentResultBase> plate_solving_result_base = ReferencePhotoHandlerPlanetary::calculate_alignment(input_frame);

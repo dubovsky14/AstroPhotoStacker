@@ -6,8 +6,8 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
-ReferencePhotoHandlerComet::ReferencePhotoHandlerComet(const InputFrame &input_frame, float threshold_fraction) :
-    ReferencePhotoHandlerStars(input_frame, threshold_fraction) {
+ReferencePhotoHandlerComet::ReferencePhotoHandlerComet(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) :
+    ReferencePhotoHandlerStars(input_frame, configuration_map) {
     m_reference_input_frame = input_frame;
 };
 

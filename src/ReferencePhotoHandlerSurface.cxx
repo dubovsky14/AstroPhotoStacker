@@ -17,8 +17,8 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 
-ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &reference_frame, float threshold_fraction) : ReferencePhotoHandlerBase(reference_frame, threshold_fraction) {
-    m_threshold_fraction = threshold_fraction;
+ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &reference_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) : ReferencePhotoHandlerBase(reference_frame, configuration_map) {
+    define_configuration_settings();
     CalibratedPhotoHandler calibrated_photo_handler(reference_frame, true);
     calibrated_photo_handler.calibrate();
 
@@ -39,12 +39,13 @@ ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &ref
         value /= n_points;
         brightness.at(i_pixel) = value;
     }
-    initialize(brightness.data(), m_width, m_height, threshold_fraction);
+    initialize(brightness.data(), m_width, m_height);
 };
 
 
-ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const PixelType *brightness, int width, int height, float threshold_fraction) : ReferencePhotoHandlerBase(brightness, width, height, threshold_fraction) {
-    initialize(brightness, width, height, threshold_fraction);
+ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map) : ReferencePhotoHandlerBase(brightness, width, height, configuration_map) {
+    define_configuration_settings();
+    initialize(brightness, width, height);
 };
 
 std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_alignment(const InputFrame &input_frame) const {
@@ -59,7 +60,8 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
     image_data.width = width;
     image_data.height = height;
 
-    ImageRanker image_ranker(brightness, width, height);
+    const int gaussian_kernel_size = 2 *int(m_gaussian_sigma + 0.5) + 1; // we need this to be odd
+    ImageRanker image_ranker(brightness, width, height, gaussian_kernel_size, m_gaussian_sigma);
     const double sharpness = image_ranker.get_sharpness_score();
     const float ranking = 100./sharpness;
 
@@ -130,10 +132,10 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
                                                 ranking);
 };
 
-void ReferencePhotoHandlerSurface::initialize(const PixelType *brightness, int width, int height, float threshold_fraction)  {
+void ReferencePhotoHandlerSurface::initialize(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map)  {
     m_width = width;
     m_height = height;
-    m_threshold_fraction = threshold_fraction;
+    m_configurable_algorithm_settings.set_values_from_configuration_map(configuration_map);
     initialize_reference_features(brightness);
 };
 
@@ -145,6 +147,10 @@ void ReferencePhotoHandlerSurface::initialize_reference_features(const PixelType
     image_data.height = m_height;
 
     get_keypoints_and_descriptors(brightness_original, m_width, m_height, &m_reference_keypoints, &m_reference_descriptors);
+};
+
+void ReferencePhotoHandlerSurface::define_configuration_settings()   {
+    m_configurable_algorithm_settings.add_additional_setting_numerical("gaussian sigma for denoising", &m_gaussian_sigma, 0.1, 15.0, 0.2);
 };
 
 void ReferencePhotoHandlerSurface::get_keypoints_and_descriptors(   const PixelType *brightness,

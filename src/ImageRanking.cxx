@@ -4,7 +4,7 @@
 
 using namespace std;
 
-ImageRanker::ImageRanker(const vector<PixelType> &image_brightness, int width, int height) {
+ImageRanker::ImageRanker(const vector<PixelType> &image_brightness, int width, int height, int gaussian_kernel_size, double gaussian_sigma) {
     // Preprocess the image and create the planet mask
     // 1) Wrap raw data into cv::Mat (16-bit signed, single channel)
 
@@ -43,7 +43,7 @@ ImageRanker::ImageRanker(const vector<PixelType> &image_brightness, int width, i
     cv::erode(m_planet_mask, m_planet_mask, cv::Mat(), cv::Point(-1,-1), 1);
 
     // 4) Light denoise with small Gaussian blur
-    cv::GaussianBlur(img, m_preprocessed_image, cv::Size(17,17), 6);
+    cv::GaussianBlur(img, m_preprocessed_image, cv::Size(gaussian_kernel_size,gaussian_kernel_size), gaussian_sigma);
 
     //cv::bilateralFilter(img, m_preprocessed_image, 5, 35, 35);
 }

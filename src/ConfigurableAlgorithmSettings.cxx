@@ -6,6 +6,10 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 
+void ConfigurableAlgorithmSettings::set_values_from_configuration_map(const ConfigurableAlgorithmSettingsMap &configuration_map) {
+    configure_with_settings_numerical(configuration_map.numerical_settings);
+    configure_with_settings_bool(configuration_map.bool_settings);
+};
 
 std::vector<std::string> ConfigurableAlgorithmSettings::get_additional_setting_keys_numerical() const  {
     std::vector<std::string> keys;
@@ -49,12 +53,12 @@ void ConfigurableAlgorithmSettings::set_additional_setting_bool(const std::strin
     if (m_additional_settings_bool.find(name) == m_additional_settings_bool.end()) {
         throw std::runtime_error("Setting not found: " + name);
     }
-    m_additional_settings_bool.at(name) = value;
+    *m_additional_settings_bool.at(name) = value;
 };
 
 bool ConfigurableAlgorithmSettings::get_additional_setting_bool(const std::string &name) const {
     if (m_additional_settings_bool.find(name) != m_additional_settings_bool.end()) {
-        return m_additional_settings_bool.at(name);
+        return *m_additional_settings_bool.at(name);
     }
     throw std::runtime_error("Setting not found: " + name);
 };

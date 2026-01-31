@@ -139,8 +139,6 @@ namespace   AstroPhotoStacker   {
 
             std::string m_alignment_method = "stars";
 
-            std::unique_ptr<ReferencePhotoHandlerBase> reference_photo_handler_factory(const InputFrame &input_frame) const;
-
             std::map<InputFrame, std::pair<float, float>> m_comet_positions;
     };
 }

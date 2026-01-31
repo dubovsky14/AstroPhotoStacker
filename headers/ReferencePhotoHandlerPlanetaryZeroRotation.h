@@ -17,6 +17,8 @@ namespace AstroPhotoStacker   {
      */
     class ReferencePhotoHandlerPlanetaryZeroRotation : public ReferencePhotoHandlerPlanetary {
         public:
+            friend class ReferencePhotoHandlerFactory;
+
             ReferencePhotoHandlerPlanetaryZeroRotation(const ReferencePhotoHandlerPlanetaryZeroRotation&) = delete;
 
             /**
@@ -25,7 +27,7 @@ namespace AstroPhotoStacker   {
              * @param input_frame - info about the light frame
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetaryZeroRotation(const InputFrame &input_frame, float threshold_fraction);
+            ReferencePhotoHandlerPlanetaryZeroRotation(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap());
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -35,7 +37,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetaryZeroRotation(const PixelType *brightness, int width, int height, float threshold_fraction);
+            ReferencePhotoHandlerPlanetaryZeroRotation(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap());
 
              /**
              * @brief Calculate how the photo should be rotated and shifted to match the reference photo
@@ -46,5 +48,8 @@ namespace AstroPhotoStacker   {
              * @return std::unique_ptr<AlignmentResultBase>
             */
            virtual std::unique_ptr<AlignmentResultBase> calculate_alignment(const InputFrame &input_frame) const override;
+
+        protected:
+            ReferencePhotoHandlerPlanetaryZeroRotation() : ReferencePhotoHandlerPlanetary() { define_configuration_settings(); };
     };
 }

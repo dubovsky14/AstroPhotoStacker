@@ -2,7 +2,6 @@
 #include "../headers/ReferencePhotoHandlerPlanetary.h"
 #include "../headers/InputFrameReader.h"
 #include "../headers/StarFinder.h"
-#include "../headers/SharpnessRanker.h"
 #include "../headers/ImageRanking.h"
 #include "../headers/Common.h"
 #include "../headers/CommonImageOperations.h"
@@ -17,19 +16,19 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
-ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const InputFrame &input_frame, float threshold_fraction)   :
-    ReferencePhotoHandlerBase(input_frame, threshold_fraction) {
+ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map)   :
+    ReferencePhotoHandlerBase(input_frame, configuration_map) {
 
-    m_threshold_fraction = threshold_fraction;
-
+    define_configuration_settings();
     const vector<PixelType> brightness = read_image_monochrome(input_frame, &m_width, &m_height);
-    initialize(brightness.data(), m_width, m_height, threshold_fraction);
+    initialize(brightness.data(), m_width, m_height, configuration_map);
 };
 
-ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const PixelType *brightness, int width, int height, float threshold_fraction)  :
-    ReferencePhotoHandlerBase(brightness, width, height, threshold_fraction) {
-    m_threshold_fraction = threshold_fraction;
-    initialize(brightness, width, height, threshold_fraction);
+ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map)  :
+    ReferencePhotoHandlerBase(brightness, width, height, configuration_map) {
+    define_configuration_settings();
+    m_configurable_algorithm_settings.add_additional_setting_numerical("gaussian sigma for denoising", &m_gaussian_sigma, 0.1, 15.0, 0.2);
+    initialize(brightness, width, height, configuration_map);
 };
 
 std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerPlanetary::calculate_alignment(const InputFrame &input_frame) const{
@@ -42,7 +41,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerPlanetary::calculate_a
     image_data.height = height;
 
     AlignmentWindow alignment_window;
-    const auto [center_of_mass_x, center_of_mass_y, eigenvec, eigenval] = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, m_threshold_fraction, &alignment_window);
+    const auto [center_of_mass_x, center_of_mass_y, eigenvec, eigenval] = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, &alignment_window);
     const double sin_angle = m_covariance_eigen_vectors[0][0]*eigenvec[0][1] - m_covariance_eigen_vectors[0][1]*eigenvec[0][0];
 
     const float shift_x = m_center_of_mass_x - center_of_mass_x;
@@ -57,7 +56,8 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerPlanetary::calculate_a
                                                                                                                         rotation_center_y,
                                                                                                                         rotation);
 
-    ImageRanker image_ranker(brightness, width, height);
+    const int gaussian_kernel_size = 2 *int(m_gaussian_sigma + 0.5) + 1; // we need this to be odd
+    ImageRanker image_ranker(brightness, width, height, gaussian_kernel_size, m_gaussian_sigma);
     const double sharpness = image_ranker.get_sharpness_score();
     plate_solving_result->set_ranking_score(100./sharpness);
 
@@ -169,7 +169,7 @@ std::vector<std::vector<double>> ReferencePhotoHandlerPlanetary::get_covariance_
 };
 
 
-std::tuple<float,float,vector<vector<double>>,vector<double>> ReferencePhotoHandlerPlanetary::get_center_of_mass_eigenvectors_and_eigenvalues(const MonochromeImageData &image_data, float threshold_fraction, AlignmentWindow *window_coordinates) const    {
+std::tuple<float,float,vector<vector<double>>,vector<double>> ReferencePhotoHandlerPlanetary::get_center_of_mass_eigenvectors_and_eigenvalues(const MonochromeImageData &image_data, AlignmentWindow *window_coordinates) const    {
     const PixelType *brightness = image_data.brightness;
     const int width = image_data.width;
     const int height = image_data.height;
@@ -203,7 +203,9 @@ std::tuple<float,float,vector<vector<double>>,vector<double>> ReferencePhotoHand
 };
 
 
-void  ReferencePhotoHandlerPlanetary::initialize(const PixelType *brightness, int width, int height, float threshold_fraction)   {
+void  ReferencePhotoHandlerPlanetary::initialize(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map)   {
+    m_configurable_algorithm_settings.set_values_from_configuration_map(configuration_map);
+
     m_width = width;
     m_height = height;
 
@@ -212,7 +214,7 @@ void  ReferencePhotoHandlerPlanetary::initialize(const PixelType *brightness, in
     image_data.width = width;
     image_data.height = height;
 
-    std::tuple<float,float,vector<vector<double>>,vector<double>> center_of_mass_and_eigenvec_vals = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, threshold_fraction, &m_alignment_window);
+    std::tuple<float,float,vector<vector<double>>,vector<double>> center_of_mass_and_eigenvec_vals = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, &m_alignment_window);
     m_center_of_mass_x = get<0>(center_of_mass_and_eigenvec_vals);
     m_center_of_mass_y = get<1>(center_of_mass_and_eigenvec_vals);
     m_covariance_eigen_vectors = get<2>(center_of_mass_and_eigenvec_vals);

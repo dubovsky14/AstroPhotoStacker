@@ -15,7 +15,7 @@ TestResult AstroPhotoStacker::test_predefined_alignment_boxes(  const InputFrame
 
     string error_message;
 
-    ReferencePhotoHandlerSurface reference_photo_handler(reference_frame, 0.0005f);
+    ReferencePhotoHandlerSurface reference_photo_handler(reference_frame);
 
     unique_ptr<AlignmentResultBase> plate_solving_result = reference_photo_handler.calculate_alignment(alternative_frame);
 

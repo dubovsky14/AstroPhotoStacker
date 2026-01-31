@@ -8,7 +8,9 @@
 
 class ImageRanker {
     public:
-        ImageRanker(const std::vector<PixelType> &image_brightness, int width, int height);
+        //ImageRanker(const std::vector<PixelType> &image_brightness, int width, int height, int gaussian_kernel_size = 11, double gaussian_sigma = 6.0);
+
+        ImageRanker(const std::vector<PixelType> &image_brightness, int width, int height, int gaussian_kernel_size, double gaussian_sigma);
 
         float get_sharpness_score() const;
 

@@ -14,7 +14,8 @@ namespace AstroPhotoStacker   {
     */
     class ReferencePhotoHandlerComet : public ReferencePhotoHandlerStars {
         public:
-            ReferencePhotoHandlerComet()                             = delete;
+            friend class ReferencePhotoHandlerFactory;
+
             ReferencePhotoHandlerComet(const ReferencePhotoHandlerComet&) = delete;
 
             /**
@@ -23,7 +24,7 @@ namespace AstroPhotoStacker   {
              * @param input_frame - input frame data
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerComet(const InputFrame &input_frame, float threshold_fraction = 0.0005);
+            ReferencePhotoHandlerComet(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap());
 
             /**
              * @brief Calculate how the photo should be rotated and shifted to match the reference photo
@@ -52,6 +53,8 @@ namespace AstroPhotoStacker   {
             bool fit_comet_path();
 
         protected:
+            ReferencePhotoHandlerComet() : ReferencePhotoHandlerStars() { define_configuration_settings(); };
+
             InputFrame  m_reference_input_frame;
             std::pair<float,float> calculate_expected_comet_position(int timestamp) const;
 

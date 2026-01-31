@@ -14,16 +14,16 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 
-ReferencePhotoHandlerStars::ReferencePhotoHandlerStars(const InputFrame &input_frame, float threshold_fraction, bool variable_zoom) :
-    ReferencePhotoHandlerBase(input_frame, threshold_fraction) {
+ReferencePhotoHandlerStars::ReferencePhotoHandlerStars(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) :
+    ReferencePhotoHandlerBase(input_frame, configuration_map) {
     const vector<PixelType> brightness = read_image_monochrome(input_frame, &m_width, &m_height);
-    m_variable_zoom = variable_zoom;
-    initialize(brightness.data(), m_width, m_height, threshold_fraction);
+    initialize(brightness.data(), m_width, m_height, configuration_map);
 };
 
 
-void ReferencePhotoHandlerStars::initialize(const PixelType *brightness, int width, int height, float threshold_fraction)  {
-    const PixelType threshold = get_threshold_value<PixelType>(&brightness[0], width*height, threshold_fraction);
+void ReferencePhotoHandlerStars::initialize(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map)  {
+    m_configurable_algorithm_settings.set_values_from_configuration_map(configuration_map);
+    const PixelType threshold = get_threshold_value<PixelType>(&brightness[0], width*height, m_threshold_fraction);
     std::vector<std::tuple<float, float, int> > stars = get_stars(&brightness[0], width, height, threshold);
     keep_only_stars_above_size(&stars, 9);
     sort_stars_by_size(&stars);
@@ -115,4 +115,10 @@ void ReferencePhotoHandlerStars::calculate_and_store_hashes()  {
     }
 
     m_kd_tree->build_tree_structure();
+}
+
+
+void ReferencePhotoHandlerStars::define_configuration_settings() {
+    m_configurable_algorithm_settings.add_additional_setting_bool("variable zoom", &m_variable_zoom);
+    m_configurable_algorithm_settings.add_additional_setting_numerical("threshold fraction", &m_threshold_fraction, 0.0001, 0.005, 0.0001);
 }

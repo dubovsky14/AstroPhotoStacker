@@ -7,6 +7,9 @@
 #include "../headers/MonochromeImageData.h"
 #include "../headers/InputFrame.h"
 #include "../headers/AlignmentResultBase.h"
+#include "../headers/ConfigurableAlgorithmSettings.h"
+#include "../headers/ReferencePhotoHandlerFactory.h"
+
 
 #include <memory>
 #include <string>
@@ -19,6 +22,8 @@ namespace AstroPhotoStacker   {
     */
     class ReferencePhotoHandlerBase {
         public:
+            friend class ReferencePhotoHandlerFactory;
+
             ReferencePhotoHandlerBase(const ReferencePhotoHandlerBase&) = delete;
 
             virtual ~ReferencePhotoHandlerBase()    {};
@@ -29,7 +34,7 @@ namespace AstroPhotoStacker   {
              * @param input_frame - input frame data
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerBase(const InputFrame& input_frame, float threshold_fraction = 0.0005)   {};
+            ReferencePhotoHandlerBase(const InputFrame& input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap())   {};
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -39,7 +44,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerBase(const PixelType *brightness, int width, int height, float threshold_fraction = 0.0005)    {
+            ReferencePhotoHandlerBase(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap())    {
 
             };
 
@@ -67,15 +72,26 @@ namespace AstroPhotoStacker   {
             */
             virtual std::unique_ptr<AlignmentResultBase> calculate_alignment(const InputFrame &input_frame) const = 0;
 
+            virtual void define_configuration_settings() {};
+
+            ConfigurableAlgorithmSettings& get_configurable_algorithm_settings() {
+                return m_configurable_algorithm_settings;
+            };
+
         protected:
-            ReferencePhotoHandlerBase() {};
+            /*
+            @brief Default constructor. Used to get configuration settings defined in derived classes
+            */
+            ReferencePhotoHandlerBase() {define_configuration_settings();};
 
             int m_width;
             int m_height;
 
-            virtual void initialize(const PixelType *brightness, int width, int height, float threshold_fraction = 0.0005) = 0;
+            virtual void initialize(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map) = 0;
 
             std::vector<PixelType>  read_image_monochrome(const InputFrame &input_frame, int *width, int *height)   const;
+
+            ConfigurableAlgorithmSettings   m_configurable_algorithm_settings;
 
     };
 }
