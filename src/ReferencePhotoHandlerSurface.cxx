@@ -6,7 +6,6 @@
 #include "../headers/Common.h"
 #include "../headers/ImageRanking.h"
 
-#include "../headers/AlignmentSettingsSurface.h"
 #include "../headers/AlignmentResultSurface.h"
 
 #include <opencv2/features2d.hpp>
@@ -78,9 +77,8 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
     std::vector<float> shift_sizes_x, shift_sizes_y;
 
     std::vector<LocalShift> local_shifts;
-    const float match_distance_threshold = AlignmentSettingsSurface::get_instance()->get_match_distance_threshold();
     for (const cv::DMatch &match : matches) {
-        if (match.distance > match_distance_threshold) {
+        if (match.distance > m_match_distance_threshold) {
             continue;
         }
 
@@ -93,7 +91,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
         shift.dx = img_kp.pt.x - ref_kp.pt.x;
         shift.dy = img_kp.pt.y - ref_kp.pt.y;
         shift.valid_ap = true;
-        shift.score = 1.0f - (match.distance / (match_distance_threshold+100));
+        shift.score = 1.0f - (match.distance / (m_match_distance_threshold+100));
 
         local_shifts.push_back(shift);
 
@@ -112,8 +110,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
     const float median_shift_x = shift_sizes_x[shift_sizes_x.size()/2];
     const float median_shift_y = shift_sizes_y[shift_sizes_y.size()/2];
 
-    const float max_allowed_deviation = AlignmentSettingsSurface::get_instance()->get_maximal_allowed_distance_in_pixels();
-    const float max_allowed_deviation_squared = max_allowed_deviation * max_allowed_deviation;
+    const float max_allowed_deviation_squared = m_maximal_allowed_shift_in_pixels * m_maximal_allowed_shift_in_pixels;
     std::vector<LocalShift> selected_local_shifts;
     std::vector<std::pair<int,int>> keypoint_positions;
     for (LocalShift shift : local_shifts) {
@@ -150,7 +147,10 @@ void ReferencePhotoHandlerSurface::initialize_reference_features(const PixelType
 };
 
 void ReferencePhotoHandlerSurface::define_configuration_settings()   {
-    m_configurable_algorithm_settings.add_additional_setting_numerical("gaussian sigma for denoising", &m_gaussian_sigma, 0.1, 15.0, 0.2);
+    m_configurable_algorithm_settings.add_additional_setting_numerical("Gaussian sigma for denoising", &m_gaussian_sigma, 0.1, 15.0, 0.2);
+    m_configurable_algorithm_settings.add_additional_setting_numerical("Maximal allowed shift in pixels", &m_maximal_allowed_shift_in_pixels, 1, 200, 0.1);
+    m_configurable_algorithm_settings.add_additional_setting_numerical("Match distance threshold", &m_match_distance_threshold, 50, 1000, 1);
+    m_configurable_algorithm_settings.add_additional_setting_bool("Use SIFT features detector", &m_use_sift_features_detector);
 };
 
 void ReferencePhotoHandlerSurface::get_keypoints_and_descriptors(   const PixelType *brightness,
@@ -164,8 +164,7 @@ void ReferencePhotoHandlerSurface::get_keypoints_and_descriptors(   const PixelT
     cv::Mat cv_image_normalized;
     cv_image.convertTo(cv_image_normalized, CV_8UC1, 255.0 / max_pixel_value);
 
-    const bool use_sift = AlignmentSettingsSurface::get_instance()->use_sift_detector();
-    if (use_sift) {
+    if (m_use_sift_features_detector) {
         cv::Ptr<cv::SIFT> detector = cv::SIFT::create(2000);
         detector->detectAndCompute(cv_image_normalized, cv::noArray(), *keypoints, *descriptors);
         return;

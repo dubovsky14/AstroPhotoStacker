@@ -6,7 +6,7 @@
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/thread_pool.h"
 #include "../../headers/InputFrame.h"
-#include "../../headers/AlignmentSettingsSurface.h"
+#include "../../headers/ReferencePhotoHandlerFactory.h"
 
 #include <wx/progdlg.h>
 
@@ -27,13 +27,15 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandlerGUIInterface *fil
     m_filelist_handler_gui_interface = filelist_handler_gui_interface;
     m_main_sizer = new wxBoxSizer(wxVERTICAL);
 
+
     initialize_list_of_frames_to_align();
 
     add_reference_file_selection_menu();
 
     add_alignment_method_menu();
 
-    add_surface_method_settings();
+    m_sizer_algorithm_specific_settings = new wxBoxSizer(wxVERTICAL);
+    m_main_sizer->Add(m_sizer_algorithm_specific_settings, 2, wxEXPAND, 5);
 
     add_button_align_files(parent);
 
@@ -100,10 +102,12 @@ void AlignmentFrame::add_alignment_method_menu()    {
     m_main_sizer->Add(choice_box_alignment_method, 0,  wxEXPAND, 5);
 };
 
-void AlignmentFrame::add_surface_method_settings()  {
-    m_hidden_options_sizer = new wxBoxSizer(wxVERTICAL);
+/*
 
-    m_main_sizer->Add(m_hidden_options_sizer, 2, wxEXPAND, 5);
+void AlignmentFrame::add_surface_method_settings()  {
+    m_sizer_algorithm_specific_settings = new wxBoxSizer(wxVERTICAL);
+
+    m_main_sizer->Add(m_sizer_algorithm_specific_settings, 2, wxEXPAND, 5);
 
     add_hidden_settings_slider(  "surface",
                                 "Maximal allowed shift in pixels:",
@@ -166,7 +170,7 @@ void  AlignmentFrame::add_hidden_settings_slider(   const std::string &alignment
             n_digits,
             callback
     );
-    this_slider->add_sizer(m_hidden_options_sizer, 0, wxEXPAND, 5);
+    this_slider->add_sizer(m_sizer_algorithm_specific_settings, 0, wxEXPAND, 5);
     this_slider->set_tool_tip(tooltip);
     this_slider->hide();
 
@@ -194,7 +198,7 @@ void  AlignmentFrame::add_hidden_checkbox(  const std::string &alignment_method,
         const bool is_checked = checkbox->GetValue();
         callback(is_checked);
     });
-    m_hidden_options_sizer->Add(checkbox, 0, wxEXPAND, 5);
+    m_sizer_algorithm_specific_settings->Add(checkbox, 0, wxEXPAND, 5);
 
     if (m_hidden_settings_checkboxes.find(alignment_method) == m_hidden_settings_checkboxes.end()) {
         m_hidden_settings_checkboxes[alignment_method] = vector<wxCheckBox*>();
@@ -202,36 +206,66 @@ void  AlignmentFrame::add_hidden_checkbox(  const std::string &alignment_method,
     m_hidden_settings_checkboxes[alignment_method].push_back(checkbox);
 };
 
-
+*/
 void AlignmentFrame::update_options_visibility(const std::string &selected_alignment_method)    {
-    for (const auto &[available_method, vector_of_sliders] : m_hidden_settings_sliders)    {
-        if (wxString(available_method) == selected_alignment_method) {
-            for (const unique_ptr<FloatingPointSlider> &slider : vector_of_sliders)  {
-                slider->show();
-            }
-        }
-        else {
-            for (const unique_ptr<FloatingPointSlider> &slider : vector_of_sliders)  {
-                slider->hide();
-            }
-        }
+    if (selected_alignment_method == m_selected_alignment_method) {
+        return;
+    }
+    m_selected_alignment_method = selected_alignment_method;
+
+
+
+    for (unique_ptr<FloatingPointSlider> &slider_ptr : m_algorithm_settings_sliders) {
+        slider_ptr->detach_sizer(m_sizer_algorithm_specific_settings);
+    }
+    m_algorithm_settings_sliders.clear();
+
+    clear_vector_of_algorithm_settings_elements(m_algorithm_settings_checkboxes);
+    clear_vector_of_algorithm_settings_elements(m_algorithm_settings_static_texts);
+
+    m_configurable_algorithm_settings_map = ConfigurableAlgorithmSettingsMap();
+    ConfigurableAlgorithmSettings configurable_settings = ReferencePhotoHandlerFactory::get_configurable_algorithm_settings(selected_alignment_method);
+
+    const vector<string> numerical_keys = configurable_settings.get_additional_setting_keys_numerical();
+
+    for (const string &key : numerical_keys) {
+        AdditionalStackerSettingNumerical setting = configurable_settings.get_additional_setting_numerical(key);
+        m_configurable_algorithm_settings_map.numerical_settings[key] = setting.get_default_value();
+
+        auto this_slider = make_unique<FloatingPointSlider>(
+                this,
+                key + ": ",
+                static_cast<float>(setting.get_range().first),
+                static_cast<float>(setting.get_range().second),
+                static_cast<float>(setting.get_default_value()),
+                static_cast<float>(setting.get_step()),
+                -1,
+                [this, key](float value){
+                    m_configurable_algorithm_settings_map.numerical_settings[key] = static_cast<double>(value);
+                }
+        );
+        this_slider->add_sizer(m_sizer_algorithm_specific_settings, 0, wxEXPAND, 5);
+        m_algorithm_settings_sliders.push_back(std::move(this_slider));
     }
 
-    for (const auto &[available_method, vector_of_checkboxes] : m_hidden_settings_checkboxes)    {
-        if (wxString(available_method) == selected_alignment_method) {
-            for (wxCheckBox* checkbox : vector_of_checkboxes)  {
-                checkbox->Show();
-            }
-        }
-        else {
-            for (wxCheckBox* checkbox : vector_of_checkboxes)  {
-                checkbox->Hide();
-            }
-        }
+    const vector<string> bool_keys = configurable_settings.get_additional_setting_keys_bool();
+    for (const string &key : bool_keys) {
+        const bool default_value = configurable_settings.get_additional_setting_bool(key).get_default_value();
+        m_configurable_algorithm_settings_map.bool_settings[key] = default_value;
+
+        wxCheckBox* checkbox = new wxCheckBox(this, wxID_ANY, key);
+        checkbox->SetValue(default_value);
+        checkbox->Bind(wxEVT_CHECKBOX, [this, key, checkbox](wxCommandEvent&){
+            const bool is_checked = checkbox->GetValue();
+            m_configurable_algorithm_settings_map.bool_settings[key] = is_checked;
+        });
+        m_sizer_algorithm_specific_settings->Add(checkbox, 0, wxEXPAND, 5);
+        m_algorithm_settings_checkboxes.push_back(checkbox);
     }
 
-    m_hidden_options_sizer->Layout();
-    m_hidden_options_sizer->Fit(this);
+
+    m_sizer_algorithm_specific_settings->Layout();
+    m_sizer_algorithm_specific_settings->Fit(this);
     SetSize(m_window_size);
 };
 

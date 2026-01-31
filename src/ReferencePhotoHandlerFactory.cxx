@@ -17,7 +17,7 @@ ConfigurableAlgorithmSettings ReferencePhotoHandlerFactory::get_configurable_alg
         ReferencePhotoHandlerPlanetary handler_dummy;
         return handler_dummy.get_configurable_algorithm_settings();
     }
-    else if (alignment_method == "planetary zero rotation") {
+    else if (alignment_method == "planetary without rotation") {
         ReferencePhotoHandlerPlanetaryZeroRotation handler_dummy;
         return handler_dummy.get_configurable_algorithm_settings();
     }
@@ -27,6 +27,10 @@ ConfigurableAlgorithmSettings ReferencePhotoHandlerFactory::get_configurable_alg
     }
     else if (alignment_method == "stars") {
         ReferencePhotoHandlerStars handler_dummy;
+        return handler_dummy.get_configurable_algorithm_settings();
+    }
+    else if (alignment_method == "comet") {
+        ReferencePhotoHandlerComet handler_dummy;
         return handler_dummy.get_configurable_algorithm_settings();
     }
     else {

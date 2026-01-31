@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../headers/AdditionalStackerSettingNumerical.h"
+#include "../headers/AdditionalStackerSettingsBool.h"
 
 #include <string>
 #include <vector>
@@ -60,14 +61,19 @@ namespace AstroPhotoStacker {
             ///////////////////////////////////////
 
             void add_additional_setting_bool(const std::string &name, bool *default_value) {
-                m_additional_settings_bool[name] = default_value;
+                if (m_additional_settings_bool.find(name) != m_additional_settings_bool.end()) {
+                    m_additional_settings_bool.at(name) = AdditionalStackerSettingsBool(name, default_value);
+                }
+                else {
+                    m_additional_settings_bool.insert({name, AdditionalStackerSettingsBool(name, default_value)});
+                }
             };
 
             std::vector<std::string> get_additional_setting_keys_bool() const;
 
             void set_additional_setting_bool(const std::string &name, bool value);
 
-            bool get_additional_setting_bool(const std::string &name) const;
+            AdditionalStackerSettingsBool get_additional_setting_bool(const std::string &name) const;
 
             void configure_with_settings_bool(std::map<std::string, bool> settings);
 
@@ -75,7 +81,7 @@ namespace AstroPhotoStacker {
 
             std::map<std::string, AdditionalStackerSettingNumerical> m_additional_settings_numerical;
 
-            std::map<std::string, bool*> m_additional_settings_bool;
+            std::map<std::string, AdditionalStackerSettingsBool> m_additional_settings_bool;
 
     };
 }

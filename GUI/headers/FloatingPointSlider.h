@@ -16,8 +16,10 @@ class FloatingPointSlider {
                             float max_value,
                             float initial_value,
                             float step,
-                            unsigned int n_decimals,
+                            int n_decimals,
                             std::function<void(float)> callback);
+
+        ~FloatingPointSlider();
 
         void set_tool_tip(const std::string &tooltip);
 
@@ -27,7 +29,11 @@ class FloatingPointSlider {
 
         void add_sizer(wxSizer *sizer, int proportion, int flag, int border);
 
+        void detach_sizer(wxSizer *sizer);
+
     private:
         wxStaticText    *m_text = nullptr;
         wxSlider        *m_slider = nullptr;
+
+        wxSizer         *m_parent_sizer = nullptr;
 };

@@ -57,7 +57,10 @@ namespace AstroPhotoStacker   {
             virtual void define_configuration_settings() override;
 
             double m_gaussian_sigma = 6.0;
-            float m_threshold_fraction = 0.0005;
+
+            float m_maximal_allowed_shift_in_pixels = 20;
+            float m_match_distance_threshold        = 200;
+            bool  m_use_sift_features_detector      = false;
 
             std::vector<cv::KeyPoint> m_reference_keypoints;
             cv::Mat                   m_reference_descriptors;

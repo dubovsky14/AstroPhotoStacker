@@ -5,6 +5,7 @@
 #include "../headers/FloatingPointSlider.h"
 
 #include "../../headers/StackSettings.h"
+#include "../headers/ConfigurableAlgorithmSettings.h"
 
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
@@ -32,28 +33,6 @@ class AlignmentFrame : public wxFrame  {
     private:
         void add_reference_file_selection_menu();
 
-        void add_surface_method_settings();
-
-        void add_hidden_settings_slider(
-            const std::string &alignment_method,
-            const std::string &label,
-            const std::string &tooltip,
-            float min_value,
-            float max_value,
-            float initial_value,
-            float step,
-            int n_digits,
-            std::function<void(float)> callback
-        );
-
-        void add_hidden_checkbox(
-            const std::string &alignment_method,
-            const std::string &label,
-            const std::string &tooltip,
-            bool default_value,
-            std::function<void(bool)> callback
-        );
-
         void add_alignment_method_menu();
 
         void update_options_visibility(const std::string &alignment_method);
@@ -65,11 +44,14 @@ class AlignmentFrame : public wxFrame  {
         AstroPhotoStacker::StackSettings *m_stack_settings = nullptr;
         FilelistHandlerGUIInterface *m_filelist_handler_gui_interface = nullptr;
 
-        wxBoxSizer *m_hidden_options_sizer = nullptr;
+        wxBoxSizer *m_sizer_algorithm_specific_settings = nullptr;
         wxBoxSizer *m_main_sizer = nullptr;
 
-        std::map<std::string, std::vector<std::unique_ptr<FloatingPointSlider>>>    m_hidden_settings_sliders;
-        std::map<std::string, std::vector<wxCheckBox*>>                             m_hidden_settings_checkboxes;
+        std::vector<std::unique_ptr<FloatingPointSlider>>    m_algorithm_settings_sliders;
+        std::vector<wxCheckBox*>                             m_algorithm_settings_checkboxes;
+        std::vector<wxStaticText*>                           m_algorithm_settings_static_texts;
+
+        AstroPhotoStacker::ConfigurableAlgorithmSettingsMap m_configurable_algorithm_settings_map;
 
 
         void initialize_list_of_frames_to_align();
@@ -78,4 +60,15 @@ class AlignmentFrame : public wxFrame  {
         std::vector<wxString>                       m_available_light_frames;
 
         wxSize m_window_size = wxSize(600, 400);
+
+        std::string m_selected_alignment_method = "stars";
+
+        template<class ElementType>
+        void clear_vector_of_algorithm_settings_elements(std::vector<ElementType*> &elements_vector) {
+            for (ElementType* element : elements_vector) {
+                m_sizer_algorithm_specific_settings->Detach(element);
+                delete element;
+            }
+            elements_vector.clear();
+        };
 };

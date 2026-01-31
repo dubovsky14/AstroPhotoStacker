@@ -16,7 +16,7 @@ namespace AstroPhotoStacker {
              * @param range - valid range for the setting
              * @param step - step size for the setting
             */
-           template<typename ValueType>
+            template<typename ValueType>
             AdditionalStackerSettingNumerical(const std::string &name, ValueType* value_address, double min_value, double max_value, double step)
                 : m_name(name), m_range(std::make_pair(min_value, max_value)), m_step(step) {
                     m_set_value_function = [value_address, min_value, max_value](double v) {
@@ -31,7 +31,8 @@ namespace AstroPhotoStacker {
                     m_get_value_function = [value_address]() {
                         return static_cast<double>(*value_address);
                     };
-                }
+                    m_default_value = static_cast<double>(*value_address);
+            }
 
             /**
              * @brief Get the name of the setting
@@ -68,10 +69,13 @@ namespace AstroPhotoStacker {
             */
             double get_value() const { return m_get_value_function(); };
 
+            double get_default_value() const { return m_default_value; };
+
         private:
             std::string m_name;
             std::pair<double, double> m_range;
             double m_step;
+            double m_default_value;
 
             std::function<void(double)> m_set_value_function;
             std::function<double()>     m_get_value_function;

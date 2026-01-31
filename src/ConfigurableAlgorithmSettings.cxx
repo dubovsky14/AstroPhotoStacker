@@ -53,12 +53,12 @@ void ConfigurableAlgorithmSettings::set_additional_setting_bool(const std::strin
     if (m_additional_settings_bool.find(name) == m_additional_settings_bool.end()) {
         throw std::runtime_error("Setting not found: " + name);
     }
-    *m_additional_settings_bool.at(name) = value;
+    m_additional_settings_bool.at(name).set_value(value);
 };
 
-bool ConfigurableAlgorithmSettings::get_additional_setting_bool(const std::string &name) const {
+AdditionalStackerSettingsBool ConfigurableAlgorithmSettings::get_additional_setting_bool(const std::string &name) const {
     if (m_additional_settings_bool.find(name) != m_additional_settings_bool.end()) {
-        return *m_additional_settings_bool.at(name);
+        return m_additional_settings_bool.at(name);
     }
     throw std::runtime_error("Setting not found: " + name);
 };
