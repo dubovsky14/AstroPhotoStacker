@@ -45,7 +45,7 @@ int main(int argc, const char **argv) {
         const InputFrame reference_frame(reference_frame_parts[0], reference_frame_parts.size() > 1 ? stoi(reference_frame_parts[1]) : -1);
 
         PhotoAlignmentHandler photo_alignment_handler;
-        photo_alignment_handler.set_alignment_method(method);
+        photo_alignment_handler.set_alignment_method(method, ConfigurableAlgorithmSettingsMap());
         photo_alignment_handler.set_number_of_cpu_threads(n_cpu);
 
         if (directory_with_raw_files != "") {

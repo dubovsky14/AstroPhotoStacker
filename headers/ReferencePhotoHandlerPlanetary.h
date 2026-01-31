@@ -85,6 +85,8 @@ namespace AstroPhotoStacker   {
 
             static void calculate_eigenvectors_and_eigenvalues(const std::vector<std::vector<double>> &covariance_matrix, std::vector<double> *eigenvalues, std::vector<std::vector<double>> *eigenvectors);
 
+            virtual void define_configuration_settings() override;
+
             double m_center_of_mass_x = 0;
             double m_center_of_mass_y = 0;
             float  m_threshold_fraction = 0.5;

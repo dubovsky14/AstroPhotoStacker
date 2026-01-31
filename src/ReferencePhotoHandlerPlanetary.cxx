@@ -272,3 +272,7 @@ void ReferencePhotoHandlerPlanetary::calculate_eigenvectors_and_eigenvalues(
         swap(eigenvectors->at(0), eigenvectors->at(1));
     }
 };
+
+void ReferencePhotoHandlerPlanetary::define_configuration_settings()    {
+    m_configurable_algorithm_settings.add_additional_setting_numerical("gaussian sigma for denoising", &m_gaussian_sigma, 0.1, 15.0, 0.2);
+}

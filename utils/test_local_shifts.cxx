@@ -56,7 +56,7 @@ int main(int argc, const char **argv)   {
     const InputFrame alternative_frame(file_to_align);
 
     PhotoAlignmentHandler photo_alignment_handler;
-    photo_alignment_handler.set_alignment_method("surface");
+    photo_alignment_handler.set_alignment_method("surface", ConfigurableAlgorithmSettingsMap());
     photo_alignment_handler.align_files(reference_frame, {alternative_frame});
 
     std::unique_ptr<AlignmentResultBase> alignment_result = photo_alignment_handler.get_alignment_parameters(alternative_frame);

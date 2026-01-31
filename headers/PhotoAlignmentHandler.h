@@ -3,6 +3,7 @@
 #include "../headers/ReferencePhotoHandlerBase.h"
 #include "../headers/AlignmentResultBase.h"
 #include "../headers/InputFrame.h"
+#include "../headers/ConfigurableAlgorithmSettings.h"
 
 #include <memory>
 #include <string>
@@ -116,7 +117,7 @@ namespace   AstroPhotoStacker   {
              * @brief Sets the alignment method.
              * @param alignment_method The alignment method.
              */
-            void set_alignment_method(const std::string& alignment_method) {m_alignment_method = alignment_method;};
+            void set_alignment_method(const std::string& alignment_method, const ConfigurableAlgorithmSettingsMap& configurable_algorithm_settings_map);
 
             /**
              * @brief Gets the alignment method.
@@ -138,6 +139,7 @@ namespace   AstroPhotoStacker   {
             inline static const std::string c_separator_in_file = " | ";
 
             std::string m_alignment_method = "stars";
+            ConfigurableAlgorithmSettingsMap m_configurable_algorithm_settings_map;
 
             std::map<InputFrame, std::pair<float, float>> m_comet_positions;
     };

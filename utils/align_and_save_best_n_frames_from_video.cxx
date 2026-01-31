@@ -37,7 +37,7 @@ int main(int argc, const char **argv) {
         vector<InputFrame> video_frames = get_video_frames(video_file);
 
         PhotoAlignmentHandler photo_alignment_handler;
-        photo_alignment_handler.set_alignment_method("planetary without rotation");
+        photo_alignment_handler.set_alignment_method("planetary without rotation", ConfigurableAlgorithmSettingsMap());
         photo_alignment_handler.set_number_of_cpu_threads(n_cpu);
         photo_alignment_handler.align_files(reference_input_frame, video_frames);
 
