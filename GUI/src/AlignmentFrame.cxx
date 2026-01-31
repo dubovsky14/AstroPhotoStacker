@@ -91,8 +91,9 @@ void AlignmentFrame::add_alignment_method_menu()    {
     wxStaticText* select_alignment_method = new wxStaticText(this, wxID_ANY, "Select alignment method:");
     select_alignment_method->SetFont(wxFont(15, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
     wxChoice* choice_box_alignment_method = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_alignment_methods.size(), m_alignment_methods.data());
-    choice_box_alignment_method->SetSelection(0);
-    const std::string default_alignment_method = m_alignment_methods[0].ToStdString();
+    const std::string default_alignment_method = "stars";
+    const int default_index = std::distance(m_alignment_methods.begin(), std::find(m_alignment_methods.begin(), m_alignment_methods.end(), wxString(default_alignment_method)));
+    choice_box_alignment_method->SetSelection(default_index);
     m_stack_settings->set_alignment_method(default_alignment_method);
     choice_box_alignment_method->Bind(wxEVT_CHOICE, [this, choice_box_alignment_method](wxCommandEvent&){
         int current_selection = choice_box_alignment_method->GetSelection();

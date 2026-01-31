@@ -5,6 +5,7 @@
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/Common.h"
 #include "../headers/ImageRanking.h"
+#include "../headers/LocalShiftsClusteringTool.h"
 
 #include "../headers/AlignmentResultSurface.h"
 
@@ -112,12 +113,10 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
 
     const float max_allowed_deviation_squared = m_maximal_allowed_shift_in_pixels * m_maximal_allowed_shift_in_pixels;
     std::vector<LocalShift> selected_local_shifts;
-    std::vector<std::pair<int,int>> keypoint_positions;
     for (LocalShift shift : local_shifts) {
         const float distance_squared = (shift.dx - median_shift_x)*(shift.dx - median_shift_x) + (shift.dy - median_shift_y)*(shift.dy - median_shift_y);
         if (distance_squared < max_allowed_deviation_squared) {
             selected_local_shifts.push_back(shift);
-            keypoint_positions.push_back( std::make_pair(shift.x + shift.dx, shift.y + shift.dy) );
         }
     }
 
@@ -125,7 +124,10 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
         return std::make_unique<AlignmentResultSurface>();
     }
 
-    return make_unique<AlignmentResultSurface>( selected_local_shifts,
+    LocalShiftsClusteringTool clustering_tool(0.01 * sqrt(width*width + height*height));
+    const std::vector<LocalShift> clustered_local_shifts = clustering_tool.cluster_local_shifts(selected_local_shifts);
+
+    return make_unique<AlignmentResultSurface>( clustered_local_shifts,
                                                 ranking);
 };
 
@@ -159,16 +161,18 @@ void ReferencePhotoHandlerSurface::get_keypoints_and_descriptors(   const PixelT
                                                                     std::vector<cv::KeyPoint> *keypoints,
                                                                     cv::Mat *descriptors) const    {
 
-    const cv::Mat cv_image(height, width, CV_16UC1, const_cast<PixelType*>(brightness)); // OpenCV needs non-const pointer, because if can moidify the data (it does not in this case though)
+    vector<unsigned char> normalized_data(width * height);
     const PixelType max_pixel_value = *std::max_element(brightness, brightness + width * height);
-    cv::Mat cv_image_normalized;
-    cv_image.convertTo(cv_image_normalized, CV_8UC1, 255.0 / max_pixel_value);
+    for (int i = 0; i < width * height; i++) {
+        normalized_data[i] = static_cast<unsigned char>( (static_cast<float>(brightness[i]) / max_pixel_value) * 255.0f );
+    }
+    cv::Mat cv_image_normalized(height, width, CV_8UC1, normalized_data.data());
 
     if (m_use_sift_features_detector) {
         cv::Ptr<cv::SIFT> detector = cv::SIFT::create(2000);
         detector->detectAndCompute(cv_image_normalized, cv::noArray(), *keypoints, *descriptors);
         return;
     }
-    cv::Ptr<cv::ORB> detector = cv::ORB::create(2000, 1.2f, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
+    cv::Ptr<cv::ORB> detector = cv::ORB::create(2000, 1.05f, 25, 27, 0, 2, cv::ORB::HARRIS_SCORE, 27, 15);
     detector->detectAndCompute(cv_image_normalized, cv::noArray(), *keypoints, *descriptors);
 };

@@ -361,19 +361,19 @@ namespace AstroPhotoStacker   {
 
                 const bool go_to_left = coordinates[node.m_split_axis] < node.m_coordinates[node.m_split_axis];
                 if (go_to_left) {
-                    get_nodes_closer_than_x_recursive(coordinates, node_indices_and_distances, distance_squared, node.m_left);
+                    get_nodes_closer_than_x_recursive(coordinates, node_indices_and_distances, distance_squared, node.m_index_child_left);
                 }
                 else    {
-                    get_nodes_closer_than_x_recursive(coordinates, node_indices_and_distances, distance_squared, node.m_right);
+                    get_nodes_closer_than_x_recursive(coordinates, node_indices_and_distances, distance_squared, node.m_index_child_right);
                 }
 
                 const double distance_to_split_axis = pow2(coordinates[node.m_split_axis] - node.m_coordinates[node.m_split_axis]);
                 if (distance_to_split_axis < distance_squared) {
                     if (go_to_left) {
-                        get_nodes_closer_than_x_recursive(coordinates, node_indices_and_distances, distance_squared, node.m_right);
+                        get_nodes_closer_than_x_recursive(coordinates, node_indices_and_distances, distance_squared, node.m_index_child_right);
                     }
                     else    {
-                        get_nodes_closer_than_x_recursive(coordinates, node_indices_and_distances, distance_squared, node.m_left);
+                        get_nodes_closer_than_x_recursive(coordinates, node_indices_and_distances, distance_squared, node.m_index_child_left);
                     }
                 }
             };

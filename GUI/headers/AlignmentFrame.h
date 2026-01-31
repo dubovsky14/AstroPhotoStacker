@@ -61,7 +61,7 @@ class AlignmentFrame : public wxFrame  {
 
         wxSize m_window_size = wxSize(600, 400);
 
-        std::string m_selected_alignment_method = "stars";
+        std::string m_selected_alignment_method;
 
         template<class ElementType>
         void clear_vector_of_algorithm_settings_elements(std::vector<ElementType*> &elements_vector) {
