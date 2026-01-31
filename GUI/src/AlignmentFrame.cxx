@@ -27,15 +27,17 @@ AlignmentFrame::AlignmentFrame(MyFrame *parent, FilelistHandlerGUIInterface *fil
     m_filelist_handler_gui_interface = filelist_handler_gui_interface;
     m_main_sizer = new wxBoxSizer(wxVERTICAL);
 
+    const std::vector<std::string> available_methods = ReferencePhotoHandlerFactory::get_available_alignment_methods();
+    for (const std::string &method : available_methods) {
+        m_alignment_methods.push_back(wxString(method));
+    }
+
 
     initialize_list_of_frames_to_align();
 
     add_reference_file_selection_menu();
 
     add_alignment_method_menu();
-
-    m_sizer_algorithm_specific_settings = new wxBoxSizer(wxVERTICAL);
-    m_main_sizer->Add(m_sizer_algorithm_specific_settings, 2, wxEXPAND, 5);
 
     add_button_align_files(parent);
 
@@ -90,7 +92,8 @@ void AlignmentFrame::add_alignment_method_menu()    {
     select_alignment_method->SetFont(wxFont(15, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
     wxChoice* choice_box_alignment_method = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_alignment_methods.size(), m_alignment_methods.data());
     choice_box_alignment_method->SetSelection(0);
-    m_stack_settings->set_alignment_method("stars");
+    const std::string default_alignment_method = m_alignment_methods[0].ToStdString();
+    m_stack_settings->set_alignment_method(default_alignment_method);
     choice_box_alignment_method->Bind(wxEVT_CHOICE, [this, choice_box_alignment_method](wxCommandEvent&){
         int current_selection = choice_box_alignment_method->GetSelection();
         std::string alignment_method = choice_box_alignment_method->GetString(current_selection).ToStdString();
@@ -100,120 +103,16 @@ void AlignmentFrame::add_alignment_method_menu()    {
 
     m_main_sizer->Add(select_alignment_method, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
     m_main_sizer->Add(choice_box_alignment_method, 0,  wxEXPAND, 5);
-};
 
-/*
 
-void AlignmentFrame::add_surface_method_settings()  {
     m_sizer_algorithm_specific_settings = new wxBoxSizer(wxVERTICAL);
-
     m_main_sizer->Add(m_sizer_algorithm_specific_settings, 2, wxEXPAND, 5);
 
-    add_hidden_settings_slider(  "surface",
-                                "Maximal allowed shift in pixels:",
-                                "Maximal allowed shift in pixels feature in reference image and aligned image (after accounting for overall photo shift).",
-                                1.0f,
-                                200.0f,
-                                AlignmentSettingsSurface::get_instance()->get_maximal_allowed_distance_in_pixels(),
-                                1.0f,
-                                1,
-                                [](float value){
-                                    AlignmentSettingsSurface::get_instance()->set_maximal_allowed_distance_in_pixels(value);
-                                });
-
-    add_hidden_settings_slider(  "surface",
-                                "Match distance threshold:",
-                                "match.distance threshold to use for feature matching (200 is usually a good starting point).",
-                                50.0f,
-                                1000.0f,
-                                AlignmentSettingsSurface::get_instance()->get_match_distance_threshold(),
-                                10.0f,
-                                1,
-                                [](float value){
-                                    AlignmentSettingsSurface::get_instance()->set_match_distance_threshold(value);
-                                });
-
-    add_hidden_checkbox(   "surface",
-                          "Use SIFT feature detector",
-                          "Use SIFT feature detector for better results on images with less details. But it is slower and needs more memory.",
-                          AlignmentSettingsSurface::get_instance()->use_sift_detector(),
-                          [](bool use){
-                              AlignmentSettingsSurface::get_instance()->set_use_sift_detector(use);
-                          });
-
-    update_options_visibility(m_stack_settings->get_alignment_method());
+    update_options_visibility(default_alignment_method);
 };
 
-
-void  AlignmentFrame::add_hidden_settings_slider(   const std::string &alignment_method,
-                                                    const std::string &label,
-                                                    const std::string &tooltip,
-                                                    float min_value,
-                                                    float max_value,
-                                                    float initial_value,
-                                                    float step,
-                                                    int n_digits,
-                                                    std::function<void(float)> callback)   {
-
-
-    if (find(m_alignment_methods.begin(), m_alignment_methods.end(), alignment_method) == m_alignment_methods.end())    {
-        throw std::runtime_error("Attempted to use \'add_hidden_settings_slider\' function with unknown alignment method.");
-    }
-
-    auto this_slider = make_unique<FloatingPointSlider>(
-            this,
-            label,
-            min_value,
-            max_value,
-            initial_value,
-            step,
-            n_digits,
-            callback
-    );
-    this_slider->add_sizer(m_sizer_algorithm_specific_settings, 0, wxEXPAND, 5);
-    this_slider->set_tool_tip(tooltip);
-    this_slider->hide();
-
-    if (m_hidden_settings_sliders.find(alignment_method) == m_hidden_settings_sliders.end()) {
-        m_hidden_settings_sliders[alignment_method] = vector<unique_ptr<FloatingPointSlider>>();
-    }
-    m_hidden_settings_sliders[alignment_method].push_back(std::move(this_slider));
-};
-
-
-void  AlignmentFrame::add_hidden_checkbox(  const std::string &alignment_method,
-                                            const std::string &label,
-                                            const std::string &tooltip,
-                                            bool default_value,
-                                            std::function<void(bool)> callback)   {
-
-    if (find(m_alignment_methods.begin(), m_alignment_methods.end(), alignment_method) == m_alignment_methods.end())    {
-        throw std::runtime_error("Attempted to use \'add_hidden_settings_slider\' function with unknown alignment method.");
-    }
-
-    wxCheckBox* checkbox = new wxCheckBox(this, wxID_ANY, label);
-    checkbox->SetValue(default_value);
-    checkbox->SetToolTip(tooltip);
-    checkbox->Bind(wxEVT_CHECKBOX, [callback, checkbox, this](wxCommandEvent&){
-        const bool is_checked = checkbox->GetValue();
-        callback(is_checked);
-    });
-    m_sizer_algorithm_specific_settings->Add(checkbox, 0, wxEXPAND, 5);
-
-    if (m_hidden_settings_checkboxes.find(alignment_method) == m_hidden_settings_checkboxes.end()) {
-        m_hidden_settings_checkboxes[alignment_method] = vector<wxCheckBox*>();
-    }
-    m_hidden_settings_checkboxes[alignment_method].push_back(checkbox);
-};
-
-*/
 void AlignmentFrame::update_options_visibility(const std::string &selected_alignment_method)    {
-    if (selected_alignment_method == m_selected_alignment_method) {
-        return;
-    }
     m_selected_alignment_method = selected_alignment_method;
-
-
 
     for (unique_ptr<FloatingPointSlider> &slider_ptr : m_algorithm_settings_sliders) {
         slider_ptr->detach_sizer(m_sizer_algorithm_specific_settings);

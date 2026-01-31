@@ -11,53 +11,87 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
-
-ConfigurableAlgorithmSettings ReferencePhotoHandlerFactory::get_configurable_algorithm_settings(const std::string &alignment_method) {
-    if (alignment_method == "planetary") {
-        ReferencePhotoHandlerPlanetary handler_dummy;
-        return handler_dummy.get_configurable_algorithm_settings();
-    }
-    else if (alignment_method == "planetary without rotation") {
-        ReferencePhotoHandlerPlanetaryZeroRotation handler_dummy;
-        return handler_dummy.get_configurable_algorithm_settings();
-    }
-    else if (alignment_method == "surface") {
-        ReferencePhotoHandlerSurface handler_dummy;
-        return handler_dummy.get_configurable_algorithm_settings();
-    }
-    else if (alignment_method == "stars") {
-        ReferencePhotoHandlerStars handler_dummy;
-        return handler_dummy.get_configurable_algorithm_settings();
-    }
-    else if (alignment_method == "comet") {
-        ReferencePhotoHandlerComet handler_dummy;
-        return handler_dummy.get_configurable_algorithm_settings();
-    }
-    else {
-        throw std::runtime_error("Unknown alignment method: " + alignment_method);
+std::map<std::string, ReferencePhotoHandlerFactoryFunctions> ReferencePhotoHandlerFactory::s_factory_functions = {
+    {"stars",
+        {
+            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) {
+                return make_unique<ReferencePhotoHandlerStars>(input_frame, configuration_map);
+            },
+            []() {
+                ReferencePhotoHandlerStars handler_dummy;
+                return handler_dummy.get_configurable_algorithm_settings();
+            }
+        }
+    },
+    {"planetary",
+        {
+            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) {
+                return make_unique<ReferencePhotoHandlerPlanetary>(input_frame, configuration_map);
+            },
+            []() {
+                ReferencePhotoHandlerPlanetary handler_dummy;
+                return handler_dummy.get_configurable_algorithm_settings();
+            }
+        }
+    },
+    {"planetary without rotation",
+        {
+            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) {
+                return make_unique<ReferencePhotoHandlerPlanetaryZeroRotation>(input_frame, configuration_map);
+            },
+            []() {
+                ReferencePhotoHandlerPlanetaryZeroRotation handler_dummy;
+                return handler_dummy.get_configurable_algorithm_settings();
+            }
+        }
+    },
+    {"surface",
+        {
+            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) {
+                return make_unique<ReferencePhotoHandlerSurface>(input_frame, configuration_map);
+            },
+            []() {
+                ReferencePhotoHandlerSurface handler_dummy;
+                return handler_dummy.get_configurable_algorithm_settings();
+            }
+        }
+    },
+    {"comet",
+        {
+            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) {
+                return make_unique<ReferencePhotoHandlerComet>(input_frame, configuration_map);
+            },
+            []() {
+                ReferencePhotoHandlerComet handler_dummy;
+                return handler_dummy.get_configurable_algorithm_settings();
+            }
+        }
     }
 };
 
-unique_ptr<ReferencePhotoHandlerBase> ReferencePhotoHandlerFactory::get_reference_photo_handler(const InputFrame &reference_frame, const std::string &alignment_method, const ConfigurableAlgorithmSettingsMap &configuration_map)   {
-    if (alignment_method == "stars") {
-        return make_unique<ReferencePhotoHandlerStars>(reference_frame, configuration_map);
-    }
-    else if (alignment_method == "stars with variable zoom") {
-        return make_unique<ReferencePhotoHandlerStars>(reference_frame, configuration_map);
-    }
-    else if (alignment_method == "planetary") {
-        return make_unique<ReferencePhotoHandlerPlanetary>(reference_frame, configuration_map);
-    }
-    else if (alignment_method == "planetary without rotation")    {
-        return make_unique<ReferencePhotoHandlerPlanetaryZeroRotation>(reference_frame, configuration_map);
-    }
-    else if (alignment_method == "surface") {
-        return make_unique<ReferencePhotoHandlerSurface>(reference_frame, configuration_map);
-    }
-    else if (alignment_method == "comet") {
-        return  make_unique<ReferencePhotoHandlerComet>(reference_frame, configuration_map);
+
+ConfigurableAlgorithmSettings ReferencePhotoHandlerFactory::get_configurable_algorithm_settings(const std::string &alignment_method) {
+    if (s_factory_functions.find(alignment_method) != s_factory_functions.end()) {
+        return s_factory_functions.at(alignment_method).get_configuration_function();
     }
     else {
         throw runtime_error("Invalid alignment method: " + alignment_method);
     }
+};
+
+unique_ptr<ReferencePhotoHandlerBase> ReferencePhotoHandlerFactory::get_reference_photo_handler(const InputFrame &reference_frame, const std::string &alignment_method, const ConfigurableAlgorithmSettingsMap &configuration_map)   {
+    if (s_factory_functions.find(alignment_method) != s_factory_functions.end()) {
+        return s_factory_functions.at(alignment_method).create_function(reference_frame, configuration_map);
+    }
+    else {
+        throw runtime_error("Invalid alignment method: " + alignment_method);
+    }
+};
+
+std::vector<std::string> ReferencePhotoHandlerFactory::get_available_alignment_methods() {
+    std::vector<std::string> methods;
+    for (const auto &pair : s_factory_functions) {
+        methods.push_back(pair.first);
+    }
+    return methods;
 };
