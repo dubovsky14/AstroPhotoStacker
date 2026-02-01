@@ -132,7 +132,7 @@ jobs:
           node-version: '14'
       - uses: actions/download-artifact@v4
         with:
-          name: artifact-produce-alignment-file
+          name: artifact-produce-alignment-file-stars
           path: output/.
       - run: python3 CI_tests/python/compare_files.py output/test_alignment.txt AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/reference_files/alignment.txt
         name: validate-alignment-file
@@ -150,12 +150,12 @@ jobs:
           node-version: '14'
       - uses: actions/download-artifact@v4
         with:
-          name: artifact-produce-alignment-file
+          name: artifact-produce-alignment-file-planetary
           path: output/.
       - run: python3 CI_tests/python/compare_files.py output/Jupiter_short_alignment.txt AstroPhotoStacker_test_files/data/Jupiter_video/Jupiter_short_alignment.txt
         name: validate-alignment-file
 
-  produce-stacked-image:
+  produce-stacked-image-stars:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [build-linux, produce-alignment-file-stars]
@@ -177,7 +177,7 @@ jobs:
           path: bin/.
       - uses: actions/download-artifact@v4
         with:
-          name: artifact-produce-alignment-file
+          name: artifact-produce-alignment-file-stars
           path: output/.
       - run:  |
               chmod u+x bin/astro_photo_stacker
