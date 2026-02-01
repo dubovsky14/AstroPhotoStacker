@@ -53,19 +53,23 @@ namespace AstroPhotoStacker {
 
             // algorithm specific settings
             void clear_algorithm_specific_settings() {
-                m_algorithm_specific_settings.clear();
+                m_algorithm_specific_settings_numeric.clear();
+                m_algorithm_specific_settings_bool.clear();
             };
 
             void set_algorithm_specific_setting(const std::string& name, double value) {
-                m_algorithm_specific_settings[name] = value;
+                m_algorithm_specific_settings_numeric[name] = value;
             };
 
             void set_algorithm_specific_settings(std::map<std::string, double> settings) {
-                m_algorithm_specific_settings = settings;
+                m_algorithm_specific_settings_numeric = settings;
             };
 
-            std::map<std::string, double> get_algorithm_specific_settings() const    {
-                return m_algorithm_specific_settings;
+            ConfigurableAlgorithmSettingsMap get_algorithm_specific_settings() const    {
+                ConfigurableAlgorithmSettingsMap map;
+                map.numerical_settings = m_algorithm_specific_settings_numeric;
+                map.bool_settings = m_algorithm_specific_settings_bool;
+                return map;
             };
 
             std::vector<AdditionalStackerSettingNumerical> get_algorithm_specific_settings_defaults() const;
@@ -84,7 +88,8 @@ namespace AstroPhotoStacker {
 
             static const std::vector<std::string> m_stacking_algorithms;
 
-            std::map<std::string, double> m_algorithm_specific_settings;
+            std::map<std::string, double> m_algorithm_specific_settings_numeric;
+            std::map<std::string, bool> m_algorithm_specific_settings_bool;
 
     };
 }

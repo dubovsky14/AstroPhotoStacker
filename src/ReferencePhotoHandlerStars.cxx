@@ -22,6 +22,7 @@ ReferencePhotoHandlerStars::ReferencePhotoHandlerStars(const InputFrame &input_f
 
 
 void ReferencePhotoHandlerStars::initialize(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map)  {
+    define_configuration_settings();
     m_configurable_algorithm_settings.set_values_from_configuration_map(configuration_map);
     const PixelType threshold = get_threshold_value<PixelType>(&brightness[0], width*height, m_threshold_fraction);
     std::vector<std::tuple<float, float, int> > stars = get_stars(&brightness[0], width, height, threshold);

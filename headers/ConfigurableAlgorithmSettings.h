@@ -11,6 +11,18 @@ namespace AstroPhotoStacker {
     struct ConfigurableAlgorithmSettingsMap  {
         std::map<std::string, double> numerical_settings;
         std::map<std::string, bool>   bool_settings;
+
+        std::string to_string() const {
+            std::string result = "Numerical settings:\n";
+            for (const auto &pair : numerical_settings) {
+                result += "  " + pair.first + ": " + std::to_string(pair.second) + "\n";
+            }
+            result += "Boolean settings:\n";
+            for (const auto &pair : bool_settings) {
+                result += "  " + pair.first + ": " + (pair.second ? "true" : "false") + "\n";
+            }
+            return result;
+        }
     };
 
 
@@ -52,9 +64,6 @@ namespace AstroPhotoStacker {
 
             AdditionalStackerSettingNumerical get_additional_setting_numerical(const std::string &name) const;
 
-            void configure_with_settings_numerical(std::map<std::string, double> settings);
-
-
 
             ///////////////////////////////////////
             /// Additional settings - bool type ///
@@ -71,11 +80,7 @@ namespace AstroPhotoStacker {
 
             std::vector<std::string> get_additional_setting_keys_bool() const;
 
-            void set_additional_setting_bool(const std::string &name, bool value);
-
             AdditionalStackerSettingsBool get_additional_setting_bool(const std::string &name) const;
-
-            void configure_with_settings_bool(std::map<std::string, bool> settings);
 
         private:
 
@@ -83,5 +88,10 @@ namespace AstroPhotoStacker {
 
             std::map<std::string, AdditionalStackerSettingsBool> m_additional_settings_bool;
 
+            void set_additional_setting_bool(const std::string &name, bool value);
+
+            void configure_with_settings_bool(std::map<std::string, bool> settings);
+
+            void configure_with_settings_numerical(std::map<std::string, double> settings);
     };
 }

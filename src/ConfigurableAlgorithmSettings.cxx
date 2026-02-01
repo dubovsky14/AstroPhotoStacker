@@ -33,13 +33,6 @@ AdditionalStackerSettingNumerical ConfigurableAlgorithmSettings::get_additional_
     throw std::runtime_error("Setting not found: " + name);
 };
 
-void ConfigurableAlgorithmSettings::configure_with_settings_numerical(std::map<std::string, double> settings)  {
-    for (const auto &pair : settings) {
-        set_additional_setting_numerical(pair.first, pair.second);
-    }
-};
-
-
 
 std::vector<std::string> ConfigurableAlgorithmSettings::get_additional_setting_keys_bool() const {
     std::vector<std::string> keys;
@@ -47,13 +40,6 @@ std::vector<std::string> ConfigurableAlgorithmSettings::get_additional_setting_k
         keys.push_back(pair.first);
     }
     return keys;
-};
-
-void ConfigurableAlgorithmSettings::set_additional_setting_bool(const std::string &name, bool value) {
-    if (m_additional_settings_bool.find(name) == m_additional_settings_bool.end()) {
-        throw std::runtime_error("Setting not found: " + name);
-    }
-    m_additional_settings_bool.at(name).set_value(value);
 };
 
 AdditionalStackerSettingsBool ConfigurableAlgorithmSettings::get_additional_setting_bool(const std::string &name) const {
@@ -68,3 +54,17 @@ void ConfigurableAlgorithmSettings::configure_with_settings_bool(std::map<std::s
         set_additional_setting_bool(pair.first, pair.second);
     }
 };
+
+void ConfigurableAlgorithmSettings::set_additional_setting_bool(const std::string &name, bool value) {
+    if (m_additional_settings_bool.find(name) == m_additional_settings_bool.end()) {
+        throw std::runtime_error("Setting not found: " + name);
+    }
+    m_additional_settings_bool.at(name).set_value(value);
+};
+
+void ConfigurableAlgorithmSettings::configure_with_settings_numerical(std::map<std::string, double> settings)  {
+    for (const auto &pair : settings) {
+        set_additional_setting_numerical(pair.first, pair.second);
+    }
+};
+

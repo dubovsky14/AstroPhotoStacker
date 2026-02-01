@@ -170,7 +170,7 @@ std::vector<std::string> SummaryYamlCreator::get_stack_settings_summary() const 
     result.push_back(s_indent + "use_color_interpolation: " + (m_stack_settings.use_color_interpolation() ? "True" : "False"));
     result.push_back(s_indent + "apply_color_stretching: " + (m_stack_settings.apply_color_stretching() ? "True" : "False"));
 
-    const std::map<std::string, double> algorithm_specific_settings = m_stack_settings.get_algorithm_specific_settings();
+    const std::map<std::string, double> algorithm_specific_settings = m_stack_settings.get_algorithm_specific_settings().numerical_settings;
     if (!algorithm_specific_settings.empty()) {
         result.push_back(s_indent + "algorithm_specific_settings:");
         for (const auto &setting : algorithm_specific_settings) {

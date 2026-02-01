@@ -90,7 +90,8 @@ void configure_stacker_with_optional_arguments(StackerBase *stacker, const Input
 
     const std::string algorithm_specifict_settings_string = input_parser.get_optional_argument<std::string>("algorithm_specific_settings", "");
     if (algorithm_specifict_settings_string != "")   {
-        std::map<std::string, double> algorithm_specific_settings;
+        ConfigurableAlgorithmSettingsMap configuration_map;
+        std::map<std::string, double> &algorithm_specific_settings = configuration_map.numerical_settings;
         vector<string> settings = split_string(algorithm_specifict_settings_string, ";");
         for (const string &setting : settings) {
             vector<string> key_value = split_string(setting, "=");
@@ -100,7 +101,7 @@ void configure_stacker_with_optional_arguments(StackerBase *stacker, const Input
                 algorithm_specific_settings[key] = value;
             }
         }
-        stacker->get_configurable_algorithm_settings().configure_with_settings_numerical(algorithm_specific_settings);
+        stacker->get_configurable_algorithm_settings().set_values_from_configuration_map(configuration_map);
         if (print_info) {
             cout << "Algorithm specific settings:\n";
             for (const auto &pair : algorithm_specific_settings) {

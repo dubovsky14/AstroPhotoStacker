@@ -55,9 +55,9 @@ void AstroPhotoStacker::configure_stacker(StackerBase* stacker, const StackSetti
     stacker->set_number_of_cpu_threads(settings.get_n_cpus());
     stacker->set_memory_usage_limit(settings.get_max_memory());
 
-    const std::map<std::string, double> algorithm_specific_settings = settings.get_algorithm_specific_settings();
+    const ConfigurableAlgorithmSettingsMap configuration_map = settings.get_algorithm_specific_settings();
     ConfigurableAlgorithmSettings& configurable_settings = stacker->get_configurable_algorithm_settings();
-    configurable_settings.configure_with_settings_numerical(algorithm_specific_settings);
+    configurable_settings.set_values_from_configuration_map(configuration_map);
 };
 
 std::unique_ptr<StackerBase> AstroPhotoStacker::create_stacker(const StackSettings &settings, int number_of_colors, int width, int height) {

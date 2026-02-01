@@ -26,7 +26,8 @@ void StackSettingsSaver::save() {
         file << m_dict_string_use_color_interpolation << m_separator << use_color_interpolation() << endl;
         file << m_dict_string_apply_color_stretching << m_separator << apply_color_stretching() << endl;
 
-        for (const auto& setting : get_algorithm_specific_settings()) {
+        std::map<std::string, double> algorithm_specific_settings = get_algorithm_specific_settings().numerical_settings;
+        for (const auto& setting : algorithm_specific_settings) {
             file << m_dict_string_algorithm_specific << setting.first << m_separator << setting.second << endl;
         }
     }
