@@ -158,7 +158,7 @@ jobs:
   produce-stacked-image:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [build-linux, produce-alignment-file]
+    needs: [build-linux, produce-alignment-file-stars]
     steps:
       - uses: actions/checkout@v3
         with:
