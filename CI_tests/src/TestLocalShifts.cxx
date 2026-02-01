@@ -3,6 +3,7 @@
 
 #include "../../headers/ReferencePhotoHandlerSurface.h"
 #include "../../headers/LocalShiftsHandler.h"
+#include "../../headers/ConfigurableAlgorithmSettings.h"
 
 #include <iostream>
 
@@ -15,7 +16,21 @@ TestResult AstroPhotoStacker::test_predefined_alignment_boxes(  const InputFrame
 
     string error_message;
 
-    ReferencePhotoHandlerSurface reference_photo_handler(reference_frame);
+    float max_shift_magnitude = 0.0f;
+    for (const std::tuple<int,int,int,int> &expected_shift : expected_shifts) {
+        const int expected_dx = std::get<2>(expected_shift);
+        const int expected_dy = std::get<3>(expected_shift);
+        const float shift_magnitude = sqrt(float(expected_dx*expected_dx + expected_dy*expected_dy));
+        if (shift_magnitude > max_shift_magnitude) {
+            max_shift_magnitude = shift_magnitude;
+        }
+    }
+
+    ConfigurableAlgorithmSettingsMap configuration_map;
+    configuration_map.numerical_settings["Maximal allowed shift in pixels"] = 1.5f * max_shift_magnitude;
+    configuration_map.numerical_settings["Number of features to detect"] = 8000;
+
+    ReferencePhotoHandlerSurface reference_photo_handler(reference_frame, configuration_map);
 
     unique_ptr<AlignmentResultBase> plate_solving_result = reference_photo_handler.calculate_alignment(alternative_frame);
 

@@ -39,7 +39,7 @@ ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &ref
         value /= n_points;
         brightness.at(i_pixel) = value;
     }
-    initialize(brightness.data(), m_width, m_height);
+    initialize(brightness.data(), m_width, m_height, configuration_map);
 };
 
 
@@ -119,16 +119,14 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
             selected_local_shifts.push_back(shift);
         }
     }
-
     if (selected_local_shifts.size() < 10) {
         return std::make_unique<AlignmentResultSurface>();
     }
 
     LocalShiftsClusteringTool clustering_tool(0.01 * sqrt(width*width + height*height));
-    const std::vector<LocalShift> clustered_local_shifts = clustering_tool.cluster_local_shifts(selected_local_shifts);
+    selected_local_shifts = clustering_tool.cluster_local_shifts(selected_local_shifts);
 
-    return make_unique<AlignmentResultSurface>( clustered_local_shifts,
-                                                ranking);
+    return make_unique<AlignmentResultSurface>(selected_local_shifts, ranking);
 };
 
 void ReferencePhotoHandlerSurface::initialize(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map)  {
@@ -150,8 +148,9 @@ void ReferencePhotoHandlerSurface::initialize_reference_features(const PixelType
 
 void ReferencePhotoHandlerSurface::define_configuration_settings()   {
     m_configurable_algorithm_settings.add_additional_setting_numerical("Gaussian sigma for denoising", &m_gaussian_sigma, 0.1, 15.0, 0.2);
-    m_configurable_algorithm_settings.add_additional_setting_numerical("Maximal allowed shift in pixels", &m_maximal_allowed_shift_in_pixels, 1, 200, 0.1);
+    m_configurable_algorithm_settings.add_additional_setting_numerical("Maximal allowed shift in pixels", &m_maximal_allowed_shift_in_pixels, 1, 30, 0.2);
     m_configurable_algorithm_settings.add_additional_setting_numerical("Match distance threshold", &m_match_distance_threshold, 50, 1000, 1);
+    m_configurable_algorithm_settings.add_additional_setting_numerical("Number of features to detect", &m_n_features_to_detect, 100, 10000, 10);
     m_configurable_algorithm_settings.add_additional_setting_bool("Use SIFT features detector", &m_use_sift_features_detector);
 };
 
@@ -169,10 +168,10 @@ void ReferencePhotoHandlerSurface::get_keypoints_and_descriptors(   const PixelT
     cv::Mat cv_image_normalized(height, width, CV_8UC1, normalized_data.data());
 
     if (m_use_sift_features_detector) {
-        cv::Ptr<cv::SIFT> detector = cv::SIFT::create(2000);
+        cv::Ptr<cv::SIFT> detector = cv::SIFT::create(m_n_features_to_detect);
         detector->detectAndCompute(cv_image_normalized, cv::noArray(), *keypoints, *descriptors);
         return;
     }
-    cv::Ptr<cv::ORB> detector = cv::ORB::create(2000, 1.05f, 25, 27, 0, 2, cv::ORB::HARRIS_SCORE, 27, 15);
+    cv::Ptr<cv::ORB> detector = cv::ORB::create(m_n_features_to_detect, 1.05f, 50, 27, 0, 2, cv::ORB::HARRIS_SCORE, 27, 15);
     detector->detectAndCompute(cv_image_normalized, cv::noArray(), *keypoints, *descriptors);
 };

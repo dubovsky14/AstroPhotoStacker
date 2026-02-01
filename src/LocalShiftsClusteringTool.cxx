@@ -1,6 +1,7 @@
 #include "../headers/LocalShiftsClusteringTool.h"
 
 
+#include <iostream>
 #include <algorithm>
 
 using namespace AstroPhotoStacker;
@@ -24,18 +25,17 @@ std::vector<LocalShift> LocalShiftsClusteringTool::cluster_local_shifts(const st
 
     KDTree<float,2, int> kd_tree;
     for (unsigned int i = 0; i < valid_local_shifts.size(); i++) {
-        const LocalShift &shift = valid_local_shifts[i];
+        const LocalShift &shift = valid_local_shifts.at(i);
         kd_tree.add_point( {float(shift.x), float(shift.y)}, i);
     }
     kd_tree.build_tree_structure();
 
     int current_cluster_index = 0;
     for (unsigned int i = 0; i < valid_local_shifts.size(); i++) {
-        if (clustered_indices[i] != -1) {
-            continue;
+        while (clustered_indices.at(i) == -1) {
+            build_cluster_from_point( kd_tree, valid_local_shifts, &clustered_indices, i, current_cluster_index);
+            current_cluster_index++;
         }
-        build_cluster_from_point( kd_tree, valid_local_shifts, &clustered_indices, i, current_cluster_index);
-        current_cluster_index++;
     };
 
     struct ClusterShiftsData {
@@ -49,9 +49,9 @@ std::vector<LocalShift> LocalShiftsClusteringTool::cluster_local_shifts(const st
 
     vector<ClusterShiftsData> clusters_data(current_cluster_index);
     for (unsigned int i = 0; i < valid_local_shifts.size(); i++) {
-        const int cluster_index = clustered_indices[i];
-        ClusterShiftsData &cluster_data = clusters_data[cluster_index];
-        const LocalShift &shift = valid_local_shifts[i];
+        const int cluster_index = clustered_indices.at(i);
+        ClusterShiftsData &cluster_data = clusters_data.at(cluster_index);
+        const LocalShift &shift = valid_local_shifts.at(i);
         cluster_data.n_points++;
         cluster_data.sum_x += shift.x;
         cluster_data.sum_y += shift.y;
@@ -59,6 +59,7 @@ std::vector<LocalShift> LocalShiftsClusteringTool::cluster_local_shifts(const st
         cluster_data.sum_dy += shift.dy;
         cluster_data.sum_score += shift.score;
     }
+
 
     vector<LocalShift> clustered_local_shifts;
     for (const ClusterShiftsData &cluster_data : clusters_data) {
@@ -76,20 +77,24 @@ std::vector<LocalShift> LocalShiftsClusteringTool::cluster_local_shifts(const st
 };
 
 void LocalShiftsClusteringTool::build_cluster_from_point(const KDTree<float,2, int> &kd_tree, const std::vector<LocalShift> &local_shifts, std::vector<int> *clustered_indices, int point_index, int cluster_index) const {
+    if (clustered_indices->at(point_index) != -1) {
+        return;
+    }
+
     const vector<long long int> neighbor_indices = kd_tree.get_nodes_closer_than_x( kd_tree.get_node(point_index).m_coordinates.data(), m_cluster_radius_in_pixels);
     struct NeighborInfo {
         int             local_shift_index;
         long long int   kd_tree_node_index;
         unsigned int    unclustered_neighbors;
     };
-    vector<NeighborInfo> unclustered_neighbors; // pair<local_shift_index, kd-tree node index>
+    vector<NeighborInfo> unclustered_neighbors;
     for (long long int neighbor_node_index : neighbor_indices) {
         const KDTreeNode<float, 2, int> &this_node =  kd_tree.get_node(neighbor_node_index);
         const int local_shift_index = this_node.m_value;
         if (local_shift_index == point_index) {
             continue;
         }
-        if ( (*clustered_indices)[local_shift_index] != -1) {
+        if ( clustered_indices->at(local_shift_index) != -1) {
             continue;
         }
 
@@ -101,7 +106,7 @@ void LocalShiftsClusteringTool::build_cluster_from_point(const KDTree<float,2, i
             if (neighbor_local_shift_index == local_shift_index || neighbor_local_shift_index == point_index) { // skip self and the original point
                 continue;
             }
-            if ( (*clustered_indices)[neighbor_local_shift_index] == -1) {
+            if ( clustered_indices->at(neighbor_local_shift_index) == -1) {
                 n_unclustered_neighbors++;
             }
         }
