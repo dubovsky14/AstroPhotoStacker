@@ -6,7 +6,6 @@
 #include "../headers/AlignedImagesProducerGUI.h"
 #include "../headers/ProgressBarWindow.h"
 #include "../headers/PostProcessingToolGUI.h"
-#include "../headers/MetadataManager.h"
 #include "../headers/AlignmentPointsDrawing.h"
 #include "../headers/SettingsCustomizationGUI.h"
 #include "../headers/SettingsCustomization.h"
