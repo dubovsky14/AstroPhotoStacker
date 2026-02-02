@@ -115,7 +115,7 @@ namespace AstroPhotoStacker {
              * @param checked whether the file is checked
              * @param alignment_result alignment information for the file
             */
-            void add_file(const std::string &file, FrameType type, int group, bool checked = false, const AstroPhotoStacker::AlignmentResultBase &alignment_result = AstroPhotoStacker::AlignmentResultDummy(), const AstroPhotoStacker::Metadata &metadata = AstroPhotoStacker::Metadata());
+            void add_file(const std::string &file, FrameType type, int group, bool checked = false, const AstroPhotoStacker::AlignmentResultBase &alignment_result = AstroPhotoStacker::AlignmentResultDummy());
 
             /**
              * @brief Remove file from the list

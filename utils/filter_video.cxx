@@ -44,8 +44,7 @@ int main(int argc, const char **argv) {
 
         FilelistHandler filelist_handler;
         for (const InputFrame &input_frame : video_frames) {
-            const Metadata metadata = read_metadata(input_frame);
-            filelist_handler.add_file(input_frame.get_file_address(), FrameType::LIGHT, 0, true, AlignmentResultDummy(), metadata);
+            filelist_handler.add_file(input_frame.get_file_address(), FrameType::LIGHT, 0, true, AlignmentResultDummy());
         }
 
         if (!alignment_file_address.empty()) {

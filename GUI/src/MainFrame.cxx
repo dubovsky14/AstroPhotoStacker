@@ -1269,11 +1269,9 @@ void MyFrame::on_open_frames(wxCommandEvent& event, FrameType type, const std::s
     if (dialog.ShowModal() == wxID_OK) {
         wxArrayString paths;
         dialog.GetPaths(paths);
-        MetadataManager metadata_manager;
         for (auto path : paths) {
-            const AstroPhotoStacker::Metadata metadata = metadata_manager.get_metadata(InputFrame(path.ToStdString()));
             const string str_path = path.ToStdString();
-            m_filelist_handler_gui_interface.add_file(path.ToStdString(), type, m_current_group, true, AlignmentResultDummy(), metadata);
+            m_filelist_handler_gui_interface.add_file(path.ToStdString(), type, m_current_group, true, AlignmentResultDummy());
             m_recent_paths_handler->set_recent_file_path_from_file(type, path.ToStdString());
         }
     }
@@ -1485,9 +1483,7 @@ void MyFrame::stack_calibration_frames() {
             m_filelist_handler_gui_interface.remove_all_frames_of_type_and_group(type, group_number);
 
             // load metadata and add master frame to filelist handler
-            MetadataManager metadata_manager;
-            AstroPhotoStacker::Metadata metadata = metadata_manager.get_metadata(InputFrame(master_frame_name));
-            m_filelist_handler_gui_interface.add_file(master_frame_name, type, group_number, true, AlignmentResultDummy(), metadata);
+            m_filelist_handler_gui_interface.add_file(master_frame_name, type, group_number, true, AlignmentResultDummy());
             update_files_to_stack_checkbox();
         }
     }

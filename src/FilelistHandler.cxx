@@ -55,14 +55,16 @@ void FilelistHandler::add_frame(const InputFrame &input_frame, FrameType type, i
     frames[input_frame] = std::move(frame_info);
 };
 
-void FilelistHandler::add_file(const std::string &file, FrameType type, int group, bool checked, const AstroPhotoStacker::AlignmentResultBase &alignment_result, const AstroPhotoStacker::Metadata &metadata)    {
+void FilelistHandler::add_file(const std::string &file, FrameType type, int group, bool checked, const AstroPhotoStacker::AlignmentResultBase &alignment_result)    {
     if (is_valid_video_file(file))   {
         const std::vector<InputFrame> video_frames = get_video_frames(file);
         for (const InputFrame &video_frame : video_frames)   {
+        const Metadata metadata = read_metadata(video_frame);
             add_frame(video_frame, type, group, checked, alignment_result, metadata);
         }
     }
     else    {
+        const Metadata metadata = read_metadata(InputFrame(file));
         add_frame(InputFrame(file), type, group, checked, alignment_result, metadata);
     }
 };

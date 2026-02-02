@@ -2,6 +2,8 @@
 
 #include "../headers/CustomSharedMutex.h"
 
+#include <iostream>
+
 using namespace AstroPhotoStacker;
 using namespace std;
 
