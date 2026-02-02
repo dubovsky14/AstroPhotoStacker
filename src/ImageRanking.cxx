@@ -1,8 +1,10 @@
 #include "../headers/ImageRanking.h"
+#include "../headers/CommonImageOperations.h"
 
 #include <iostream>
 
 using namespace std;
+using namespace AstroPhotoStacker;
 
 ImageRanker::ImageRanker(const vector<PixelType> &image_brightness, int width, int height, int gaussian_kernel_size, double gaussian_sigma) {
     // Preprocess the image and create the planet mask
@@ -46,6 +48,24 @@ ImageRanker::ImageRanker(const vector<PixelType> &image_brightness, int width, i
     cv::GaussianBlur(img, m_preprocessed_image, cv::Size(gaussian_kernel_size,gaussian_kernel_size), gaussian_sigma);
 
     //cv::bilateralFilter(img, m_preprocessed_image, 5, 35, 35);
+}
+
+float ImageRanker::get_fraction_of_pixels_above_otsu_threshold(const std::vector<PixelType> &image_brightness, int width, int height) {
+    // Create a copy of the brightness data as unsigned short
+    std::vector<unsigned short> brightness_copy(width*height);
+    for (int i = 0; i < width*height; i++) {
+        brightness_copy[i] = max<short>(image_brightness[i], 0);
+    }
+
+    const unsigned short otsu_threshold = get_otsu_threshold(brightness_copy.data(), width*height);
+
+    int count_above_threshold = 0;
+    for (int i = 0; i < width*height; i++) {
+        if (brightness_copy[i] > otsu_threshold) {
+            count_above_threshold++;
+        }
+    }
+    return static_cast<float>(count_above_threshold) / static_cast<float>(width*height);
 }
 
 float ImageRanker::get_sharpness_score() const {

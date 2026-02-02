@@ -57,10 +57,16 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerPlanetary::calculate_a
                                                                                                                         rotation);
 
     const int gaussian_kernel_size = 2 *int(m_gaussian_sigma + 0.5) + 1; // we need this to be odd
-    ImageRanker image_ranker(brightness, width, height, gaussian_kernel_size, m_gaussian_sigma);
-    const double sharpness = image_ranker.get_sharpness_score();
-    plate_solving_result->set_ranking_score(100./sharpness);
-
+    if (m_use_number_of_pixels_above_otsu_threshold_for_ranking) {
+        const float fraction_of_pixels_above_otsu_threshold = ImageRanker::get_fraction_of_pixels_above_otsu_threshold(brightness, width, height);
+        const double sharpness_score = 100.f * fraction_of_pixels_above_otsu_threshold;
+        plate_solving_result->set_ranking_score(sharpness_score);
+    }
+    else {
+        ImageRanker image_ranker(brightness, width, height, gaussian_kernel_size, m_gaussian_sigma);
+        const double sharpness_score = 100./image_ranker.get_sharpness_score();
+        plate_solving_result->set_ranking_score(sharpness_score);
+    }
     return plate_solving_result;
 };
 
@@ -275,4 +281,5 @@ void ReferencePhotoHandlerPlanetary::calculate_eigenvectors_and_eigenvalues(
 
 void ReferencePhotoHandlerPlanetary::define_configuration_settings()    {
     m_configurable_algorithm_settings.add_additional_setting_numerical("gaussian sigma for denoising", &m_gaussian_sigma, 0.1, 15.0, 0.2);
+    m_configurable_algorithm_settings.add_additional_setting_bool("use number of pixels above otsu threshold for ranking", &m_use_number_of_pixels_above_otsu_threshold_for_ranking);
 }

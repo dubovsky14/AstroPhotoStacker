@@ -14,6 +14,8 @@ class ImageRanker {
 
         float get_sharpness_score() const;
 
+        static float get_fraction_of_pixels_above_otsu_threshold(const std::vector<PixelType> &image_brightness, int width, int height);
+
     private:
         cv::Mat m_preprocessed_image;
         cv::Mat m_planet_mask;

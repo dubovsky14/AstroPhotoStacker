@@ -51,8 +51,11 @@ int main(int argc, const char **argv) {
         if (!alignment_file_address.empty()) {
             filelist_handler.load_alignment_from_file(alignment_file_address);
         }
+        else if (fraction_to_keep < 1.0f) {
+            throw runtime_error("No alignment file provided. Please provide an alignment file to filter video frames.");
+        }
 
-        if (!filelist_handler.all_checked_frames_are_aligned()) {
+        if (!filelist_handler.all_checked_frames_are_aligned() && fraction_to_keep < 1.0f) {
             throw runtime_error("Not all checked frames are aligned. Please provide an alignment file with alignment for all frames.");
         }
 
@@ -90,7 +93,7 @@ int main(int argc, const char **argv) {
         const Metadata first_frame_metadata = frames_map.at(video_frames[0]).metadata;
 
         cout << "Camera model: " << first_frame_metadata.camera_model << endl;
-        cout << "shutting speed: " << first_frame_metadata.exposure_time << " s" << endl;
+        cout << "Shutter speed: " << first_frame_metadata.exposure_time << " s" << endl;
         cout << "Aperture: f/" << first_frame_metadata.aperture << endl;
         cout << "ISO: " << first_frame_metadata.iso << endl;
         cout << "Video FPS: " << first_frame_metadata.video_fps << endl;
@@ -118,7 +121,7 @@ int main(int argc, const char **argv) {
             }
             else if (output_bit_depth == 16) {
                 std::vector<unsigned short> frame_data_16bit(frame_data.size(), 0);
-                std::transform(frame_data.begin(), frame_data.end(), frame_data_16bit.begin(), [](PixelType x) -> unsigned short { return static_cast<unsigned short>(x); });
+                std::transform(frame_data.begin(), frame_data.end(), frame_data_16bit.begin(), [](PixelType x) -> unsigned short { return 2*static_cast<unsigned short>(x); });
                 video_writer.write_frame(frame_data_16bit);
             }
             else {
