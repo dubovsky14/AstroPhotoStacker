@@ -5,6 +5,7 @@
 #include "../headers/ImageRanking.h"
 #include "../headers/Common.h"
 #include "../headers/CommonImageOperations.h"
+#include "../headers/AlignmentResultTranslationOnly.h"
 
 #include <memory>
 #include <string>
@@ -27,7 +28,6 @@ ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const InputFrame 
 ReferencePhotoHandlerPlanetary::ReferencePhotoHandlerPlanetary(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map)  :
     ReferencePhotoHandlerBase(brightness, width, height, configuration_map) {
     define_configuration_settings();
-    m_configurable_algorithm_settings.add_additional_setting_numerical("gaussian sigma for denoising", &m_gaussian_sigma, 0.1, 15.0, 0.2);
     initialize(brightness, width, height, configuration_map);
 };
 
@@ -42,12 +42,32 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerPlanetary::calculate_a
 
     AlignmentWindow alignment_window;
     const auto [center_of_mass_x, center_of_mass_y, eigenvec, eigenval] = get_center_of_mass_eigenvectors_and_eigenvalues(image_data, &alignment_window);
-    const double sin_angle = m_covariance_eigen_vectors[0][0]*eigenvec[0][1] - m_covariance_eigen_vectors[0][1]*eigenvec[0][0];
 
     const float shift_x = m_center_of_mass_x - center_of_mass_x;
     const float shift_y = m_center_of_mass_y - center_of_mass_y;
+
+    double sharpness_score = 0;
+    if (m_use_number_of_pixels_above_otsu_threshold_for_ranking) {
+        const float fraction_of_pixels_above_otsu_threshold = ImageRanker::get_fraction_of_pixels_above_otsu_threshold(brightness, width, height);
+        sharpness_score = 100.f * fraction_of_pixels_above_otsu_threshold;
+    }
+    else {
+        const int gaussian_kernel_size = 2 *int(m_gaussian_sigma + 0.5) + 1; // we need this to be odd
+        ImageRanker image_ranker(brightness, width, height, gaussian_kernel_size, m_gaussian_sigma);
+        sharpness_score = 100./image_ranker.get_sharpness_score();
+    }
+
+    if (m_zero_rotation) {
+        std::unique_ptr<AlignmentResultTranslationOnly> plate_solving_result = std::make_unique<AlignmentResultTranslationOnly>(shift_x, shift_y);
+        plate_solving_result->set_ranking_score(sharpness_score);
+        return plate_solving_result;
+    }
+
+
+
     const float rotation_center_x = center_of_mass_x;
     const float rotation_center_y = center_of_mass_y;
+    const double sin_angle = m_covariance_eigen_vectors[0][0]*eigenvec[0][1] - m_covariance_eigen_vectors[0][1]*eigenvec[0][0];
     const float rotation = std::asin(sin_angle);
 
     std::unique_ptr<AlignmentResultPlateSolving> plate_solving_result = std::make_unique<AlignmentResultPlateSolving>(  shift_x,
@@ -55,18 +75,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerPlanetary::calculate_a
                                                                                                                         rotation_center_x,
                                                                                                                         rotation_center_y,
                                                                                                                         rotation);
-
-    const int gaussian_kernel_size = 2 *int(m_gaussian_sigma + 0.5) + 1; // we need this to be odd
-    if (m_use_number_of_pixels_above_otsu_threshold_for_ranking) {
-        const float fraction_of_pixels_above_otsu_threshold = ImageRanker::get_fraction_of_pixels_above_otsu_threshold(brightness, width, height);
-        const double sharpness_score = 100.f * fraction_of_pixels_above_otsu_threshold;
-        plate_solving_result->set_ranking_score(sharpness_score);
-    }
-    else {
-        ImageRanker image_ranker(brightness, width, height, gaussian_kernel_size, m_gaussian_sigma);
-        const double sharpness_score = 100./image_ranker.get_sharpness_score();
-        plate_solving_result->set_ranking_score(sharpness_score);
-    }
+    plate_solving_result->set_ranking_score(sharpness_score);
     return plate_solving_result;
 };
 
@@ -198,6 +207,10 @@ std::tuple<float,float,vector<vector<double>>,vector<double>> ReferencePhotoHand
     const float center_of_mass_x = get<0>(center_of_mass);
     const float center_of_mass_y = get<1>(center_of_mass);
 
+    if (m_zero_rotation) {
+        return make_tuple(center_of_mass_x, center_of_mass_y, vector<vector<double>>{{1,0},{0,1}}, vector<double>{1,1});
+    }
+
     const vector<vector<double>> covariance_matrix = get_covariance_matrix(image_data, center_of_mass, threshold, alignment_window);
 
     vector<double> eigenvalues;
@@ -282,4 +295,5 @@ void ReferencePhotoHandlerPlanetary::calculate_eigenvectors_and_eigenvalues(
 void ReferencePhotoHandlerPlanetary::define_configuration_settings()    {
     m_configurable_algorithm_settings.add_additional_setting_numerical("gaussian sigma for denoising", &m_gaussian_sigma, 0.1, 15.0, 0.2);
     m_configurable_algorithm_settings.add_additional_setting_bool("use number of pixels above otsu threshold for ranking", &m_use_number_of_pixels_above_otsu_threshold_for_ranking);
+    m_configurable_algorithm_settings.add_additional_setting_bool("Drop rotation (use translation only)", &m_zero_rotation);
 }

@@ -109,7 +109,7 @@ jobs:
       - run:  |
               mkdir output
               chmod u+x bin/produce_alignment_file
-              ./bin/produce_alignment_file -reference_file "AstroPhotoStacker_test_files/data/Jupiter_video/Jupiter_short.ser|0" -file_to_align AstroPhotoStacker_test_files/data/Jupiter_video/Jupiter_short.ser -method "planetary without rotation" -alignment_file output/Jupiter_short_alignment.txt
+              ./bin/produce_alignment_file -reference_file "AstroPhotoStacker_test_files/data/Jupiter_video/Jupiter_short.ser|0" -file_to_align AstroPhotoStacker_test_files/data/Jupiter_video/Jupiter_short.ser -method "planetary" -alignment_file output/Jupiter_short_alignment.txt
 
       - uses: actions/upload-artifact@v4
         with:

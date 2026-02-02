@@ -9,7 +9,6 @@ using namespace std;
 
 
 unsigned short AstroPhotoStacker::get_otsu_threshold(const unsigned short *brightness, int n_pixels)    {
-    // Compute histogram
     const int n_bins = 65536;
     std::vector<unsigned int> histogram(n_bins, 0);
     for (int i = 0; i < n_pixels; i++) {

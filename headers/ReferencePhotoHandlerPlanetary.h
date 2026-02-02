@@ -98,6 +98,7 @@ namespace AstroPhotoStacker   {
 
             double m_gaussian_sigma = 6.0;
             bool   m_use_number_of_pixels_above_otsu_threshold_for_ranking = false;
+            bool   m_zero_rotation = true;
 
 
     };

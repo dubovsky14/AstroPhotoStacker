@@ -1,8 +1,4 @@
 #include "../headers/PhotoAlignmentHandler.h"
-#include "../headers/ReferencePhotoHandlerStars.h"
-#include "../headers/ReferencePhotoHandlerPlanetary.h"
-#include "../headers/ReferencePhotoHandlerPlanetaryZeroRotation.h"
-#include "../headers/ReferencePhotoHandlerSurface.h"
 #include "../headers/ReferencePhotoHandlerComet.h"
 #include "../headers/Common.h"
 #include "../headers/PhotoRanker.h"

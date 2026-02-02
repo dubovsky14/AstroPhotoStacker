@@ -3,7 +3,6 @@
 #include "../headers/ReferencePhotoHandlerBase.h"
 
 #include "../headers/ReferencePhotoHandlerPlanetary.h"
-#include "../headers/ReferencePhotoHandlerPlanetaryZeroRotation.h"
 #include "../headers/ReferencePhotoHandlerSurface.h"
 #include "../headers/ReferencePhotoHandlerStars.h"
 #include "../headers/ReferencePhotoHandlerComet.h"
@@ -30,17 +29,6 @@ std::map<std::string, ReferencePhotoHandlerFactoryFunctions> ReferencePhotoHandl
             },
             []() {
                 ReferencePhotoHandlerPlanetary handler_dummy;
-                return handler_dummy.get_configurable_algorithm_settings();
-            }
-        }
-    },
-    {"planetary without rotation",
-        {
-            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) {
-                return make_unique<ReferencePhotoHandlerPlanetaryZeroRotation>(input_frame, configuration_map);
-            },
-            []() {
-                ReferencePhotoHandlerPlanetaryZeroRotation handler_dummy;
                 return handler_dummy.get_configurable_algorithm_settings();
             }
         }
