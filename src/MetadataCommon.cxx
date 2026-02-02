@@ -25,9 +25,7 @@ std::string AstroPhotoStacker::get_string_timestamp_from_unix_time(int unix_time
     return std::string(buffer);
 };
 
-Metadata AstroPhotoStacker::get_file_creation_timestamp(const std::string &file_address, const Metadata &other_metadata)  {
-    Metadata metadata = other_metadata;
-
+int AstroPhotoStacker::get_file_creation_timestamp(const std::string &file_address)  {
     auto ftime = filesystem::last_write_time(file_address);
     auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
         ftime - filesystem::file_time_type::clock::now() + std::chrono::system_clock::now()
@@ -37,10 +35,8 @@ Metadata AstroPhotoStacker::get_file_creation_timestamp(const std::string &file_
     // convert to string
     std::stringstream ss;
     ss << std::put_time(std::localtime(&cftime), "%Y:%m:%d %H:%M:%S");
-    metadata.date_time = ss.str();
-    metadata.timestamp = get_unix_timestamp(metadata.date_time);
+    return get_unix_timestamp(ss.str());
 
-    return metadata;
 };
 
 std::string AstroPhotoStacker::convert_bayer_int_array_to_string(const std::array<char, 4> &bayer_array) {

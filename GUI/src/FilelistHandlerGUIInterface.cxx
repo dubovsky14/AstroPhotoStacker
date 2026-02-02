@@ -70,6 +70,7 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
         if (metadata_view_settings.show_exposure_time)  result.push_back(exposure_string);
         if (metadata_view_settings.show_iso)            result.push_back(to_string(metadata.iso) + " ISO");
         if (metadata_view_settings.show_focal_length)   result.push_back(AstroPhotoStacker::round_and_convert_to_string(metadata.focal_length) + " mm");
+        if (metadata_view_settings.show_datetime)       result.push_back(metadata.get_datetime());
 
         const std::string temperature_string = (metadata.temperature > -273) ? AstroPhotoStacker::round_and_convert_to_string(metadata.temperature,1) + " C" : " ";
         if (metadata_view_settings.show_temperature) result.push_back(temperature_string);

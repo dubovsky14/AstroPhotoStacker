@@ -19,6 +19,7 @@ struct MetadataViewSettings {
     bool show_temperature   = true;
     bool show_focal_length  = false;
     bool show_resolution    = false;
+    bool show_datetime      = false;
 
     std::map<std::string, bool*> get_boolean_map() {
         std::map<std::string, bool*> result;
@@ -28,6 +29,7 @@ struct MetadataViewSettings {
         result["show_temperature"] =    &show_temperature;
         result["show_focal_length"] =   &show_focal_length;
         result["show_resolution"] =     &show_resolution;
+        result["show_datetime"] =       &show_datetime;
         return result;
     };
 

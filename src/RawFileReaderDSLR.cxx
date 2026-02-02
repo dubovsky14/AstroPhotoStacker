@@ -3,7 +3,6 @@
 
 #include <libraw/libraw.h>
 #include <iomanip>
-#include <sstream>
 #include <algorithm>
 
 using namespace AstroPhotoStacker;
@@ -106,13 +105,6 @@ Metadata RawFileReaderDSLR::read_metadata_without_cache() {
     });
     std::string bayer_matrix(bayer_matrix_names, 4);
     result.bayer_matrix = bayer_matrix;
-
-
-    // it's a bit tricky with timestamp
-    std::tm* t = std::gmtime(&raw_processor.imgdata.other.timestamp);
-    std::stringstream ss; // or if you're going to print, just input directly into the output stream
-    ss << std::put_time(t, "%Y-%m-%d %I:%M:%S %p");
-    result.date_time     = ss.str();
 
     result.camera_model   = raw_processor.imgdata.idata.model;
 

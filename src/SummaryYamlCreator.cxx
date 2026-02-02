@@ -119,8 +119,8 @@ std::vector<std::string> SummaryYamlCreator::get_group_and_type_summary(int grou
         if (metadata.camera_model != "") {
             result.push_back(2*s_indent + "camera_model: \"" + metadata.camera_model + "\"");
         }
-        if (metadata.date_time != "") {
-            result.push_back(2*s_indent + "date_time: \"" + metadata.date_time + "\"");
+        if (metadata.timestamp > 0) {
+            result.push_back(2*s_indent + "date_time: \"" + metadata.get_datetime() + "\"");
         }
         if (metadata.temperature > -273) {
             result.push_back(2*s_indent + "temperature: " + AstroPhotoStacker::round_and_convert_to_string(metadata.temperature,1));
@@ -227,15 +227,8 @@ void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address,
 
     const string temperature_string =  metadata.temperature > -273 ? ("Temperature: " + AstroPhotoStacker::round_and_convert_to_string(metadata.temperature,1) + "C") : "";
 
-    if (metadata.date_time != "") {
-        string exif_timestamp = "";
-        if (metadata.timestamp > 0) {
-            std::time_t t = static_cast<std::time_t>(metadata.timestamp);
-            std::tm* tm_ptr = std::gmtime(&t);
-            char buffer[20];
-            std::strftime(buffer, sizeof(buffer), "%Y:%m:%d %H:%M:%S", tm_ptr);
-            exif_timestamp = std::string(buffer);
-        }
+    if (metadata.timestamp > 0) {
+        string exif_timestamp = metadata.get_datetime();
 
         exif_data["Exif.Image.DateTime"] = exif_timestamp;
         exif_data["Exif.Photo.DateTimeOriginal"] = exif_timestamp;

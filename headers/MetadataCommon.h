@@ -10,7 +10,7 @@ namespace AstroPhotoStacker {
 
     std::string get_string_timestamp_from_unix_time(int unix_time, const std::string timestamp_format = "%Y:%m:%d %H:%M:%S");
 
-    Metadata get_file_creation_timestamp(const std::string &file_address, const Metadata &other_metadata = Metadata());
+    int get_file_creation_timestamp(const std::string &file_address);
 
     /**
      * * Convert a Bayer pattern represented as an array of 4 numbers (0,1,2,3) to a string like "RGGB".

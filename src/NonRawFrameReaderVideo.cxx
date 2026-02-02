@@ -125,8 +125,7 @@ Metadata NonRawFrameReaderVideo::read_metadata_without_cache() {
         // Date and Time
         const auto dateTime = exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal"));
         if (dateTime != exifData.end()) {
-            metadata.date_time = dateTime->toString();
-            metadata.timestamp = get_unix_timestamp(metadata.date_time);
+            metadata.timestamp = get_unix_timestamp(dateTime->toString());
         } else {
             std::cerr << "DateTimeOriginal not found in the metadata." << std::endl;
         }
@@ -135,7 +134,7 @@ Metadata NonRawFrameReaderVideo::read_metadata_without_cache() {
         std::cerr << "Error reading file " << video_address << ": " << e.what() << std::endl;
 
         // get at least the timestamp
-        metadata = get_file_creation_timestamp(video_address, metadata);
+        metadata.timestamp = get_file_creation_timestamp(video_address);
     }
     return metadata;
 };

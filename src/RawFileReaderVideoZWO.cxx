@@ -27,6 +27,9 @@ Metadata RawFileReaderVideoZWO::read_metadata_without_cache() {
     ZWOVideoTextFileInfo info(m_input_frame.get_file_address() + ".txt");
     Metadata metadata = info.get_metadata();
     metadata.video_fps = get_fps_of_video(m_input_frame.get_file_address());
+    if (metadata.timestamp == 0) {
+        metadata.timestamp = get_file_creation_timestamp(m_input_frame.get_file_address());
+    }
     return metadata;
 };
 

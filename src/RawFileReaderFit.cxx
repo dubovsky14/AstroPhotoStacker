@@ -204,8 +204,8 @@ void RawFileReaderFit::fill_metadata()    {
     }
 
     m_metadata.focal_length = std::stof(get_with_default<string,string>(m_metadata_map, "FOCALLEN", "0"));
-    m_metadata.date_time = get_with_default<string,string>(m_metadata_map, "DATE-OBS", "");
-    m_metadata.timestamp = RawFileReaderFit::get_unix_timestamp(m_metadata.date_time);
+    const std::string date_time_string = get_with_default<string,string>(m_metadata_map, "DATE-OBS", "");
+    m_metadata.timestamp = RawFileReaderFit::get_unix_timestamp(date_time_string);
     m_metadata.monochrome = bayer_matrix == "";
     m_metadata.bayer_matrix = convert_bayer_int_array_to_string(m_bayer_matrix);
     m_metadata.is_raw = true;

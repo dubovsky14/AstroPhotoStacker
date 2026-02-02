@@ -55,8 +55,7 @@ Metadata AstroPhotoStacker::read_metadata_rgb_image(const std::string &input_fil
         // Date and Time
         const auto dateTime = exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal"));
         if (dateTime != exifData.end()) {
-            metadata.date_time = dateTime->toString();
-            metadata.timestamp = get_unix_timestamp(metadata.date_time);
+            metadata.timestamp = get_unix_timestamp(dateTime->toString());
         }
 
         // Max Value

@@ -117,8 +117,7 @@ Metadata NonRawFrameReaderStillImage::read_metadata_without_cache() {
         // Date and Time
         const auto dateTime = exifData.findKey(Exiv2::ExifKey("Exif.Photo.DateTimeOriginal"));
         if (dateTime != exifData.end()) {
-            metadata.date_time = dateTime->toString();
-            metadata.timestamp = get_unix_timestamp(metadata.date_time);
+            metadata.timestamp = get_unix_timestamp(dateTime->toString());
         }
 
         // Max Value

@@ -24,7 +24,6 @@ Metadata ZWOVideoTextFileInfo::get_metadata() const {
     metadata.exposure_time = m_exposure_time;
     metadata.iso = m_gain;
     metadata.timestamp = m_unix_time;
-    metadata.date_time = m_timestamp_string;
     metadata.is_raw = true;
     metadata.camera_model = m_camera_model;
     metadata.temperature = m_temperature;
