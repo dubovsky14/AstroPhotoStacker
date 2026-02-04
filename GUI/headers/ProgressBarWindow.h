@@ -16,7 +16,11 @@ void run_task_with_progress_dialog( const std::string &window_title,
                                     const std::string &message_final_task = "",
                                     int refresh_rate_ms = 100) {
 
-        wxProgressDialog progress_bar(window_title, message_begin + " 0 / " + std::to_string(tasks_total) + " " + message_end, tasks_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
+        const std::string initial_message = (tasks_total <= 0) ?
+            (message_begin + " 0 " + message_end) :
+            (message_begin + " 0 / " + std::to_string(tasks_total) + " " + message_end);
+
+        wxProgressDialog progress_bar(window_title, initial_message, tasks_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
         progress_bar.Update(tasks_processed);
 
         thread_pool pool(1);

@@ -383,8 +383,8 @@ void AlignedImagesProducerGUI::add_video_settings()   {
 
     wxStaticText *fps_text = new wxStaticText(this, wxID_ANY, "Frame rate per second (fps):");
     left_vertical_sizer->Add(fps_text, 0, wxEXPAND, 5);
-    m_timelapse_video_settings.set_fps(25);
-    wxSpinCtrl* spin_fps = new wxSpinCtrl(this, wxID_ANY, "25", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 60, 25);
+    m_timelapse_video_settings.set_fps(30);
+    wxSpinCtrl* spin_fps = new wxSpinCtrl(this, wxID_ANY, "30", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 60, 30);
     spin_fps->Bind(wxEVT_SPINCTRL, [spin_fps, this](wxCommandEvent&){
         int current_value = spin_fps->GetValue();
         m_timelapse_video_settings.set_fps(current_value);
@@ -399,8 +399,8 @@ void AlignedImagesProducerGUI::add_video_settings()   {
 
     wxStaticText *n_repeat_text = new wxStaticText(this, wxID_ANY, "Number of repeats:");
     right_vertical_sizer->Add(n_repeat_text, 0, wxEXPAND, 5);
-    m_timelapse_video_settings.set_n_repeat(3);
-    wxSpinCtrl* spin_n_repeat = new wxSpinCtrl(this, wxID_ANY, "3", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 50, 3);
+    m_timelapse_video_settings.set_n_repeat(1);
+    wxSpinCtrl* spin_n_repeat = new wxSpinCtrl(this, wxID_ANY, "1", wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 50, 1);
     spin_n_repeat->Bind(wxEVT_SPINCTRL, [spin_n_repeat, this](wxCommandEvent&){
         int current_value = spin_n_repeat->GetValue();
         m_timelapse_video_settings.set_n_repeat(current_value);

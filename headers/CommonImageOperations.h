@@ -11,7 +11,7 @@ namespace AstroPhotoStacker {
      * @param n_pixels Number of pixels in the image
      * @return unsigned short The calculated Otsu's threshold
     */
-    unsigned short get_otsu_threshold(const unsigned short *brightness, int n_pixels);
+    unsigned short get_otsu_threshold(const unsigned short *brightness, int n_pixels, bool *contains_only_one_value = nullptr);
 
     template <typename PixelValueTypeInput, typename PixelValueTypeOutput = PixelValueTypeInput>
     std::vector<PixelValueTypeOutput> convert_color_to_monochrome(const std::vector<std::vector<PixelValueTypeInput>> &color_image, int width, int height) {

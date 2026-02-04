@@ -8,7 +8,7 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 
-unsigned short AstroPhotoStacker::get_otsu_threshold(const unsigned short *brightness, int n_pixels)    {
+unsigned short AstroPhotoStacker::get_otsu_threshold(const unsigned short *brightness, int n_pixels, bool *contains_only_one_value)    {
     const int n_bins = 65536;
     std::vector<unsigned int> histogram(n_bins, 0);
     for (int i = 0; i < n_pixels; i++) {
@@ -25,6 +25,8 @@ unsigned short AstroPhotoStacker::get_otsu_threshold(const unsigned short *brigh
     double sum2_background = 0;
     unsigned int weight_sum_background = 0;
     unsigned int weight_sum_foreground = 0;
+
+    unsigned int weight_sum_background_at_threshold = 0;
 
     double minimal_variation = std::numeric_limits<double>::max();
     unsigned short optimal_threshold = 0;
@@ -52,7 +54,13 @@ unsigned short AstroPhotoStacker::get_otsu_threshold(const unsigned short *brigh
         if (inter_class_variance < minimal_variation) {
             minimal_variation = inter_class_variance;
             optimal_threshold = threshold;
+            weight_sum_background_at_threshold = weight_sum_background;
         }
     }
+
+    if (contains_only_one_value != nullptr) {
+        *contains_only_one_value = (weight_sum_background_at_threshold == unsigned(n_pixels) || weight_sum_background_at_threshold == 0);
+    }
+
     return optimal_threshold;
 };

@@ -282,18 +282,14 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<Pixe
                                                     int unix_time) const    {
 
     PixelType max_value = get_max_value_ignoring_borders(*stacked_image, width, height, 5);
+    scale_down_image(stacked_image, max_value, 255);
 
     if (m_image_stretching_function) {
         m_image_stretching_function(stacked_image, max_value);
     }
 
-
     if (m_post_processing_tool) {
         *stacked_image = m_post_processing_tool->post_process_image(*stacked_image, width, height);
-    }
-
-    if (max_value > 255) {
-        scale_down_image(stacked_image, max_value, 255);
     }
 
     for (vector<PixelType> &color_channel : *stacked_image) {

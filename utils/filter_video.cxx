@@ -33,6 +33,8 @@ int main(int argc, const char **argv) {
         const float fraction_to_keep            = input_arguments_parser.get_optional_argument<float>("fraction_to_keep", -1.0f);
         const int   output_bit_depth            = input_arguments_parser.get_optional_argument<int>("output_bit_depth", 8);
 
+        cout << "Input file: " << input_file_address << endl;
+
         if ((number_of_frames_to_keep < 0) == (fraction_to_keep < 0.0)) {
             throw runtime_error("You must provide either number_of_frames_to_keep or fraction_to_keep");
         }
@@ -135,6 +137,8 @@ int main(int argc, const char **argv) {
         cout << e.what() << endl;
         abort();
     }
+
+    cout << endl << endl;
 
     return 0;
 }
