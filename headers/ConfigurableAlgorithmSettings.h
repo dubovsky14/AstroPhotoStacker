@@ -8,6 +8,10 @@
 #include <map>
 
 namespace AstroPhotoStacker {
+
+    /**
+     * @brief Serves to hold configuration settings for configurable algorithms, it can then be passed to the ConfigurableAlgorithmSettings::set_values_from_configuration_map to set the values of the corresponding pointers to correct values
+    */
     struct ConfigurableAlgorithmSettingsMap  {
         std::map<std::string, double> numerical_settings;
         std::map<std::string, bool>   bool_settings;
@@ -27,7 +31,7 @@ namespace AstroPhotoStacker {
 
 
     /**
-     * @brief Settings for configurable algorithms
+     * @brief Class used to provide interface for configuring algorithms from GUI, without knowing the details of the algorithms. In the algorithm class, pointer to a current value is provided, together with its name and valid range.
     */
     class ConfigurableAlgorithmSettings {
 

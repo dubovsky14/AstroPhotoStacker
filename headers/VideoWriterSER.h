@@ -9,6 +9,10 @@
 #include <array>
 
 namespace AstroPhotoStacker {
+
+    /**
+     * @brief Class for writing SER video files (astronomical video format)
+     */
     class VideoWriterSER {
         public:
             VideoWriterSER() = delete;

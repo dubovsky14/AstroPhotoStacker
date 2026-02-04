@@ -10,7 +10,7 @@
 namespace AstroPhotoStacker   {
 
     /**
-     * @brief Class responsible for handling the reference photo of a comet. It provides also methods for plate-solving another photo - how it should be rotated and shifted to match the reference photo
+     * @brief Class responsible for handling the reference photo of a comet. It provides also methods for alignment. It firstly plate solves photo to get orientation and then it calculates comet position to align the comet with reference photo
     */
     class ReferencePhotoHandlerComet : public ReferencePhotoHandlerStars {
         public:

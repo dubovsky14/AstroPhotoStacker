@@ -7,6 +7,10 @@
 
 
 namespace AstroPhotoStacker {
+
+    /**
+     * @brief Tool for clustering local shifts based on their proximity. The goal is to eliminate redundant local shifts that are very close to each other and are causing problems in KNN searches later.
+     */
     class LocalShiftsClusteringTool {
         public:
             LocalShiftsClusteringTool() = delete;

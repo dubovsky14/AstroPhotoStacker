@@ -7,6 +7,10 @@
 #include <array>
 
 namespace AstroPhotoStacker {
+
+    /**
+     * Class implementing the details of reading metadata from ZWO video text files. When using ZWO ASIair, the metadata are in a separate text file, not in the video itself.
+     */
     class ZWOVideoTextFileInfo {
         public:
             ZWOVideoTextFileInfo(const std::string &input_file);
