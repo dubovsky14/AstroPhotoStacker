@@ -2,7 +2,6 @@
 #include "../headers/ReferencePhotoHandlerComet.h"
 #include "../headers/Common.h"
 #include "../headers/PhotoRanker.h"
-#include "../headers/SharpnessRanker.h"
 #include "../headers/VideoReader.h"
 #include "../headers/TaskScheduler.hxx"
 
