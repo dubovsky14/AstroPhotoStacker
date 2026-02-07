@@ -9,6 +9,7 @@
 #include <thread>
 #include <map>
 #include <iostream>
+#include <memory>
 
 namespace AstroPhotoStacker {
     class TaskScheduler {
@@ -25,7 +26,10 @@ namespace AstroPhotoStacker {
             };
 
             ~TaskScheduler()     {
-                wait_for_tasks();
+                if (!*m_active_exception) {
+                    m_ignore_exceptions_in_tasks = true; // otherwise we would get exceptions in destructor if there are still tasks running
+                    wait_for_tasks();
+                }
             }
 
             TaskScheduler()                     = delete;
@@ -45,19 +49,34 @@ namespace AstroPhotoStacker {
 
                 const size_t this_task_id = m_last_task_id++;
                 check_resources_limit_correctness(resource_requirements);
-                std::function<void()> task_wrapped = [this, task, resource_requirements, this_task_id, args...]() {
+                std::shared_ptr<std::atomic<bool>> active_exception = m_active_exception;
+                std::function<void()> task_wrapped = [this, task, resource_requirements, this_task_id, active_exception, args...]() {
                     try {
                         task(args...);
+                        // if there was an exception in another task, we don't want to start new tasks and we cannot touch member variables - the destructor of TaskSchedulermight have already been called
+                        if (*active_exception) {
+                            return;
+                        }
                         std::scoped_lock lock(m_mutex);
                         release_resources(resource_requirements);
                         m_n_tasks_remaining--;
+
                         submit_task_from_buffer();
                     }
                     catch(...) {
                         std::scoped_lock lock(m_mutex);
+
+                        // if there was an exception in another task, we just need to terminate task - using any memeber varaible is unsafe - the destructor of TaskSchedulermight have already been called
+                        if (*active_exception) {
+                            return;
+                        }
                         release_resources(resource_requirements);
                         m_n_tasks_remaining--;
-                        submit_task_from_buffer();
+                        if (m_ignore_exceptions_in_tasks) {
+                            submit_task_from_buffer();
+                            return;
+                        }
+                        *active_exception = true;
                         throw;
                     }
                 };
@@ -107,6 +126,10 @@ namespace AstroPhotoStacker {
 
         private:
             std::mutex m_mutex;
+
+            // this must outlive the TaskScheduler object in case of exception
+            std::shared_ptr<std::atomic<bool>> m_active_exception = std::make_shared<std::atomic<bool>>(false);
+
             std::vector<size_t> m_resource_limits;
             std::vector<size_t> m_resource_usage;
             bool m_ignore_exceptions_in_tasks;
@@ -181,8 +204,16 @@ namespace AstroPhotoStacker {
                     std::future<void> &future = future_and_requirements.first;
                     const bool finished = (future.wait_for(std::chrono::seconds(0)) == std::future_status::ready);
                     if (finished) {
-                        future.get(); // this will throw an exception if the task finished with an exception
                         futures_to_remove.push_back(i_task); // if no exception, we can remove the future from the map
+                        try {
+                            future.get(); // this will throw an exception if the task finished with an exception
+                        }
+                        catch (...) {
+                            for (size_t i_task : futures_to_remove) {
+                                m_futures_and_requirements.erase(i_task);
+                            }
+                            throw;
+                        }
                     }
                 }
                 for (size_t i_task : futures_to_remove) {
