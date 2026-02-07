@@ -18,6 +18,7 @@ namespace AstroPhotoStacker {
              * @brief Construct a new Task Scheduler object
              *
              * @param resource_limits The limits of the resources that can be used by the tasks executed in paralel. For example 1st element might by number of available CPU cores, 2nd element might be the amount of memory available, etc.
+             * @param ignore_exceptions_in_tasks If true, the TaskScheduler will ignore exceptions thrown in tasks and will continue executing remaining tasks. Otherwise, "wait_for_tasks" will rethrow the first exception occuring in the tasks.
              */
             TaskScheduler(const std::vector<size_t> &resource_limits, bool ignore_exceptions_in_tasks = false)   :
                 m_resource_limits(resource_limits),
@@ -27,7 +28,7 @@ namespace AstroPhotoStacker {
 
             ~TaskScheduler()     {
                 if (!*m_active_exception) {
-                    m_ignore_exceptions_in_tasks = true; // otherwise we would get exceptions in destructor if there are still tasks running
+                    m_ignore_exceptions_in_tasks = true; // otherwise we might get exceptions in destructor if there are still tasks running
                     wait_for_tasks();
                 }
             }
@@ -95,11 +96,11 @@ namespace AstroPhotoStacker {
             /**
              * @brief Wait for all tasks to finish
              *
-             * @param sleep_time The time to sleep between checking if the tasks are finished
+             * @param sleep_time_ms The time to sleep between checking if the tasks are finished, in milliseconds
              */
-            void wait_for_tasks(int sleep_time = 100) {
+            void wait_for_tasks(int sleep_time_ms = 100) {
                 while (true)   {
-                    std::this_thread::sleep_for(std::chrono::microseconds(sleep_time));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_ms));
 
                     std::scoped_lock lock(m_mutex);
 
@@ -120,6 +121,10 @@ namespace AstroPhotoStacker {
                 }
             };
 
+            /**
+             * @brief Get the number of tasks that are still running or waiting to be executed
+             * @return size_t The number of tasks that are still running or waiting to be executed
+             */
             size_t get_tasks_remaining() const {
                 return m_n_tasks_remaining;
             };
