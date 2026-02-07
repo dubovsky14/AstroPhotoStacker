@@ -10,7 +10,6 @@
 #include "../../headers/CalibrationFrameBase.h"
 #include "../../headers/DarkFrameHandler.h"
 #include "../../headers/FlatFrameHandler.h"
-#include "../../headers/thread_pool.h"
 #include "../../headers/ImageFilesInputOutput.h"
 #include "../../headers/TimeLapseVideoCreator.h"
 #include "../../headers/PhotoAlignmentHandler.h"

@@ -1,7 +1,6 @@
 #include "../headers/StackerMedian.h"
 #include "../headers/CalibratedPhotoHandler.h"
-
-#include "../headers/thread_pool.h"
+#include "../headers/TaskScheduler.hxx"
 
 #include <iostream>
 #include <algorithm>
@@ -39,10 +38,10 @@ void StackerMedian::calculate_stacked_photo_internal()  {
             m_n_tasks_processed++;
         };
 
-        thread_pool pool(m_n_cpu);
+        TaskScheduler pool({size_t(m_n_cpu)});
         for (unsigned int i_file = 0; i_file < m_frames_to_stack.size(); i_file++) {
             if (m_n_cpu > 1) {
-                pool.submit(submit_photo_stack, i_file);
+                pool.submit(submit_photo_stack, {1}, i_file);
             }
             else {
                 submit_photo_stack(i_file);
@@ -57,7 +56,7 @@ void StackerMedian::calculate_stacked_photo_internal()  {
             for (int y_final_array = y_min; y_final_array < y_max; y_final_array++) {
                 const int y_values_to_stack_array = y_final_array - y_min;
                 if (m_n_cpu > 1) {
-                    pool.submit(submit_median_calculation, i_color, y_final_array, y_values_to_stack_array);
+                    pool.submit(submit_median_calculation, {1}, i_color, y_final_array, y_values_to_stack_array);
                 }
                 else {
                     submit_median_calculation(i_color, y_final_array, y_values_to_stack_array);

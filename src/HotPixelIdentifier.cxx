@@ -4,24 +4,23 @@
 #include "../headers/InputFrameReader.h"
 #include "../headers/InputFormatTypes.h"
 #include "../headers/Common.h"
+#include "../headers/TaskScheduler.hxx"
 
 #include <algorithm>
 #include <cmath>
 #include <memory>
 #include <fstream>
 
-#include "../headers/thread_pool.h"
-
 using namespace std;
 using namespace AstroPhotoStacker;
 
 
 void HotPixelIdentifier::add_photos(const std::vector<InputFrame> &input_frames)    {
-    thread_pool pool(m_n_cpu);
+    TaskScheduler pool({size_t(m_n_cpu)});
     for (const auto &input_frame : input_frames) {
         pool.submit([this, input_frame]() {
             add_photo(input_frame);
-        });
+        }, {1});
     }
     pool.wait_for_tasks();
 };

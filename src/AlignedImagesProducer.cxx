@@ -12,8 +12,6 @@
 
 #include "../headers/FilelistHandler.h"
 
-#include "../headers/thread_pool.h"
-
 #include <opencv2/opencv.hpp>
 #include <stdexcept>
 
@@ -77,7 +75,7 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
 
     m_n_tasks_processed = 0;
     m_output_addresses_and_unix_times.clear();
-    thread_pool pool(n_cpu);
+    AstroPhotoStacker::TaskScheduler task_scheduler_files({size_t(n_cpu)});
 
     // add individual frames
     for (int i_file = 0; i_file < n_frames; i_file++) {
@@ -87,9 +85,10 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
         auto submit_alignment = [this, i_file, output_file_address, alignment_result, &calibration_frame_handlers]() {
             produce_aligned_image(m_frames_to_align[i_file], output_file_address, *alignment_result, calibration_frame_handlers);
         };
-        pool.submit(submit_alignment);
+        task_scheduler_files.submit(submit_alignment, {1});
+
     }
-    pool.wait_for_tasks();
+    task_scheduler_files.wait_for_tasks();
 
     TaskScheduler task_scheduler({size_t(m_n_cpu), 1024ULL*1024ULL*m_memory_usage_limit_in_mb});
     // add groups

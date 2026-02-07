@@ -3,8 +3,8 @@
 #include "../headers/Common.h"
 #include "../headers/PhotoRanker.h"
 #include "../headers/SharpnessRanker.h"
-#include "../headers/thread_pool.h"
 #include "../headers/VideoReader.h"
+#include "../headers/TaskScheduler.hxx"
 
 #include "../headers/AlignmentResultFactory.h"
 #include "../headers/ReferencePhotoHandlerFactory.h"
@@ -116,13 +116,13 @@ void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const
     };
 
     m_n_files_aligned = 0;
-    thread_pool pool(m_n_cpu);
+    TaskScheduler pool({size_t(m_n_cpu)});
     for (unsigned int i_file = 0; i_file < files.size(); i_file++)   {
         if (m_n_cpu == 1)   {
             align_file_multicore(files[i_file]);
         }
         else    {
-            pool.submit(align_file_multicore, files[i_file]);
+            pool.submit(align_file_multicore, {1}, files[i_file]);
         }
     }
     pool.wait_for_tasks();

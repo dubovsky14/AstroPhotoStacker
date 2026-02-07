@@ -2,7 +2,7 @@
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/CustomScopeMutex.h"
 
-#include "../headers/thread_pool.h"
+#include "../headers/TaskScheduler.hxx"
 
 #include <iostream>
 
@@ -33,11 +33,11 @@ void StackerSimpleBase::calculate_stacked_photo_internal()  {
             }
         }
         else    {
-            thread_pool pool(m_n_cpu);
+            TaskScheduler pool({size_t(m_n_cpu)});
             for (unsigned int i_file = 0; i_file < m_frames_to_stack.size(); i_file++) {
                 pool.submit([this, i_file, y_min, y_max]() {
                     add_photo_to_stack(i_file, y_min, y_max);
-                });
+                }, {1});
             }
             pool.wait_for_tasks();
         }

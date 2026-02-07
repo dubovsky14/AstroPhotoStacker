@@ -1,5 +1,5 @@
 
-#include "../../headers/thread_pool.h"
+#include "../../headers/TaskScheduler.hxx"
 
 #include <wx/wx.h>
 #include <wx/progdlg.h>
@@ -23,10 +23,9 @@ void run_task_with_progress_dialog( const std::string &window_title,
         wxProgressDialog progress_bar(window_title, initial_message, tasks_total, nullptr, wxPD_AUTO_HIDE | wxPD_APP_MODAL);
         progress_bar.Update(tasks_processed);
 
-        thread_pool pool(1);
-        pool.submit(task);
-
-        while (pool.get_tasks_total()) {
+        AstroPhotoStacker::TaskScheduler task_scheduler({size_t(1)});
+        task_scheduler.submit(task, {1});
+        while (task_scheduler.get_tasks_remaining()) {
             if (tasks_total <= 0) {
                 progress_bar.Update(tasks_processed, message_begin + " " + std::to_string(tasks_processed) + " " + message_end);
             }
@@ -38,7 +37,8 @@ void run_task_with_progress_dialog( const std::string &window_title,
             }
             wxMilliSleep(refresh_rate_ms);
         }
-        pool.wait_for_tasks();
+
+        task_scheduler.wait_for_tasks();
 
         progress_bar.Close();
         progress_bar.Destroy();

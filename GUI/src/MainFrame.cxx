@@ -16,7 +16,6 @@
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 
 #include "../../headers/Common.h"
-#include "../../headers/thread_pool.h"
 #include "../../headers/StackerBase.h"
 #include "../../headers/ConvertToFitFile.h"
 #include "../../headers/PixelType.h"

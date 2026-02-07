@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <atomic>
 #include <thread>
+#include <map>
+#include <iostream>
 
 namespace AstroPhotoStacker {
     class TaskScheduler {
@@ -16,9 +18,10 @@ namespace AstroPhotoStacker {
              *
              * @param resource_limits The limits of the resources that can be used by the tasks executed in paralel. For example 1st element might by number of available CPU cores, 2nd element might be the amount of memory available, etc.
              */
-            TaskScheduler(const std::vector<size_t> &resource_limits)   :
+            TaskScheduler(const std::vector<size_t> &resource_limits, bool ignore_exceptions_in_tasks = false)   :
                 m_resource_limits(resource_limits),
-                m_resource_usage(resource_limits.size(), 0)   {
+                m_resource_usage(resource_limits.size(), 0),
+                m_ignore_exceptions_in_tasks(ignore_exceptions_in_tasks)   {
             };
 
             ~TaskScheduler()     {
@@ -37,7 +40,7 @@ namespace AstroPhotoStacker {
              */
             template<typename FunctionType, typename... Args>
             void submit(const FunctionType &task, const std::vector<size_t> &resource_requirements, const Args &...args)   {
-
+                m_n_tasks_remaining++;
                 std::scoped_lock lock(m_mutex);
 
                 const size_t this_task_id = m_last_task_id++;
@@ -47,11 +50,13 @@ namespace AstroPhotoStacker {
                         task(args...);
                         std::scoped_lock lock(m_mutex);
                         release_resources(resource_requirements);
+                        m_n_tasks_remaining--;
                         submit_task_from_buffer();
                     }
                     catch(...) {
                         std::scoped_lock lock(m_mutex);
                         release_resources(resource_requirements);
+                        m_n_tasks_remaining--;
                         submit_task_from_buffer();
                         throw;
                     }
@@ -79,19 +84,36 @@ namespace AstroPhotoStacker {
 
                     std::scoped_lock lock(m_mutex);
 
-                    if (m_remaining_tasks_and_requirements.empty()) {
+                    if (!m_ignore_exceptions_in_tasks) {
+                        try {
+                            check_futures_for_exception();
+                        }
+                        catch (...) {
+                            std::cout << "Exception in one of the tasks. Stopping execution of remaining tasks.\n";
+                            m_ignore_exceptions_in_tasks = true; // otherwise we would get another exception while handling this one
+                            throw;
+                        }
+                    }
+
+                    if (m_n_tasks_remaining == 0)   {
                         break;
                     }
                 }
+            };
+
+            size_t get_tasks_remaining() const {
+                return m_n_tasks_remaining;
             };
 
         private:
             std::mutex m_mutex;
             std::vector<size_t> m_resource_limits;
             std::vector<size_t> m_resource_usage;
+            bool m_ignore_exceptions_in_tasks;
             std::map<size_t, std::pair<std::future<void>, std::vector<size_t>>>                 m_futures_and_requirements;
             std::unordered_map<size_t, std::pair<std::function<void()>, std::vector<size_t>>>   m_remaining_tasks_and_requirements;
             size_t m_last_task_id = 0;
+            std::atomic<size_t> m_n_tasks_remaining = 0;
 
             void submit_task_from_buffer() {
                 // check if any task can be executed now
@@ -153,5 +175,19 @@ namespace AstroPhotoStacker {
                 }
             };
 
+            void check_futures_for_exception() {
+                std::vector<size_t> futures_to_remove;
+                for (auto &[i_task, future_and_requirements] : m_futures_and_requirements) {
+                    std::future<void> &future = future_and_requirements.first;
+                    const bool finished = (future.wait_for(std::chrono::seconds(0)) == std::future_status::ready);
+                    if (finished) {
+                        future.get(); // this will throw an exception if the task finished with an exception
+                        futures_to_remove.push_back(i_task); // if no exception, we can remove the future from the map
+                    }
+                }
+                for (size_t i_task : futures_to_remove) {
+                    m_futures_and_requirements.erase(i_task);
+                }
+            };
     };
 }

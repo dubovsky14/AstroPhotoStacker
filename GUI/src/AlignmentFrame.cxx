@@ -4,7 +4,6 @@
 #include "../headers/SettingsCustomization.h"
 
 #include "../../headers/PhotoAlignmentHandler.h"
-#include "../../headers/thread_pool.h"
 #include "../../headers/InputFrame.h"
 #include "../../headers/ReferencePhotoHandlerFactory.h"
 
