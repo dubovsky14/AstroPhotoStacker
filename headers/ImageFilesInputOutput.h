@@ -110,8 +110,8 @@ namespace AstroPhotoStacker {
                             int width, int height, int image_settings = CV_8UC3) {
 
         cv::Mat image(height, width, image_settings);
-        for (int y = 0; y < height-1; y++) {
-            for (int x = 0; x < width-1; x++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
                 pixel_3d_type& pixel = image.at<pixel_3d_type>(y, x);
                 const unsigned int index_pixel = y*width + x;
                 pixel[0] = arr_blue [index_pixel];

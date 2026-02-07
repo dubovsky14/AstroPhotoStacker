@@ -123,13 +123,19 @@ void StackerBase::calculate_stacked_photo()  {
 };
 
 void StackerBase::fix_empty_pixels()    {
-    auto get_average_from_pixels_around = [](const vector<double> &color_channel, int width, int pixel_index) {
+    auto get_average_from_pixels_around = [](const vector<double> &color_channel, int x, int y, int width, int height) -> double {
         double sum = 0;
         int n_pixels = 0;
         for (int i_shift_y = -1; i_shift_y <= 1; i_shift_y++) {
+            if ((y + i_shift_y < 0) || (y + i_shift_y >= height)) {
+                continue;
+            }
             for (int i_shift_x = -1; i_shift_x <= 1; i_shift_x++) {
-                const int index = pixel_index + i_shift_x + i_shift_y*width;
-                if (index >= 0 && index < static_cast<int>(color_channel.size()) && color_channel[index] != c_empty_pixel_value) {
+                if ((x + i_shift_x < 0) || (x + i_shift_x >= width)) {
+                    continue;
+                }
+                const int index = (x + i_shift_x) + (y + i_shift_y)*width;
+                if (color_channel[index] != c_empty_pixel_value) {
                     sum += color_channel[index];
                     n_pixels++;
                 }
@@ -139,9 +145,12 @@ void StackerBase::fix_empty_pixels()    {
     };
 
     for (vector<double> &color : m_stacked_image) {
-        for (int i_pixel = 0; i_pixel < m_width*m_height; i_pixel++) {
-            if (color[i_pixel] == c_empty_pixel_value) {
-                color[i_pixel] = get_average_from_pixels_around(color, m_width, i_pixel);
+        for (int i_y = 0; i_y < m_height; i_y++) {
+            for (int i_x = 0; i_x < m_width; i_x++) {
+                const int i_pixel = i_x + i_y*m_width;
+                if (color[i_pixel] == c_empty_pixel_value) {
+                    color[i_pixel] = get_average_from_pixels_around(color, i_x, i_y, m_width, m_height);
+                }
             }
         }
     }
