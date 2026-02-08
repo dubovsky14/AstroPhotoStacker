@@ -359,5 +359,6 @@ namespace AstroPhotoStacker {
 
     std::string replace_file_extension(const std::string &file_address, const std::string &new_extension);
 
+    std::string process_nested_exception(const std::exception &e);
 }
 

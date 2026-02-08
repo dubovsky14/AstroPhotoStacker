@@ -258,3 +258,17 @@ std::string AstroPhotoStacker::replace_file_extension(const std::string &file_ad
     p.replace_extension(new_extension);
     return p.string();
 }
+
+std::string AstroPhotoStacker::process_nested_exception(const std::exception &e) {
+    std::string result = e.what();
+    try {
+        std::rethrow_if_nested(e);
+    }
+    catch (const std::exception &nested) {
+        result += process_nested_exception(nested);
+    }
+    catch (...) {
+        result += "\nCaused by: unknown exception";
+    }
+    return result;
+}

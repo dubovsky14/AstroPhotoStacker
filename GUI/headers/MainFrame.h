@@ -16,6 +16,7 @@
 #include "../../headers/HotPixelIdentifier.h"
 #include "../../headers/StackerBase.h"
 #include "../../headers/SummaryYamlCreator.h"
+#include "../../headers/Common.h"
 
 #include <wx/wx.h>
 #include <wx/spinctrl.h>
@@ -33,7 +34,7 @@ class MyApp : public wxApp  {
                 throw; // Rethrow the current exception to handle it
             }
             catch (const std::exception& e)     {
-                wxMessageBox(e.what(), "Error", wxOK | wxICON_ERROR);
+                wxMessageBox(AstroPhotoStacker::process_nested_exception(e), "Error", wxOK | wxICON_ERROR);
             }
             catch (...)     {
                 wxMessageBox("An unknown error occurred.", "Error", wxOK | wxICON_ERROR);
@@ -45,7 +46,7 @@ class MyApp : public wxApp  {
                 throw; // Rethrow the current exception to handle it
             }
             catch (const std::exception& e)     {
-                wxMessageBox(e.what(), "Error", wxOK | wxICON_ERROR);
+                wxMessageBox(AstroPhotoStacker::process_nested_exception(e), "Error", wxOK | wxICON_ERROR);
             }
             catch (...)     {
                 wxMessageBox("An unknown error occurred.", "Error", wxOK | wxICON_ERROR);

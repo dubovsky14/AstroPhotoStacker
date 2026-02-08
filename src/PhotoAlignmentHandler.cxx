@@ -115,12 +115,12 @@ void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const
     };
 
     std::map<size_t, InputFrame> task_id_to_input_frame_map;
-    auto exception_handler = [task_id_to_input_frame_map](size_t task_id, const std::exception &e) {
+    auto exception_handler = [task_id_to_input_frame_map](size_t task_id) {
         try {
-            throw e;
+            throw;
         }
-        catch (const std::exception &e) {
-            std::throw_with_nested(runtime_error("Error while aligning file: " + task_id_to_input_frame_map.at(task_id).to_string() + ". " + e.what()));
+        catch (...) {
+            std::throw_with_nested(runtime_error("Error while aligning file: " + task_id_to_input_frame_map.at(task_id).to_string() + ": "));
         }
     };
 

@@ -127,7 +127,7 @@ namespace AstroPhotoStacker {
              * @param exception_handler The function that will be called when an exception is thrown in any of the tasks. This function can be used to wrap the exception (with additional information) of trigger something.
              * @param sleep_time_ms The time to sleep between checking if the tasks are finished, in milliseconds
              */
-            void wait_for_tasks_and_modify_exceptions(std::function<void(size_t, const std::exception&)> exception_handler, int sleep_time_ms = 100) {
+            void wait_for_tasks_and_modify_exceptions(std::function<void(size_t)> exception_handler, int sleep_time_ms = 100) {
                 while (true)   {
                     std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_ms));
 
@@ -137,14 +137,10 @@ namespace AstroPhotoStacker {
                         try {
                             m_futures_and_requirements.at(m_task_with_active_exception).first.get();
                         }
-                        catch (const std::exception &e) {
-                            m_ignore_exceptions_in_tasks = true; // otherwise we would get another exception while handling this one
-                            const size_t task_id = m_task_with_active_exception;
-                            exception_handler(task_id, e);
-                        }
                         catch (...) {
                             m_ignore_exceptions_in_tasks = true; // otherwise we would get another exception while handling this one
-                            throw;
+                            const size_t task_id = m_task_with_active_exception;
+                            exception_handler(task_id);
                         }
                     }
 
