@@ -48,7 +48,7 @@ std::vector<PixelType> RawFileReaderVideoSer::read_raw_file(int *width, int *hei
         }
     }
     else {
-        throw std::runtime_error("Unsupported bit depth in SER file: " + std::to_string(bit_depth));
+        throw std::runtime_error("Unsupported bit depth in SER file: " + m_input_frame.get_file_address());
     }
 
     if (bayer_pattern != nullptr) {

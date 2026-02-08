@@ -33,7 +33,7 @@ void RGBAlignmentTool::get_blue_shift_and_red_shift_internal(   std::pair<float,
             throw std::runtime_error("No clusters found in the reference photo");
         }
         if (clusters.at(0).size()  < 10) {
-            throw std::runtime_error("No clusters found in the reference photo");
+            throw std::runtime_error("Not enough clusters found in the reference photo");
         }
 
         const std::vector<std::tuple<int,int>> &leading_cluster = clusters.at(0);

@@ -78,7 +78,7 @@ void RawFileReaderFit::read_data(std::ifstream *file) {
         read_data_8bit(file);
     }
     else {
-        throw std::invalid_argument("Unsupported bit depth");
+        throw std::invalid_argument("Unsupported bit depth in FIT file: " + m_input_frame.get_file_address());
     }
 };
 
@@ -177,8 +177,7 @@ void RawFileReaderFit::parse_header(const std::string &header)    {
 std::string RawFileReaderFit::get_header_string(std::ifstream *file)    {
     string header;
     char x;
-    while (!ends_with(header, " END "))    {
-        file->read(&x, 1);
+    while (!ends_with(header, " END ") && file->read(&x, 1)) {
         header += x;
     }
     return header;
@@ -218,7 +217,7 @@ void RawFileReaderFit::process_bayer_matrix(const std::string &bayer_matrix)  {
     strip_string(&bayer_matrix_upper, " \n\t\r\'\"");
 
     if (bayer_matrix_upper.length() != 4) {
-        throw std::invalid_argument("Bayer matrix must have 4 characters. Matrix: '"s + bayer_matrix + "'");
+        throw std::invalid_argument("Bayer matrix must have 4 characters. Matrix: '"s + bayer_matrix + "'. File: " + m_input_frame.get_file_address());
     }
     for (int i = 0; i < 4; i++) {
         const char c = bayer_matrix_upper[i];
@@ -232,7 +231,7 @@ void RawFileReaderFit::process_bayer_matrix(const std::string &bayer_matrix)  {
             m_bayer_matrix[i] = 2;
         }
         else {
-            throw std::invalid_argument("Invalid Bayer matrix character");
+            throw std::invalid_argument("Invalid Bayer matrix character in FIT file: " + m_input_frame.get_file_address());
         }
     }
 };

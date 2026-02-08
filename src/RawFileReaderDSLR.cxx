@@ -67,10 +67,10 @@ void RawFileReaderDSLR::get_photo_resolution(int *width, int *height) {
 LibRaw RawFileReaderDSLR::get_libraw_processor() {
     LibRaw raw_processor;
     if (raw_processor.open_file(m_input_frame.get_file_address().c_str()) != LIBRAW_SUCCESS) {
-        throw std::runtime_error("Cannot open the raw file");
+        throw std::runtime_error("Cannot open the raw file " + m_input_frame.get_file_address());
     }
     if (raw_processor.unpack() != LIBRAW_SUCCESS) {
-        throw std::runtime_error("Cannot unpack the raw file");
+        throw std::runtime_error("Cannot unpack the raw file " + m_input_frame.get_file_address());
     }
     return raw_processor;
 };

@@ -114,6 +114,16 @@ void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const
         m_n_files_aligned += 1;
     };
 
+    std::map<size_t, InputFrame> task_id_to_input_frame_map;
+    auto exception_handler = [task_id_to_input_frame_map](size_t task_id, const std::exception &e) {
+        try {
+            throw e;
+        }
+        catch (const std::exception &e) {
+            std::throw_with_nested(runtime_error("Error while aligning file: " + task_id_to_input_frame_map.at(task_id).to_string() + ". " + e.what()));
+        }
+    };
+
     m_n_files_aligned = 0;
     TaskScheduler pool({size_t(m_n_cpu)});
     for (unsigned int i_file = 0; i_file < files.size(); i_file++)   {

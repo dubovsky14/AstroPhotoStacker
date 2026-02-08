@@ -44,7 +44,7 @@ namespace AstroPhotoStacker {
              * @param args - the arguments of the task
              */
             template<typename FunctionType, typename... Args>
-            void submit(const FunctionType &task, const std::vector<size_t> &resource_requirements, const Args &...args)   {
+            size_t submit(const FunctionType &task, const std::vector<size_t> &resource_requirements, const Args &...args)   {
                 m_n_tasks_remaining++;
                 std::scoped_lock lock(m_mutex);
 
@@ -78,6 +78,7 @@ namespace AstroPhotoStacker {
                             return;
                         }
                         *active_exception = true;
+                        m_task_with_active_exception = this_task_id;
                         throw;
                     }
                 };
@@ -90,7 +91,7 @@ namespace AstroPhotoStacker {
                 else {
                     m_remaining_tasks_and_requirements[this_task_id] = {task_wrapped, resource_requirements};
                 }
-
+                return this_task_id;
             };
 
             /**
@@ -104,12 +105,44 @@ namespace AstroPhotoStacker {
 
                     std::scoped_lock lock(m_mutex);
 
-                    if (!m_ignore_exceptions_in_tasks) {
+                    if (!m_ignore_exceptions_in_tasks && *m_active_exception) {
                         try {
-                            check_futures_for_exception();
+                            m_futures_and_requirements.at(m_task_with_active_exception).first.get();
                         }
                         catch (...) {
-                            std::cout << "Exception in one of the tasks. Stopping execution of remaining tasks.\n";
+                            m_ignore_exceptions_in_tasks = true; // otherwise we would get another exception while handling this one
+                            throw;
+                        }
+                    }
+
+                    if (m_n_tasks_remaining == 0)   {
+                        break;
+                    }
+                }
+            };
+
+            /**
+             * @brief Wait for all tasks to finish
+             *
+             * @param exception_handler The function that will be called when an exception is thrown in any of the tasks. This function can be used to wrap the exception (with additional information) of trigger something.
+             * @param sleep_time_ms The time to sleep between checking if the tasks are finished, in milliseconds
+             */
+            void wait_for_tasks_and_modify_exceptions(std::function<void(size_t, const std::exception&)> exception_handler, int sleep_time_ms = 100) {
+                while (true)   {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time_ms));
+
+                    std::scoped_lock lock(m_mutex);
+
+                    if (!m_ignore_exceptions_in_tasks && *m_active_exception) {
+                        try {
+                            m_futures_and_requirements.at(m_task_with_active_exception).first.get();
+                        }
+                        catch (const std::exception &e) {
+                            m_ignore_exceptions_in_tasks = true; // otherwise we would get another exception while handling this one
+                            const size_t task_id = m_task_with_active_exception;
+                            exception_handler(task_id, e);
+                        }
+                        catch (...) {
                             m_ignore_exceptions_in_tasks = true; // otherwise we would get another exception while handling this one
                             throw;
                         }
@@ -134,6 +167,7 @@ namespace AstroPhotoStacker {
 
             // this must outlive the TaskScheduler object in case of exception
             std::shared_ptr<std::atomic<bool>> m_active_exception = std::make_shared<std::atomic<bool>>(false);
+            size_t m_task_with_active_exception = 0;
 
             std::vector<size_t> m_resource_limits;
             std::vector<size_t> m_resource_usage;
@@ -200,29 +234,6 @@ namespace AstroPhotoStacker {
                     if (resource_requirements[i] > m_resource_limits[i]) {
                         throw std::runtime_error("The resource requirements exceed the resource limits");
                     }
-                }
-            };
-
-            void check_futures_for_exception() {
-                std::vector<size_t> futures_to_remove;
-                for (auto &[i_task, future_and_requirements] : m_futures_and_requirements) {
-                    std::future<void> &future = future_and_requirements.first;
-                    const bool finished = (future.wait_for(std::chrono::seconds(0)) == std::future_status::ready);
-                    if (finished) {
-                        futures_to_remove.push_back(i_task); // if no exception, we can remove the future from the map
-                        try {
-                            future.get(); // this will throw an exception if the task finished with an exception
-                        }
-                        catch (...) {
-                            for (size_t i_task : futures_to_remove) {
-                                m_futures_and_requirements.erase(i_task);
-                            }
-                            throw;
-                        }
-                    }
-                }
-                for (size_t i_task : futures_to_remove) {
-                    m_futures_and_requirements.erase(i_task);
                 }
             };
     };
