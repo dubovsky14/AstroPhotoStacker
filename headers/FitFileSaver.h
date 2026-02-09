@@ -36,7 +36,7 @@ namespace AstroPhotoStacker {
             void save(const std::string &filename, const std::vector<PixelTypeTemplate> &image)  const  {
                 std::ofstream file(filename, std::ios::binary);
                 if (!file) {
-                    throw std::runtime_error("Could not open file for writing.");
+                    throw std::runtime_error("Could not open file for writing: " + filename);
                 }
                 std::string header_string = get_header_string();
                 file.write(header_string.c_str(), header_string.length());

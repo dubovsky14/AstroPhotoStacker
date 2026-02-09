@@ -36,7 +36,7 @@ namespace AstroPhotoStacker {
                     result[y*(*width) + x] = frame.at<cv::Vec3s>(y, x)[channel];
                 }
                 else {
-                    throw std::runtime_error("Unsupported bit depth");
+                    throw std::runtime_error("Unsupported bit depth in video file " + video_address);
                 }
             }
         }
@@ -70,7 +70,7 @@ namespace AstroPhotoStacker {
                         result[2-color][y*(*width) + x] = frame.at<cv::Vec3s>(y, x)[color];
                     }
                     else {
-                        throw std::runtime_error("Unsupported bit depth");
+                        throw std::runtime_error("Unsupported bit depth in video file " + video_address);
                     }
                 }
             }

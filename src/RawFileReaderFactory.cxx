@@ -21,6 +21,6 @@ std::unique_ptr<RawFileReaderBase> RawFileReaderFactory::get_raw_file_reader(con
         case InputFormatType::DSLR_OR_SLR_RAW_FILE:
             return std::make_unique<RawFileReaderDSLR>(input_frame);
         default:
-            throw std::invalid_argument("Unsupported input format for raw file reader");
+            throw std::invalid_argument("RawFileReaderFactory::Unsupported raw file format: " + input_frame.get_file_address());
     }
 }

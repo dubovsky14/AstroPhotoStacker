@@ -312,7 +312,7 @@ namespace AstroPhotoStacker {
                     result[y*(*width) + x] = image.at<short>(y, x);
                 }
                 else {
-                    throw std::runtime_error("Unsupported bit depth");
+                    throw std::runtime_error("Unsupported bit depth in file " + input_file);
                 }
             }
         }

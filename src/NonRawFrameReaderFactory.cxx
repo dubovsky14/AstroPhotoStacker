@@ -15,6 +15,6 @@ std::unique_ptr<NonRawFrameReaderBase> NonRawFrameReaderFactory::get_non_raw_fra
         case InputFormatType::VIDEO_FRAME_RGB:
             return std::make_unique<NonRawFrameReaderVideo>(input_frame);
         default:
-            throw std::runtime_error("Unsupported non-raw format type");
+            throw std::runtime_error("Unsupported non-raw format type in file " + input_frame.get_file_address());
     }
 };

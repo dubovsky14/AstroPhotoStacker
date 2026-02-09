@@ -21,6 +21,11 @@ std::vector<PixelType> RawFileReaderVideoSer::read_raw_file(int *width, int *hei
         throw std::runtime_error("Unable to open video file: " + m_input_frame.get_file_address());
     }
 
+    const size_t file_size = std::filesystem::file_size(m_input_frame.get_file_address());
+    if (file_size < 178) {
+        throw std::runtime_error("File too small to be a valid SER video: " + m_input_frame.get_file_address());
+    }
+
 
     const int frame_id = m_input_frame.get_frame_number();
     *width = read_uint_from_file(&file, 26);
@@ -31,7 +36,9 @@ std::vector<PixelType> RawFileReaderVideoSer::read_raw_file(int *width, int *hei
     const size_t frame_size = bytes_per_pixel * (*width) * (*height);
     const size_t header_size = 178;
 
-
+    if (file_size < header_size + frame_size * (frame_id + 1)) {
+        throw std::runtime_error("File does not contain enough data for the requested frame: " + m_input_frame.get_file_address());
+    }
     file.seekg(header_size + frame_id*frame_size, std::ios::beg);
 
     std::vector<short unsigned int> result_unsigned_short(*width*(*height),0);
