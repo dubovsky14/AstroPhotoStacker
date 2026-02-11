@@ -86,7 +86,7 @@ AlignmentWindow ReferencePhotoHandlerPlanetary::get_alignment_window(   const Mo
     const int width = image_data.width;
     const int height = image_data.height;
 
-    std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters_non_recursive(brightness, width, height, threshold);
+    std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters(brightness, width, height, threshold);
 
     if (clusters.size() == 0) {
         throw runtime_error("No clusters found in the reference photo");

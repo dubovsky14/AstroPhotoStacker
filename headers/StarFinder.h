@@ -23,44 +23,6 @@ namespace AstroPhotoStacker {
     std::tuple<float,float> get_center_of_cluster(const std::vector<std::tuple<int,int>> &cluster);
 
     /**
-     * @brief Fill the current cluster with pixels. If the pixels is below the threshold, stop. If the pixel is already visited, stop. If the pixel is above the threshold, add it to the cluster and recursively call the function for all neighboring pixels
-     *
-     * @tparam pixel_type - type of pixel values
-     * @param brightness - array of pixel brightness values
-     * @param width - width of the image
-     * @param height - height of the image
-     * @param x_pos - x position of the pixel
-     * @param y_pos - y position of the pixel
-     * @param current_cluster - vector of pixels in the current cluster
-     * @param threshold - pixels with brightness below this value will not be added to the cluster
-     * @param visited_pixels - map of visited pixels
-    */
-    template<typename pixel_type>
-    void fill_cluster(  const pixel_type *brightness, int width, int height,
-                        int x_pos, int y_pos,
-                        std::vector<std::tuple<int, int> > *current_cluster,
-                        float threshold, std::map<std::tuple<int, int>, char> *visited_pixels) {
-        if (brightness[y_pos*width + x_pos] < threshold)   return;
-
-        std::tuple<int, int> this_pixel(x_pos,y_pos);
-        if (visited_pixels->find(this_pixel) != visited_pixels->end())    {
-            return;
-        }
-        (*visited_pixels)[this_pixel] = 0;
-        current_cluster->push_back(this_pixel);
-        for (int y_shift = -1; y_shift <= 1; y_shift++) {
-            int y_pos_new = y_pos + y_shift;
-            if (y_pos_new < 0 || y_pos_new >= height) continue;
-            for (int x_shift = -1; x_shift <= 1; x_shift++) {
-                int x_pos_new = x_pos + x_shift;
-                if (x_pos_new < 0 || x_pos_new >= width) continue;
-                if (x_shift == 0 && y_shift ==0)    continue;
-                fill_cluster(brightness, width, height, x_pos_new, y_pos_new, current_cluster, threshold, visited_pixels);
-            }
-        }
-    };
-
-    /**
      * @brief Get the clusters of pixels in the image
      *
      * @tparam pixel_type - type of pixel values
@@ -72,34 +34,6 @@ namespace AstroPhotoStacker {
     */
     template<typename pixel_type>
     std::vector< std::vector<std::tuple<int, int> > > get_clusters(const pixel_type *brightness, int width, int height, float threshold)  {
-        std::vector< std::vector<std::tuple<int, int> > >  result;
-        std::map<std::tuple<int, int>, char> visited_pixels;
-
-        std::vector<std::tuple<int, int> >  this_cluster;
-        for (int y_pos = 0; y_pos < height; y_pos++)    {
-            for (int x_pos = 0; x_pos < width; x_pos++)    {
-                fill_cluster(brightness, width, height, x_pos, y_pos, &this_cluster, threshold, &visited_pixels);
-                if (this_cluster.size())    {
-                    result.push_back(this_cluster);
-                    this_cluster.clear();
-                }
-            }
-        }
-        return result;
-    };
-
-    /**
-     * @brief Get the clusters of pixels in the image
-     *
-     * @tparam pixel_type - type of pixel values
-     * @param brightness - array of pixel brightness values
-     * @param width - width of the image
-     * @param height - height of the image
-     * @param threshold - pixels with brightness below this value will not be added to the cluster
-     * @return std::vector<std::vector<std::tuple<int, int> > > - vector of clusters, each cluster is a vector of tuples representing x and y coordinates of the pixels
-    */
-    template<typename pixel_type>
-    std::vector< std::vector<std::tuple<int, int> > > get_clusters_non_recursive(const pixel_type *brightness, int width, int height, float threshold)  {
         std::vector<int> cluster_indices(width*height, -1);
         unsigned int n_clusters = 0;
         std::map<int, int> cluster_index_mapping;
@@ -219,7 +153,7 @@ namespace AstroPhotoStacker {
     template<typename pixel_type>
     std::vector<std::tuple<float, float,int>> get_stars(const pixel_type *brightness, int width, int height, pixel_type threshold) {
         std::vector<std::tuple<float, float, int>> stars;
-        std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters_non_recursive(brightness, width, height, threshold);
+        std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters(brightness, width, height, threshold);
 
         for (auto cluster : clusters)   {
             auto [x_mean, y_mean] = get_center_of_cluster(cluster);

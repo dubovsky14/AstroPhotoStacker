@@ -24,7 +24,7 @@ void RGBAlignmentTool::get_blue_shift_and_red_shift_internal(   std::pair<float,
         const unsigned short max_value = *max_element(image[i_color].data(), image[i_color].data() + width*height);
         const unsigned short threshold = max<unsigned short>(0.05*max_value, otsu_threshold);
 
-        std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters_non_recursive(image[i_color].data(), width, height, threshold);
+        std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters(image[i_color].data(), width, height, threshold);
         std::sort(clusters.begin(), clusters.end(), []
                                     (const std::vector<std::tuple<int, int> > &a, const std::vector<std::tuple<int, int> > &b)
                                     {return a.size() > b.size();});
