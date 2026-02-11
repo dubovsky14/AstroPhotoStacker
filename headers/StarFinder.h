@@ -100,110 +100,103 @@ namespace AstroPhotoStacker {
     */
     template<typename pixel_type>
     std::vector< std::vector<std::tuple<int, int> > > get_clusters_non_recursive(const pixel_type *brightness, int width, int height, float threshold)  {
-        // yes, this function is a mess and it can be done elegantly with recursion, but for large objects (i.e. Moon) it will cause stack overflow
+        std::vector<int> cluster_indices(width*height, -1);
+        unsigned int n_clusters = 0;
+        std::map<int, int> cluster_index_mapping;
 
-        std::vector< std::vector<std::tuple<int, int> > >  result;
-        std::vector< std::vector<std::tuple<int, int> > >  active_clusters;
-        std::vector< std::vector<std::tuple<int, int> > >  active_clusters_previous_line;
-        std::vector< std::vector<std::tuple<int, int> > >  active_clusters_this_line;
-        std::vector<bool> cluster_is_active;
-
-        auto get_active_cluster_index = [&active_clusters_previous_line, &active_clusters_this_line] (int x, int y) -> std::tuple<int,int> {
-            std::tuple<int,int> result(-1,-1);
-
-            for (int i_cluster = 0; i_cluster < int(active_clusters_this_line.size()); i_cluster++) {
-                for (const std::tuple<int, int> &pixel : active_clusters_this_line[i_cluster]) {
-                    if (std::get<0>(pixel) == (x-1) && std::get<1>(pixel) == y) {     // left
-                        std::get<0>(result) = i_cluster;
-                        break;
-                    }
+        // The problem is that given pixel might not any top or left neighbor from known cluster, but as you go through the line, you might find a pixel with a neighboring cluster - we will take care of merging later
+        auto add_cluster_mapping = [&cluster_index_mapping] (int from, int to) -> void {
+            if (from < to) std::swap(from, to);
+            if (cluster_index_mapping.find(from) != cluster_index_mapping.end())    {
+                const int previosly_mapped_to = cluster_index_mapping[from];
+                if (previosly_mapped_to > to) {
+                    cluster_index_mapping[from] = to;
                 }
             }
-            for (int i_cluster = 0; i_cluster < int(active_clusters_previous_line.size()); i_cluster++) {
-                if (std::get<0>(result) == i_cluster)  continue;
-                for (const std::tuple<int, int> &pixel : active_clusters_previous_line[i_cluster]) {
-                    if ((std::get<0>(pixel) == x-1 && std::get<1>(pixel) == y-1) || // top left
-                        (std::get<0>(pixel) == x   && std::get<1>(pixel) == y-1) || // top
-                        (std::get<0>(pixel) == x+1 && std::get<1>(pixel) == y-1)) { // top right
-
-                        if (std::get<0>(result) < 0) {
-                            std::get<0>(result) = i_cluster;
-                            break;
-                        }
-                        else {
-                            std::get<1>(result) = i_cluster;
-                            return result;
-                        }
-                    }
-                }
+            else {
+                cluster_index_mapping[from] = to;
             }
-            return result;
         };
 
-        auto merge_vectors = []( std::vector<std::vector<std::tuple<int, int> > > *source_vector, unsigned int source_index,
-                            std::vector<std::vector<std::tuple<int, int> > > *destination_vector, unsigned int destination_index) -> void {
+        auto get_cluster_index = [&cluster_indices, &n_clusters, width, &add_cluster_mapping] (int x, int y) -> int {
+            int result = -1;
+            // check pixel on the left
+            if (x > 0) {
+                if (cluster_indices[y*width + x-1] != -1) {
+                    result = cluster_indices[y*width + x-1];
+                }
+            }
 
-            if (source_index == destination_index) {
-                const std::string error_message = "Error: source and destination indices are the same: " + std::to_string(source_index) + "\n";
-                std::cout << error_message;
+            // check pixels on the top
+            if (y > 0) {
+                if (x > 0) {
+                    const int cluster_index = cluster_indices[(y-1)*width + x-1];
+                    if (cluster_index != -1) {
+                        if (result != -1){
+                            add_cluster_mapping(result, cluster_index);
+                        }
+                        result = result < 0 ? cluster_index : std::min(result, cluster_index);
+                    }
+                }
+                if (cluster_indices[(y-1)*width + x] != -1) {
+                    const int cluster_index = cluster_indices[(y-1)*width + x];
+                    if (result != -1) {
+                        add_cluster_mapping(result, cluster_index);
+                    }
+                        result = result < 0 ? cluster_index : std::min(result, cluster_index);
+                }
+                if (x < (width - 1)) {
+                    const int cluster_index = cluster_indices[(y-1)*width + x+1];
+                    if (cluster_index != -1) {
+                        if (result != -1) {
+                            add_cluster_mapping(result, cluster_index);
+                        }
+                        result = result < 0 ? cluster_index : std::min(result, cluster_index);
+                    }
+                }
             }
-            for (const std::tuple<int, int> &pixel : source_vector->at(source_index)) {
-                destination_vector->at(destination_index).push_back(pixel);
-            }
-            source_vector->erase(source_vector->begin() + source_index);
+
+            if (result != -1)   return result;
+
+            // no neighboring pixels belong to a cluster, create a new cluster
+            return n_clusters++;
         };
 
         for (int y_pos = 0; y_pos < height; y_pos++)    {
-            active_clusters_previous_line = active_clusters_this_line;
-            active_clusters_this_line.clear();
-            active_clusters_this_line.resize(active_clusters.size());
-            for (unsigned int i_cluster = 0; i_cluster < cluster_is_active.size(); i_cluster++) {
-                cluster_is_active[i_cluster] = false;
-            }
-
             for (int x_pos = 0; x_pos < width; x_pos++)    {
                 if (brightness[y_pos*width + x_pos] < threshold)   continue;
 
-                const std::tuple<int,int> active_cluster_indices = get_active_cluster_index(x_pos, y_pos);
-                const int index_0 = std::get<0>(active_cluster_indices);
-                const int index_1 = std::get<1>(active_cluster_indices);
-                if (index_0 == -1) {
-                    std::vector<std::tuple<int, int> > new_cluster;
-                    new_cluster.push_back(std::make_tuple(x_pos, y_pos));
-                    active_clusters.push_back(new_cluster);
-                    active_clusters_this_line.push_back(new_cluster);
-                    active_clusters_previous_line.push_back(std::vector<std::tuple<int, int> >());
-                    cluster_is_active.push_back(true);
-                } else {
-                    active_clusters[index_0].push_back(std::make_tuple(x_pos, y_pos));
-                    active_clusters_this_line[index_0].push_back(std::make_tuple(x_pos, y_pos));
-                    cluster_is_active[index_0] = true;
-                }
-
-                // merge clusters
-                if (index_1 != -1)   {
-                    cluster_is_active.erase(cluster_is_active.begin() + index_1);
-                    merge_vectors(&active_clusters, index_1, &active_clusters, index_0);
-                    merge_vectors(&active_clusters_this_line, index_1, &active_clusters_this_line, index_0);
-                    merge_vectors(&active_clusters_previous_line, index_1, &active_clusters_previous_line, index_0);
-                }
-            }
-
-            // drop inactive clusters
-            for (int i_cluster = 0; i_cluster < int(active_clusters.size()); i_cluster++) {
-                if (!cluster_is_active[i_cluster]) {
-                    result.push_back(active_clusters[i_cluster]);
-                    active_clusters.erase(active_clusters.begin() + i_cluster);
-                    active_clusters_this_line.erase(active_clusters_this_line.begin() + i_cluster);
-                    cluster_is_active.erase(cluster_is_active.begin() + i_cluster);
-                    i_cluster--;
-                }
+                const int index = get_cluster_index(x_pos, y_pos);
+                cluster_indices[y_pos*width + x_pos] = index;
             }
         }
 
-        // take care of the last line
-        for (std::vector<std::tuple<int,int> > &cluster : active_clusters) {
-            result.push_back(cluster);
+
+        // calculate final mapping of cluster indices
+        for (unsigned int i = 0; i < n_clusters; i++)    {
+            if (cluster_index_mapping.find(i) != cluster_index_mapping.end())    {
+                int mapped_to = cluster_index_mapping[i];
+                while (cluster_index_mapping.find(mapped_to) != cluster_index_mapping.end())    {
+                    if (mapped_to == cluster_index_mapping[mapped_to] || mapped_to < cluster_index_mapping[mapped_to]) {
+                        break;
+                    }
+                    mapped_to = cluster_index_mapping[mapped_to];
+                }
+                cluster_index_mapping[i] = mapped_to;
+            }
+            else {
+                cluster_index_mapping[i] = i;
+            }
+        }
+
+        std::vector< std::vector<std::tuple<int, int> > >  result(n_clusters);
+        for (int y_pos = 0; y_pos < height; y_pos++)    {
+            for (int x_pos = 0; x_pos < width; x_pos++)    {
+                if (cluster_indices[y_pos*width + x_pos] != -1) {
+                    const int mapped_to = cluster_index_mapping[cluster_indices[y_pos*width + x_pos]];
+                    result[mapped_to].push_back(std::make_tuple(x_pos, y_pos));
+                }
+            }
         }
 
         std::sort(result.begin(), result.end(), [](const std::vector<std::tuple<int, int> > &a, const std::vector<std::tuple<int, int> > &b) {
