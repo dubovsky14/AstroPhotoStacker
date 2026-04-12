@@ -143,7 +143,7 @@ void AlignedImagesProducerGUI::initialize_aligned_images_producer()   {
         const int calibration_group_number = light_frames[i_file].group_number;
         std::vector<std::shared_ptr<const CalibrationFrameBase> > calibration_frame_handlers = {};
 
-        if (calibration_handlers_map.find(i_file) != calibration_handlers_map.end()) {
+        if (calibration_handlers_map.find(calibration_group_number) != calibration_handlers_map.end()) {
             calibration_frame_handlers = calibration_handlers_map.at(calibration_group_number);
         }
 
