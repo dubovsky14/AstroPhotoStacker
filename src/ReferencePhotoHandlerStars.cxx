@@ -52,7 +52,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerStars::calculate_align
         const PixelType threshold = get_threshold_value(brightness.data(), width*height, 0.0005);
 
         vector<tuple<float,float,int> > stars = get_stars(brightness.data(), width, height, threshold);
-        keep_only_stars_above_size(&stars, m_minimal_number_of_pixels_per_star*1.3);
+        keep_only_stars_above_size(&stars, m_minimal_number_of_pixels_per_star*0.6);
         sort_stars_by_size(&stars);
 
         if (stars.size() > 25) {
