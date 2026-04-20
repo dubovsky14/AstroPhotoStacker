@@ -6,15 +6,16 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 
-std::unique_ptr<LightPollutionGradientBase> AstroPhotoStacker::fit_gradient(const std::vector<std::pair<double, double>> &coordinates, const std::vector<double> &integrated_value, const std::string &function_type) {
-    std::unique_ptr<LightPollutionGradientBase> result = get_gradient_function(function_type);
+std::unique_ptr<LightPollutionGradientBase> AstroPhotoStacker::fit_gradient(const std::vector<std::pair<double, double>> &coordinates, int width, int height, const std::vector<double> &integrated_value, const std::string &function_type) {
+    std::unique_ptr<LightPollutionGradientBase> result = get_gradient_function(function_type, width, height);
 
-    double learning_rate = 0.01;
-    const int    max_iterations = 1000;
-    const double decay_rate = 0.99;
+    double learning_rate = 0.2;
+    const int    max_iterations = 10000;
+    const double decay_rate = 0.999;
 
     const size_t n_params = result->get_parameters().size();
     for (int iteration = 0; iteration < max_iterations; iteration++) {
+        double sum_error = 0.0;
         std::vector<double> gradient(n_params, 0.0);
         for (size_t i_sample = 0; i_sample < coordinates.size(); i_sample++) {
             const std::pair<double, double>& coord = coordinates[i_sample];
@@ -24,6 +25,7 @@ std::unique_ptr<LightPollutionGradientBase> AstroPhotoStacker::fit_gradient(cons
             for (size_t i_param = 0; i_param < gradient.size(); i_param++) {
                 gradient[i_param] += error * derivative[i_param];
             }
+            sum_error += error * error;
         }
         for (size_t i_param = 0; i_param < gradient.size(); i_param++) {
             gradient[i_param] /= coordinates.size(); // Average gradient
