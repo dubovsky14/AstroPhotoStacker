@@ -22,19 +22,25 @@ class LightPollutionRemovalToolGUI : public wxFrame  {
         LightPollutionRemovalToolGUI(MyFrame *parent, const std::vector<std::vector<double>> &stacked_image, int width, int height, AstroPhotoStacker::PostProcessingTool *post_processing_tool);
 
     private:
-        void set_sample_windows(int window_size, int space_between_windows);
-
-        void fit_gradient();
+        void generate_sample_windows();
 
         void add_exposure_correction_spin_ctrl();
 
+        void add_grid_generation_settings();
+
         CombinedColorStrecherTool m_color_stretcher; // for exposure correction
         std::unique_ptr<FloatingPointSlider> m_exposure_correction_slider   = nullptr;
+        std::unique_ptr<FloatingPointSlider> m_number_of_windows_slider     = nullptr;
 
         MyFrame *m_parent = nullptr;
         const std::vector<std::vector<double>> *m_stacked_image = nullptr;
         int m_width  = 0;
         int m_height = 0;
+
+        std::vector<std::vector<double>> m_stacked_image_after_gradient_removal;
+
+        int m_n_samples_per_row = 10;
+        float m_space_as_fraction_of_window_size = 0.2;
 
         std::vector<std::unique_ptr<AstroPhotoStacker::LightPollutionGradientBase>> m_gradient_functions; // fitted gradient functions for each color channel
         wxBoxSizer *m_main_vertical_sizer = nullptr;

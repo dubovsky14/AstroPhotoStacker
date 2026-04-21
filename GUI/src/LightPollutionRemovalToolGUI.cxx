@@ -17,17 +17,17 @@ LightPollutionRemovalToolGUI::LightPollutionRemovalToolGUI(MyFrame *parent, cons
     SetSizer(m_main_vertical_sizer);
 
 
-    int preview_width = 1400;
-    int preview_height = preview_width * float(m_height) / m_width;
+    const int preview_height = 900;
+    const int preview_width = preview_height * float(m_width) / m_height;
     m_image_preview = make_unique<ImagePreviewGridSelector>(this, preview_width, preview_height, 255, false);
     m_image_preview->read_preview_from_stacked_image(*m_stacked_image, m_width, m_height);
     m_image_preview->set_max_zoom_factor(32);
     m_main_vertical_sizer->Add(m_image_preview->get_image_preview_bitmap(), 1, wxCENTER, 0);
-    set_sample_windows(400, 30);
+    generate_sample_windows();
     m_image_preview->update_preview_bitmap();
     add_exposure_correction_spin_ctrl();
+    add_grid_generation_settings();
 };
-
 
 void LightPollutionRemovalToolGUI::add_exposure_correction_spin_ctrl()   {
     m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackCorrectionWhite>());
@@ -50,14 +50,65 @@ void LightPollutionRemovalToolGUI::add_exposure_correction_spin_ctrl()   {
     m_exposure_correction_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
 };
 
+void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
+    m_number_of_windows_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Number of sample windows per row: ",
+        1,
+        50,
+        m_n_samples_per_row,
+        1,
+        0,
+        [this](float value){
+            m_n_samples_per_row = static_cast<int>(value);
+        }
+    );
+    m_number_of_windows_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
 
-void LightPollutionRemovalToolGUI::set_sample_windows(int window_size, int space_between_windows) {
+    wxSizer *sizer_buttons = new wxBoxSizer(wxHORIZONTAL);
+
+    wxButton *generate_sample_windows_button = new wxButton(this, wxID_ANY, "Generate sample windows");
+    generate_sample_windows_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        generate_sample_windows();
+        m_image_preview->update_preview_bitmap();
+    });
+    sizer_buttons->Add(generate_sample_windows_button, 0, wxEXPAND, 5);
+
+    wxButton *fit_gradient_button = new wxButton(this, wxID_ANY, "Fit gradient");
+    fit_gradient_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        // TODO
+    });
+    sizer_buttons->Add(fit_gradient_button, 0, wxEXPAND, 5);
+
+
+    wxButton *show_original_image_button = new wxButton(this, wxID_ANY, "Show original image");
+    show_original_image_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        m_image_preview->read_preview_from_stacked_image(*m_stacked_image, m_width, m_height);
+        m_image_preview->update_preview_bitmap();
+    });
+    sizer_buttons->Add(show_original_image_button, 0, wxEXPAND, 5);
+
+
+    m_main_vertical_sizer->Add(sizer_buttons, 0, wxEXPAND, 5);
+
+};
+
+void LightPollutionRemovalToolGUI::generate_sample_windows() {
     vector<SampleWindow> sample_windows;
-    for (int y = 0; y < m_height; y += window_size + space_between_windows) {
-        for (int x = 0; x < m_width; x += window_size + space_between_windows) {
+    const int window_size = m_width / (m_n_samples_per_row * (1 + m_space_as_fraction_of_window_size) + m_space_as_fraction_of_window_size);
+    const int space_between_windows = window_size * m_space_as_fraction_of_window_size;
+
+    const int step_size_x = window_size + space_between_windows;
+
+    const int n_windows_per_column = (m_height - space_between_windows) / step_size_x;
+    const int window_height = (m_height - space_between_windows) / n_windows_per_column - space_between_windows;
+    const int step_size_y = window_height + space_between_windows;
+
+    for (int y = space_between_windows; y <= m_height - step_size_y; y += step_size_y) {
+        for (int x = space_between_windows; x <= m_width - step_size_x; x += step_size_x) {
             SampleWindow window;
             window.top_left = {x, y};
-            window.bottom_right = {min(x + window_size, m_width), min(y + window_size, m_height)};
+            window.bottom_right = {min(x + window_size, m_width), min(y + window_height, m_height)};
             sample_windows.push_back(window);
         }
     }
