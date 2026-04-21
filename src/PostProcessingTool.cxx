@@ -72,3 +72,22 @@ void PostProcessingTool::set_use_auto_rgb_alignment(bool use_auto_rgb_alignment)
 bool PostProcessingTool::get_use_auto_rgb_alignment() const {
     return m_use_auto_rgb_alignment;
 };
+
+void PostProcessingTool::set_use_light_pollution_removal(bool use_light_pollution_removal)  {
+    m_use_light_pollution_removal = use_light_pollution_removal;
+};
+
+bool PostProcessingTool::get_use_light_pollution_removal() const    {
+    return m_use_light_pollution_removal;
+};
+
+void PostProcessingTool::set_light_pollution_gradient(const std::vector<std::unique_ptr<AstroPhotoStacker::LightPollutionGradientBase>> &light_pollution_gradient)  {
+    m_light_pollution_gradient.clear();
+    for (const auto &gradient_function : light_pollution_gradient) {
+        m_light_pollution_gradient.push_back(gradient_function->clone());
+    }
+};
+
+const std::vector<std::shared_ptr<AstroPhotoStacker::LightPollutionGradientBase>>& PostProcessingTool::get_light_pollution_gradient() const {
+    return m_light_pollution_gradient;
+};

@@ -9,6 +9,7 @@
 #include "../headers/AlignmentPointsDrawing.h"
 #include "../headers/SettingsCustomizationGUI.h"
 #include "../headers/SettingsCustomization.h"
+#include "../headers/LightPollutionRemovalToolGUI.h"
 
 
 
@@ -366,6 +367,23 @@ void MyFrame::add_postprocessing_menu() {
 
         PostProcessingToolGUI *aligned_images_producer_gui = new PostProcessingToolGUI(this, stacked_image, width, height, &m_post_processing_tool);
         aligned_images_producer_gui->Show(true);
+    }, id);
+
+    id = unique_counter();
+    postprocessing_menu->Append(id, "Open light pollution removal tool", "Open light pollution removal tool");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        if (m_stacker == nullptr) {
+            wxMessageDialog dialog(this, "Files have not been stacked yet!", "Frames not stacked");
+            dialog.ShowModal();
+            return;
+        }
+
+        const vector<vector<double>> &stacked_image = m_stacker->get_stacked_image();
+        const int width = m_stacker->get_width();
+        const int height = m_stacker->get_height();
+
+        LightPollutionRemovalToolGUI *light_pollution_removal_tool_gui = new LightPollutionRemovalToolGUI(this, stacked_image, width, height, &m_post_processing_tool);
+        light_pollution_removal_tool_gui->Show(true);
     }, id);
 
     m_menu_bar->Append(postprocessing_menu, "&Postprocessing");

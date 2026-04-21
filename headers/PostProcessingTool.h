@@ -2,6 +2,8 @@
 
 #include "../headers/RGBAlignmentTool.h"
 #include "../headers/SharpeningFunctions.h"
+#include "../headers/LightPollutionGradientFunctions.h"
+#include "../headers/LightPollutionRemovalTool.h"
 
 #include <vector>
 
@@ -44,9 +46,26 @@ namespace AstroPhotoStacker {
 
             bool get_use_auto_rgb_alignment() const;
 
+            void set_use_light_pollution_removal(bool use_light_pollution_removal);
+
+            bool get_use_light_pollution_removal() const;
+
+            void set_light_pollution_gradient(const std::vector<std::unique_ptr<AstroPhotoStacker::LightPollutionGradientBase>> &light_pollution_gradient);
+
+            const std::vector<std::shared_ptr<AstroPhotoStacker::LightPollutionGradientBase>>& get_light_pollution_gradient() const;
+
             template<typename PixelType>
             std::vector<std::vector<PixelType>> post_process_image(const std::vector<std::vector<PixelType>> &image, int width, int height) const {
                 std::vector<std::vector<PixelType>> processed_image = image;
+
+                if (m_use_light_pollution_removal) {
+                    if (m_light_pollution_gradient.size() != processed_image.size()) {
+                        throw std::runtime_error("Number of gradient functions must match the number of color channels in the image");
+                    }
+                    for (unsigned int i_color = 0; i_color < m_light_pollution_gradient.size(); i_color++) {
+                        processed_image[i_color] = AstroPhotoStacker::subtract_gradient(processed_image[i_color], width, height, *m_light_pollution_gradient[i_color]);
+                    }
+                }
 
                 if (m_apply_rgb_alignment) {
                     AstroPhotoStacker::RGBAlignmentTool rgb_alignment_tool = AstroPhotoStacker::RGBAlignmentTool(processed_image, width, height);
@@ -79,6 +98,9 @@ namespace AstroPhotoStacker {
             std::pair<float,float> m_shift_blue = {0,0};
 
             bool m_use_auto_rgb_alignment = false;
+
+            bool m_use_light_pollution_removal = false;
+            std::vector<std::shared_ptr<AstroPhotoStacker::LightPollutionGradientBase>> m_light_pollution_gradient;
 
     };
 }

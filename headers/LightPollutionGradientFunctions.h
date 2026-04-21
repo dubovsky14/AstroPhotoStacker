@@ -27,6 +27,10 @@ namespace AstroPhotoStacker {
                 m_height = height;
             };
 
+            LightPollutionGradientBase(const LightPollutionGradientBase&) = default;
+
+            virtual std::unique_ptr<LightPollutionGradientBase> clone() const = 0;
+
             virtual double get_value(double x, double y) const = 0;
 
             virtual std::vector<double> get_derivative(double x, double y) const = 0;
@@ -70,15 +74,22 @@ namespace AstroPhotoStacker {
                 initialize_parameters(6); // Initialize with 6 parameters
             };
 
+            LightPollutionGradientPolynomial2N(const LightPollutionGradientPolynomial2N &other) : LightPollutionGradientBase(other) {};
+
+            virtual std::unique_ptr<LightPollutionGradientBase> clone() const override {
+                auto clone = std::make_unique<LightPollutionGradientPolynomial2N>(*this);
+                return clone;
+            };
+
             double get_value(double x, double y) const override {
                 normalize_coordinates(&x, &y);
-                const auto& a = get_parameters();
+                const std::vector<double> a = get_parameters();
                 return a[0] + a[1]*x + a[2]*y + a[3]*x*x + a[4]*x*y + a[5]*y*y;
             };
 
             std::vector<double> get_derivative(double x, double y) const override   {
                 normalize_coordinates(&x, &y);
-                const auto& a = get_parameters();
+                const std::vector<double> a = get_parameters();
                 return {1.0, x, y, x*x, x*y, y*y};
             };
 
@@ -97,15 +108,22 @@ namespace AstroPhotoStacker {
                 initialize_parameters(10); // Initialize with 10 parameters
             };
 
+            LightPollutionGradientPolynomial3N(const LightPollutionGradientPolynomial3N &other) : LightPollutionGradientBase(other) {};
+
+            virtual std::unique_ptr<LightPollutionGradientBase> clone() const override {
+                auto clone = std::make_unique<LightPollutionGradientPolynomial3N>(*this);
+                return clone;
+            };
+
             double get_value(double x, double y) const override {
                 normalize_coordinates(&x, &y);
-                const auto& a = get_parameters();
+                const std::vector<double> a = get_parameters();
                 return a[0] + a[1]*x + a[2]*y + a[3]*x*x + a[4]*x*y + a[5]*y*y + a[6]*x*x*x + a[7]*x*x*y + a[8]*x*y*y + a[9]*y*y*y;
             };
 
             std::vector<double> get_derivative(double x, double y) const override   {
                 normalize_coordinates(&x, &y);
-                const auto& a = get_parameters();
+                const std::vector<double> a = get_parameters();
                 return {1.0, x, y, x*x, x*y, y*y, x*x*x, x*x*y, x*y*y, y*y*y};
             };
 
@@ -125,15 +143,22 @@ namespace AstroPhotoStacker {
                 initialize_parameters(15); // Initialize with 15 parameters
             };
 
+            LightPollutionGradientPolynomial4N(const LightPollutionGradientPolynomial4N &other) = default;
+
+            virtual std::unique_ptr<LightPollutionGradientBase> clone() const override {
+                auto clone = std::make_unique<LightPollutionGradientPolynomial4N>(*this);
+                return clone;
+            };
+
             double get_value(double x, double y) const override {
                 normalize_coordinates(&x, &y);
-                const auto& a = get_parameters();
+                const std::vector<double> a = get_parameters();
                 return a[0] + a[1]*x + a[2]*y + a[3]*x*x + a[4]*x*y + a[5]*y*y + a[6]*x*x*x + a[7]*x*x*y + a[8]*x*y*y + a[9]*y*y*y + a[10]*x*x*x*x + a[11]*x*x*x*y + a[12]*x*x*y*y + a[13]*x*y*y*y + a[14]*y*y*y*y;
             };
 
             std::vector<double> get_derivative(double x, double y) const override   {
                 normalize_coordinates(&x, &y);
-                const auto& a = get_parameters();
+                const std::vector<double> a = get_parameters();
                 return {1.0, x, y, x*x, x*y, y*y, x*x*x, x*x*y, x*y*y, y*y*y, x*x*x*x, x*x*x*y, x*x*y*y, x*y*y*y, y*y*y*y};
             };
 
@@ -146,7 +171,7 @@ namespace AstroPhotoStacker {
     };
 
 
-    std::unique_ptr<LightPollutionGradientBase> get_gradient_function(const std::string &function_type, int width, int height) {
+    inline std::unique_ptr<LightPollutionGradientBase> get_gradient_function(const std::string &function_type, int width, int height) {
         if (function_type == "polynomial2n") {
             return std::make_unique<LightPollutionGradientPolynomial2N>(width, height);
         } else if (function_type == "polynomial3n") {
