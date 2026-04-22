@@ -24,7 +24,17 @@ void ImagePreviewGridSelector::set_grid_windows(const std::vector<AstroPhotoStac
     for (const auto &window : grid_windows) {
         m_grid_windows_coordinates_and_validity.push_back({window, true});
     }
-}
+};
+
+std::vector<AstroPhotoStacker::SampleWindow> ImagePreviewGridSelector::get_selected_grid_windows() const {
+    std::vector<AstroPhotoStacker::SampleWindow> selected_windows;
+    for (const auto &window_coordinates_and_validity : m_grid_windows_coordinates_and_validity) {
+        if (window_coordinates_and_validity.second) {
+            selected_windows.push_back(window_coordinates_and_validity.first);
+        }
+    }
+    return selected_windows;
+};
 
 void ImagePreviewGridSelector::plot_sample_windows(wxImage *wx_image)   const   {
     if (!image_loaded() || m_grid_windows_coordinates_and_validity.empty()) {

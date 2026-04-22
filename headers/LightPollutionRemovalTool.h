@@ -21,6 +21,23 @@ namespace AstroPhotoStacker {
                                                                 const std::string &function_type = "polynomial2n");
 
     template<typename T>
+    std::vector<std::unique_ptr<LightPollutionGradientBase>> fit_gradient(  const std::vector<std::vector<T>> &input_image, int width, int height,
+                                                                            const std::vector<SampleWindow> &sample_windows,
+                                                                            const std::string &function_type = "polynomial2n")  {
+
+        std::vector<std::unique_ptr<LightPollutionGradientBase>> gradient_functions;
+        for (unsigned int i_channel = 0; i_channel < input_image.size(); i_channel++) {
+            const std::vector<double> integrated_values = integrate_each_sample(input_image[i_channel], width, sample_windows);
+            std::vector<std::pair<double, double>> coordinates(sample_windows.size());
+            for (unsigned int i_sample = 0; i_sample < sample_windows.size(); i_sample++) {
+                coordinates[i_sample] = { (sample_windows[i_sample].top_left.first + sample_windows[i_sample].bottom_right.first) / 2.0, (sample_windows[i_sample].top_left.second + sample_windows[i_sample].bottom_right.second) / 2.0 };
+            }
+            gradient_functions.push_back(fit_gradient(coordinates, width, height, integrated_values, function_type));
+        }
+        return gradient_functions;
+    };
+
+    template<typename T>
     std::vector<T> subtract_gradient(const std::vector<T> &input_image, const unsigned int width, const unsigned int height, const LightPollutionGradientBase &gradient_function, bool ignore_offsett = true)    {
         std::vector<T> output_image(input_image.size(), 0.0);
         const double offset = ignore_offsett ? gradient_function.get_parameters()[0] : 0.0;

@@ -13,18 +13,25 @@ LightPollutionRemovalToolGUI::LightPollutionRemovalToolGUI(MyFrame *parent, cons
     m_post_processing_tool = post_processing_tool;
 
     SetTitle("Light Pollution Removal Tool");
-    m_main_vertical_sizer = new wxBoxSizer(wxVERTICAL);
-    SetSizer(m_main_vertical_sizer);
+    m_main_horizontal_sizer = new wxBoxSizer(wxHORIZONTAL);
+    SetSizer(m_main_horizontal_sizer);
 
+
+    m_preview_sizer = new wxBoxSizer(wxVERTICAL);
+    m_main_horizontal_sizer->Add(m_preview_sizer, 1, wxLEFT, 0);
 
     const int preview_height = 900;
     const int preview_width = preview_height * float(m_width) / m_height;
     m_image_preview = make_unique<ImagePreviewGridSelector>(this, preview_width, preview_height, 255, false);
     m_image_preview->read_preview_from_stacked_image(*m_stacked_image, m_width, m_height);
     m_image_preview->set_max_zoom_factor(32);
-    m_main_vertical_sizer->Add(m_image_preview->get_image_preview_bitmap(), 1, wxCENTER, 0);
+    m_preview_sizer->Add(m_image_preview->get_image_preview_bitmap(), 1, wxEXPAND, 0);
     generate_sample_windows();
     m_image_preview->update_preview_bitmap();
+
+
+    m_grid_settings_sizer = new wxBoxSizer(wxVERTICAL);
+    m_main_horizontal_sizer->Add(m_grid_settings_sizer, 0, wxEXPAND, 5);
     add_exposure_correction_spin_ctrl();
     add_grid_generation_settings();
 };
@@ -47,7 +54,7 @@ void LightPollutionRemovalToolGUI::add_exposure_correction_spin_ctrl()   {
             m_image_preview->update_preview_bitmap();
         }
     );
-    m_exposure_correction_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
+    m_exposure_correction_slider->add_sizer(m_preview_sizer, 0, wxEXPAND, 5);
 };
 
 void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
@@ -63,7 +70,21 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
             m_n_samples_per_row = static_cast<int>(value);
         }
     );
-    m_number_of_windows_slider->add_sizer(m_main_vertical_sizer, 0, wxEXPAND, 5);
+    m_number_of_windows_slider->add_sizer(m_grid_settings_sizer, 0, wxEXPAND, 5);
+
+    m_space_as_fraction_of_window_size_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Space between sample windows as fraction of window size: ",
+        0.01,
+        1,
+        m_space_as_fraction_of_window_size,
+        0.05,
+        2,
+        [this](float value){
+            m_space_as_fraction_of_window_size = value;
+        }
+    );
+    m_space_as_fraction_of_window_size_slider->add_sizer(m_grid_settings_sizer, 0, wxEXPAND, 5);
 
     wxSizer *sizer_buttons = new wxBoxSizer(wxHORIZONTAL);
 
@@ -76,7 +97,15 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
 
     wxButton *fit_gradient_button = new wxButton(this, wxID_ANY, "Fit gradient");
     fit_gradient_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
-        // TODO
+        const std::vector<SampleWindow> sample_windows = m_image_preview->get_selected_grid_windows();
+        std::vector<std::unique_ptr<LightPollutionGradientBase>> gradient_functions = fit_gradient(*m_stacked_image, m_width, m_height, sample_windows, "polynomial3n");
+        m_gradient_functions = std::move(gradient_functions);
+        m_stacked_image_after_gradient_removal.clear();
+        for (unsigned int i_channel = 0; i_channel < m_stacked_image->size(); i_channel++) {
+            m_stacked_image_after_gradient_removal.push_back(subtract_gradient((*m_stacked_image)[i_channel], m_width, m_height, *m_gradient_functions[i_channel], true));
+        }
+        m_image_preview->read_preview_from_stacked_image(m_stacked_image_after_gradient_removal, m_width, m_height);
+        m_image_preview->update_preview_bitmap();
     });
     sizer_buttons->Add(fit_gradient_button, 0, wxEXPAND, 5);
 
@@ -87,10 +116,7 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
         m_image_preview->update_preview_bitmap();
     });
     sizer_buttons->Add(show_original_image_button, 0, wxEXPAND, 5);
-
-
-    m_main_vertical_sizer->Add(sizer_buttons, 0, wxEXPAND, 5);
-
+    m_grid_settings_sizer->Add(sizer_buttons, 0, wxEXPAND, 5);
 };
 
 void LightPollutionRemovalToolGUI::generate_sample_windows() {
