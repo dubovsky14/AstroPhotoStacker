@@ -86,6 +86,23 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
     );
     m_space_as_fraction_of_window_size_slider->add_sizer(m_grid_settings_sizer, 0, wxEXPAND, 5);
 
+    wxStaticText *gradient_function_label = new wxStaticText(this, wxID_ANY, "Gradient function type: ");
+    m_grid_settings_sizer->Add(gradient_function_label, 0, wxEXPAND, 5);
+    std::vector<std::string> gradient_function_types = AstroPhotoStacker::GradientFunctionsFactory::get_supported_function_types();
+    wxArrayString gradient_function_choices;
+    for (const auto &type : gradient_function_types) {
+        gradient_function_choices.Add(type);
+    }
+    wxChoice *gradient_function_choice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, gradient_function_choices);
+    gradient_function_choice->SetStringSelection(m_gradient_function_type);
+    gradient_function_choice->Bind(wxEVT_CHOICE, [this, gradient_function_choice](wxCommandEvent&){
+        m_gradient_function_type = gradient_function_choice->GetStringSelection().ToStdString();
+    });
+    m_grid_settings_sizer->Add(gradient_function_choice, 0, wxEXPAND, 5);
+
+
+
+
     wxSizer *sizer_buttons = new wxBoxSizer(wxHORIZONTAL);
 
     wxButton *generate_sample_windows_button = new wxButton(this, wxID_ANY, "Generate sample windows");
@@ -98,7 +115,7 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
     wxButton *fit_gradient_button = new wxButton(this, wxID_ANY, "Fit gradient");
     fit_gradient_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         const std::vector<SampleWindow> sample_windows = m_image_preview->get_selected_grid_windows();
-        std::vector<std::unique_ptr<LightPollutionGradientBase>> gradient_functions = fit_gradient(*m_stacked_image, m_width, m_height, sample_windows, "polynomial3n");
+        std::vector<std::unique_ptr<LightPollutionGradientBase>> gradient_functions = fit_gradient(*m_stacked_image, m_width, m_height, sample_windows, m_gradient_function_type);
         m_gradient_functions = std::move(gradient_functions);
         m_stacked_image_after_gradient_removal.clear();
         for (unsigned int i_channel = 0; i_channel < m_stacked_image->size(); i_channel++) {
@@ -106,6 +123,9 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
         }
         m_image_preview->read_preview_from_stacked_image(m_stacked_image_after_gradient_removal, m_width, m_height);
         m_image_preview->update_preview_bitmap();
+
+        m_post_processing_tool->set_light_pollution_gradient(m_gradient_functions);
+        m_post_processing_tool->set_use_light_pollution_removal(true);
     });
     sizer_buttons->Add(fit_gradient_button, 0, wxEXPAND, 5);
 

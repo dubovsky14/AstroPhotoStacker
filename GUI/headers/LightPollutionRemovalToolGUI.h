@@ -33,6 +33,7 @@ class LightPollutionRemovalToolGUI : public wxFrame  {
 
         std::unique_ptr<FloatingPointSlider> m_number_of_windows_slider     = nullptr;
         std::unique_ptr<FloatingPointSlider> m_space_as_fraction_of_window_size_slider = nullptr;
+        std::string m_gradient_function_type = "polynomial3n";
 
         MyFrame *m_parent = nullptr;
         const std::vector<std::vector<double>> *m_stacked_image = nullptr;

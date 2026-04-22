@@ -7,7 +7,7 @@ using namespace std;
 
 
 std::unique_ptr<LightPollutionGradientBase> AstroPhotoStacker::fit_gradient(const std::vector<std::pair<double, double>> &coordinates, int width, int height, const std::vector<double> &integrated_value, const std::string &function_type) {
-    std::unique_ptr<LightPollutionGradientBase> result = get_gradient_function(function_type, width, height);
+    std::unique_ptr<LightPollutionGradientBase> result = GradientFunctionsFactory::get_gradient_function(function_type, width, height);
 
     double learning_rate = 0.2;
     const int    max_iterations = 10000;

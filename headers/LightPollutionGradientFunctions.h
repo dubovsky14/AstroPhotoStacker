@@ -4,6 +4,10 @@
 #include <stdexcept>
 #include <memory>
 #include <random>
+#include <map>
+#include <utility>
+#include <string>
+#include <functional>
 
 
 namespace AstroPhotoStacker {
@@ -171,16 +175,26 @@ namespace AstroPhotoStacker {
     };
 
 
-    inline std::unique_ptr<LightPollutionGradientBase> get_gradient_function(const std::string &function_type, int width, int height) {
-        if (function_type == "polynomial2n") {
-            return std::make_unique<LightPollutionGradientPolynomial2N>(width, height);
-        } else if (function_type == "polynomial3n") {
-            return std::make_unique<LightPollutionGradientPolynomial3N>(width, height);
-        } else if (function_type == "polynomial4n") {
-            return std::make_unique<LightPollutionGradientPolynomial4N>(width, height);
-        } else {
-            throw std::invalid_argument("Unsupported gradient function type: " + function_type);
-        }
-    }
+    class GradientFunctionsFactory {
+        public:
+            static std::unique_ptr<LightPollutionGradientBase> get_gradient_function(const std::string &function_type, int width, int height)   {
+                auto it = s_factory_map.find(function_type);
+                if (it == s_factory_map.end()) {
+                    throw std::invalid_argument("Unsupported gradient function type: " + function_type);
+                }
+                return it->second(width, height);
+            };
 
+            static std::vector<std::string> get_supported_function_types() {
+                std::vector<std::string> function_types;
+                for (const auto &entry : s_factory_map) {
+                    function_types.push_back(entry.first);
+                }
+                return function_types;
+            };
+
+        private:
+            static std::map<std::string, std::function<std::unique_ptr<LightPollutionGradientBase>(int, int)>> s_factory_map;
+
+    };
 }
