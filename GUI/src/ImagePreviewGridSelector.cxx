@@ -26,6 +26,12 @@ void ImagePreviewGridSelector::set_grid_windows(const std::vector<AstroPhotoStac
     }
 };
 
+void ImagePreviewGridSelector::set_selected_status_for_all_windows(bool selected) {
+    for (auto &window_coordinates_and_validity : m_grid_windows_coordinates_and_validity) {
+        window_coordinates_and_validity.second = selected;
+    }
+};
+
 std::vector<AstroPhotoStacker::SampleWindow> ImagePreviewGridSelector::get_selected_grid_windows() const {
     std::vector<AstroPhotoStacker::SampleWindow> selected_windows;
     for (const auto &window_coordinates_and_validity : m_grid_windows_coordinates_and_validity) {

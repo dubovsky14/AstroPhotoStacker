@@ -118,18 +118,48 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
 
 
 
-    wxSizer *sizer_buttons = new wxBoxSizer(wxHORIZONTAL);
+    wxSizer *sizer_buttons_grid = new wxBoxSizer(wxHORIZONTAL);
 
     wxButton *generate_sample_windows_button = new wxButton(this, wxID_ANY, "Generate sample windows");
     generate_sample_windows_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         generate_sample_windows();
         m_image_preview->update_preview_bitmap();
     });
-    sizer_buttons->Add(generate_sample_windows_button, 0, wxEXPAND, 5);
+    sizer_buttons_grid->Add(generate_sample_windows_button, 0, wxEXPAND, 5);
+
+    m_select_deselect_all_windows_button = new wxButton(this, wxID_ANY, "Deselect all windows");
+    m_select_deselect_all_windows_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        if (m_all_windows_selected_status) {
+            m_select_deselect_all_windows_button->SetLabel("Select all windows");
+            m_image_preview->set_selected_status_for_all_windows(false);
+            m_all_windows_selected_status = false;
+        }
+        else    {
+            m_select_deselect_all_windows_button->SetLabel("Deselect all windows");
+            m_image_preview->set_selected_status_for_all_windows(true);
+            m_all_windows_selected_status = true;
+        }
+        m_image_preview->update_preview_bitmap();
+    });
+    sizer_buttons_grid->Add(m_select_deselect_all_windows_button, 0, wxEXPAND, 5);
+
+
+    m_grid_settings_sizer->Add(sizer_buttons_grid, 0, wxEXPAND, 5);
+
+
+    wxSizer *sizer_buttons_gradient = new wxBoxSizer(wxHORIZONTAL);
 
     wxButton *fit_gradient_button = new wxButton(this, wxID_ANY, "Fit gradient");
     fit_gradient_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         const std::vector<SampleWindow> sample_windows = m_image_preview->get_selected_grid_windows();
+        const int number_of_selected_windows = sample_windows.size();
+        const int number_of_parameters = GradientFunctionsFactory::get_gradient_function(m_gradient_function_type, m_width, m_height)->get_parameters().size();
+
+        if (number_of_selected_windows < number_of_parameters) {
+            wxMessageBox("Not enough sample windows selected to fit the gradient. Select at least " + std::to_string(number_of_parameters) + " sample windows.", "Error", wxICON_ERROR);
+            return;
+        }
+
         std::vector<std::unique_ptr<LightPollutionGradientBase>> gradient_functions = fit_gradient(*m_stacked_image, m_width, m_height, sample_windows, m_gradient_function_type);
         m_gradient_functions = std::move(gradient_functions);
         m_stacked_image_after_gradient_removal.clear();
@@ -144,7 +174,7 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
         m_post_processing_tool->set_use_light_pollution_removal(true);
         set_gradient_removal_status(true);
     });
-        sizer_buttons->Add(fit_gradient_button, 0, wxEXPAND, 5);
+    sizer_buttons_gradient->Add(fit_gradient_button, 0, wxEXPAND, 5);
 
 
     m_show_original_image_button = new wxButton(this, wxID_ANY, "Show original image");
@@ -166,8 +196,8 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
         }
     });
 
-    sizer_buttons->Add(m_show_original_image_button, 0, wxEXPAND, 5);
-    m_grid_settings_sizer->Add(sizer_buttons, 0, wxEXPAND, 5);
+    sizer_buttons_gradient->Add(m_show_original_image_button, 0, wxEXPAND, 5);
+    m_grid_settings_sizer->Add(sizer_buttons_gradient, 0, wxEXPAND, 5);
 
     wxSizer *sizer_removal_allowed = new wxBoxSizer(wxHORIZONTAL);
     wxStaticText *removal_allowed_label = new wxStaticText(this, wxID_ANY, "Light pollution removal: ");

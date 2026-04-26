@@ -47,6 +47,9 @@ class LightPollutionRemovalToolGUI : public wxFrame  {
         int m_n_samples_per_row = 10;
         float m_space_as_fraction_of_window_size = 0.05;
 
+        wxButton *m_select_deselect_all_windows_button = nullptr;
+        bool m_all_windows_selected_status = true;
+
         std::vector<std::unique_ptr<AstroPhotoStacker::LightPollutionGradientBase>> m_gradient_functions; // fitted gradient functions for each color channel
         wxBoxSizer *m_main_horizontal_sizer = nullptr;
         wxBoxSizer *m_preview_sizer = nullptr;

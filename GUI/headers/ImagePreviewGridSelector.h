@@ -25,6 +25,8 @@ class ImagePreviewGridSelector : public ImagePreview {
 
         void set_grid_windows(const std::vector<AstroPhotoStacker::SampleWindow> &grid_windows);
 
+        void set_selected_status_for_all_windows(bool selected);
+
         std::vector<AstroPhotoStacker::SampleWindow> get_selected_grid_windows() const;
 
     protected:
