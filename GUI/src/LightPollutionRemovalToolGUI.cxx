@@ -101,22 +101,6 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
     );
     m_space_as_fraction_of_window_size_slider->add_sizer(m_grid_settings_sizer, 0, wxEXPAND, 5);
 
-    wxStaticText *gradient_function_label = new wxStaticText(this, wxID_ANY, "Gradient function type: ");
-    m_grid_settings_sizer->Add(gradient_function_label, 0, wxEXPAND, 5);
-    std::vector<std::string> gradient_function_types = AstroPhotoStacker::GradientFunctionsFactory::get_supported_function_types();
-    wxArrayString gradient_function_choices;
-    for (const auto &type : gradient_function_types) {
-        gradient_function_choices.Add(type);
-    }
-    wxChoice *gradient_function_choice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, gradient_function_choices);
-    gradient_function_choice->SetStringSelection(m_gradient_function_type);
-    gradient_function_choice->Bind(wxEVT_CHOICE, [this, gradient_function_choice](wxCommandEvent&){
-        m_gradient_function_type = gradient_function_choice->GetStringSelection().ToStdString();
-    });
-    m_grid_settings_sizer->Add(gradient_function_choice, 0, wxEXPAND, 5);
-
-
-
 
     wxSizer *sizer_buttons_grid = new wxBoxSizer(wxHORIZONTAL);
 
@@ -141,12 +125,32 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
         }
         m_image_preview->update_preview_bitmap();
     });
-    sizer_buttons_grid->Add(m_select_deselect_all_windows_button, 0, wxEXPAND, 5);
+    sizer_buttons_grid->Add(m_select_deselect_all_windows_button, 1, wxEXPAND, 5);
 
 
     m_grid_settings_sizer->Add(sizer_buttons_grid, 0, wxEXPAND, 5);
 
 
+    // Vertical space
+    m_grid_settings_sizer->Add(new wxStaticText(this, wxID_ANY, ""), 0, wxEXPAND, 5);
+
+    wxStaticText *gradient_function_label = new wxStaticText(this, wxID_ANY, "Gradient function type: ");
+    m_grid_settings_sizer->Add(gradient_function_label, 0, wxEXPAND, 5);
+    std::vector<std::string> gradient_function_types = AstroPhotoStacker::GradientFunctionsFactory::get_supported_function_types();
+    wxArrayString gradient_function_choices;
+    for (const auto &type : gradient_function_types) {
+        gradient_function_choices.Add(type);
+    }
+    wxChoice *gradient_function_choice = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, gradient_function_choices);
+    gradient_function_choice->SetStringSelection(m_gradient_function_type);
+    gradient_function_choice->Bind(wxEVT_CHOICE, [this, gradient_function_choice](wxCommandEvent&){
+        m_gradient_function_type = gradient_function_choice->GetStringSelection().ToStdString();
+    });
+    m_grid_settings_sizer->Add(gradient_function_choice, 0, wxEXPAND, 5);
+
+
+    // Vertical space
+    m_grid_settings_sizer->Add(new wxStaticText(this, wxID_ANY, ""), 0, wxEXPAND, 5);
     wxSizer *sizer_buttons_gradient = new wxBoxSizer(wxHORIZONTAL);
 
     wxButton *fit_gradient_button = new wxButton(this, wxID_ANY, "Fit gradient");
@@ -174,7 +178,7 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
         m_post_processing_tool->set_use_light_pollution_removal(true);
         set_gradient_removal_status(true);
     });
-    sizer_buttons_gradient->Add(fit_gradient_button, 0, wxEXPAND, 5);
+    sizer_buttons_gradient->Add(fit_gradient_button, 1, wxEXPAND, 5);
 
 
     m_show_original_image_button = new wxButton(this, wxID_ANY, "Show original image");
@@ -196,8 +200,12 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
         }
     });
 
-    sizer_buttons_gradient->Add(m_show_original_image_button, 0, wxEXPAND, 5);
+    sizer_buttons_gradient->Add(m_show_original_image_button, 1, wxEXPAND, 5);
     m_grid_settings_sizer->Add(sizer_buttons_gradient, 0, wxEXPAND, 5);
+
+
+    // Vertical space
+    m_grid_settings_sizer->Add(new wxStaticText(this, wxID_ANY, ""), 0, wxEXPAND, 5);
 
     wxSizer *sizer_removal_allowed = new wxBoxSizer(wxHORIZONTAL);
     wxStaticText *removal_allowed_label = new wxStaticText(this, wxID_ANY, "Light pollution removal: ");
@@ -214,9 +222,9 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
             set_gradient_removal_status(true);
         }
     });
-    sizer_removal_allowed->Add(removal_allowed_label, 0, wxLEFT | wxEXPAND, 5);
-    sizer_removal_allowed->Add(m_removal_enabled_disabled_label, 0, wxCENTER | wxEXPAND, 5);
-    sizer_removal_allowed->Add(m_toggle_removal_button, 0, wxRIGHT | wxEXPAND, 5);
+    sizer_removal_allowed->Add(removal_allowed_label, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    sizer_removal_allowed->Add(m_removal_enabled_disabled_label, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+    sizer_removal_allowed->Add(m_toggle_removal_button, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
     m_grid_settings_sizer->Add(sizer_removal_allowed, 0, wxEXPAND, 5);
 };
 
