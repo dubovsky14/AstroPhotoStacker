@@ -2,6 +2,7 @@
 
 #include "../../headers/LightPollutionRemovalTool.h"
 #include "../../headers/LightPollutionGradientFunctions.h"
+#include "../headers/ThreePointSlider.h"
 
 #include "../headers/ImagePreviewGridSelector.h"
 #include "../headers/PostProcessingTool.h"
@@ -30,6 +31,7 @@ class LightPollutionRemovalToolGUI : public wxFrame  {
 
         CombinedColorStrecherTool m_color_stretcher; // for exposure correction
         std::unique_ptr<FloatingPointSlider> m_exposure_correction_slider   = nullptr;
+        ThreePointSlider *m_luminance_stretching_slider  = nullptr;
 
         std::unique_ptr<FloatingPointSlider> m_number_of_windows_slider     = nullptr;
         std::unique_ptr<FloatingPointSlider> m_space_as_fraction_of_window_size_slider = nullptr;
@@ -49,8 +51,15 @@ class LightPollutionRemovalToolGUI : public wxFrame  {
         wxBoxSizer *m_main_horizontal_sizer = nullptr;
         wxBoxSizer *m_preview_sizer = nullptr;
         wxBoxSizer *m_grid_settings_sizer = nullptr;
+
+        wxStaticText *m_removal_enabled_disabled_label = nullptr;
         AstroPhotoStacker::PostProcessingTool *m_post_processing_tool = nullptr;
 
         std::unique_ptr<ImagePreviewGridSelector> m_image_preview = nullptr;
 
+        wxButton *m_show_original_image_button = nullptr;
+        bool m_showing_original_image = true;
+
+        wxButton *m_toggle_removal_button = nullptr;
+        void set_gradient_removal_status(bool enabled);
 };

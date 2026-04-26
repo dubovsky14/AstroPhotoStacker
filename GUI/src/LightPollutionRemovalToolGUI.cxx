@@ -1,5 +1,6 @@
 #include "../headers/LightPollutionRemovalToolGUI.h"
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
+#include "../headers/IndividualColorStretchingBlackMidtoneWhite.h"
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -55,6 +56,20 @@ void LightPollutionRemovalToolGUI::add_exposure_correction_spin_ctrl()   {
         }
     );
     m_exposure_correction_slider->add_sizer(m_preview_sizer, 0, wxEXPAND, 5);
+
+    m_luminance_stretching_slider = new ThreePointSlider(this, wxID_ANY, wxDefaultPosition, wxSize(300, 50));
+    m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackMidtoneWhite>());
+    m_preview_sizer->Add(m_luminance_stretching_slider, 0, wxEXPAND, 5);
+    m_luminance_stretching_slider->set_thumbs_positions(vector<float>({0., 0.5, 1.}));
+    m_luminance_stretching_slider->register_on_change_callback([this](){
+        const float thumb1 = m_luminance_stretching_slider->get_value(0);
+        const float thumb2 = m_luminance_stretching_slider->get_value(1);
+        const float thumb3 = m_luminance_stretching_slider->get_value(2);
+        const float midtone = thumb1 == thumb3 ? 0.5 : thumb2/(thumb3-thumb1);
+        IndividualColorStretchingToolBase &luminance_stretcher = m_color_stretcher.get_luminance_stretcher(1);
+        (dynamic_cast<IndividualColorStretchingBlackMidtoneWhite&>(luminance_stretcher)).set_stretching_parameters(thumb1, midtone, thumb3);
+        m_image_preview->update_preview_bitmap();
+    });
 };
 
 void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
@@ -122,21 +137,57 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
             m_stacked_image_after_gradient_removal.push_back(subtract_gradient((*m_stacked_image)[i_channel], m_width, m_height, *m_gradient_functions[i_channel], true));
         }
         m_image_preview->read_preview_from_stacked_image(m_stacked_image_after_gradient_removal, m_width, m_height);
+        m_showing_original_image = false;
         m_image_preview->update_preview_bitmap();
 
         m_post_processing_tool->set_light_pollution_gradient(m_gradient_functions);
         m_post_processing_tool->set_use_light_pollution_removal(true);
+        set_gradient_removal_status(true);
     });
-    sizer_buttons->Add(fit_gradient_button, 0, wxEXPAND, 5);
+        sizer_buttons->Add(fit_gradient_button, 0, wxEXPAND, 5);
 
 
-    wxButton *show_original_image_button = new wxButton(this, wxID_ANY, "Show original image");
-    show_original_image_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
-        m_image_preview->read_preview_from_stacked_image(*m_stacked_image, m_width, m_height);
-        m_image_preview->update_preview_bitmap();
+    m_show_original_image_button = new wxButton(this, wxID_ANY, "Show original image");
+    m_show_original_image_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        if (m_gradient_functions.empty()) {
+            return;
+        }
+        if (!m_showing_original_image) {
+            m_image_preview->read_preview_from_stacked_image(*m_stacked_image, m_width, m_height);
+            m_image_preview->update_preview_bitmap();
+            m_show_original_image_button->SetLabel("Show gradient removed image");
+            m_showing_original_image = true;
+        }
+        else    {
+            m_image_preview->read_preview_from_stacked_image(m_stacked_image_after_gradient_removal, m_width, m_height);
+            m_image_preview->update_preview_bitmap();
+            m_show_original_image_button->SetLabel("Show original image");
+            m_showing_original_image = false;
+        }
     });
-    sizer_buttons->Add(show_original_image_button, 0, wxEXPAND, 5);
+
+    sizer_buttons->Add(m_show_original_image_button, 0, wxEXPAND, 5);
     m_grid_settings_sizer->Add(sizer_buttons, 0, wxEXPAND, 5);
+
+    wxSizer *sizer_removal_allowed = new wxBoxSizer(wxHORIZONTAL);
+    wxStaticText *removal_allowed_label = new wxStaticText(this, wxID_ANY, "Light pollution removal: ");
+    m_removal_enabled_disabled_label = new wxStaticText(this, wxID_ANY, "Disabled");
+    m_removal_enabled_disabled_label->SetForegroundColour(*wxRED);
+    m_toggle_removal_button = new wxButton(this, wxID_ANY, "Enable removal");
+    m_toggle_removal_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        if (m_post_processing_tool->get_use_light_pollution_removal()) {
+            m_post_processing_tool->set_use_light_pollution_removal(false);
+            set_gradient_removal_status(false);
+        }
+        else    {
+            m_post_processing_tool->set_use_light_pollution_removal(true);
+            set_gradient_removal_status(true);
+        }
+    });
+    sizer_removal_allowed->Add(removal_allowed_label, 0, wxLEFT | wxEXPAND, 5);
+    sizer_removal_allowed->Add(m_removal_enabled_disabled_label, 0, wxCENTER | wxEXPAND, 5);
+    sizer_removal_allowed->Add(m_toggle_removal_button, 0, wxRIGHT | wxEXPAND, 5);
+    m_grid_settings_sizer->Add(sizer_removal_allowed, 0, wxEXPAND, 5);
 };
 
 void LightPollutionRemovalToolGUI::generate_sample_windows() {
@@ -160,3 +211,15 @@ void LightPollutionRemovalToolGUI::generate_sample_windows() {
     }
     m_image_preview->set_grid_windows(sample_windows);
 };
+
+void LightPollutionRemovalToolGUI::set_gradient_removal_status(bool enabled) {
+    if (enabled) {
+        m_removal_enabled_disabled_label->SetLabel("Enabled");
+        m_removal_enabled_disabled_label->SetForegroundColour(*wxGREEN);
+        m_toggle_removal_button->SetLabel("Disable removal");
+    } else {
+        m_removal_enabled_disabled_label->SetLabel("Disabled");
+        m_removal_enabled_disabled_label->SetForegroundColour(*wxRED);
+        m_toggle_removal_button->SetLabel("Enable removal");
+    }
+}
