@@ -22,7 +22,7 @@ if (CUDAToolkit_FOUND)
     file(GLOB SOURCES "src/*.cxx" "src/*.cu")
     set(LINKER_FLAGS "${LINKER_FLAGS} -lcuda -lcudart")
 else()
-    message(FATAL_ERROR "CUDA not found. Will use CPU for matrix operations.")
+    message(STATUS "CUDA not found. Will use CPU for matrix operations.")
 endif()
 
 
