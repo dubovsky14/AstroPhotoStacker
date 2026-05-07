@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <stdexcept>
-
 namespace AstroPhotoStacker {
 
     /**
@@ -53,10 +52,41 @@ namespace AstroPhotoStacker {
         return sharpened_image_return;
     };
 
+
+    #ifdef USE_CUDA
+        std::vector<float> apply_kernel_cuda_float(const std::vector<float> &original_image, int width, int height, const std::vector<std::vector<float>> &kernel);
+
+        template<typename PixelType>
+        std::vector<std::vector<PixelType>> apply_kernel_cuda(const std::vector<std::vector<PixelType>> &original_image, int width, int height, const std::vector<std::vector<float>> &kernel)  {
+            const size_t n_pixels = width * height;
+            std::vector<std::vector<float>> original_image_float(3, std::vector<float>(n_pixels));
+            for (size_t i_color = 0; i_color < original_image.size(); i_color++) {
+                for (size_t i_pixel = 0; i_pixel < n_pixels; i_pixel++) {
+                    original_image_float[i_color][i_pixel] = static_cast<float>(original_image[i_color][i_pixel]);
+                }
+            }
+            std::vector<std::vector<float>> sharpened_image_float;
+            for (const std::vector<float> &color_channel : original_image_float) {
+                sharpened_image_float.push_back(apply_kernel_cuda_float(color_channel, width, height, kernel));
+            }
+
+            std::vector<std::vector<PixelType>> sharpened_image_return(original_image.size(), std::vector<PixelType>(original_image[0].size(), 0));
+            for (size_t i_color = 0; i_color < sharpened_image_float.size(); i_color++) {
+                for (size_t i_pixel = 0; i_pixel < n_pixels; i_pixel++) {
+                    sharpened_image_return[i_color][i_pixel] = static_cast<PixelType>(sharpened_image_float[i_color][i_pixel]);
+                }
+            }
+            return sharpened_image_return;
+        };
+    #endif
+
     template<typename PixelType>
     std::vector<std::vector<PixelType>> sharpen_image(const std::vector<std::vector<PixelType>> &original_image, int width, int height, int kernel_size, float gauss_width, float center_value)  {
         const std::vector<std::vector<float>> kernel = get_sharpenning_kernel(kernel_size, gauss_width, center_value);
-        return apply_kernel(original_image, width, height, kernel);
+        #ifdef USE_CUDA
+            return apply_kernel_cuda(original_image, width, height, kernel);
+        #else
+            return apply_kernel(original_image, width, height, kernel);
+        #endif
     };
-
 }
