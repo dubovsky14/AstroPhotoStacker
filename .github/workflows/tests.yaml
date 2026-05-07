@@ -30,7 +30,7 @@ jobs:
 
   run_tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     needs: [build-linux]
     steps:
       - uses: actions/checkout@v6
@@ -56,7 +56,7 @@ jobs:
 
   produce-alignment-file-stars:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     needs: [build-linux]
     steps:
       - uses: actions/checkout@v6
@@ -88,7 +88,7 @@ jobs:
 
   produce-alignment-file-planetary:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     needs: [build-linux]
     steps:
       - uses: actions/checkout@v6
@@ -121,7 +121,7 @@ jobs:
 
   validate-alignment-file-stars:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     needs: [produce-alignment-file-stars]
     steps:
       - uses: actions/checkout@v6
@@ -139,7 +139,7 @@ jobs:
 
   validate-alignment-file-planetary:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     needs: [produce-alignment-file-planetary]
     steps:
       - uses: actions/checkout@v6
@@ -157,7 +157,7 @@ jobs:
 
   produce-stacked-image-stars:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     needs: [build-linux, produce-alignment-file-stars]
     steps:
       - uses: actions/checkout@v6

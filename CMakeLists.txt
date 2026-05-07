@@ -9,7 +9,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_CXX_FLAGS "-Wall -O3")
 
-#linker flags
 set(LINKER_FLAGS "-lexiv2 -lraw")
 file(GLOB SOURCES "src/*.cxx")
 
