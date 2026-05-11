@@ -5,24 +5,23 @@
 #include <iostream>
 #include <algorithm>
 #include <numeric>
+#include <exception>
 
 #include "../headers/SharpeningFunctions.h"
 
 namespace AstroPhotoStacker {
     __global__ void apply_kernel_cuda_kernel(float *d_original_image, float *d_sharpened_image, float *d_kernel, int width, int height, int kernel_size);
 
-
-    inline void CHECK(const cudaError_t error)
+    inline void check_sucess_gpu(const cudaError_t error)
     {
         if(error != cudaSuccess)
         {
             fprintf(stderr, "Error: %s:%d, ", __FILE__, __LINE__);
             fprintf(stderr, "code: %d, reason: %s\n", error, cudaGetErrorString(error));
-            exit(1);
+            throw std::runtime_error("CUDA error occurred. Code " + std::to_string(error) + ": " + std::string(cudaGetErrorString(error)));
         }
     }
-
-}
+};
 
 __global__ void AstroPhotoStacker::apply_kernel_cuda_kernel(float *d_original_image, float *d_sharpened_image, float *d_kernel, int width, int height, int kernel_size)    {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -55,33 +54,29 @@ std::vector<float> AstroPhotoStacker::apply_kernel_cuda_float(const std::vector<
     double sum_original = std::accumulate(original_image.begin(), original_image.end(), 0.0);
 
 
-    CHECK(cudaMalloc(&d_original_image, n_pixels * sizeof(float)));
-    CHECK(cudaMalloc(&d_sharpened_image, n_pixels * sizeof(float)));
-    CHECK(cudaMalloc(&d_kernel, kernel.size() * kernel.size() * sizeof(float)));
+    check_sucess_gpu(cudaMalloc(&d_original_image, n_pixels * sizeof(float)));
+    check_sucess_gpu(cudaMalloc(&d_sharpened_image, n_pixels * sizeof(float)));
+    check_sucess_gpu(cudaMalloc(&d_kernel, kernel.size() * kernel.size() * sizeof(float)));
 
-    CHECK(cudaMemcpy(d_sharpened_image, original_image.data(), n_pixels * sizeof(float), cudaMemcpyHostToDevice));
-    CHECK(cudaMemcpy(d_original_image, original_image.data(), n_pixels * sizeof(float), cudaMemcpyHostToDevice));
-    CHECK(cudaMemcpy(d_kernel, kernel_flattened.data(), kernel_flattened.size() * sizeof(float), cudaMemcpyHostToDevice));
+    check_sucess_gpu(cudaMemcpy(d_sharpened_image, original_image.data(), n_pixels * sizeof(float), cudaMemcpyHostToDevice));
+    check_sucess_gpu(cudaMemcpy(d_original_image, original_image.data(), n_pixels * sizeof(float), cudaMemcpyHostToDevice));
+    check_sucess_gpu(cudaMemcpy(d_kernel, kernel_flattened.data(), kernel_flattened.size() * sizeof(float), cudaMemcpyHostToDevice));
 
     const int block_size = 16;
     const int grid_size_x = (width + block_size - 1) / block_size;
     const int grid_size_y = (height + block_size - 1) / block_size;
     dim3 block(block_size, block_size);
     dim3 grid(grid_size_x, grid_size_y);
-    std::cout << "Launching kernel with grid size (" << grid_size_x << ", " << grid_size_y << ") and block size (" << block_size << ", " << block_size << ")" << std::endl;
     apply_kernel_cuda_kernel<<<grid, block>>>(d_original_image, d_sharpened_image, d_kernel, width, height, kernel.size());
-    std::cout << "Kernel launched." << std::endl;
-    CHECK(cudaDeviceSynchronize());
+    check_sucess_gpu(cudaDeviceSynchronize());
 
     std::vector<float> sharpened_image(n_pixels);
-    CHECK(cudaMemcpy(sharpened_image.data(), d_sharpened_image, n_pixels * sizeof(float), cudaMemcpyDeviceToHost));
-    CHECK(cudaFree(d_original_image));
-    CHECK(cudaFree(d_sharpened_image));
+    check_sucess_gpu(cudaMemcpy(sharpened_image.data(), d_sharpened_image, n_pixels * sizeof(float), cudaMemcpyDeviceToHost));
+    check_sucess_gpu(cudaFree(d_original_image));
+    check_sucess_gpu(cudaFree(d_sharpened_image));
     cudaFree(d_kernel);
 
     double sum_sharpened = std::accumulate(sharpened_image.begin(), sharpened_image.end(), 0.0);
-    std::cout << "Sum of original image: " << sum_original << std::endl;
-    std::cout << "Sum of sharpened image: " << sum_sharpened << std::endl;
 
     return sharpened_image;
 };

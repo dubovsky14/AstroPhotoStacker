@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <stdexcept>
+#include <iostream>
+
 namespace AstroPhotoStacker {
 
     /**
@@ -84,7 +86,14 @@ namespace AstroPhotoStacker {
     std::vector<std::vector<PixelType>> sharpen_image(const std::vector<std::vector<PixelType>> &original_image, int width, int height, int kernel_size, float gauss_width, float center_value)  {
         const std::vector<std::vector<float>> kernel = get_sharpenning_kernel(kernel_size, gauss_width, center_value);
         #ifdef USE_CUDA
-            return apply_kernel_cuda(original_image, width, height, kernel);
+            try {
+                return apply_kernel_cuda(original_image, width, height, kernel);
+            }
+            catch (const std::runtime_error &e) {
+                std::cerr << "CUDA error: " << e.what() << std::endl;
+                std::cerr << "Falling back to CPU implementation." << std::endl;
+                return apply_kernel(original_image, width, height, kernel);
+            }
         #else
             return apply_kernel(original_image, width, height, kernel);
         #endif

@@ -28,6 +28,9 @@ endif()
 add_library(AstroPhotoStackerLib SHARED ${SOURCES})
 target_link_libraries(AstroPhotoStackerLib PUBLIC ${LINKER_FLAGS} ${OpenCV_LIBS})
 
+if (CUDAToolkit_FOUND)
+    set_target_properties(AstroPhotoStackerLib PROPERTIES CUDA_ARCHITECTURES "75;86")
+endif()
 
 # Find all .cxx files in the utils folder
 file(GLOB UTILS_SOURCES "utils/*.cxx")
