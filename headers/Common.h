@@ -360,5 +360,23 @@ namespace AstroPhotoStacker {
     std::string replace_file_extension(const std::string &file_address, const std::string &new_extension);
 
     std::string process_nested_exception(const std::exception &e);
+
+    template <typename SourceType, typename TargetType>
+    std::vector<TargetType> convert_vector_1d(const std::vector<SourceType> &input) {
+        std::vector<TargetType> result(input.size());
+        for (size_t i = 0; i < input.size(); i++) {
+            result[i] = static_cast<TargetType>(input[i]);
+        }
+        return result;
+    };
+
+    template <typename SourceType, typename TargetType>
+    std::vector<std::vector<TargetType>> convert_vector_2d(const std::vector<std::vector<SourceType>> &input) {
+        std::vector<std::vector<TargetType>> result(input.size());
+        for (size_t i = 0; i < input.size(); i++) {
+            result[i] = convert_vector_1d<SourceType, TargetType>(input[i]);
+        }
+        return result;
+    }
 }
 

@@ -30,13 +30,13 @@ __global__ void AstroPhotoStacker::apply_kernel_cuda_kernel(float *d_original_im
     const int kernel_half_size = kernel_size / 2;
 
     if (x >= kernel_half_size && x < width - kernel_half_size && y >= kernel_half_size && y < height - kernel_half_size) {
-        float sharpened_value = 0;
+        double sharpened_value = 0;
         for (int y_kernel = 0; y_kernel < kernel_size; y_kernel++) {
             for (int x_kernel = 0; x_kernel < kernel_size; x_kernel++) {
                 sharpened_value += d_kernel[y_kernel * kernel_size + x_kernel] * d_original_image[(y + y_kernel - kernel_half_size) * width + x + x_kernel - kernel_half_size];
             }
         }
-        d_sharpened_image[y * width + x] = max(sharpened_value, 0.0f);
+        d_sharpened_image[y * width + x] = max(sharpened_value, 0.0);
     }
 };
 
