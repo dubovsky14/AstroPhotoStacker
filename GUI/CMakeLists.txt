@@ -6,6 +6,11 @@ find_package(OpenCV)
 find_package(exiv2 REQUIRED CONFIG)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${OpenCV_INCLUDE_DIRS})
 
+# we need it also here because of some preprocessor directives in the headers
+find_package(CUDAToolkit)
+if (CUDAToolkit_FOUND)
+    add_compile_definitions(USE_CUDA)
+endif()
 
 include(${wxWidgets_USE_FILE})
 
