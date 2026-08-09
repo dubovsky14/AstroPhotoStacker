@@ -250,7 +250,7 @@ namespace AstroPhotoStacker {
             /**
              * @brief: Keep only best N files
              */
-            void keep_best_n_frames(unsigned int n);
+            void keep_best_n_frames(unsigned int n, std::vector<FrameInfo> *removed_frames = nullptr);
 
             void set_dummy_alignment_for_all_frames();
 

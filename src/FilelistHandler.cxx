@@ -348,7 +348,7 @@ void FilelistHandler::remove_all_frames_of_selected_type(FrameType type)  {
     }
 };
 
-void FilelistHandler::keep_best_n_frames(unsigned int n)   {
+void FilelistHandler::keep_best_n_frames(unsigned int n, std::vector<FrameInfo> *removed_frames)   {
     vector<FrameInfo> light_frames;
     for (const auto &group : m_frames_list)   {
         if (group.second.find(FrameType::LIGHT) == group.second.end())   {
@@ -366,6 +366,13 @@ void FilelistHandler::keep_best_n_frames(unsigned int n)   {
         }
         return a.alignment_result->get_ranking_score() < b.alignment_result->get_ranking_score();
     });
+
+    if (removed_frames) {
+        removed_frames->clear();
+        for (size_t i = n; i < light_frames.size(); ++i) {
+            removed_frames->push_back(light_frames[i]);
+        }
+    }
 
     light_frames.resize(n);
 

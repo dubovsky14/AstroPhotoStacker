@@ -465,11 +465,46 @@ void MyFrame::add_files_to_stack_checkbox()  {
         const int n_files = m_filelist_handler_gui_interface.get_number_of_all_frames();
         const wxString default_value = wxString::Format(wxT("%d"), n_files);
         wxTextEntryDialog dialog(this, "Enter the number of best files to keep", "Keep best N files", default_value);
+
+        // checkbox to remove them permanently
+        wxCheckBox *checkbox_remove_permanently = new wxCheckBox(&dialog, wxID_ANY, "Remove permanently from disk");
+        checkbox_remove_permanently->SetValue(false);
+
+        // sizer for the checkbox
+        wxBoxSizer *checkbox_sizer = new wxBoxSizer(wxVERTICAL);
+        checkbox_sizer->Add(checkbox_remove_permanently, 0, wxALL, 5);
+        dialog.GetSizer()->Add(checkbox_sizer, 0, wxEXPAND | wxALL, 5);
+
         if (dialog.ShowModal() == wxID_OK) {
+            bool remove_permanently = checkbox_remove_permanently->IsChecked();
             const wxString value = dialog.GetValue();
             const int n_files_to_keep = stoi(value.ToStdString());
-            m_filelist_handler_gui_interface.keep_best_n_frames(n_files_to_keep);
+            vector<AstroPhotoStacker::FrameInfo> removed_frames;
+            m_filelist_handler_gui_interface.keep_best_n_frames(n_files_to_keep, &removed_frames);
             update_files_to_stack_checkbox();
+
+            if (remove_permanently) {
+                // ask for confirmation
+                wxString message = wxString::Format("Are you sure you want to remove permanently %d files from disk?", removed_frames.size());
+                wxMessageDialog confirm_dialog(this, message, "Confirm removal", wxYES_NO | wxNO_DEFAULT | wxICON_WARNING);
+                if (confirm_dialog.ShowModal() != wxID_YES) {
+                    return;
+                }
+
+                bool video_frame_found = false;
+                for (const AstroPhotoStacker::FrameInfo &frame : removed_frames) {
+                    if (frame.input_frame.is_video_frame()) {
+                        video_frame_found = true;
+                        continue;
+                    }
+                    std::filesystem::remove(frame.input_frame.get_file_address());
+                }
+
+                if (video_frame_found) {
+                    wxMessageDialog dialog(this, "Some of the removed files were video frames. Video frames cannot be removed permanently from disk.", "Video frames not removed", wxOK | wxICON_INFORMATION);
+                    dialog.ShowModal();
+                }
+            }
         }
     });
     header_sizer->Add(button_keep_best, 0, wxTOP, 5);

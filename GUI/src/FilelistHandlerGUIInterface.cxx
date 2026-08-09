@@ -100,8 +100,8 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
     return result;
 };
 
-void FilelistHandlerGUIInterface::keep_best_n_frames(unsigned int n) {
-    FilelistHandler::keep_best_n_frames(n);
+void FilelistHandlerGUIInterface::keep_best_n_frames(unsigned int n, std::vector<AstroPhotoStacker::FrameInfo> *removed_frames) {
+    FilelistHandler::keep_best_n_frames(n, removed_frames);
     update_shown_frames();
 };
 

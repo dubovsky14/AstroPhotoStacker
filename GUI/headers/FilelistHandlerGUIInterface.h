@@ -60,7 +60,7 @@ class FilelistHandlerGUIInterface : public AstroPhotoStacker::FilelistHandler  {
             return m_shown_frames.size();
         };
 
-        void keep_best_n_frames(unsigned int n);
+        void keep_best_n_frames(unsigned int n, std::vector<AstroPhotoStacker::FrameInfo> *removed_frames = nullptr);
 
         void remove_frame(size_t index);
 
