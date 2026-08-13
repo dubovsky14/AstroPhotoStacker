@@ -93,4 +93,5 @@ class AlignedImagesProducerGUI : public wxFrame  {
         float m_fraction_to_stack = 0.5;
 
         AstroPhotoStacker::TimeLapseVideoSettings m_timelapse_video_settings;
+        AstroPhotoStacker::InputFrame m_reference_frame;
 };

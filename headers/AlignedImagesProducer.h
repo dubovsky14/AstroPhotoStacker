@@ -33,6 +33,11 @@ namespace AstroPhotoStacker {
         GroupToStack(GroupToStack&&) = default;
     };
 
+    struct DynamicExposureAdjustmentSettings {
+        float reference_image_maximum = 1;
+        float quantile_to_fix = 0;
+        float quantile_value = 0;
+    };
 
     class AlignedImagesProducer {
         public:
@@ -110,6 +115,14 @@ namespace AstroPhotoStacker {
 
             TimeLapseVideoSettings *get_timelapse_video_settings();
 
+            void set_dynamic_exposure_adjustment(const std::vector<std::vector<PixelType>> &reference_image, int width, int height, float quantile_to_fix = 0.98);
+
+            void set_dynamic_exposure_adjustment(const InputFrame &reference_frame, float quantile_to_fix = 0.98);
+
+            void unset_dynamic_exposure_adjustment() {
+                m_reference_frame_dynamic_exposure_adjustments = DynamicExposureAdjustmentSettings();
+            };
+
         private:
             int m_top_left_corner_x = 0;
             int m_top_left_corner_y = 0;
@@ -129,6 +142,8 @@ namespace AstroPhotoStacker {
             int m_timestamp_offset = 0;
 
             bool m_save_also_tif_files = false;
+
+            DynamicExposureAdjustmentSettings m_reference_frame_dynamic_exposure_adjustments;
 
             std::function<void(std::vector<std::vector<PixelType>>*, PixelType max_value)> m_image_stretching_function = nullptr;
             std::unique_ptr<PostProcessingTool> m_post_processing_tool = nullptr;
@@ -179,6 +194,5 @@ namespace AstroPhotoStacker {
                 }
                 return max_value;
             };
-
     };
 }

@@ -222,7 +222,38 @@ namespace AstroPhotoStacker {
      * @return float - size of the vector squared
     */
     float get_distance_squared(const std::tuple<float,float> &vec);
-}
+
+    /**
+     * @brief Get the quantile value from the image
+     *
+     * @param image - 2D vector of pixel values
+     * @param quantile - quantile to get the value for (0-1)
+     * @return float - value of the pixel at the given quantile
+    */
+    template<typename pixel_type>
+    float get_quantile_value_from_image(const std::vector<std::vector<pixel_type>> &image, float quantile) {
+        const unsigned long long n_bins = std::numeric_limits<pixel_type>::max() + 1;
+        std::vector<unsigned int> histogram(n_bins, 0);
+        unsigned int n_pixels = 0;
+
+        for (const std::vector<pixel_type> &brightness : image) {
+            n_pixels += brightness.size();
+            for (pixel_type value : brightness) {
+                histogram[value]++;
+            }
+        }
+
+        unsigned int sum = 0;
+        unsigned int targeted_sum = quantile * n_pixels;
+        for (unsigned int i = 0; i < n_bins; i++)    {
+            sum += histogram[i];
+            if (sum >= targeted_sum)   {
+                return i;
+            }
+        }
+        return n_bins - 1;
+    }
+} // namespace AstroPhotoStacker
 
 namespace MyTupleArithmetics {
     template<typename T1, typename T2>

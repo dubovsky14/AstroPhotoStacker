@@ -42,9 +42,9 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent, const PostPr
     m_image_preview_crop_tool->set_stretcher(&m_exposure_stretcher);
 
     // TODO: add alignment preview
-    const InputFrame reference_frame = get_reference_frame();
-    if (reference_frame != InputFrame()) {
-        m_image_preview_crop_tool->read_preview_from_frame(reference_frame);
+    m_reference_frame = get_reference_frame();
+    if (m_reference_frame != InputFrame()) {
+        m_image_preview_crop_tool->read_preview_from_frame(m_reference_frame);
         m_image_preview_crop_tool->update_preview_bitmap();
     }
 
@@ -89,6 +89,10 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent, const PostPr
         }
 
         this->initialize_aligned_images_producer();
+
+        if (m_reference_frame != InputFrame()) {
+            m_aligned_images_producer->set_dynamic_exposure_adjustment(m_reference_frame, 0.99);
+        }
 
         const int tasks_total = m_aligned_images_producer->get_tasks_total();
         const std::atomic<int> &tasks_processed = m_aligned_images_producer->get_tasks_processed();

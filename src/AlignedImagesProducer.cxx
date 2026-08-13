@@ -14,6 +14,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <stdexcept>
+#include <limits>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -281,7 +282,22 @@ void AlignedImagesProducer::process_and_save_image( std::vector<std::vector<Pixe
                                                     int unix_time) const    {
 
     PixelType max_value = get_max_value_ignoring_borders(*stacked_image, width, height, 5);
+
+    if (m_reference_frame_dynamic_exposure_adjustments.reference_image_maximum > 0) {
+        const float numeric_max = std::numeric_limits<PixelType>::max();
+        const float quantile_value = get_quantile_value_from_image(*stacked_image, m_reference_frame_dynamic_exposure_adjustments.quantile_to_fix);
+        if (quantile_value > 0) {
+            const float scale_factor = m_reference_frame_dynamic_exposure_adjustments.quantile_value/quantile_value;
+            for (int color = 0; color < 3; color++) {
+                for (unsigned int i = 0; i < stacked_image->at(color).size(); i++) {
+                    stacked_image->at(color)[i] = std::min<float>(stacked_image->at(color)[i] * scale_factor, numeric_max);
+                }
+            }
+            max_value = m_reference_frame_dynamic_exposure_adjustments.reference_image_maximum;
+        }
+    }
     scale_down_image(stacked_image, max_value, 255);
+
 
     if (m_image_stretching_function) {
         m_image_stretching_function(stacked_image, max_value);
@@ -350,4 +366,40 @@ void AlignedImagesProducer::produce_video(const std::string &output_video_addres
 
 TimeLapseVideoSettings* AlignedImagesProducer::get_timelapse_video_settings() {
     return &m_timelapse_video_settings;
+};
+
+void AlignedImagesProducer::set_dynamic_exposure_adjustment(const std::vector<std::vector<PixelType>> &reference_image, int width, int height, float quantile_to_fix) {
+    const float quantile_value = get_quantile_value_from_image(reference_image, quantile_to_fix);
+    float original_maximum = get_max_value_ignoring_borders(reference_image, width, height, 5);
+    DynamicExposureAdjustmentSettings settings;
+    settings.reference_image_maximum = original_maximum;
+    settings.quantile_to_fix = quantile_to_fix;
+    settings.quantile_value = quantile_value;
+    m_reference_frame_dynamic_exposure_adjustments = settings;
+};
+
+void AlignedImagesProducer::set_dynamic_exposure_adjustment(const InputFrame &reference_frame, float quantile_to_fix) {
+    CalibratedPhotoHandler photo_handler(reference_frame, true);
+    photo_handler.calibrate();
+
+    const int width_original = photo_handler.get_width();
+    const int height_original = photo_handler.get_height();
+    const auto [width, height] = calculate_cropped_width_and_height(width_original, height_original);
+
+    std::vector<vector<PixelType>> output_image(3, vector<PixelType>(width*height, 0));
+
+    for (int color = 0; color < 3; color++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                const int x_original = x + m_top_left_corner_x;
+                const int y_original = y + m_top_left_corner_y;
+                int value = photo_handler.get_value_by_reference_frame_index(x_original + width_original*y_original, color);
+                if (value >= 0) {
+                    output_image[color][x + width*y] = value;
+                }
+            }
+        }
+    }
+
+    set_dynamic_exposure_adjustment(output_image, width, height, quantile_to_fix);
 };
