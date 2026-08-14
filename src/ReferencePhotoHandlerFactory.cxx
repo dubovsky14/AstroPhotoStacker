@@ -6,7 +6,6 @@
 #include "../headers/ReferencePhotoHandlerSurface.h"
 #include "../headers/ReferencePhotoHandlerStars.h"
 #include "../headers/ReferencePhotoHandlerComet.h"
-#include "../headers/ReferencePhotoHandlerEclipse.h"
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -56,17 +55,6 @@ std::map<std::string, ReferencePhotoHandlerFactoryFunctions> ReferencePhotoHandl
             }
         }
     },
-    {"eclipse",
-        {
-            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) {
-                return make_unique<ReferencePhotoHandlerEclipse>(input_frame, configuration_map);
-            },
-            []() {
-                ReferencePhotoHandlerEclipse handler_dummy;
-                return handler_dummy.get_configurable_algorithm_settings();
-            }
-        }
-    }
 };
 
 

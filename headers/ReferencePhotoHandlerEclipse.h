@@ -16,7 +16,9 @@
 namespace AstroPhotoStacker   {
 
     /**
-     * @brief Class responsible for handling the reference photo, providing methods for alignement of planetary photos
+     * @brief Class responsible for handling the reference photo, providing methods for alignement of eclipse photos
+     *
+     * NOT WORKING YET - DO NOT USE
      */
     class ReferencePhotoHandlerEclipse : public ReferencePhotoHandlerBase {
         public:
