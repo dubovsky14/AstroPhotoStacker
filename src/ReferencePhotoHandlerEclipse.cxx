@@ -155,7 +155,7 @@ tuple<float,float,float> ReferencePhotoHandlerEclipse::get_center_coordinates_an
     const float  edge_tolerance = 10;
 
     vector<short> green_channel(width*height, 0);
-    for (unsigned int i = 0; i < width*height; ++i) {
+    for (int i = 0; i < width*height; ++i) {
         green_channel[i] = brightness[i];
     }
 
@@ -335,7 +335,6 @@ std::tuple<float,float,float> ReferencePhotoHandlerEclipse::fit_center_coordinat
     std::tuple<float,float,float> current_estimate = initial_estimate;
     const int n_iterations = 1000;
     const float learning_rate = 0.01;
-    float f_prev = std::numeric_limits<float>::max();
     for (int iteration = 0; iteration < n_iterations; ++iteration) {
         const auto [f, df_dx, df_dy, df_dr] = get_function_and_derivatives(current_estimate);
         const float new_center_x = get<0>(current_estimate) - learning_rate * df_dx;
@@ -344,7 +343,6 @@ std::tuple<float,float,float> ReferencePhotoHandlerEclipse::fit_center_coordinat
 
 
         current_estimate = make_tuple(new_center_x, new_center_y, new_radius);
-        f_prev = f;
     }
     return current_estimate;
 }
