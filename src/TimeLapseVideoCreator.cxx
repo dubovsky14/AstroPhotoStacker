@@ -1,5 +1,7 @@
 #include "../headers/TimeLapseVideoCreator.h"
 
+#include "../headers/Common.h"
+
 #include <opencv2/opencv.hpp>
 
 #include <algorithm>
@@ -39,7 +41,17 @@ void TimeLapseVideoCreator::create_video(const std::string &video_address, bool 
     const float fps = m_settings.get_fps();
     const int n_repeat = m_settings.get_n_repeat();
 
-    cv::VideoWriter video_writer(video_address, cv::CAP_ANY,  cv::VideoWriter::fourcc('X', 'V', 'I', 'D'), fps, frame_size);
+    const std::string file_suffix =  to_upper_copy(video_address.substr(video_address.find_last_of(".") + 1));
+    if (file_suffix != "MP4" && file_suffix != "AVI")   {
+        cerr << "Video file extension must be either .mp4 or .avi" << endl;
+        return;
+    }
+
+
+    //cv::VideoWriter video_writer(video_address, cv::CAP_ANY,  cv::VideoWriter::fourcc('X', 'V', 'I', 'D'), fps, frame_size);
+    cv::VideoWriter video_writer = file_suffix == "MP4" ?
+                                    cv::VideoWriter(video_address, cv::CAP_ANY,  cv::VideoWriter::fourcc('H', '2', '6', '4'), fps, frame_size) :
+                                    cv::VideoWriter(video_address, cv::CAP_ANY,  cv::VideoWriter::fourcc('X', 'V', 'I', 'D'), fps, frame_size);
     if (!video_writer.isOpened())   {
         cerr << "Could not open video writer" << endl;
         return;

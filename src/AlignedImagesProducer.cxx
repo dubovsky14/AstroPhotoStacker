@@ -106,6 +106,7 @@ void AlignedImagesProducer::produce_aligned_images(const std::string &output_fol
     task_scheduler.wait_for_tasks();
 
     produce_video(output_folder_address + "/video.avi");
+    produce_video(output_folder_address + "/video.mp4"); // facebook and Whatsapp do not support .avi with XVID codec, so just in case I want to produce .mp4 as well
 };
 
 const std::atomic<int>& AlignedImagesProducer::get_tasks_processed() const {
