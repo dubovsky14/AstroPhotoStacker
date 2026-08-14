@@ -7,6 +7,9 @@
 #include "../headers/CommonImageOperations.h"
 #include "../headers/AlignmentResultTranslationOnly.h"
 
+#include "../headers/ImageFilesInputOutput.h"
+#include <opencv2/opencv.hpp>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -34,6 +37,11 @@ ReferencePhotoHandlerEclipse::ReferencePhotoHandlerEclipse(const PixelType *brig
 std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerEclipse::calculate_alignment(const InputFrame &input_frame) const{
     int width, height;
     const vector<PixelType> brightness = read_image_monochrome(input_frame, &width, &height);
+
+    // debug:
+    const string file_address = input_frame.get_file_address();
+    const string file_name = file_address.substr(file_address.find_last_of("/\\") + 1);
+    m_current_frame_debug = file_name;
 
     MonochromeImageData image_data;
     image_data.brightness = brightness.data();
@@ -106,6 +114,7 @@ tuple<float,float,float> ReferencePhotoHandlerEclipse::get_center_coordinates_an
     const PixelType max_value = *max_element(brightness, brightness + width*height);
     const PixelType otsu_threshold = get_otsu_threshold(brightness_copy.data(), width*height);
     const PixelType threshold = max<PixelType>(0.05*max_value, otsu_threshold);
+    //const PixelType threshold = 1.5*get_threshold_value(brightness_copy.data(), width*height, 0.7);
 
     vector<unsigned char> thresholded_image = threshold_image(image_data, threshold);
     std::vector< std::vector<std::tuple<int, int> > > clusters = get_clusters(thresholded_image.data(), width, height, 2);
@@ -138,11 +147,25 @@ tuple<float,float,float> ReferencePhotoHandlerEclipse::get_center_coordinates_an
         }
     }
 
-    const int n_iterations = 100;
+    const int n_iterations = 40;
     double best_center_x = 0;
     double best_center_y = 0;
     double best_radius = 0;
     int    best_pixels_in_circle = 0;
+    const float  edge_tolerance = 10;
+
+    vector<short> green_channel(width*height, 0);
+    for (unsigned int i = 0; i < width*height; ++i) {
+        green_channel[i] = brightness[i];
+    }
+
+    for (const auto &[x, y] : pixels_above_threshold) {
+        green_channel[y*width + x] = 3200;
+    }
+
+
+    cv::Mat original_image = get_opencv_color_image_3d_template<PixelType, cv::Vec3w>(green_channel.data(), green_channel.data(), green_channel.data(), width, height, CV_16UC3);
+    original_image *= 10;
 
     array<pair<int,int>, 3> random_points;
     for (int i = 0; i < n_iterations; ++i) {
@@ -162,66 +185,86 @@ tuple<float,float,float> ReferencePhotoHandlerEclipse::get_center_coordinates_an
 
         if (x1 == x2) continue;
 
-        const double center_x_denominator = (-2*(y1+y3) - 2*(x1-x3)*(y1-y2)/(x2-x1));
+        const double center_x_denominator = 2*(x1-x3)*(y2-y1)/(x2-x1) + 2*(y3-y1);
 
         if (std::abs(center_x_denominator) < 1e-6) {
             continue; // points are collinear, skip this iteration
         }
 
-        const double center_y = ((x3+x1)*(r2-r1) / (x2-x1) - r3 -r1) / center_x_denominator;
-        const double center_x = (r2 - r1 - 2*center_y*(y2-y1)) / (2*(x2-x1));
+        const double center_y = (x3*(r1-r2)/(x2-x1) + r3 - r1 + x1*(r2-r1)/(x2-x1) )/ center_x_denominator;
+        const double center_x = (r2 - r1 + 2*center_y*(y1-y2)) / (2*(x2-x1));
         const double C = r1 - 2*center_x*x1 - 2*center_y*y1;
-        const double radius_squared = center_x*center_x + center_y*center_y - C;
+        const double radius_squared = center_x*center_x + center_y*center_y + C;
         const double radius = sqrt(radius_squared);
 
 
-//        const double a = x1 * (y2 - y3) - y1 * (x2 - x3) + x2 * y3 - x3 * y2;
-//        if (std::abs(a) < 1e-6) {
-//            continue; // points are collinear, skip this iteration
-//        }
-//
-//        const double b = (x1 * x1 + y1 * y1) * (y3 - y2) + (x2 * x2 + y2 * y2) * (y1 - y3) + (x3 * x3 + y3 * y3) * (y2 - y1);
-//        const double c = (x1 * x1 + y1 * y1) * (x2 - x3) + (x2 * x2 + y2 * y2) * (x3 - x1) + (x3 * x3 + y3 * y3) * (x1 - x2);
-//        const double d = (x1 *x1 + y1 * y1) * (x3 * y2 - x2 * y3) + (x2 * x2 + y2 * y2) * (x1 * y3 - x3 * y1) + (x3 * x3 + y3 * y3) * (x2 * y1 - x1 * y2);
-//
-//        const double center_x = -b / (2 * a);
-//        const double center_y = -c / (2 * a);
-//
-//        const double radius = std::sqrt((center_x - x1) * (center_x - x1) + (center_y - y1) * (center_y - y1));
-//        const double radius_squared = radius * radius;
-//
-
-        const double minimal_distance = sqrt(std::min(r1, std::min(r2, r3)));
-        if (minimal_distance < 0.1*radius) {
+        const double d12 = sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+        const double d13 = sqrt((x1 - x3) * (x1 - x3) + (y1 - y3) * (y1 - y3));
+        const double d23 = sqrt((x2 - x3) * (x2 - x3) + (y2 - y3) * (y2 - y3));
+        const double minimal_distance = std::min({d12, d13, d23});
+        if (minimal_distance < 0.5*radius) {
             continue; // points are too close to each other, skip this iteration
         }
 
 
+        int pixels_near_edge = 0;
+        vector<pair<int,int>> edge_pixels_near;
+        for (const auto &[x, y] : edge_pixels) {
+            const double distance = sqrt((x - center_x) * (x - center_x) + (y - center_y) * (y - center_y));
+            if (std::abs(distance - radius) < edge_tolerance) {
+                ++pixels_near_edge;
+                edge_pixels_near.push_back(make_pair(x, y));
+            }
+        }
+
         int pixels_in_circle = 0;
         for (const auto &[x, y] : pixels_above_threshold) {
-            const double distance2 = (x - center_x) * (x - center_x) + (y - center_y) * (y - center_y);
-            if (distance2 - radius_squared < 1.0) {
+            const double distance = sqrt((x - center_x) * (x - center_x) + (y - center_y) * (y - center_y));
+            if (distance < radius) {
                 ++pixels_in_circle;
             }
         }
 
-        cout << "Iteration " << i << ": center = (" << center_x << ", " << center_y << "), radius = " << radius  << " #edge points: " << edge_pixels.size() << "\tpoints in circle: " << pixels_in_circle << endl;
-        cout << "Points: (" << x1 << ", " << y1 << "), (" << x2 << ", " << y2 << "), (" << x3 << ", " << y3 << ")" << endl << endl;
+        float fraction_of_pixels_in_circle = static_cast<float>(pixels_in_circle) / pixels_above_threshold.size();
+
+        const std::tuple<float,float,float> initial_estimate = std::make_tuple(center_x, center_y, radius);
+        const std::tuple<float,float,float> refined_estimate = fit_center_coordinates_and_radius(initial_estimate, edge_pixels_near);
+
+        cv::Mat this_image = original_image.clone();
+        cv::circle(this_image, cv::Point(center_x, center_y), radius, CV_RGB(64000, 0, 0), 2);
+        cv::circle(this_image, cv::Point(std::get<0>(refined_estimate), std::get<1>(refined_estimate)), std::get<2>(refined_estimate), CV_RGB(0, 0, 64000), 2);
+        cv::circle(this_image, cv::Point(x1, y1), 10, CV_RGB(0, 64000, 0), -1);
+        cv::circle(this_image, cv::Point(x2, y2), 10, CV_RGB(0, 64000, 0), -1);
+        cv::circle(this_image, cv::Point(x3, y3), 10, CV_RGB(0, 64000, 0), -1);
+        cv::Mat image_8bits = cv::Mat(this_image.rows, this_image.cols, CV_8UC3);
+        this_image.convertTo(image_8bits, CV_8UC3, 1.0/256.0);
+        cv::imwrite("debug_data/debug_circle_" + m_current_frame_debug + "_" + std::to_string(i) + ".jpg", image_8bits);
 
 
-        if (pixels_in_circle > best_pixels_in_circle) {
+        if (pixels_near_edge > best_pixels_in_circle && fraction_of_pixels_in_circle > 0.7) {
             best_center_x = center_x;
             best_center_y = center_y;
             best_radius = radius;
-            best_pixels_in_circle = pixels_in_circle;
+            best_pixels_in_circle = pixels_near_edge;
         }
     }
 
-    std::string debug_message = "Best circle: center = (" + std::to_string(best_center_x) + ", " + std::to_string(best_center_y) + "), radius = " + std::to_string(best_radius) + ", pixels in circle = " + std::to_string(best_pixels_in_circle);
-    cout << debug_message << endl;
+    vector<pair<int,int>> edge_pixels_near;
+    for (const auto &[x, y] : edge_pixels) {
+        const double distance = sqrt((x - best_center_x) * (x - best_center_x) + (y - best_center_y) * (y - best_center_y));
+        if (std::abs(distance - best_radius) < edge_tolerance) {
+            edge_pixels_near.push_back(make_pair(x, y));
+        }
+    }
 
-    return std::make_tuple(best_center_x, best_center_y, best_radius);
-};
+
+    const std::tuple<float,float,float> initial_estimate = std::make_tuple(best_center_x, best_center_y, best_radius);
+    const std::tuple<float,float,float> refined_estimate = fit_center_coordinates_and_radius(initial_estimate, edge_pixels_near);
+
+    cout << "Initial estimate: center = (" << get<0>(initial_estimate) << ", " << get<1>(initial_estimate) << "), radius = " << get<2>(initial_estimate) << endl;
+    cout << "Refined estimate: center = (" << get<0>(refined_estimate) << ", " << get<1>(refined_estimate) << "), radius = " << get<2>(refined_estimate) << endl;
+    return refined_estimate;
+}
 
 vector<pair<int,int>> ReferencePhotoHandlerEclipse::get_edge_pixels(const vector<unsigned char> &binary_image, int width, int height, int minimal_number_of_neighbors_outside) const {
     vector<pair<int,int>> edge_pixels;
@@ -250,20 +293,58 @@ vector<pair<int,int>> ReferencePhotoHandlerEclipse::get_edge_pixels(const vector
     return edge_pixels;
 }
 
-/*
-        const double a = x1 * (y2 - y3) - y1 * (x2 - x3) + x2 * y3 - x3 * y2;
-        if (std::abs(a) < 1e-6) {
-            continue; // points are collinear, skip this iteration
+std::tuple<float,float,float> ReferencePhotoHandlerEclipse::fit_center_coordinates_and_radius(const std::tuple<float,float,float> &initial_estimate, const std::vector<std::pair<int,int>> &edge_pixels) const    {
+    const float alpha = 0.1;
+
+    auto get_function_and_derivatives = [alpha, &edge_pixels](const std::tuple<float,float,float> &estimate) {
+        const float center_x = get<0>(estimate);
+        const float center_y = get<1>(estimate);
+        const float radius = get<2>(estimate);
+
+        float f = 0;
+        float df_dx = 0;
+        float df_dy = 0;
+        float df_dr = 0;
+        for (const auto &[x, y] : edge_pixels) {
+            const float dx = x - center_x;
+            const float dy = y - center_y;
+            const float distance = sqrt(dx * dx + dy * dy);
+            const float A = distance - radius;
+            const float A2 = A * A;
+
+            if (A < 1e-6 || distance < 1e-6) {
+                continue; // avoid division by zero and unnecessary calculations
+            }
+
+            f += pow(A2, alpha);
+
+
+            //const float dF_dA = 2 * alpha * pow(A2, alpha - 1) * A;
+            const float dF_dA = 1;
+            const float dA_dx = (center_x - x) / distance;
+            const float dA_dy = (center_y - y) / distance;
+            const float dA_dr = -1;
+
+            df_dx += dF_dA * dA_dx;
+            df_dy += dF_dA * dA_dy;
+            df_dr += dF_dA * dA_dr;
         }
+        return make_tuple(f, df_dx, df_dy, df_dr);
+    };
 
-        const double b = (x1 * x1 + y1 * y1) * (y3 - y2) + (x2 * x2 + y2 * y2) * (y1 - y3) + (x3 * x3 + y3 * y3) * (y2 - y1);
-        const double c = (x1 * x1 + y1 * y1) * (x2 - x3) + (x2 * x2 + y2 * y2) * (x3 - x1) + (x3 * x3 + y3 * y3) * (x1 - x2);
-        const double d = (x1 *x1 + y1 * y1) * (x3 * y2 - x2 * y3) + (x2 * x2 + y2 * y2) * (x1 * y3 - x3 * y1) + (x3 * x3 + y3 * y3) * (x2 * y1 - x1 * y2);
+    std::tuple<float,float,float> current_estimate = initial_estimate;
+    const int n_iterations = 1000;
+    const float learning_rate = 0.01;
+    float f_prev = std::numeric_limits<float>::max();
+    for (int iteration = 0; iteration < n_iterations; ++iteration) {
+        const auto [f, df_dx, df_dy, df_dr] = get_function_and_derivatives(current_estimate);
+        const float new_center_x = get<0>(current_estimate) - learning_rate * df_dx;
+        const float new_center_y = get<1>(current_estimate) - learning_rate * df_dy;
+        const float new_radius = get<2>(current_estimate) - learning_rate * df_dr;
 
-        const double center_x = -b / (2 * a);
-        const double center_y = -c / (2 * a);
 
-        const double radius = std::sqrt((center_x - x1) * (center_x - x1) + (center_y - y1) * (center_y - y1));
-        const double radius_squared = radius * radius;
-
-*/
+        current_estimate = make_tuple(new_center_x, new_center_y, new_radius);
+        f_prev = f;
+    }
+    return current_estimate;
+}

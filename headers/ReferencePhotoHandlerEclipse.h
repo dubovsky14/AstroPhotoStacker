@@ -65,6 +65,9 @@ namespace AstroPhotoStacker   {
 
             std::vector<std::pair<int,int>> get_edge_pixels(const std::vector<unsigned char> &binary_image, int width, int height, int minimal_number_of_neighbors_outside = 3) const;
 
+            std::tuple<float,float,float> fit_center_coordinates_and_radius(const std::tuple<float,float,float> &initial_estimate, const std::vector<std::pair<int,int>> &edge_pixels) const;
+
+
             double m_center_x = 0;
             double m_center_y = 0;
             double m_radius = 0;
@@ -73,6 +76,8 @@ namespace AstroPhotoStacker   {
             double m_gaussian_sigma = 6.0;
             bool   m_use_number_of_pixels_above_otsu_threshold_for_ranking = false;
             bool   m_zero_rotation = true;
+
+            mutable std::string m_current_frame_debug = "reference";
 
 
     };
