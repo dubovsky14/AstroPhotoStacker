@@ -412,7 +412,7 @@ void MyFrame::add_other_tools_menu()    {
     int id = unique_counter();
     other_tools_menu->Append(id, "Meteor shower stacking", "Meteor shower stacking");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        MeteorShowerStackingGUI *meteor_shower_stacking_gui = new MeteorShowerStackingGUI(this);
+        MeteorShowerStackingGUI *meteor_shower_stacking_gui = new MeteorShowerStackingGUI(this, m_stack_settings->get_n_cpus());
         meteor_shower_stacking_gui->Show(true);
     }, id);
 

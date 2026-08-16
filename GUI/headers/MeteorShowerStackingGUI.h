@@ -27,7 +27,7 @@ class MeteorShowerStackingGUI : public wxFrame  {
          * @param parent pointer to the parent frame (main frame)
          * @param aligned_images_producer pointer to the aligned images producer object
          */
-        MeteorShowerStackingGUI(MyFrame *parent);
+        MeteorShowerStackingGUI(MyFrame *parent, int n_cpus);
 
 
     private:
@@ -58,6 +58,8 @@ class MeteorShowerStackingGUI : public wxFrame  {
 
         // cluster list
         void add_list_of_clusters();
+        void update_cluster_list();
+        std::vector<std::pair<unsigned int,unsigned int>> m_cluster_id_to_index_in_gui;
         wxCheckListBox *m_clusters_checkbox = nullptr;
 
         // cluster buttons

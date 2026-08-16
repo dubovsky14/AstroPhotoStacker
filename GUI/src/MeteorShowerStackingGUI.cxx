@@ -26,10 +26,11 @@
 using namespace std;
 using namespace AstroPhotoStacker;
 
-MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent) :
+MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent, int n_cpus) :
         wxFrame(parent, wxID_ANY, "Meteor shower stacking", wxDefaultPosition, wxSize(1000, 1000), wxDEFAULT_FRAME_STYLE | wxMAXIMIZE) {
 
     m_parent = parent;
+    m_meteor_shower_stacking_tool.set_n_cpus(n_cpus);
     m_window_size = wxGetDisplaySize();
     m_filelist_handler_gui_interface = m_parent->get_filelist_handler_gui_interface().get_filelist_with_checked_frames();
 
@@ -100,7 +101,53 @@ void MeteorShowerStackingGUI::add_exposure_correction_spin_ctrl()   {
 
 void MeteorShowerStackingGUI::add_list_of_clusters() {
     m_clusters_checkbox = new wxCheckListBox(this, wxID_ANY);
+
+    // set font to the one with fixed width characters
+    m_clusters_checkbox->SetFont(wxFont(10, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
     m_top_right_sizer->Add(m_clusters_checkbox, 1, wxEXPAND | wxALL, 5);
+};
+
+void MeteorShowerStackingGUI::update_cluster_list() {
+    m_clusters_checkbox->Clear();
+    m_cluster_id_to_index_in_gui.clear();
+
+    if (m_currently_displayed_frame == InputFrame()) {
+        return;
+    }
+
+    FrameClusterInfo cluster_info = m_meteor_shower_stacking_tool.get_cluster_info(m_currently_displayed_frame);
+    vector<vector<string>> cluster_labels_cells;
+    vector<bool> cluster_selected;
+    for (unsigned int i = 0; i < cluster_info.clusters.size(); ++i) {
+        const unsigned int cluster_size = cluster_info.clusters[i].size();
+        const float excentricity = cluster_info.clusters_excentricity[i];
+        const bool is_selected = cluster_info.clusters_selected[i];
+
+        if (excentricity < m_cluster_excentricity) {
+            continue; // skip clusters with excentricity above the threshold
+        }
+
+        const std::string cluster_id_label = "Cluster #" + std::to_string(i);
+        const std::string cluster_size_label = "Size: " + std::to_string(cluster_size);
+        const std::string cluster_excentricity_label = "Excentricity: " + std::to_string(excentricity);
+
+        vector<string> cluster_labels = {cluster_id_label, cluster_size_label, cluster_excentricity_label};
+        cluster_labels_cells.push_back(cluster_labels);
+        cluster_selected.push_back(is_selected);
+        m_cluster_id_to_index_in_gui.push_back({i, cluster_labels_cells.size() - 1});
+    }
+
+    vector<string> cluster_labels_formated = get_formated_table(cluster_labels_cells, 4*" "s);
+    vector<wxString> cluster_labels_wx;
+    for (const std::string &label : cluster_labels_formated) {
+        cluster_labels_wx.push_back(label);
+    }
+
+    m_clusters_checkbox->Append(cluster_labels_wx);
+    for (unsigned int i = 0; i < cluster_selected.size(); ++i) {
+        m_clusters_checkbox->Check(i, cluster_selected[i]);
+    }
+
 };
 
 void MeteorShowerStackingGUI::add_cluster_buttons()  {
@@ -132,6 +179,7 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
 
     m_button_recalculate_clusters = add_button("Recalculate clusters", [this]() {
         m_meteor_shower_stacking_tool.recalculate_clusters(m_currently_displayed_frame, m_cluster_threshold, true);
+        update_cluster_list();
     });
 
     m_button_recalculate_clusters_for_all_images = add_button("Recalculate clusters for all images", [this]() {
@@ -150,6 +198,7 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
                                     m_meteor_shower_stacking_tool.recalculate_clusters(frames_to_process, m_cluster_threshold);
                                 },
                                 "");
+        update_cluster_list();
     });
 };
 
@@ -389,6 +438,7 @@ void MeteorShowerStackingGUI::update_image_preview_file(size_t frame_index)  {
     m_image_preview->update_preview_bitmap();
 
     // now we need to update all cluster information
+    update_cluster_list();
 };
 
 bool MeteorShowerStackingGUI::update_checked_files_in_filelist() {
