@@ -1,7 +1,6 @@
 #include "../headers/MeteorShowerStackingGUI.h"
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 #include "../headers/Common.h"
-#include "../headers/PhotoGroupingTool.h"
 #include "../headers/SettingsCustomization.h"
 
 
@@ -9,10 +8,6 @@
 
 #include "../../headers/AlignedImagesProducer.h"
 #include "../../headers/CalibrationFrameBase.h"
-#include "../../headers/DarkFrameHandler.h"
-#include "../../headers/FlatFrameHandler.h"
-#include "../../headers/ImageFilesInputOutput.h"
-#include "../../headers/TimeLapseVideoCreator.h"
 #include "../../headers/PhotoAlignmentHandler.h"
 
 
@@ -55,6 +50,7 @@ MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent) :
     if (m_background_frame != InputFrame()) {
         m_image_preview->read_preview_from_frame(m_background_frame);
         m_image_preview->update_preview_bitmap();
+        m_currently_displayed_frame = m_background_frame;
     }
 
 
@@ -121,14 +117,39 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
     };
     m_button_show_cluster = add_button("Show cluster", [this]() {
         // # TODO: handle show cluster button click
+
+        for (const FrameInfo &frame_info : m_filelist_handler_gui_interface.get_checked_frames_of_type(FrameType::LIGHT)) {
+            FrameClusterInfo cluster_info = m_meteor_shower_stacking_tool.get_cluster_info(frame_info.input_frame);
+            for (size_t i = 0; i < cluster_info.clusters.size(); ++i) {
+                cout    << "Cluster #" << i
+                        << "\tsize: " << cluster_info.clusters[i].size()
+                        << "\tselected: " << cluster_info.clusters_selected[i]
+                        << "\texcentricity: " << cluster_info.clusters_excentricity[i]
+                        << endl;
+            }
+        }
     });
 
     m_button_recalculate_clusters = add_button("Recalculate clusters", [this]() {
-        // # TODO: handle recalculate clusters button click
+        m_meteor_shower_stacking_tool.recalculate_clusters(m_currently_displayed_frame, m_cluster_threshold, true);
     });
 
     m_button_recalculate_clusters_for_all_images = add_button("Recalculate clusters for all images", [this]() {
-        // # TODO: handle recalculate clusters for all images button click
+        vector<InputFrame> frames_to_process;
+        for (const FrameInfo &frame_info : m_filelist_handler_gui_interface.get_checked_frames_of_type(FrameType::LIGHT)) {
+            frames_to_process.push_back(frame_info.input_frame);
+        }
+        const int tasks_total = frames_to_process.size();
+        const std::atomic<int> &tasks_processed = m_meteor_shower_stacking_tool.get_tasks_processed();
+        run_task_with_progress_dialog(  "Recalculating clusters for all images...",
+                                "Finished",
+                                "",
+                                tasks_processed,
+                                tasks_total,
+                                [this, frames_to_process](){
+                                    m_meteor_shower_stacking_tool.recalculate_clusters(frames_to_process, m_cluster_threshold);
+                                },
+                                "");
     });
 };
 
@@ -141,11 +162,11 @@ void MeteorShowerStackingGUI::add_cluster_settings() {
         "Cluster threshold: ",
         0.0,
         0.1,
-        0.001,
+        m_cluster_threshold,
         0.0002,
         4,
         [this](float value){
-            // # TODO: handle cluster threshold change
+            m_cluster_threshold = value;
         }
     );
     m_cluster_threshold_slider->add_sizer(m_top_right_sizer, 0, wxEXPAND, 1);
@@ -155,11 +176,11 @@ void MeteorShowerStackingGUI::add_cluster_settings() {
         "Cluster excentricity: ",
         0.0,
         50,
-        10,
+        m_cluster_excentricity,
         1,
         1,
         [this](float value){
-            // #TODO: handle cluster excentricity change
+            m_cluster_excentricity = value;
         }
     );
     m_cluster_excentricity_slider->add_sizer(m_top_right_sizer, 0, wxEXPAND, 1);
@@ -363,8 +384,11 @@ void MeteorShowerStackingGUI::update_image_preview_file(size_t frame_index)  {
     }
     const InputFrame frame = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).input_frame;
 
+    m_currently_displayed_frame = frame;
     m_image_preview->read_preview_from_frame(frame);
     m_image_preview->update_preview_bitmap();
+
+    // now we need to update all cluster information
 };
 
 bool MeteorShowerStackingGUI::update_checked_files_in_filelist() {

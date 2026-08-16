@@ -3,7 +3,7 @@
 #include "../headers/ImagePreview.h"
 #include "../headers/MainFrame.h"
 #include "../headers/FilelistHandlerGUIInterface.h"
-
+#include "../../headers/MeteorShowerStackingTool.h"
 #include "../../headers/InputFrame.h"
 
 
@@ -37,6 +37,8 @@ class MeteorShowerStackingGUI : public wxFrame  {
         int m_image_preview_width = 600;
         int m_image_preview_height = 400;
 
+        AstroPhotoStacker::MeteorShowerStackingTool m_meteor_shower_stacking_tool;
+
         wxBoxSizer *m_main_vertical_sizer = nullptr;
         wxBoxSizer *m_upper_part_sizer_horizontal = nullptr;
 
@@ -50,6 +52,7 @@ class MeteorShowerStackingGUI : public wxFrame  {
         std::unique_ptr<FloatingPointSlider> m_exposure_correction_slider   = nullptr;
         CombinedColorStrecherTool m_exposure_stretcher; // for exposure correction
         void add_exposure_correction_spin_ctrl();
+        AstroPhotoStacker::InputFrame m_currently_displayed_frame;
 
         wxBoxSizer *m_top_right_sizer = nullptr;
 
@@ -68,6 +71,8 @@ class MeteorShowerStackingGUI : public wxFrame  {
         void add_cluster_settings();
         std::unique_ptr<FloatingPointSlider> m_cluster_threshold_slider   = nullptr;
         std::unique_ptr<FloatingPointSlider> m_cluster_excentricity_slider   = nullptr;
+        float m_cluster_threshold = 0.001;
+        float m_cluster_excentricity = 10.0;
 
 
         // buttons
