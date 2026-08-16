@@ -32,9 +32,9 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent) :
-        wxFrame(parent, wxID_ANY, "Meteor shower stacking", wxDefaultPosition, wxSize(1000, 1000), wxDEFAULT_FRAME_STYLE | wxMAXIMIZE),
-        m_parent(parent)    {
+        wxFrame(parent, wxID_ANY, "Meteor shower stacking", wxDefaultPosition, wxSize(1000, 1000), wxDEFAULT_FRAME_STYLE | wxMAXIMIZE) {
 
+    m_parent = parent;
     m_window_size = wxGetDisplaySize();
     m_filelist_handler_gui_interface = m_parent->get_filelist_handler_gui_interface().get_filelist_with_checked_frames();
 
@@ -64,17 +64,105 @@ MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent) :
 
 
     m_image_preview_sizer = new wxBoxSizer(wxVERTICAL);
-    m_main_vertical_sizer->Add(m_image_preview_sizer, 2, wxLEFT, 5);
+    m_upper_part_sizer_horizontal->Add(m_image_preview_sizer, 5, wxLEFT, 5);
 
     m_image_preview_sizer->Add(m_image_preview->get_image_preview_bitmap(), 1, wxCENTER, 0);
     add_exposure_correction_spin_ctrl();
 
+    m_top_right_sizer = new wxBoxSizer(wxVERTICAL);
+    m_upper_part_sizer_horizontal->Add(m_top_right_sizer, 4, wxEXPAND | wxALL, 5);
+    add_list_of_clusters();
+    add_cluster_buttons();
+    add_cluster_settings();
 
+    // bottom part with buttons and file list
     add_buttons();
     add_background_frame_selector();
     add_list_of_files();
 
     SetSizer(m_main_vertical_sizer);
+};
+
+
+void MeteorShowerStackingGUI::add_exposure_correction_spin_ctrl()   {
+    m_exposure_correction_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Exposure correction: ",
+        -7.0,
+        7.0,
+        0.0,
+        0.1,
+        1,
+        [this](float value){
+            IndividualColorStretchingToolBase &luminance_stretcher = m_exposure_stretcher.get_luminance_stretcher(0);
+            (dynamic_cast<IndividualColorStretchingBlackCorrectionWhite&>(luminance_stretcher)).set_stretching_parameters(0,value,1);
+            m_image_preview->update_preview_bitmap();
+        }
+    );
+    m_exposure_correction_slider->add_sizer(m_image_preview_sizer, 0, wxEXPAND, 1);
+};
+
+void MeteorShowerStackingGUI::add_list_of_clusters() {
+    m_clusters_checkbox = new wxCheckListBox(this, wxID_ANY);
+    m_top_right_sizer->Add(m_clusters_checkbox, 1, wxEXPAND | wxALL, 5);
+};
+
+void MeteorShowerStackingGUI::add_cluster_buttons()  {
+    m_cluster_buttons_sizer = new wxBoxSizer(wxHORIZONTAL);
+    m_top_right_sizer->Add(m_cluster_buttons_sizer, 0, wxEXPAND | wxALL, 5);
+
+    auto add_button = [this](const std::string &label, const std::function<void()> &on_click) {
+        wxButton *button = new wxButton(this, wxID_ANY, label);
+        button->Bind(wxEVT_BUTTON, [on_click](wxCommandEvent&) {
+            on_click();
+        });
+        m_cluster_buttons_sizer->Add(button, 1, wxEXPAND | wxALL, 5);
+        return button;
+    };
+    m_button_show_cluster = add_button("Show cluster", [this]() {
+        // # TODO: handle show cluster button click
+    });
+
+    m_button_recalculate_clusters = add_button("Recalculate clusters", [this]() {
+        // # TODO: handle recalculate clusters button click
+    });
+
+    m_button_recalculate_clusters_for_all_images = add_button("Recalculate clusters for all images", [this]() {
+        // # TODO: handle recalculate clusters for all images button click
+    });
+};
+
+void MeteorShowerStackingGUI::add_cluster_settings() {
+    // spacer
+    m_top_right_sizer->AddSpacer(10);
+
+    m_cluster_threshold_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Cluster threshold: ",
+        0.0,
+        0.1,
+        0.001,
+        0.0002,
+        4,
+        [this](float value){
+            // # TODO: handle cluster threshold change
+        }
+    );
+    m_cluster_threshold_slider->add_sizer(m_top_right_sizer, 0, wxEXPAND, 1);
+
+    m_cluster_excentricity_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Cluster excentricity: ",
+        0.0,
+        50,
+        10,
+        1,
+        1,
+        [this](float value){
+            // #TODO: handle cluster excentricity change
+        }
+    );
+    m_cluster_excentricity_slider->add_sizer(m_top_right_sizer, 0, wxEXPAND, 1);
 };
 
 void MeteorShowerStackingGUI::add_buttons()  {
@@ -161,24 +249,6 @@ InputFrame MeteorShowerStackingGUI::get_reference_frame() const  {
     }
 
     return InputFrame();
-};
-
-void MeteorShowerStackingGUI::add_exposure_correction_spin_ctrl()   {
-    m_exposure_correction_slider = make_unique<FloatingPointSlider>(
-        this,
-        "Exposure correction: ",
-        -7.0,
-        7.0,
-        0.0,
-        0.1,
-        1,
-        [this](float value){
-            IndividualColorStretchingToolBase &luminance_stretcher = m_exposure_stretcher.get_luminance_stretcher(0);
-            (dynamic_cast<IndividualColorStretchingBlackCorrectionWhite&>(luminance_stretcher)).set_stretching_parameters(0,value,1);
-            m_image_preview->update_preview_bitmap();
-        }
-    );
-    m_exposure_correction_slider->add_sizer(m_image_preview_sizer, 0, wxEXPAND, 1);
 };
 
 void MeteorShowerStackingGUI::add_background_frame_selector() {
@@ -304,6 +374,10 @@ bool MeteorShowerStackingGUI::update_checked_files_in_filelist() {
     for (int i = 0; i < m_filelist_handler_gui_interface.get_number_of_all_frames(); i++) {
         const bool file_checked_in_checkbox = m_files_checkbox->IsChecked(i);
         const bool file_checked_in_filelist = m_filelist_handler_gui_interface.frame_is_checked(i);
+        const FrameID frame_info = m_filelist_handler_gui_interface.get_frame_by_index(i);
+        if (frame_info.type != FrameType::LIGHT) {
+            continue;
+        }
         if (file_checked_in_checkbox != file_checked_in_filelist) {
             m_filelist_handler_gui_interface.set_frame_checked(i, file_checked_in_checkbox);
             updated = true;
