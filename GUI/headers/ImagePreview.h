@@ -174,7 +174,7 @@ class ImagePreview {
          * @brief Add additional layer to the image preview - for example to show alignment boxes or crop borders
          *
          * @param layer_name name of the layer
-         * @param functor function to apply the layer
+         * @param functor function to apply the layer. The functor takes a pointer to the image data (vector<vector<PixelType>>), width and height of the image. The functor should modify the image data in place.
         */
         void add_layer(const std::string &layer_name, const std::function<void(std::vector<std::vector<PixelType>> *, int, int)> &functor);
 

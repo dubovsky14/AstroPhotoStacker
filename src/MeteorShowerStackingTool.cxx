@@ -16,6 +16,13 @@ FrameClusterInfo MeteorShowerStackingTool::get_cluster_info(const InputFrame &fr
     return FrameClusterInfo();
 };
 
+void MeteorShowerStackingTool::set_cluster_selected(const InputFrame &frame, size_t cluster_id, bool selected)  {
+    if (m_frame_clusters_map.find(frame) != m_frame_clusters_map.end()) {
+        if (cluster_id < m_frame_clusters_map[frame].clusters_selected.size()) {
+            m_frame_clusters_map[frame].clusters_selected[cluster_id] = selected;
+        }
+    }
+};
 
 void MeteorShowerStackingTool::recalculate_clusters(const InputFrame &frame, float cluster_fraction_threshold, bool buffer_brightness)  {
     std::vector< std::vector<std::tuple<int, int> > > clusters;

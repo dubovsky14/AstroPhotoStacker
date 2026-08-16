@@ -35,6 +35,8 @@ namespace AstroPhotoStacker {
 
             FrameClusterInfo get_cluster_info(const InputFrame &frame)  const;
 
+            void set_cluster_selected(const InputFrame &frame, size_t cluster_id, bool selected);
+
             void recalculate_clusters(const InputFrame &frame, float cluster_fraction_threshold, bool buffer_brightness = false);
 
             void recalculate_clusters(const std::vector<InputFrame> &frames, float cluster_fraction_threshold);

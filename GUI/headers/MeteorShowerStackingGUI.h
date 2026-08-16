@@ -68,6 +68,7 @@ class MeteorShowerStackingGUI : public wxFrame  {
         wxButton *m_button_show_cluster = nullptr;
         wxButton *m_button_recalculate_clusters = nullptr;
         wxButton *m_button_recalculate_clusters_for_all_images = nullptr;
+        bool m_show_clusters = true;
 
         // cluster setttings
         void add_cluster_settings();

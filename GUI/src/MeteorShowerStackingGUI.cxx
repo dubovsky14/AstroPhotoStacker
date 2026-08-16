@@ -148,6 +148,18 @@ void MeteorShowerStackingGUI::update_cluster_list() {
         m_clusters_checkbox->Check(i, cluster_selected[i]);
     }
 
+    // on check/uncheck, update the cluster_info in m_meteor_shower_stacking_tool
+    m_clusters_checkbox->Bind(wxEVT_CHECKLISTBOX, [this, cluster_info](wxCommandEvent& event) {
+        const int index = event.GetInt();
+        if (index < 0 || index >= int(m_cluster_id_to_index_in_gui.size())) {
+            return;
+        }
+        const unsigned int cluster_id = m_cluster_id_to_index_in_gui[index].first;
+        const bool is_checked = m_clusters_checkbox->IsChecked(index);
+        m_meteor_shower_stacking_tool.set_cluster_selected(m_currently_displayed_frame, cluster_id, is_checked);
+    });
+
+
 };
 
 void MeteorShowerStackingGUI::add_cluster_buttons()  {
@@ -162,19 +174,15 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
         m_cluster_buttons_sizer->Add(button, 1, wxEXPAND | wxALL, 5);
         return button;
     };
-    m_button_show_cluster = add_button("Show cluster", [this]() {
-        // # TODO: handle show cluster button click
-
-        for (const FrameInfo &frame_info : m_filelist_handler_gui_interface.get_checked_frames_of_type(FrameType::LIGHT)) {
-            FrameClusterInfo cluster_info = m_meteor_shower_stacking_tool.get_cluster_info(frame_info.input_frame);
-            for (size_t i = 0; i < cluster_info.clusters.size(); ++i) {
-                cout    << "Cluster #" << i
-                        << "\tsize: " << cluster_info.clusters[i].size()
-                        << "\tselected: " << cluster_info.clusters_selected[i]
-                        << "\texcentricity: " << cluster_info.clusters_excentricity[i]
-                        << endl;
-            }
+    m_button_show_cluster = add_button(m_show_clusters ? "Hide clusters" : "Show clusters", [this]() {
+        m_show_clusters = !m_show_clusters;
+        if (m_show_clusters) {
+            m_button_show_cluster->SetLabel("Hide clusters");
         }
+        else {
+            m_button_show_cluster->SetLabel("Show clusters");
+        }
+        m_image_preview->update_preview_bitmap();
     });
 
     m_button_recalculate_clusters = add_button("Recalculate clusters", [this]() {
@@ -210,7 +218,7 @@ void MeteorShowerStackingGUI::add_cluster_settings() {
         this,
         "Cluster threshold: ",
         0.0,
-        0.1,
+        0.2,
         m_cluster_threshold,
         0.0002,
         4,
@@ -434,12 +442,34 @@ void MeteorShowerStackingGUI::update_image_preview_file(size_t frame_index)  {
     const InputFrame frame = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).input_frame;
 
     m_currently_displayed_frame = frame;
-    m_image_preview->read_preview_from_frame(frame);
-    m_image_preview->update_preview_bitmap();
 
+    m_image_preview->add_layer("cluster_mask",
+                            [this, frame](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
+                                if (!m_show_clusters) return;
+
+                                FrameClusterInfo cluster_info = m_meteor_shower_stacking_tool.get_cluster_info(frame);
+                                for (const auto &[i_cluster, i_cluster_gui] : m_cluster_id_to_index_in_gui) {
+
+                                    for (const auto &pixel : cluster_info.clusters[i_cluster]) {
+                                        const int x = std::get<0>(pixel);
+                                        const int y = std::get<1>(pixel);
+                                        const size_t pixel_index = y * width + x;
+                                        if (x >= 0 && x < width && y >= 0 && y < height) {
+                                            (*image_data)[0][pixel_index] = cluster_info.clusters_selected[i_cluster] ? 0   : 255;
+                                            (*image_data)[1][pixel_index] = cluster_info.clusters_selected[i_cluster] ? 255 : 0;
+                                            (*image_data)[2][pixel_index] = 0;
+                                        }
+                                    }
+                                }
+                            });
+
+    m_image_preview->read_preview_from_frame(frame);
+
+    m_image_preview->update_preview_bitmap();
     // now we need to update all cluster information
     update_cluster_list();
 };
+
 
 bool MeteorShowerStackingGUI::update_checked_files_in_filelist() {
     wxArrayInt checked_indices;
