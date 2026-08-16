@@ -228,10 +228,10 @@ void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address,
     const string temperature_string =  metadata.temperature > -273 ? ("Temperature: " + AstroPhotoStacker::round_and_convert_to_string(metadata.temperature,1) + "C") : "";
 
     if (metadata.timestamp > 0) {
-        string exif_timestamp = metadata.get_datetime();
+        string exif_timestamp = metadata.get_datetime("%Y-%m-%d %H:%M:%S");
 
         exif_data["Exif.Image.DateTime"] = exif_timestamp;
-        exif_data["Exif.Photo.DateTimeOriginal"] = exif_timestamp;
+        exif_data["Exif.Photo.DateTimeOriginal"] = metadata.get_datetime("%Y:%m:%d %H:%M:%S");
         exif_data["Exif.Photo.DateTimeDigitized"] = exif_timestamp;
     }
 

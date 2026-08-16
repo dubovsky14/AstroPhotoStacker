@@ -20,6 +20,6 @@ namespace AstroPhotoStacker {
         std::string bayer_matrix = "";
         float video_fps         = -1;
 
-        std::string get_datetime() const;
+        std::string get_datetime(const std::string &format = "%Y-%m-%d %H:%M:%S") const;
     };
 }
