@@ -90,7 +90,7 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent, const PostPr
 
         this->initialize_aligned_images_producer();
 
-        if (m_reference_frame != InputFrame()) {
+        if (m_reference_frame != InputFrame() && m_use_dynamic_exposure_adjustment) {
             m_aligned_images_producer->set_dynamic_exposure_adjustment(m_reference_frame, 0.99);
         }
 
@@ -240,31 +240,21 @@ void AlignedImagesProducerGUI::add_exposure_correction_spin_ctrl()   {
 };
 
 void AlignedImagesProducerGUI::add_checkboxes()   {
-    wxCheckBox* add_datetime_checkbox = new wxCheckBox(this, wxID_ANY, "Add datetime to the output image");
-    add_datetime_checkbox->SetValue(m_add_datetime);
-    add_datetime_checkbox->SetToolTip("If checked, the datetime from photo's metadata will be shown in the image.");
-    add_datetime_checkbox->Bind(wxEVT_CHECKBOX, [add_datetime_checkbox, this](wxCommandEvent&){
-        const bool is_checked = add_datetime_checkbox->GetValue();
-        m_add_datetime = is_checked;
-    });
-    m_main_vertical_sizer->Add(add_datetime_checkbox, 0, wxEXPAND, 5);
+    auto add_checkbox = [this](const std::string &label, bool *value, const std::string &tooltip) {
+        wxCheckBox* checkbox = new wxCheckBox(this, wxID_ANY, label);
+        checkbox->SetValue(*value);
+        checkbox->SetToolTip(tooltip);
+        checkbox->Bind(wxEVT_CHECKBOX, [checkbox, value](wxCommandEvent&){
+            const bool is_checked = checkbox->GetValue();
+            *value = is_checked;
+        });
+        m_main_vertical_sizer->Add(checkbox, 0, wxEXPAND, 5);
+    };
 
-    wxCheckBox* apply_color_stretcher = new wxCheckBox(this, wxID_ANY, "Apply exposure correction to the output image");
-    apply_color_stretcher->SetValue(m_apply_color_stretcher);
-    apply_color_stretcher->SetToolTip("If checked, the exposure correction used for preview will be used also for output images.");
-    apply_color_stretcher->Bind(wxEVT_CHECKBOX, [apply_color_stretcher, this](wxCommandEvent&){
-        const bool is_checked = apply_color_stretcher->GetValue();
-        m_apply_color_stretcher = is_checked;
-    });
-    m_main_vertical_sizer->Add(apply_color_stretcher, 0, wxEXPAND, 5);
-
-    wxCheckBox* save_also_tif_files_checkbox = new wxCheckBox(this, wxID_ANY, "Save also TIFF files");
-    save_also_tif_files_checkbox->SetValue(false);
-    save_also_tif_files_checkbox->SetToolTip("If checked, the aligned images will be saved also as TIFF files in addition to the default format.");
-    save_also_tif_files_checkbox->Bind(wxEVT_CHECKBOX, [save_also_tif_files_checkbox, this](wxCommandEvent&){
-        m_save_also_tif_files = save_also_tif_files_checkbox->GetValue();
-    });
-    m_main_vertical_sizer->Add(save_also_tif_files_checkbox, 0, wxEXPAND, 5);
+    add_checkbox("Use dynamic exposure adjustment", &m_use_dynamic_exposure_adjustment, "If checked, the exposure correction will be adjusted dynamically based on the image content.");
+    add_checkbox("Apply manual exposure correction to the output image", &m_apply_color_stretcher, "If checked, the exposure correction used for preview will be used also for output images.");
+    add_checkbox("Add datetime to the output image", &m_add_datetime, "If checked, the datetime from photo's metadata will be shown in the image.");
+    add_checkbox("Save also TIFF files", &m_save_also_tif_files, "If checked, the aligned images will be saved also as TIFF files in addition to the default format.");
 };
 
 void AlignedImagesProducerGUI::add_advanced_settings()    {

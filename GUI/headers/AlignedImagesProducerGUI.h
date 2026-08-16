@@ -83,6 +83,7 @@ class AlignedImagesProducerGUI : public wxFrame  {
         std::map<int, std::vector<std::shared_ptr<const AstroPhotoStacker::CalibrationFrameBase> > > get_calibration_frame_handlers_map() const;
 
         bool m_add_datetime = false;
+        bool m_use_dynamic_exposure_adjustment = true;
         bool m_apply_color_stretcher = false;
 
         bool m_use_grouping = false;
