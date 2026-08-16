@@ -2,7 +2,8 @@
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 #include "../headers/Common.h"
 #include "../headers/PhotoGroupingTool.h"
-#include "../headers/StackerConfigureTool.h"
+#include "../headers/SettingsCustomization.h"
+
 
 #include "../headers/StackSettings.h"
 
@@ -35,7 +36,7 @@ MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent) :
         m_parent(parent)    {
 
     m_window_size = wxGetDisplaySize();
-    m_filelist_handler_gui_interface = m_parent->get_filelist_handler_gui_interface();
+    m_filelist_handler_gui_interface = m_parent->get_filelist_handler_gui_interface().get_filelist_with_checked_frames();
 
 
     m_exposure_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackCorrectionWhite>());
@@ -50,9 +51,9 @@ MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent) :
     m_image_preview = make_unique<ImagePreview>(this, m_image_preview_width, m_image_preview_height, 255, true);
     m_image_preview->set_stretcher(&m_exposure_stretcher);
 
-    m_reference_frame = get_reference_frame();
-    if (m_reference_frame != InputFrame()) {
-        m_image_preview->read_preview_from_frame(m_reference_frame);
+    m_background_frame = get_reference_frame();
+    if (m_background_frame != InputFrame()) {
+        m_image_preview->read_preview_from_frame(m_background_frame);
         m_image_preview->update_preview_bitmap();
     }
 
@@ -69,15 +70,70 @@ MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent) :
     add_exposure_correction_spin_ctrl();
 
 
-    m_basic_settings_sizer = new wxBoxSizer(wxVERTICAL);
-    m_main_vertical_sizer->Add(m_basic_settings_sizer, 1, wxEXPAND | wxALL, 5);
-
-
-    // Add the list of files to stack
+    add_buttons();
+    add_background_frame_selector();
     add_list_of_files();
 
-
     SetSizer(m_main_vertical_sizer);
+};
+
+void MeteorShowerStackingGUI::add_buttons()  {
+    m_buttons_sizer = new wxBoxSizer(wxHORIZONTAL);
+    m_main_vertical_sizer->Add(m_buttons_sizer, 0, wxEXPAND | wxALL, 5);
+
+    auto add_button = [this](const std::string &label, const std::function<void()> &on_click) {
+        wxButton *button = new wxButton(this, wxID_ANY, label);
+        button->Bind(wxEVT_BUTTON, [on_click](wxCommandEvent&) {
+            on_click();
+        });
+        m_buttons_sizer->Add(button, 1, wxEXPAND | wxALL, 5);
+        return button;
+    };
+
+    m_button_check_all = add_button("Check all", [this]() {
+        update_checked_files_in_filelist();
+        if (m_button_check_all->GetLabel() == "Uncheck all") {
+            for (unsigned int i = 0; i < m_files_checkbox->GetCount(); ++i) {
+                m_files_checkbox->Check(i, false);
+            }
+            m_button_check_all->SetLabel("Check all");
+        }
+        else {
+            for (unsigned int i = 0; i < m_files_checkbox->GetCount(); ++i) {
+                m_files_checkbox->Check(i);
+            }
+            m_button_check_all->SetLabel("Uncheck all");
+        }
+        update_checked_files_in_filelist();
+    });
+
+    m_button_remove_checked = add_button("Remove checked", [this]() {
+        // get checked files:
+        wxArrayInt checked_indices;
+        m_files_checkbox->GetCheckedItems(checked_indices);
+
+        // remove checked files from m_filelist_handler_gui_interface
+        for (int i = checked_indices.GetCount() - 1; i >= 0; --i) {
+            const std::string option = m_files_checkbox->GetString(checked_indices[i]).ToStdString();
+            m_filelist_handler_gui_interface.remove_frame(checked_indices[i]);
+        }
+
+        // update m_files_checkbox
+        update_files_to_stack_checkbox();
+    });
+
+    m_button_stack = add_button("Stack files", [this]() {
+        cout << "Stacking files..." << endl;
+        cout << "Background frame: " << m_background_frame.to_string() << endl;
+    });
+
+    m_button_show_stacked_image = add_button("Show stacked image", [this]() {
+        cout << "Showing stacked image..." << endl;
+    });
+
+    m_button_save_stacked_image = add_button("Save stacked image", [this]() {
+        cout << "Saving stacked image..." << endl;
+    });
 };
 
 InputFrame MeteorShowerStackingGUI::get_reference_frame() const  {
@@ -125,6 +181,47 @@ void MeteorShowerStackingGUI::add_exposure_correction_spin_ctrl()   {
     m_exposure_correction_slider->add_sizer(m_image_preview_sizer, 0, wxEXPAND, 1);
 };
 
+void MeteorShowerStackingGUI::add_background_frame_selector() {
+    m_indices_frames_to_align.clear();
+    m_available_light_frames.clear();
+    m_available_light_frames_strings.clear();
+
+    const std::vector<std::pair<std::string, FrameID>> &all_frames = m_filelist_handler_gui_interface.get_shown_frames();
+    std::vector<std::pair<std::string, FrameID>> light_frames;
+    for (size_t i = 0; i < all_frames.size(); ++i) {
+        const pair<string,FrameID> &frame = all_frames[i];
+        if (frame.second.type != FrameType::LIGHT)  continue;
+        light_frames.push_back(frame);
+    }
+
+    const unsigned int max_number_of_frames_for_gui = 2000; // without this, it would freeze for planetary videos
+    const bool show_full_frame_paths = SettingsCustomization::get_instance().other_settings_customization.show_full_frame_paths;
+    int current_selection = 0;
+    for (unsigned int i = 0; i < light_frames.size(); ++i) {
+        if (i < max_number_of_frames_for_gui) {
+            m_available_light_frames_strings.push_back(light_frames[i].second.input_frame.to_gui_string(show_full_frame_paths));
+        }
+        m_indices_frames_to_align.push_back(i);
+        m_available_light_frames.push_back(light_frames[i].second.input_frame);
+
+        if (light_frames[i].second.input_frame == m_background_frame) {
+            current_selection = i;
+        }
+    }
+
+    wxStaticText* select_background_frame_text = new wxStaticText(this, wxID_ANY, "Background frame:");
+    select_background_frame_text->SetFont(wxFont(15, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+
+    wxChoice* choice_box_background_frame = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_available_light_frames_strings.size(), m_available_light_frames_strings.data());
+    choice_box_background_frame->SetSelection(current_selection);
+    m_background_frame = m_available_light_frames[current_selection];
+    choice_box_background_frame->Bind(wxEVT_CHOICE, [this, choice_box_background_frame](wxCommandEvent&){
+        int current_selection = choice_box_background_frame->GetSelection();
+        m_background_frame = m_available_light_frames[current_selection];
+    });
+    m_main_vertical_sizer->Add(select_background_frame_text, 0, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5);
+    m_main_vertical_sizer->Add(choice_box_background_frame, 0,  wxEXPAND, 5);
+};
 
 void MeteorShowerStackingGUI::add_list_of_files() {
     wxArrayString files;
