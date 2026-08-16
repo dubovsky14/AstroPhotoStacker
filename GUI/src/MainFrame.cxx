@@ -10,6 +10,7 @@
 #include "../headers/SettingsCustomizationGUI.h"
 #include "../headers/SettingsCustomization.h"
 #include "../headers/LightPollutionRemovalToolGUI.h"
+#include "../headers/MeteorShowerStackingGUI.h"
 
 
 
@@ -404,6 +405,20 @@ void MyFrame::add_customization_menu() {
     m_menu_bar->Append(customization_menu, "&Customization");
 };
 
+
+void MyFrame::add_other_tools_menu()    {
+    wxMenu *other_tools_menu = new wxMenu;
+
+    int id = unique_counter();
+    other_tools_menu->Append(id, "Meteor shower stacking", "Meteor shower stacking");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        MeteorShowerStackingGUI *meteor_shower_stacking_gui = new MeteorShowerStackingGUI(this);
+        meteor_shower_stacking_gui->Show(true);
+    }, id);
+
+    m_menu_bar->Append(other_tools_menu, "&Other tools");
+};
+
 void MyFrame::add_menu_bar()    {
     m_menu_bar = new wxMenuBar;
 
@@ -415,6 +430,7 @@ void MyFrame::add_menu_bar()    {
     add_aligned_images_producer_menu();
     add_postprocessing_menu();
     add_customization_menu();
+    add_other_tools_menu();
 
     SetMenuBar(m_menu_bar);
 };
