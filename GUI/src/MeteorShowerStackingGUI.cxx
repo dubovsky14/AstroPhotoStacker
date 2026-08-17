@@ -150,6 +150,7 @@ void MeteorShowerStackingGUI::add_list_of_clusters() {
 void MeteorShowerStackingGUI::update_cluster_list() {
     m_clusters_checkbox->Clear();
     m_cluster_id_to_index_in_gui.clear();
+    m_index_in_gui_to_cluster_id.clear();
 
     if (m_currently_displayed_frame == InputFrame()) {
         return;
@@ -516,6 +517,7 @@ void MeteorShowerStackingGUI::update_image_preview_file(size_t frame_index)  {
     const InputFrame frame = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).input_frame;
 
     m_currently_displayed_frame = frame;
+    update_cluster_list();
 
     m_image_preview->add_layer("cluster_mask",
                             [this, frame](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
@@ -538,10 +540,9 @@ void MeteorShowerStackingGUI::update_image_preview_file(size_t frame_index)  {
                             });
 
     m_image_preview->read_preview_from_frame(frame);
-
+    m_image_preview->update_additional_layers_data();
     m_image_preview->update_preview_bitmap();
     // now we need to update all cluster information
-    update_cluster_list();
 };
 
 

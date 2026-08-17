@@ -68,6 +68,7 @@ void MeteorShowerStackingTool::recalculate_clusters(const std::vector<InputFrame
         }, {1});
     }
     task_scheduler.wait_for_tasks();
+    m_tasks_processed = 0;
 };
 
 void MeteorShowerStackingTool::clear_buffer() {
