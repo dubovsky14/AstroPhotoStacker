@@ -14,7 +14,7 @@
 #include <memory>
 #include <vector>
 #include <string>
-
+#include <map>
 
 /**
  * @brief Frame (dialog window) for meteor shower stacking
@@ -62,7 +62,8 @@ class MeteorShowerStackingGUI : public wxFrame  {
         // cluster list
         void add_list_of_clusters();
         void update_cluster_list();
-        std::vector<std::pair<unsigned int,unsigned int>> m_cluster_id_to_index_in_gui;
+        std::map<unsigned int,unsigned int> m_cluster_id_to_index_in_gui;
+        std::map<unsigned int,unsigned int> m_index_in_gui_to_cluster_id;
         wxCheckListBox *m_clusters_checkbox = nullptr;
 
          // for fast search of clusters in the image in on-click events. Key point (x,y) of pixel, value is cluster index in cluster_info.clusters vector

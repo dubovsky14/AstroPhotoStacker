@@ -74,9 +74,6 @@ MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent, int n_cpus) :
             return;
         }
 
-        if (cluster_index < 0 || cluster_index >= int(m_cluster_id_to_index_in_gui.size())) {
-            return;
-        }
         select_unselect_cluster_from_preview(cluster_index);
     });
 
@@ -130,10 +127,10 @@ void MeteorShowerStackingGUI::update_clusters_in_preview()   {
 };
 
 bool MeteorShowerStackingGUI::select_unselect_cluster_from_preview(int index_in_cluster_info) {
-    if (index_in_cluster_info < 0 || index_in_cluster_info >= int(m_cluster_id_to_index_in_gui.size())) {
+    if (m_cluster_id_to_index_in_gui.find(index_in_cluster_info) == m_cluster_id_to_index_in_gui.end()) {
         return false;
     }
-    const int index_gui = m_cluster_id_to_index_in_gui[index_in_cluster_info].second;
+    const int index_gui = m_cluster_id_to_index_in_gui[index_in_cluster_info];
     const bool was_checked = m_clusters_checkbox->IsChecked(index_gui);
     m_meteor_shower_stacking_tool.set_cluster_selected(m_currently_displayed_frame, index_in_cluster_info, !was_checked);
     m_clusters_checkbox->Check(index_gui, !was_checked);
@@ -183,7 +180,8 @@ void MeteorShowerStackingGUI::update_cluster_list() {
         vector<string> cluster_labels = {cluster_id_label, cluster_size_label, cluster_excentricity_label, cluster_correlation_label};
         cluster_labels_cells.push_back(cluster_labels);
         cluster_selected.push_back(is_selected);
-        m_cluster_id_to_index_in_gui.push_back({i, cluster_labels_cells.size() - 1});
+        m_cluster_id_to_index_in_gui[i] = cluster_labels_cells.size() - 1;
+        m_index_in_gui_to_cluster_id[cluster_labels_cells.size() - 1] = i;
 
         for (const std::tuple<int,int> &pixel : cluster_info.clusters[i]) {
             const int x = std::get<0>(pixel);
@@ -205,18 +203,24 @@ void MeteorShowerStackingGUI::update_cluster_list() {
     }
 
     // on check/uncheck, update the cluster_info in m_meteor_shower_stacking_tool
-    m_clusters_checkbox->Bind(wxEVT_CHECKLISTBOX, [this, cluster_info](wxCommandEvent& event) {
-        const int index = event.GetInt();
-        if (index < 0 || index >= int(m_cluster_id_to_index_in_gui.size())) {
+    m_clusters_checkbox->Bind(wxEVT_CHECKLISTBOX, [this](wxCommandEvent& event) {
+        const int index_gui = event.GetInt();
+        if (m_index_in_gui_to_cluster_id.find(index_gui) == m_index_in_gui_to_cluster_id.end()) {
             return;
         }
-        const unsigned int cluster_id = m_cluster_id_to_index_in_gui[index].first;
-        const bool is_checked = m_clusters_checkbox->IsChecked(index);
-        m_meteor_shower_stacking_tool.set_cluster_selected(m_currently_displayed_frame, cluster_id, is_checked);
+        const int cluster_index = m_index_in_gui_to_cluster_id[index_gui];
+
+        FrameClusterInfo cluster_info = m_meteor_shower_stacking_tool.get_cluster_info(m_currently_displayed_frame);
+        const bool is_checked = m_clusters_checkbox->IsChecked(index_gui);
+        const bool was_checked = cluster_info.clusters_selected[cluster_index];
+        if (is_checked == was_checked) {
+            return; // no change
+        }
+        m_meteor_shower_stacking_tool.set_cluster_selected(m_currently_displayed_frame, cluster_index, is_checked);
+        update_clusters_in_preview();
     });
-
-
 };
+
 
 void MeteorShowerStackingGUI::add_cluster_buttons()  {
     m_cluster_buttons_sizer = new wxBoxSizer(wxHORIZONTAL);
