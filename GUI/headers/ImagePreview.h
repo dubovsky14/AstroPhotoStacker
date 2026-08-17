@@ -185,6 +185,13 @@ class ImagePreview {
 
         void update_additional_layers_data();
 
+        /**
+         * @brief Bind right click event to the image preview
+         *
+         * @param functor function to call on right click. The functor takes two float arguments: x and y coordinates in the original image coordinates
+        */
+        void bind_right_click_event(const std::function<void(int, int)> &functor);
+
     protected:
         wxWindow *m_parent = nullptr;
         wxGenericStaticBitmap                  *m_preview_bitmap       = nullptr;

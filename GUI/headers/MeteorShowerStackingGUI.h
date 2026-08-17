@@ -5,6 +5,7 @@
 #include "../headers/FilelistHandlerGUIInterface.h"
 #include "../../headers/MeteorShowerStackingTool.h"
 #include "../../headers/InputFrame.h"
+#include "../../headers/KDTree.h"
 
 
 #include <wx/wx.h>
@@ -53,6 +54,8 @@ class MeteorShowerStackingGUI : public wxFrame  {
         CombinedColorStrecherTool m_exposure_stretcher; // for exposure correction
         void add_exposure_correction_spin_ctrl();
         AstroPhotoStacker::InputFrame m_currently_displayed_frame;
+        void update_clusters_in_preview();
+        bool select_unselect_cluster_from_preview(int index_in_cluster_info);
 
         wxBoxSizer *m_top_right_sizer = nullptr;
 
@@ -61,6 +64,9 @@ class MeteorShowerStackingGUI : public wxFrame  {
         void update_cluster_list();
         std::vector<std::pair<unsigned int,unsigned int>> m_cluster_id_to_index_in_gui;
         wxCheckListBox *m_clusters_checkbox = nullptr;
+
+         // for fast search of clusters in the image in on-click events. Key point (x,y) of pixel, value is cluster index in cluster_info.clusters vector
+        std::unique_ptr<AstroPhotoStacker::KDTree<int,2,int>> m_cluster_kd_tree = nullptr;
 
         // cluster buttons
         void add_cluster_buttons();

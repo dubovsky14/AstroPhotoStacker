@@ -54,6 +54,31 @@ MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent, int n_cpus) :
         m_currently_displayed_frame = m_background_frame;
     }
 
+    // bind select/unselect cluster on click event
+    m_image_preview->bind_right_click_event([this](int x, int y) {
+        if (m_cluster_kd_tree == nullptr) {
+            return;
+        }
+        const array<int,2> query_point = {x, y};
+        vector<tuple<array<int, 2>, int>> nearest_neighbors = m_cluster_kd_tree->get_k_nearest_neighbors(query_point.data(), 1);
+        if (nearest_neighbors.empty()) {
+            return;
+        }
+        const int cluster_index = std::get<1>(nearest_neighbors[0]);
+
+        const std::array<int, 2> cluster_pixel = std::get<0>(nearest_neighbors[0]);
+        const int dx = cluster_pixel[0] - x;
+        const int dy = cluster_pixel[1] - y;
+        const int distance = sqrt(dx * dx + dy * dy);
+        if (distance > 20) {
+            return;
+        }
+
+        if (cluster_index < 0 || cluster_index >= int(m_cluster_id_to_index_in_gui.size())) {
+            return;
+        }
+        select_unselect_cluster_from_preview(cluster_index);
+    });
 
 
     m_upper_part_sizer_horizontal = new wxBoxSizer(wxHORIZONTAL);
@@ -99,6 +124,24 @@ void MeteorShowerStackingGUI::add_exposure_correction_spin_ctrl()   {
     m_exposure_correction_slider->add_sizer(m_image_preview_sizer, 0, wxEXPAND, 1);
 };
 
+void MeteorShowerStackingGUI::update_clusters_in_preview()   {
+    m_image_preview->update_additional_layers_data();
+    m_image_preview->update_preview_bitmap();
+};
+
+bool MeteorShowerStackingGUI::select_unselect_cluster_from_preview(int index_in_cluster_info) {
+    if (index_in_cluster_info < 0 || index_in_cluster_info >= int(m_cluster_id_to_index_in_gui.size())) {
+        return false;
+    }
+    const int index_gui = m_cluster_id_to_index_in_gui[index_in_cluster_info].second;
+    const bool was_checked = m_clusters_checkbox->IsChecked(index_gui);
+    m_meteor_shower_stacking_tool.set_cluster_selected(m_currently_displayed_frame, index_in_cluster_info, !was_checked);
+    m_clusters_checkbox->Check(index_gui, !was_checked);
+    m_clusters_checkbox->SetSelection(index_gui);
+    update_clusters_in_preview();
+    return !was_checked;
+};
+
 void MeteorShowerStackingGUI::add_list_of_clusters() {
     m_clusters_checkbox = new wxCheckListBox(this, wxID_ANY);
 
@@ -118,6 +161,7 @@ void MeteorShowerStackingGUI::update_cluster_list() {
     FrameClusterInfo cluster_info = m_meteor_shower_stacking_tool.get_cluster_info(m_currently_displayed_frame);
     vector<vector<string>> cluster_labels_cells;
     vector<bool> cluster_selected;
+    m_cluster_kd_tree = make_unique<KDTree<int,2,int>>();
     for (unsigned int i = 0; i < cluster_info.clusters.size(); ++i) {
         const unsigned int cluster_size = cluster_info.clusters[i].size();
         const float excentricity = cluster_info.clusters_excentricity[i];
@@ -140,7 +184,14 @@ void MeteorShowerStackingGUI::update_cluster_list() {
         cluster_labels_cells.push_back(cluster_labels);
         cluster_selected.push_back(is_selected);
         m_cluster_id_to_index_in_gui.push_back({i, cluster_labels_cells.size() - 1});
+
+        for (const std::tuple<int,int> &pixel : cluster_info.clusters[i]) {
+            const int x = std::get<0>(pixel);
+            const int y = std::get<1>(pixel);
+            m_cluster_kd_tree->add_point({x,y}, i);
+        }
     }
+    m_cluster_kd_tree->build_tree_structure();
 
     vector<string> cluster_labels_formated = get_formated_table(cluster_labels_cells, 4*" "s);
     vector<wxString> cluster_labels_wx;
@@ -187,9 +238,7 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
         else {
             m_button_show_cluster->SetLabel("Show clusters");
         }
-
-        m_image_preview->update_additional_layers_data();
-        m_image_preview->update_preview_bitmap();
+        update_clusters_in_preview();
     });
 
     m_button_recalculate_clusters = add_button("Recalculate clusters", [this]() {
