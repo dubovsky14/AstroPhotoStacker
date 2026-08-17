@@ -74,8 +74,10 @@ class MeteorShowerStackingGUI : public wxFrame  {
         void add_cluster_settings();
         std::unique_ptr<FloatingPointSlider> m_cluster_threshold_slider   = nullptr;
         std::unique_ptr<FloatingPointSlider> m_cluster_excentricity_slider   = nullptr;
-        float m_cluster_threshold = 0.001;
+        std::unique_ptr<FloatingPointSlider> m_cluster_correlation_slider   = nullptr;
+        float m_cluster_threshold = 0.01;
         float m_cluster_excentricity = 10.0;
+        float m_cluster_correlation = 0.5;
 
 
         // buttons

@@ -127,11 +127,16 @@ void MeteorShowerStackingGUI::update_cluster_list() {
             continue; // skip clusters with excentricity above the threshold
         }
 
+        if (abs(cluster_info.clusters_correlation[i]) < m_cluster_correlation) {
+            continue; // skip clusters with correlation below the threshold
+        }
+
         const std::string cluster_id_label = "Cluster #" + std::to_string(i);
         const std::string cluster_size_label = "Size: " + std::to_string(cluster_size);
         const std::string cluster_excentricity_label = "Excentricity: " + std::to_string(excentricity);
+        const std::string cluster_correlation_label = "Correlation: " + std::to_string(cluster_info.clusters_correlation[i]);
 
-        vector<string> cluster_labels = {cluster_id_label, cluster_size_label, cluster_excentricity_label};
+        vector<string> cluster_labels = {cluster_id_label, cluster_size_label, cluster_excentricity_label, cluster_correlation_label};
         cluster_labels_cells.push_back(cluster_labels);
         cluster_selected.push_back(is_selected);
         m_cluster_id_to_index_in_gui.push_back({i, cluster_labels_cells.size() - 1});
@@ -182,6 +187,8 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
         else {
             m_button_show_cluster->SetLabel("Show clusters");
         }
+
+        m_image_preview->update_additional_layers_data();
         m_image_preview->update_preview_bitmap();
     });
 
@@ -218,7 +225,7 @@ void MeteorShowerStackingGUI::add_cluster_settings() {
         this,
         "Cluster threshold: ",
         0.0,
-        0.2,
+        0.3,
         m_cluster_threshold,
         0.0002,
         4,
@@ -241,6 +248,20 @@ void MeteorShowerStackingGUI::add_cluster_settings() {
         }
     );
     m_cluster_excentricity_slider->add_sizer(m_top_right_sizer, 0, wxEXPAND, 1);
+
+    m_cluster_correlation_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Cluster correlation: ",
+        0.0,
+        1.0,
+        m_cluster_correlation,
+        0.001,
+        3,
+        [this](float value){
+            m_cluster_correlation = value;
+        }
+    );
+    m_cluster_correlation_slider->add_sizer(m_top_right_sizer, 0, wxEXPAND, 1);
 };
 
 void MeteorShowerStackingGUI::add_buttons()  {

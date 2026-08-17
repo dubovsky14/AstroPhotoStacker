@@ -77,6 +77,25 @@ float PhotoRanker::get_cluster_excentricity(const std::vector<std::tuple<int,int
     return abs(max_radius - radius_ideal_circle);
 };
 
+float PhotoRanker::get_cluster_correlation(const std::vector<std::tuple<int,int>> &cluster) {
+    using namespace MyTupleArithmetics;
+    const std::tuple<float,float> center_of_cluster = get_center_of_cluster(cluster);
+    float sum_xy(0), sum_x_squared(0), sum_y_squared(0);
+    for (const auto &pixel : cluster)   {
+        const tuple<float,float> pixel_relative_to_center = pixel - center_of_cluster;
+        const float x = std::get<0>(pixel_relative_to_center);
+        const float y = std::get<1>(pixel_relative_to_center);
+        sum_xy += x * y;
+        sum_x_squared += x * x;
+        sum_y_squared += y * y;
+    }
+    sum_xy /= cluster.size();
+    sum_x_squared /= cluster.size();
+    sum_y_squared /= cluster.size();
+
+    const float correlation = sum_xy / sqrt(sum_x_squared * sum_y_squared);
+    return correlation;
+};
 
 std::vector<std::tuple<InputFrame,float>> PhotoRanker::get_ranking() const {
     std::vector<std::tuple<InputFrame,float>> result;

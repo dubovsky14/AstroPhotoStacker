@@ -53,6 +53,7 @@ void MeteorShowerStackingTool::recalculate_clusters(const InputFrame &frame, flo
     for (const std::vector<std::tuple<int, int> > &cluster : clusters) {
         cluster_info.clusters_selected.push_back(false);
         cluster_info.clusters_excentricity.push_back(PhotoRanker::get_cluster_excentricity(cluster));
+        cluster_info.clusters_correlation.push_back(PhotoRanker::get_cluster_correlation(cluster));
     }
     m_frame_clusters_map[frame] = cluster_info;
 };

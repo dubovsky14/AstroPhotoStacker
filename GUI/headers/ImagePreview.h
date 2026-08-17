@@ -183,6 +183,8 @@ class ImagePreview {
         */
         void remove_layer(const std::string &layer_name);
 
+        void update_additional_layers_data();
+
     protected:
         wxWindow *m_parent = nullptr;
         wxGenericStaticBitmap                  *m_preview_bitmap       = nullptr;
@@ -221,8 +223,6 @@ class ImagePreview {
         wxImage get_updated_wximage() const;
 
         void bind_shift_events();
-
-        void update_additional_layers_data();
 
         int get_interpolated_original_image_data(const std::vector<PixelType> &original_image_channel_data, float x, float y) const;
 

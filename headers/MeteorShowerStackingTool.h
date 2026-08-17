@@ -12,6 +12,7 @@ namespace AstroPhotoStacker {
         std::vector< std::vector<std::tuple<int, int> > > clusters;
         std::vector<bool> clusters_selected;
         std::vector<float> clusters_excentricity;
+        std::vector<float> clusters_correlation;
 
         float cluster_fraction_threshold = 0.0;
     };

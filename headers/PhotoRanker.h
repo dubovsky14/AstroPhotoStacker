@@ -49,6 +49,15 @@ namespace AstroPhotoStacker     {
             */
             static float get_cluster_excentricity(const std::vector<std::tuple<int,int>> &cluster);
 
+
+            /**
+             * @brief Calculate correlation between x and y coordinates of a cluster
+             *
+             * @param clusters - stars
+             * @return float - correlation
+            */
+            static float get_cluster_correlation(const std::vector<std::tuple<int,int>> &cluster);
+
             /**
              * @brief Get the ranking of all frames
              *
