@@ -412,6 +412,19 @@ void MyFrame::add_other_tools_menu()    {
     int id = unique_counter();
     other_tools_menu->Append(id, "Meteor shower stacking", "Meteor shower stacking");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        update_checked_files_in_filelist();
+        const bool frames_aligned = m_filelist_handler_gui_interface.all_checked_frames_are_aligned();
+        if (!frames_aligned) {
+            wxMessageDialog dialog(this, "Please align the files first!", "Files not aligned");
+            if (dialog.ShowModal() == wxID_YES) {
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, static_cast<StackSettings *>(m_stack_settings.get()));
+                select_alignment_window->Show(true);
+            }
+            else {
+                return;
+            }
+        }
+
         MeteorShowerStackingGUI *meteor_shower_stacking_gui = new MeteorShowerStackingGUI(this, m_stack_settings->get_n_cpus());
         meteor_shower_stacking_gui->Show(true);
     }, id);

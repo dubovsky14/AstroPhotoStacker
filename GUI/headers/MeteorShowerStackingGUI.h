@@ -43,7 +43,7 @@ class MeteorShowerStackingGUI : public wxFrame  {
         wxBoxSizer *m_main_vertical_sizer = nullptr;
         wxBoxSizer *m_upper_part_sizer_horizontal = nullptr;
 
-        AstroPhotoStacker::InputFrame get_reference_frame() const;
+        AstroPhotoStacker::FrameAndGroup get_reference_frame() const;
 
 
 
@@ -53,7 +53,7 @@ class MeteorShowerStackingGUI : public wxFrame  {
         std::unique_ptr<FloatingPointSlider> m_exposure_correction_slider   = nullptr;
         CombinedColorStrecherTool m_exposure_stretcher; // for exposure correction
         void add_exposure_correction_spin_ctrl();
-        AstroPhotoStacker::InputFrame m_currently_displayed_frame;
+        AstroPhotoStacker::FrameAndGroup m_currently_displayed_frame;
         void update_clusters_in_preview();
         bool select_unselect_cluster_from_preview(int index_in_cluster_info);
 
@@ -97,11 +97,11 @@ class MeteorShowerStackingGUI : public wxFrame  {
         wxButton *m_button_save_stacked_image = nullptr;
 
         // background frame selection
-        AstroPhotoStacker::InputFrame m_background_frame;
+        AstroPhotoStacker::FrameAndGroup m_background_frame;
         void add_background_frame_selector();
-        std::vector<int>                            m_indices_frames_to_align;
-        std::vector<AstroPhotoStacker::InputFrame>  m_available_light_frames;
-        std::vector<wxString>                       m_available_light_frames_strings;
+        std::vector<int>                                m_indices_frames_to_align;
+        std::vector<AstroPhotoStacker::FrameAndGroup>   m_available_light_frames;
+        std::vector<wxString>                           m_available_light_frames_strings;
 
         // filelist
         FilelistHandlerGUIInterface m_filelist_handler_gui_interface;

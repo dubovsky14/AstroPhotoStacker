@@ -79,6 +79,10 @@ class MyFrame : public wxFrame  {
             return m_hot_pixel_identifier.get();
         };
 
+        const RecentPathsHandler &get_recent_paths_handler() const {
+            return *m_recent_paths_handler;
+        };
+
     private:
 
         void add_file_menu();

@@ -9,6 +9,8 @@
 #include "../../headers/AlignedImagesProducer.h"
 #include "../../headers/CalibrationFrameBase.h"
 #include "../../headers/PhotoAlignmentHandler.h"
+#include "../../headers/ImageFilesInputOutput.h"
+#include "../../headers/Common.h"
 
 
 #include "../headers/MainFrame.h"
@@ -48,8 +50,8 @@ MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent, int n_cpus) :
     m_image_preview->set_stretcher(&m_exposure_stretcher);
 
     m_background_frame = get_reference_frame();
-    if (m_background_frame != InputFrame()) {
-        m_image_preview->read_preview_from_frame(m_background_frame);
+    if (m_background_frame != FrameAndGroup()) {
+        m_image_preview->read_preview_from_frame(m_background_frame.input_frame);
         m_image_preview->update_preview_bitmap();
         m_currently_displayed_frame = m_background_frame;
     }
@@ -152,7 +154,7 @@ void MeteorShowerStackingGUI::update_cluster_list() {
     m_cluster_id_to_index_in_gui.clear();
     m_index_in_gui_to_cluster_id.clear();
 
-    if (m_currently_displayed_frame == InputFrame()) {
+    if (m_currently_displayed_frame == FrameAndGroup()) {
         return;
     }
 
@@ -252,9 +254,12 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
     });
 
     m_button_recalculate_clusters_for_all_images = add_button("Recalculate clusters for all images", [this]() {
-        vector<InputFrame> frames_to_process;
+        vector<FrameAndGroup> frames_to_process;
         for (const FrameInfo &frame_info : m_filelist_handler_gui_interface.get_checked_frames_of_type(FrameType::LIGHT)) {
-            frames_to_process.push_back(frame_info.input_frame);
+            FrameAndGroup frame_and_group;
+            frame_and_group.input_frame = frame_info.input_frame;
+            frame_and_group.group_number = frame_info.group_number;
+            frames_to_process.push_back(frame_and_group);
         }
         const int tasks_total = frames_to_process.size();
         const std::atomic<int> &tasks_processed = m_meteor_shower_stacking_tool.get_tasks_processed();
@@ -364,27 +369,50 @@ void MeteorShowerStackingGUI::add_buttons()  {
     });
 
     m_button_stack = add_button("Stack files", [this]() {
-        cout << "Stacking files..." << endl;
-        cout << "Background frame: " << m_background_frame.to_string() << endl;
+        m_meteor_shower_stacking_tool.stack_frames(m_filelist_handler_gui_interface, m_background_frame);
     });
 
     m_button_show_stacked_image = add_button("Show stacked image", [this]() {
-        cout << "Showing stacked image..." << endl;
+        int width, height;
+        const std::vector<std::vector<float>> &stacked_image = m_meteor_shower_stacking_tool.get_stacked_image(&width, &height);
+        const vector<vector<double>> stacked_image_double = convert_vector_2d<float,double>(stacked_image);
+        m_image_preview->read_preview_from_stacked_image(stacked_image_double, width, height);
+        m_image_preview->update_preview_bitmap();
+        m_currently_displayed_frame = FrameAndGroup();
     });
 
     m_button_save_stacked_image = add_button("Save stacked image", [this]() {
-        cout << "Saving stacked image..." << endl;
+        int width, height;
+        const std::vector<std::vector<float>> &stacked_image_float = m_meteor_shower_stacking_tool.get_stacked_image(&width, &height);
+
+        const vector<vector<double>> stacked_image_double = convert_vector_2d<float,double>(stacked_image_float);
+        const std::string default_path = m_parent->get_recent_paths_handler().get_recent_file_path(FrameType::LIGHT, "");
+        wxFileDialog dialog(this, "Save stacked file", "", default_path, "*['.tif']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        if (dialog.ShowModal() == wxID_OK) {
+            std::string file_address = dialog.GetPath().ToStdString();
+
+            // if the extension is not .tif, add it
+            if (file_address.substr(file_address.size()-4) != ".tif") {
+                file_address += ".tif";
+            }
+
+            AstroPhotoStacker::StackerBase::save_stacked_photo(file_address,
+                                            stacked_image_double,
+                                            width,
+                                            height,
+                                            CV_16UC3);
+        }
     });
 };
 
-InputFrame MeteorShowerStackingGUI::get_reference_frame() const  {
+FrameAndGroup MeteorShowerStackingGUI::get_reference_frame() const  {
     const FilelistHandlerGUIInterface *filelist_handler_gui_interface = &m_parent->get_filelist_handler_gui_interface();
 
     // Light frames
     const vector<FrameInfo>    light_frames = filelist_handler_gui_interface->get_checked_frames_of_type(FrameType::LIGHT);
     double min_distance = 1e20;
     const float x_orig(3000), y_orig(2000);
-    InputFrame best_frame;
+    FrameAndGroup best_frame;
     for (const FrameInfo &frame_info : light_frames) {
         const InputFrame &frame                     = frame_info.input_frame;
         const AlignmentResultBase &alignment_result = *frame_info.alignment_result;
@@ -394,14 +422,15 @@ InputFrame MeteorShowerStackingGUI::get_reference_frame() const  {
         const double distance = (x - x_orig) * (x - x_orig) + (y - y_orig) * (y - y_orig);
         if (distance < min_distance) {
             min_distance = distance;
-            best_frame = frame;
+            best_frame.input_frame = frame;
+            best_frame.group_number = frame_info.group_number;
         }
     }
     if (min_distance < 1e19) {
         return best_frame;
     }
 
-    return InputFrame();
+    return FrameAndGroup();
 };
 
 void MeteorShowerStackingGUI::add_background_frame_selector() {
@@ -425,9 +454,12 @@ void MeteorShowerStackingGUI::add_background_frame_selector() {
             m_available_light_frames_strings.push_back(light_frames[i].second.input_frame.to_gui_string(show_full_frame_paths));
         }
         m_indices_frames_to_align.push_back(i);
-        m_available_light_frames.push_back(light_frames[i].second.input_frame);
+        FrameAndGroup frame_and_group;
+        frame_and_group.input_frame = light_frames[i].second.input_frame;
+        frame_and_group.group_number = light_frames[i].second.group_number;
+        m_available_light_frames.push_back(frame_and_group);
 
-        if (light_frames[i].second.input_frame == m_background_frame) {
+        if (frame_and_group == m_background_frame) {
             current_selection = i;
         }
     }
@@ -514,16 +546,18 @@ void MeteorShowerStackingGUI::update_image_preview_file(size_t frame_index)  {
     if (frame_index >= m_filelist_handler_gui_interface.get_number_of_shown_frames()) {
         return;
     }
-    const InputFrame frame = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).input_frame;
+    FrameAndGroup frame_and_group;
+    frame_and_group.input_frame = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).input_frame;
+    frame_and_group.group_number = m_filelist_handler_gui_interface.get_frame_by_index(frame_index).group_number;
 
-    m_currently_displayed_frame = frame;
+    m_currently_displayed_frame = frame_and_group;
     update_cluster_list();
 
     m_image_preview->add_layer("cluster_mask",
-                            [this, frame](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
+                            [this, frame_and_group](std::vector<std::vector<PixelType>> *image_data, int width, int height) {
                                 if (!m_show_clusters) return;
 
-                                FrameClusterInfo cluster_info = m_meteor_shower_stacking_tool.get_cluster_info(frame);
+                                FrameClusterInfo cluster_info = m_meteor_shower_stacking_tool.get_cluster_info(frame_and_group);
                                 for (const auto &[i_cluster, i_cluster_gui] : m_cluster_id_to_index_in_gui) {
 
                                     for (const auto &pixel : cluster_info.clusters[i_cluster]) {
@@ -539,7 +573,7 @@ void MeteorShowerStackingGUI::update_image_preview_file(size_t frame_index)  {
                                 }
                             });
 
-    m_image_preview->read_preview_from_frame(frame);
+    m_image_preview->read_preview_from_frame(frame_and_group.input_frame);
     m_image_preview->update_additional_layers_data();
     m_image_preview->update_preview_bitmap();
     // now we need to update all cluster information
