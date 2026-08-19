@@ -56,6 +56,8 @@ class MeteorShowerStackingGUI : public wxFrame  {
         AstroPhotoStacker::FrameAndGroup m_currently_displayed_frame;
         void update_clusters_in_preview();
         bool select_unselect_cluster_from_preview(int index_in_cluster_info);
+        bool m_current_preview_is_stack = false;
+        int  m_previously_selected_frame_index = -1;
 
         wxBoxSizer *m_top_right_sizer = nullptr;
 

@@ -373,12 +373,24 @@ void MeteorShowerStackingGUI::add_buttons()  {
     });
 
     m_button_show_stacked_image = add_button("Show stacked image", [this]() {
-        int width, height;
-        const std::vector<std::vector<float>> &stacked_image = m_meteor_shower_stacking_tool.get_stacked_image(&width, &height);
-        const vector<vector<double>> stacked_image_double = convert_vector_2d<float,double>(stacked_image);
-        m_image_preview->read_preview_from_stacked_image(stacked_image_double, width, height);
-        m_image_preview->update_preview_bitmap();
-        m_currently_displayed_frame = FrameAndGroup();
+        if (m_current_preview_is_stack) {
+            if (m_previously_selected_frame_index < 0)  {
+                return;
+            }
+            update_image_preview_file(m_previously_selected_frame_index);
+            m_current_preview_is_stack = false;
+            m_button_show_stacked_image->SetLabel("Show stacked image");
+        }
+        else {
+            int width, height;
+            const std::vector<std::vector<float>> &stacked_image = m_meteor_shower_stacking_tool.get_stacked_image(&width, &height);
+            const vector<vector<double>> stacked_image_double = convert_vector_2d<float,double>(stacked_image);
+            m_image_preview->read_preview_from_stacked_image(stacked_image_double, width, height);
+            m_image_preview->update_preview_bitmap();
+            m_currently_displayed_frame = FrameAndGroup();
+            m_current_preview_is_stack = true;
+            m_button_show_stacked_image->SetLabel("Show original image");
+        }
     });
 
     m_button_save_stacked_image = add_button("Save stacked image", [this]() {
@@ -576,7 +588,15 @@ void MeteorShowerStackingGUI::update_image_preview_file(size_t frame_index)  {
     m_image_preview->read_preview_from_frame(frame_and_group.input_frame);
     m_image_preview->update_additional_layers_data();
     m_image_preview->update_preview_bitmap();
-    // now we need to update all cluster information
+
+    FrameClusterInfo cluster_info = m_meteor_shower_stacking_tool.get_cluster_info(frame_and_group);
+    const float threshold = cluster_info.cluster_fraction_threshold;
+    if (threshold > 0)  {
+        m_cluster_threshold_slider->set_value(threshold);
+    }
+    m_previously_selected_frame_index = frame_index;
+    m_button_show_stacked_image->SetLabel("Show stacked image");
+    m_current_preview_is_stack = false;
 };
 
 

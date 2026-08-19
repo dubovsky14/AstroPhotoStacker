@@ -58,6 +58,7 @@ void MeteorShowerStackingTool::recalculate_clusters(const FrameAndGroup &frame, 
         cluster_info.clusters_selected.push_back(false);
         cluster_info.clusters_excentricity.push_back(PhotoRanker::get_cluster_excentricity(cluster));
         cluster_info.clusters_correlation.push_back(PhotoRanker::get_cluster_correlation(cluster));
+        cluster_info.cluster_fraction_threshold = cluster_fraction_threshold;
     }
     m_frame_clusters_map[frame] = cluster_info;
 };
@@ -171,7 +172,8 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
             float y = get<1>(pixel);
 
             // transform to reference frame
-            alignment.transform_from_reference_to_shifted_frame(&x, &y);
+            //alignment.transform_from_reference_to_shifted_frame(&x, &y);
+            alignment.transform_to_reference_frame(&x, &y);
             int x_int = int(x);
             int y_int = int(y);
             if (x_int >= 0 && x_int < width && y_int >= 0 && y_int < height) {
@@ -182,7 +184,9 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
         }
     }
 
-    const float smearing_radius = 5.;
+    const float smearing_radius = 8.;
+    const float cluster_radius = 3.;
+    const float radius_diff = smearing_radius - cluster_radius;
     vector<float> scale_factor_mask(width*height, 0);
 
     for (const std::pair<int,int> &pixel_in_cluster : pixels_in_clusters)    {
@@ -207,9 +211,13 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
                 if (r > smearing_radius)    {
                     continue;
                 }
-
-                const float this_sf = (smearing_radius-r)/smearing_radius;
-                scale_factor_mask[index] = std::max<float>(scale_factor_mask[index], this_sf);
+                else if (r < cluster_radius) {
+                    scale_factor_mask[index] = 1.;
+                }
+                else {
+                    const float this_sf = (smearing_radius -r)/radius_diff ;
+                    scale_factor_mask[index] = std::max<float>(scale_factor_mask[index], this_sf);
+                }
             }
         }
     }

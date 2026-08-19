@@ -21,14 +21,15 @@ FloatingPointSlider::FloatingPointSlider(   wxWindow *parent,
         }
     }
 
-    const float ten_power_n_decimals = pow(10, n_decimals);
+    m_ten_power_n_decimals = pow(10, n_decimals);
+    m_label = label;
+    m_n_decimals = n_decimals;
     const wxString label_with_value = label + get_rounded_value(initial_value + (initial_value > 0 ? 0.00001 : -0.00001), n_decimals);
     m_text = new wxStaticText(parent, wxID_ANY, label_with_value);
-    m_slider = new wxSlider(parent, wxID_ANY, initial_value*ten_power_n_decimals, min_value*ten_power_n_decimals, max_value*ten_power_n_decimals, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
-    m_slider->Bind(wxEVT_SLIDER, [this, ten_power_n_decimals, label, n_decimals, callback](wxCommandEvent&){
-        const float value = m_slider->GetValue()/ten_power_n_decimals;
-        const std::string new_label = label + get_rounded_value(value + (value > 0 ? 0.00001 : -0.00001), n_decimals);
-        m_text->SetLabel(new_label);
+    m_slider = new wxSlider(parent, wxID_ANY, initial_value*m_ten_power_n_decimals, min_value*m_ten_power_n_decimals, max_value*m_ten_power_n_decimals, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL);
+    m_slider->Bind(wxEVT_SLIDER, [this, callback](wxCommandEvent&){
+        const float value = m_slider->GetValue()/m_ten_power_n_decimals;
+        m_text->SetLabel(get_text(value));
         callback(value);
     });
 };
@@ -44,6 +45,15 @@ FloatingPointSlider::~FloatingPointSlider() {
 void FloatingPointSlider::set_tool_tip(const std::string &tooltip)   {
     m_slider->SetToolTip(tooltip);
 };
+
+void FloatingPointSlider::set_value(float value) {
+    m_slider->SetValue(value*m_ten_power_n_decimals);
+    m_text->SetLabel(get_text(value));
+};
+
+float FloatingPointSlider::get_value()  const {
+    return m_slider->GetValue()/m_ten_power_n_decimals;
+}
 
 void FloatingPointSlider::hide()    {
     m_text->Hide();
@@ -64,4 +74,8 @@ void FloatingPointSlider::add_sizer(wxSizer *sizer, int proportion, int flag, in
 void FloatingPointSlider::detach_sizer(wxSizer *sizer)   {
     sizer->Detach(m_text);
     sizer->Detach(m_slider);
+};
+
+std::string   FloatingPointSlider::get_text(float value) const {
+    return m_label + get_rounded_value(value + (value > 0 ? 0.00001 : -0.00001), m_n_decimals);
 };

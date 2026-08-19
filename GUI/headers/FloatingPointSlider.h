@@ -23,6 +23,10 @@ class FloatingPointSlider {
 
         void set_tool_tip(const std::string &tooltip);
 
+        void set_value(float value);
+
+        float get_value() const;
+
         void hide();
 
         void show();
@@ -36,4 +40,9 @@ class FloatingPointSlider {
         wxSlider        *m_slider = nullptr;
 
         wxSizer         *m_parent_sizer = nullptr;
+        float           m_ten_power_n_decimals;
+        std::string     m_label;
+        int             m_n_decimals;
+
+        std::string     get_text(float value) const;
 };
