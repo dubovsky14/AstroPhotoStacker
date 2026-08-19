@@ -110,7 +110,11 @@ void MyFrame::add_file_menu()  {
 
     id = unique_counter();
     m_file_menu->Append(id, "Save stacked file", "Save stacked file");
-    Bind(wxEVT_MENU, &MyFrame::on_save_stacked, this, id);
+    Bind(wxEVT_MENU,  &MyFrame::save_stacked_with_post_process, this, id);
+
+    id = unique_counter();
+    m_file_menu->Append(id, "Save stacked file without post-processing", "Save stacked file without post-processing");
+    Bind(wxEVT_MENU,  &MyFrame::save_stacked_without_post_process, this, id);
 
     id = unique_counter();
     m_file_menu->Append(id, "Save selected files as FIT", "Save selected files as FIT");
@@ -1372,7 +1376,7 @@ void MyFrame::on_open_darks(wxCommandEvent& event)    {
     on_open_frames(event, FrameType::DARK, "Open dark frames");
 }
 
-void MyFrame::on_save_stacked(wxCommandEvent& event) {
+void MyFrame::save_stacked(wxCommandEvent& event, bool post_process) {
     const bool has_stacked_image = m_stacker != nullptr ? !m_stacker->get_stacked_image().empty() : false;
     if (!has_stacked_image) {
         wxMessageDialog dialog(this, "Files have not been stacked yet!", "Frames not stacked");
@@ -1395,18 +1399,28 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
 
 
         std::vector<std::vector<double> > stacked_image = m_stacker->get_stacked_image();
-
-        if (m_stack_settings->apply_color_stretching()) {
-            m_color_stretcher.stretch_image(&stacked_image, pow(2,15)-1, false);
+        if (!post_process)  {
+            // we still need to multiply it by 2
+            for (std::vector<double> &color_channel : stacked_image)    {
+                for (double &value : color_channel) {
+                    value *= 2;
+                }
+            }
+            create_color_image(&stacked_image.at(0)[0], &stacked_image.at(1)[0], &stacked_image.at(2)[0] , m_stacker->get_width(), m_stacker->get_height(), file_address, CV_16UC3);
         }
+        else {
+            if (m_stack_settings->apply_color_stretching()) {
+                m_color_stretcher.stretch_image(&stacked_image, pow(2,15)-1, false);
+            }
 
-        stacked_image = m_post_processing_tool.post_process_image(stacked_image, m_stacker->get_width(), m_stacker->get_height());
+            stacked_image = m_post_processing_tool.post_process_image(stacked_image, m_stacker->get_width(), m_stacker->get_height());
 
-        AstroPhotoStacker::StackerBase::save_stacked_photo(file_address,
-                                        stacked_image,
-                                        m_stacker->get_width(),
-                                        m_stacker->get_height(),
-                                        CV_16UC3);
+            AstroPhotoStacker::StackerBase::save_stacked_photo(file_address,
+                                            stacked_image,
+                                            m_stacker->get_width(),
+                                            m_stacker->get_height(),
+                                            CV_16UC3);
+        }
 
         if (m_summary_yaml_creator) {
             m_summary_yaml_creator->create_and_save_yaml_file(file_address + ".yaml", &m_post_processing_tool);
@@ -1415,6 +1429,13 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
     }
 };
 
+void MyFrame::save_stacked_with_post_process(wxCommandEvent& event) {
+    save_stacked(event, true);
+};
+
+void MyFrame::save_stacked_without_post_process(wxCommandEvent& event) {
+    save_stacked(event, false);
+};
 
 void MyFrame::on_save_selected_as_fit(wxCommandEvent& event) {
 

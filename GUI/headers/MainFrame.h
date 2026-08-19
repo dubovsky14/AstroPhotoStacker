@@ -194,7 +194,9 @@ class MyFrame : public wxFrame  {
         void on_open_darks (wxCommandEvent& event);
         std::unique_ptr<RecentPathsHandler> m_recent_paths_handler = nullptr;
 
-        void on_save_stacked(wxCommandEvent& event);
+        void save_stacked(wxCommandEvent& event, bool post_process);
+        void save_stacked_with_post_process(wxCommandEvent& event);
+        void save_stacked_without_post_process(wxCommandEvent& event);
         void on_save_selected_as_fit(wxCommandEvent& event);
         void on_exit(wxCommandEvent& event);
 
