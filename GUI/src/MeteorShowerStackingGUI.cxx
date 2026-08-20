@@ -251,6 +251,7 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
     m_button_recalculate_clusters = add_button("Recalculate clusters", [this]() {
         m_meteor_shower_stacking_tool.recalculate_clusters(m_currently_displayed_frame, m_cluster_threshold, true);
         update_cluster_list();
+        update_image_preview_file(m_previously_selected_frame_index);
     });
 
     m_button_recalculate_clusters_for_all_images = add_button("Recalculate clusters for all images", [this]() {
@@ -273,6 +274,7 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
                                 },
                                 "");
         update_cluster_list();
+        update_image_preview_file(m_previously_selected_frame_index);
     });
 };
 

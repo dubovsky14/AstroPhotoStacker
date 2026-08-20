@@ -158,38 +158,48 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
     const int width = frame_reader.get_width();
     const int height = frame_reader.get_height();
     vector<bool> selected_pixels_mask(width*height, 0);
-    vector<pair<int,int>> pixels_in_clusters;
+    vector<pair<int,int>> pixels_in_clusters_background_frame_coordinates;
 
     FrameClusterInfo frame_cluster_info = m_frame_clusters_map.at(frame);
 
+    vector<bool> cluster_mask_original_coordinates(width*height, false);
     for (unsigned int i_cluster = 0; i_cluster < frame_cluster_info.clusters.size(); i_cluster++)   {
         if (!frame_cluster_info.clusters_selected[i_cluster]) {
             continue;
         }
 
         for (const tuple<int, int> &pixel : frame_cluster_info.clusters[i_cluster])   {
-            float x = get<0>(pixel);
-            float y = get<1>(pixel);
+            int x = get<0>(pixel);
+            int y = get<1>(pixel);
+            cluster_mask_original_coordinates[y*width + x] = true;
+        }
+    }
 
-            // transform to reference frame
-            //alignment.transform_from_reference_to_shifted_frame(&x, &y);
-            alignment.transform_to_reference_frame(&x, &y);
-            int x_int = int(x);
-            int y_int = int(y);
-            if (x_int >= 0 && x_int < width && y_int >= 0 && y_int < height) {
-                const unsigned int index_shifted = y_int*width + x_int;
-                selected_pixels_mask[index_shifted] = true;
-                pixels_in_clusters.push_back({x_int,y_int});
+    // the same pixel from this frame might end-up in multiple pixels of background frame, that's why we have do the mapping this way
+    for (int y = 0; y < m_stacked_result_height; y++)    {
+        for (int x = 0; x < m_stacked_result_width; x++) {
+            float y_this_frame_coordinates = y;
+            float x_this_frame_coordinates = x;
+            alignment.transform_from_reference_to_shifted_frame(&x_this_frame_coordinates, &y_this_frame_coordinates);
+            if (x_this_frame_coordinates < 0 || x_this_frame_coordinates >= width)    continue;
+            if (y_this_frame_coordinates < 0 || y_this_frame_coordinates >= height)   continue;
+
+            const int index_this_frame_coordinates = int(y_this_frame_coordinates)*width + int(x_this_frame_coordinates);
+            const int index_background_frame_coordinates = y*m_stacked_result_width + x;
+            if (cluster_mask_original_coordinates[index_this_frame_coordinates])   {
+                selected_pixels_mask[index_background_frame_coordinates] = true;
+                pixels_in_clusters_background_frame_coordinates.push_back({x,y});
             }
         }
     }
+
 
     const float smearing_radius = 8.;
     const float cluster_radius = 3.;
     const float radius_diff = smearing_radius - cluster_radius;
     vector<float> scale_factor_mask(width*height, 0);
 
-    for (const std::pair<int,int> &pixel_in_cluster : pixels_in_clusters)    {
+    for (const std::pair<int,int> &pixel_in_cluster : pixels_in_clusters_background_frame_coordinates)    {
         const int x = pixel_in_cluster.first;
         const int y = pixel_in_cluster.second;
 
