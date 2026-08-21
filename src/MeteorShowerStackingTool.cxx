@@ -29,7 +29,7 @@ void MeteorShowerStackingTool::set_cluster_selected(const FrameAndGroup &frame, 
     }
 };
 
-void MeteorShowerStackingTool::recalculate_clusters(const FrameAndGroup &frame, float cluster_fraction_threshold, bool buffer_brightness)  {
+void MeteorShowerStackingTool::recalculate_clusters(const FrameAndGroup &frame, float cluster_fraction_threshold, float minimal_excentricity, float minimal_eigenval_ratio, bool buffer_brightness)  {
     std::vector< std::vector<std::tuple<int, int> > > clusters;
     if (buffer_brightness && m_frame_in_brightness_buffer == frame) {
         const PixelType threshold = get_threshold_value<PixelType>(m_brightness_buffer.data(), m_brightness_buffer_width*m_brightness_buffer_height, cluster_fraction_threshold);
@@ -54,23 +54,27 @@ void MeteorShowerStackingTool::recalculate_clusters(const FrameAndGroup &frame, 
 
     FrameClusterInfo cluster_info;
     keep_clusters_with_at_least_n_pixels(&clusters, 10);
-    cluster_info.clusters = clusters;
     for (const std::vector<std::tuple<int, int> > &cluster : clusters) {
+        const float excentricity = PhotoRanker::get_cluster_excentricity(cluster);
+        const float cov_eigenval_ratio_sqrt = PhotoRanker::get_covariance_eigenvalues_ratio_sqrt(cluster);
+        if (excentricity < minimal_excentricity) continue;
+        if (cov_eigenval_ratio_sqrt < minimal_eigenval_ratio) continue;
+        cluster_info.clusters.push_back(cluster);
         cluster_info.clusters_selected.push_back(false);
-        cluster_info.clusters_excentricity.push_back(PhotoRanker::get_cluster_excentricity(cluster));
+        cluster_info.clusters_excentricity.push_back(excentricity);
         cluster_info.clusters_correlation.push_back(PhotoRanker::get_cluster_correlation(cluster));
-        cluster_info.clusters_cov_eigenval_ratio_sqrt.push_back(PhotoRanker::get_covariance_eigenvalues_ratio_sqrt(cluster));
+        cluster_info.clusters_cov_eigenval_ratio_sqrt.push_back(cov_eigenval_ratio_sqrt);
         cluster_info.cluster_fraction_threshold = cluster_fraction_threshold;
     }
     m_frame_clusters_map[frame] = cluster_info;
 };
 
-void MeteorShowerStackingTool::recalculate_clusters(const std::vector<FrameAndGroup> &frames, float cluster_fraction_threshold)  {
+void MeteorShowerStackingTool::recalculate_clusters(const std::vector<FrameAndGroup> &frames, float cluster_fraction_threshold, float minimal_excentricity, float minimal_eigenval_ratio)  {
     TaskScheduler task_scheduler({m_n_cpus});
     m_tasks_processed = 0;
     for (const FrameAndGroup &frame : frames) {
-        task_scheduler.submit([this, frame, cluster_fraction_threshold]() {
-            recalculate_clusters(frame, cluster_fraction_threshold);
+        task_scheduler.submit([this, frame, cluster_fraction_threshold, minimal_excentricity, minimal_eigenval_ratio]() {
+            recalculate_clusters(frame, cluster_fraction_threshold, cluster_fraction_threshold, minimal_excentricity, minimal_eigenval_ratio);
             m_tasks_processed++;
         }, {1});
     }

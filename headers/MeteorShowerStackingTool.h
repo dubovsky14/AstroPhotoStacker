@@ -71,9 +71,9 @@ namespace AstroPhotoStacker {
 
             void set_cluster_selected(const FrameAndGroup &frame, size_t cluster_id, bool selected);
 
-            void recalculate_clusters(const FrameAndGroup &frame, float cluster_fraction_threshold, bool buffer_brightness = false);
+            void recalculate_clusters(const FrameAndGroup &frame, float cluster_fraction_threshold, float minimal_excentricity, float minimal_eigenval_ratio, bool buffer_brightness = false);
 
-            void recalculate_clusters(const std::vector<FrameAndGroup> &frames, float cluster_fraction_threshold);
+            void recalculate_clusters(const std::vector<FrameAndGroup> &frames, float cluster_fraction_threshold, float minimal_excentricity, float minimal_eigenval_ratio);
 
             void clear_buffer();
 

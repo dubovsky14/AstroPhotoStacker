@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../headers/FilelistHandler.h"
+#include "../../headers/MeteorShowerStackingTool.h"
 
 #include <string>
 #include <vector>
@@ -16,6 +17,13 @@ struct FrameID  {
         input_frame = frame_info.input_frame;
         type = frame_info.type;
         group_number = frame_info.group_number;
+    };
+
+    AstroPhotoStacker::FrameAndGroup convert_to_frame_and_group() const {
+        AstroPhotoStacker::FrameAndGroup frame_and_group;
+        frame_and_group.group_number = this->group_number;
+        frame_and_group.input_frame = this->input_frame;
+        return frame_and_group;
     };
 };
 

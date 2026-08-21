@@ -113,7 +113,7 @@ class MeteorShowerStackingGUI : public wxFrame  {
         void update_image_preview_file(size_t frame_index);
         bool update_checked_files_in_filelist();
         void update_files_to_stack_checkbox();
-
+        std::string get_cluster_summary_string_for_filelist(const FrameID &frame_id) const;
 
 
 

@@ -167,14 +167,6 @@ void MeteorShowerStackingGUI::update_cluster_list() {
         const float excentricity = cluster_info.clusters_excentricity[i];
         const bool is_selected = cluster_info.clusters_selected[i];
 
-        if (excentricity < m_cluster_excentricity) {
-            continue; // skip clusters with excentricity above the threshold
-        }
-
-        if (abs(cluster_info.clusters_cov_eigenval_ratio_sqrt[i]) < m_cluster_covariance_eigenval_ratio_sqrt) {
-            continue; // skip clusters with ratio of covariance matrix eigenvalues bellow the threshold (take only elongated clusters)
-        }
-
         const std::string cluster_id_label = "Cluster #" + std::to_string(i);
         const std::string cluster_size_label = "Size: " + std::to_string(cluster_size);
         const std::string cluster_excentricity_label = "Excentricity: " + std::to_string(excentricity);
@@ -249,7 +241,7 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
     });
 
     m_button_recalculate_clusters = add_button("Recalculate clusters", [this]() {
-        m_meteor_shower_stacking_tool.recalculate_clusters(m_currently_displayed_frame, m_cluster_threshold, true);
+        m_meteor_shower_stacking_tool.recalculate_clusters(m_currently_displayed_frame, m_cluster_threshold, m_cluster_excentricity, m_cluster_covariance_eigenval_ratio_sqrt, true);
         update_cluster_list();
         update_image_preview_file(m_previously_selected_frame_index);
     });
@@ -270,7 +262,7 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
                                 tasks_processed,
                                 tasks_total,
                                 [this, frames_to_process](){
-                                    m_meteor_shower_stacking_tool.recalculate_clusters(frames_to_process, m_cluster_threshold);
+                                    m_meteor_shower_stacking_tool.recalculate_clusters(frames_to_process, m_cluster_threshold, m_cluster_excentricity, m_cluster_covariance_eigenval_ratio_sqrt);
                                 },
                                 "");
         update_cluster_list();
@@ -558,6 +550,8 @@ void MeteorShowerStackingGUI::add_list_of_files() {
 
 
 void MeteorShowerStackingGUI::update_image_preview_file(size_t frame_index)  {
+    update_files_to_stack_checkbox();
+
     if (frame_index >= m_filelist_handler_gui_interface.get_number_of_shown_frames()) {
         return;
     }
@@ -637,7 +631,7 @@ void MeteorShowerStackingGUI::update_files_to_stack_checkbox()   {
             continue;
         }
 
-        const std::string file_string = frame.first;
+        const std::string file_string = frame.first + "    " + get_cluster_summary_string_for_filelist(frame.second);
         const bool is_checked = m_filelist_handler_gui_interface.frame_is_checked(frame.second);
         rows.push_back(file_string);
         rows_checked.push_back(is_checked);
@@ -659,4 +653,15 @@ void MeteorShowerStackingGUI::update_files_to_stack_checkbox()   {
     }
 
     m_files_checkbox->SetSelection(index);
+};
+
+std::string MeteorShowerStackingGUI::get_cluster_summary_string_for_filelist(const FrameID &frame_id) const {
+    const FrameAndGroup frame_and_group = frame_id.convert_to_frame_and_group();
+    const FrameClusterInfo cluster_info = m_meteor_shower_stacking_tool.get_cluster_info(frame_and_group);
+    int clusters_total(0), clusters_selected(0);
+    for (bool selected : cluster_info.clusters_selected)    {
+        clusters_total++;
+        clusters_selected += selected;
+    }
+    return "Clusters: " + std::to_string(clusters_selected) + "/" + std::to_string(clusters_total);
 };
