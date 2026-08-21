@@ -5,6 +5,7 @@
 #include "../headers/InputFrameReader.h"
 #include "../headers/PhotoRanker.h"
 #include "../headers/CalibratedPhotoHandler.h"
+#include "../headers/Common.h"
 
 #include "../headers/FlatFrameHandler.h"
 #include "../headers/DarkFrameHandler.h"
@@ -58,6 +59,7 @@ void MeteorShowerStackingTool::recalculate_clusters(const FrameAndGroup &frame, 
         cluster_info.clusters_selected.push_back(false);
         cluster_info.clusters_excentricity.push_back(PhotoRanker::get_cluster_excentricity(cluster));
         cluster_info.clusters_correlation.push_back(PhotoRanker::get_cluster_correlation(cluster));
+        cluster_info.clusters_cov_eigenval_ratio_sqrt.push_back(PhotoRanker::get_covariance_eigenvalues_ratio_sqrt(cluster));
         cluster_info.cluster_fraction_threshold = cluster_fraction_threshold;
     }
     m_frame_clusters_map[frame] = cluster_info;

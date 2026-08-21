@@ -46,7 +46,7 @@ namespace AstroPhotoStacker {
         std::vector<bool> clusters_selected;
         std::vector<float> clusters_excentricity;
         std::vector<float> clusters_correlation;
-
+        std::vector<float> clusters_cov_eigenval_ratio_sqrt;
         float cluster_fraction_threshold = 0.0;
     };
 

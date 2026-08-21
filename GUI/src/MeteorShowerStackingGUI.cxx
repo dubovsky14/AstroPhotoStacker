@@ -171,14 +171,14 @@ void MeteorShowerStackingGUI::update_cluster_list() {
             continue; // skip clusters with excentricity above the threshold
         }
 
-        if (abs(cluster_info.clusters_correlation[i]) < m_cluster_correlation) {
-            continue; // skip clusters with correlation below the threshold
+        if (abs(cluster_info.clusters_cov_eigenval_ratio_sqrt[i]) < m_cluster_covariance_eigenval_ratio_sqrt) {
+            continue; // skip clusters with ratio of covariance matrix eigenvalues bellow the threshold (take only elongated clusters)
         }
 
         const std::string cluster_id_label = "Cluster #" + std::to_string(i);
         const std::string cluster_size_label = "Size: " + std::to_string(cluster_size);
         const std::string cluster_excentricity_label = "Excentricity: " + std::to_string(excentricity);
-        const std::string cluster_correlation_label = "Correlation: " + std::to_string(cluster_info.clusters_correlation[i]);
+        const std::string cluster_correlation_label = "Cov. eigenval. ratio: " + std::to_string(cluster_info.clusters_cov_eigenval_ratio_sqrt[i]);
 
         vector<string> cluster_labels = {cluster_id_label, cluster_size_label, cluster_excentricity_label, cluster_correlation_label};
         cluster_labels_cells.push_back(cluster_labels);
@@ -300,7 +300,7 @@ void MeteorShowerStackingGUI::add_cluster_settings() {
         this,
         "Cluster excentricity: ",
         0.0,
-        50,
+        100,
         m_cluster_excentricity,
         1,
         1,
@@ -310,19 +310,20 @@ void MeteorShowerStackingGUI::add_cluster_settings() {
     );
     m_cluster_excentricity_slider->add_sizer(m_top_right_sizer, 0, wxEXPAND, 1);
 
-    m_cluster_correlation_slider = make_unique<FloatingPointSlider>(
+    m_cluster_covariance_eigenval_ratio_sqrt_slider = make_unique<FloatingPointSlider>(
         this,
-        "Cluster correlation: ",
+        "Minimal sqrt of covariance matrix eigenvalues ratio: ",
         0.0,
-        1.0,
-        m_cluster_correlation,
-        0.001,
-        3,
+        30.0,
+        m_cluster_covariance_eigenval_ratio_sqrt,
+        0.1,
+        1,
         [this](float value){
-            m_cluster_correlation = value;
+            m_cluster_covariance_eigenval_ratio_sqrt = value;
         }
     );
-    m_cluster_correlation_slider->add_sizer(m_top_right_sizer, 0, wxEXPAND, 1);
+    m_cluster_covariance_eigenval_ratio_sqrt_slider->set_tool_tip("Covariance matrix between x and y coordinates is calculated for each cluster. Its eigenvalues are a measure of the cluster size along its main axis and the ortoghonal axis. Ratio of square root of these eigenvalues is ratio between cluster length and cluster width.");
+    m_cluster_covariance_eigenval_ratio_sqrt_slider->add_sizer(m_top_right_sizer, 0, wxEXPAND, 1);
 };
 
 void MeteorShowerStackingGUI::add_buttons()  {

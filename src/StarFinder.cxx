@@ -17,7 +17,7 @@ void AstroPhotoStacker::keep_only_stars_above_size(std::vector<std::tuple<float,
 
 
 std::tuple<float,float> AstroPhotoStacker::get_center_of_cluster(const std::vector<std::tuple<int,int>>  &cluster)   {
-    float x_sum(0), y_sum(0);
+    double x_sum(0), y_sum(0);
     for (const std::tuple<int,int> &pixel : cluster)  {
         x_sum += std::get<0>(pixel);
         y_sum += std::get<1>(pixel);

@@ -377,6 +377,59 @@ namespace AstroPhotoStacker {
             result[i] = convert_vector_1d<SourceType, TargetType>(input[i]);
         }
         return result;
-    }
+    };
+
+
+    template <typename ValueType>
+    bool calculate_eigenvectors_and_eigenvalues(const std::vector<std::vector<ValueType>> &covariance_matrix,
+                                                std::vector<ValueType> *eigenvalues,
+                                                std::vector<std::vector<ValueType>> *eigenvectors) {
+
+        if (covariance_matrix.size() != 2) {
+            throw std::runtime_error("Covariance matrix should be 2x2");
+        }
+        if (covariance_matrix[0].size() != 2 || covariance_matrix[1].size() != 2) {
+            throw std::runtime_error("Covariance matrix should be 2x2");
+        }
+
+        const double a = 1;
+        const double b = -covariance_matrix[0][0] - covariance_matrix[1][1];
+        const double c = covariance_matrix[0][0] * covariance_matrix[1][1] - covariance_matrix[0][1] * covariance_matrix[1][0];
+
+        const double delta = b*b - 4*a*c;
+
+        if (delta < 0) {
+            return false;
+        }
+
+        const double lambda1 = (-b + sqrt(delta))/(2*a);
+        const double lambda2 = (-b - sqrt(delta))/(2*a);
+
+        eigenvalues->clear();
+        eigenvalues->push_back(lambda1);
+        eigenvalues->push_back(lambda2);
+
+        eigenvectors->clear();
+        eigenvectors->push_back({covariance_matrix[0][1], static_cast<ValueType>(covariance_matrix[0][0] - lambda1)});
+        eigenvectors->push_back({covariance_matrix[0][1], static_cast<ValueType>(covariance_matrix[0][0] - lambda2)});
+
+        for (auto &eigenvector : *eigenvectors) {
+            const double length = sqrt(eigenvector[0]*eigenvector[0] + eigenvector[1]*eigenvector[1]);
+            eigenvector[0] /= length;
+            eigenvector[1] /= length;
+
+            if (eigenvector[0] < 0 && eigenvector[1] < 0) {
+                eigenvector[0] = -eigenvector[0];
+                eigenvector[1] = -eigenvector[1];
+            }
+        }
+
+        if (eigenvalues->at(0) < eigenvalues->at(1)) {
+            std::swap(eigenvalues->at(0), eigenvalues->at(1));
+            std::swap(eigenvectors->at(0), eigenvectors->at(1));
+        }
+        return true;
+    };
+
 }
 

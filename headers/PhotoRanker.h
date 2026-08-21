@@ -4,7 +4,7 @@
 
 #include <string>
 #include <vector>
-
+#include <array>
 namespace AstroPhotoStacker     {
 
     /**
@@ -57,6 +57,22 @@ namespace AstroPhotoStacker     {
              * @return float - correlation
             */
             static float get_cluster_correlation(const std::vector<std::tuple<int,int>> &cluster);
+
+            /**
+             * @brief Calculate correlation between x and y coordinates of a cluster
+             *
+             * @param clusters - stars
+             * @return float - correlation
+            */
+            static std::vector<std::vector<float>> get_covariance_matrix(const std::vector<std::tuple<int,int>> &cluster);
+
+            /**
+             * @brief calculate eigen values of the covariance matrix of the cluster coordinates and divide larger one by the smaller one (should be large number for lines, or elongated objects)
+             *
+             * @param clusters
+             * @return float - ratio of the eigenvalues
+             */
+            static float get_covariance_eigenvalues_ratio_sqrt(const std::vector<std::tuple<int,int>> &cluster);
 
             /**
              * @brief Get the ranking of all frames
