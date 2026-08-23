@@ -198,6 +198,7 @@ class MyFrame : public wxFrame  {
         void save_stacked_with_post_process(wxCommandEvent& event);
         void save_stacked_without_post_process(wxCommandEvent& event);
         void on_save_selected_as_fit(wxCommandEvent& event);
+        void on_save_selected_as_ser(wxCommandEvent& event);
         void on_exit(wxCommandEvent& event);
 
         std::vector<std::shared_ptr<wxSizer>> m_sizers;  // this is such a mess ...

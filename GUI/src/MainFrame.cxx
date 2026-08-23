@@ -23,6 +23,7 @@
 #include "../../headers/PixelType.h"
 #include "../../headers/CalibratedPhotoHandler.h"
 #include "../../headers/AdditionalStackerSettingNumerical.h"
+#include "../../headers/FramesToSERVideoConvertor.h"
 
 #include <wx/spinctrl.h>
 #include <wx/progdlg.h>
@@ -119,6 +120,10 @@ void MyFrame::add_file_menu()  {
     id = unique_counter();
     m_file_menu->Append(id, "Save selected files as FIT", "Save selected files as FIT");
     Bind(wxEVT_MENU, &MyFrame::on_save_selected_as_fit, this, id);
+
+    id = unique_counter();
+    m_file_menu->Append(id, "Save selected files as SER", "Save selected files as SER");
+    Bind(wxEVT_MENU, &MyFrame::on_save_selected_as_ser, this, id);
 
     m_file_menu->Append(wxID_EXIT);
     Bind(wxEVT_MENU, &MyFrame::on_exit,  this, wxID_EXIT);
@@ -1488,6 +1493,46 @@ void MyFrame::on_save_selected_as_fit(wxCommandEvent& event) {
         convert_selected_to_fit,
         "Saving selected files as FIT ...");
 
+
+};
+
+void MyFrame::on_save_selected_as_ser(wxCommandEvent& event) {
+
+
+    const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
+    wxFileDialog dialog(this, "Save to .ser video file", "", default_path, "*['.ser']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (dialog.ShowModal() == wxID_OK) {
+        std::string file_address = dialog.GetPath().ToStdString();
+
+        // if the extension is not .tif, add it
+        if (file_address.substr(file_address.size()-4) != ".ser") {
+            file_address += ".ser";
+        }
+
+        const vector<FrameInfo> selected_frames_info = m_filelist_handler_gui_interface.get_checked_frames_of_type(FrameType::LIGHT);
+        vector<InputFrame> selected_frames;
+        for (const FrameInfo &frame_info : selected_frames_info)    {
+            selected_frames.push_back(frame_info.input_frame);
+        }
+
+        AstroPhotoStacker::FramesToSERVideoConvertor frames_to_ser_convertor(selected_frames);
+
+        const std::atomic<int> &tasks_processed = frames_to_ser_convertor.get_tasks_processed();
+        auto save_to_ser = [this, selected_frames, file_address, &frames_to_ser_convertor](){
+            frames_to_ser_convertor.save_to_file(file_address);
+        };
+
+        run_task_with_progress_dialog(  "Saving into SER",
+            "Saving selected files as SER:",
+            "",
+            tasks_processed,
+            selected_frames.size(),
+            save_to_ser,
+            "Saving selected files as SER ...");
+    }
+    else {
+        return;
+    }
 
 };
 
