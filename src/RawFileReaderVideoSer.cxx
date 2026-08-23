@@ -95,6 +95,7 @@ Metadata RawFileReaderVideoSer::read_metadata_without_cache() {
 
     const unsigned long long int microsoft_time = read_ulonglong_from_file(&file, 162);
     metadata.timestamp = microsoft_to_unix_time(microsoft_time);
+    metadata.bit_depth = read_uint_from_file(&file, 34);
 
     char string_buffer[40];
 
