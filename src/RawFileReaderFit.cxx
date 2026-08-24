@@ -209,6 +209,7 @@ void RawFileReaderFit::fill_metadata()    {
     m_metadata.bayer_matrix = convert_bayer_int_array_to_string(m_bayer_matrix);
     m_metadata.is_raw = true;
     m_metadata.camera_model = get_with_default<string,string>(m_metadata_map, "INSTRUME", "");
+    m_metadata.bit_depth = m_bit_depth;
     m_metadata.temperature = std::stof(get_with_default<string,string>(m_metadata_map, "CCD-TEMP", "-300"));
 };
 
