@@ -31,10 +31,12 @@ void StackerBase::add_alignment_info(const InputFrame &input_frame, const Alignm
 
 void StackerBase::add_photo(const InputFrame &input_frame,
                             const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers,
-                            bool apply_alignment) {
+                            bool apply_alignment,
+                            std::shared_ptr<const LensCorrectionTool> lens_correction_tool) {
     m_frames_to_stack.push_back(input_frame);
     m_calibration_frame_handlers.push_back(calibration_frame_handlers);
     m_apply_alignment.push_back(apply_alignment);
+    m_lens_correction_tools.push_back(lens_correction_tool);
 };
 
 void StackerBase::register_hot_pixels_file(const std::string &hot_pixels_file)  {
@@ -207,8 +209,13 @@ CalibratedPhotoHandler StackerBase::get_calibrated_photo(unsigned int i_file, in
     const InputFrame &input_frame = m_frames_to_stack[i_file];
     const bool apply_alignment = m_apply_alignment[i_file];
     unique_ptr<AlignmentResultBase> alignment_result = apply_alignment ? m_photo_alignment_handler->get_alignment_parameters(input_frame) : nullptr;
+    const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool = m_lens_correction_tools.at(i_file);
 
     CalibratedPhotoHandler calibrated_photo(input_frame, m_interpolate_colors);
+    if (lens_correction_tool != nullptr) {
+        calibrated_photo.register_lens_correction_tool(lens_correction_tool);
+    }
+
     if (alignment_result != nullptr) {
         calibrated_photo.define_alignment(*alignment_result);
     }

@@ -91,6 +91,7 @@ void PhotoAlignmentHandler::save_to_text_file(const std::string &alignment_file_
 void PhotoAlignmentHandler::align_files(const InputFrame &reference_frame, const std::vector<InputFrame> &files) {
     m_reference_photo_handler = ReferencePhotoHandlerFactory::get_reference_photo_handler(reference_frame, m_alignment_method, m_configurable_algorithm_settings_map);
     m_reference_frame = reference_frame;
+    m_reference_photo_handler->set_lens_correction_tool(m_lens_correction_tool);
 
     ReferencePhotoHandlerComet *comet_handler = dynamic_cast<ReferencePhotoHandlerComet*>(m_reference_photo_handler.get());
     if (comet_handler != nullptr) {

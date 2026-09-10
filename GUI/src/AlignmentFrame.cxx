@@ -6,6 +6,7 @@
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/InputFrame.h"
 #include "../../headers/ReferencePhotoHandlerFactory.h"
+#include "../../headers/LensCorrectionTool.h"
 
 #include <wx/progdlg.h>
 
@@ -174,6 +175,10 @@ void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
         AstroPhotoStacker::PhotoAlignmentHandler photo_alignment_handler;
         photo_alignment_handler.set_alignment_method(m_stack_settings->get_alignment_method(), m_configurable_algorithm_settings_map);
         photo_alignment_handler.set_number_of_cpu_threads(m_stack_settings->get_n_cpus());
+
+        //std::shared_ptr<const LensCorrectionTool> lens_correction_tool = std::make_shared<LensCorrectionTool>("k1=0.000252853;k2=0;k3=0;c_x=2026;c_y=3068;sensor_half_diagonal_squared=1.41358e+07");
+        std::shared_ptr<const LensCorrectionTool> lens_correction_tool = nullptr;
+        photo_alignment_handler.set_lens_correction_tool(lens_correction_tool);
 
         if (m_stack_settings->get_alignment_method() == "comet") {
             std::map<InputFrame, std::pair<float,float>> comet_positions_storage;

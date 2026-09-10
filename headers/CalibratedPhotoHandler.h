@@ -8,6 +8,7 @@
 #include "../headers/InputFrame.h"
 #include "../headers/InputFrameReader.h"
 #include "../headers/PixelType.h"
+#include "../headers/LensCorrectionTool.h"
 
 #include <memory>
 #include <vector>
@@ -39,6 +40,15 @@ namespace AstroPhotoStacker {
              * @param rotation The rotation angle in radians.
             */
             void define_alignment(const AlignmentResultBase &alignment_result);
+
+            /**
+             *  Add tool for correcting barrel distortion in the photo.
+             *
+             * @param lens_correction_tool The lens correction tool to be added.
+             */
+            void register_lens_correction_tool(std::shared_ptr<const LensCorrectionTool> lens_correction_tool) {
+                m_lens_correction_tool = lens_correction_tool;
+            };
 
             /**
              * @brief Set the bit depth of the raw file.
@@ -138,6 +148,7 @@ namespace AstroPhotoStacker {
 
             std::unique_ptr<AlignmentResultBase> m_alignment_result = nullptr;
             std::unique_ptr<InputFrameReader> m_input_frame_data_original = nullptr;
+            std::shared_ptr<const LensCorrectionTool> m_lens_correction_tool = nullptr;
 
             bool m_use_color_interpolation = false;
             std::vector<std::vector<PixelType>> m_data_shifted_color_interpolation;

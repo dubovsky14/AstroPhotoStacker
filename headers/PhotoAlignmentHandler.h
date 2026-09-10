@@ -4,6 +4,7 @@
 #include "../headers/AlignmentResultBase.h"
 #include "../headers/InputFrame.h"
 #include "../headers/ConfigurableAlgorithmSettings.h"
+#include "../headers/LensCorrectionTool.h"
 
 #include <memory>
 #include <string>
@@ -119,6 +120,10 @@ namespace   AstroPhotoStacker   {
              */
             void set_alignment_method(const std::string& alignment_method, const ConfigurableAlgorithmSettingsMap& configurable_algorithm_settings_map);
 
+            void set_lens_correction_tool(std::shared_ptr<const LensCorrectionTool> lens_correction_tool)   {
+                m_lens_correction_tool = lens_correction_tool;
+            };
+
             /**
              * @brief Gets the alignment method.
              * @return The alignment method.
@@ -135,6 +140,8 @@ namespace   AstroPhotoStacker   {
             std::atomic<int> m_n_files_aligned = 0;
             unsigned int m_n_cpu = 1;
             std::unique_ptr<ReferencePhotoHandlerBase> m_reference_photo_handler = nullptr;
+
+            std::shared_ptr<const LensCorrectionTool> m_lens_correction_tool = nullptr;
 
             inline static const std::string c_separator_in_file = " | ";
 

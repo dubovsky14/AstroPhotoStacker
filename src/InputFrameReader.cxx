@@ -178,3 +178,13 @@ void InputFrameReader::read_non_raw() {
     m_is_raw_file = false;
 };
 
+void InputFrameReader::apply_lens_correction(const LensCorrectionTool &lens_correction_tool)  {
+    if (this->is_raw_file_before_debayering())  {
+        throw std::runtime_error("Lens correction for raw files before debayering is not supported.");
+    }
+    else {
+        for (auto &channel_data : m_rgb_data) {
+            channel_data = lens_correction_tool.get_undistorted_image(channel_data, m_width, m_height);
+        }
+    }
+};

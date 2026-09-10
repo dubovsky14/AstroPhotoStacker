@@ -9,6 +9,7 @@
 #include "../headers/AlignmentResultBase.h"
 #include "../headers/ConfigurableAlgorithmSettings.h"
 #include "../headers/ReferencePhotoHandlerFactory.h"
+#include "../headers/LensCorrectionTool.h"
 
 
 #include <memory>
@@ -78,6 +79,10 @@ namespace AstroPhotoStacker   {
                 return m_configurable_algorithm_settings;
             };
 
+            void set_lens_correction_tool(std::shared_ptr<const LensCorrectionTool> lens_correction_tool) {
+                m_lens_correction_tool = lens_correction_tool;
+            };
+
         protected:
             /*
             @brief Default constructor. Used to get configuration settings defined in derived classes
@@ -93,5 +98,6 @@ namespace AstroPhotoStacker   {
 
             ConfigurableAlgorithmSettings   m_configurable_algorithm_settings;
 
+            std::shared_ptr<const LensCorrectionTool> m_lens_correction_tool = nullptr;
     };
 }
