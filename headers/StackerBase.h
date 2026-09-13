@@ -7,7 +7,6 @@
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/AlignmentResultBase.h"
 
-#include "../headers/LensCorrectionTool.h"
 #include "../headers/InputFrame.h"
 #include "../headers/ConfigurableAlgorithmSettings.h"
 #include "../headers/PixelType.h"
@@ -71,9 +70,7 @@ namespace AstroPhotoStacker {
             */
             virtual void add_photo( const InputFrame &input_frame,
                                     const std::vector<std::shared_ptr<const CalibrationFrameBase> > &calibration_frame_handlers = std::vector<std::shared_ptr<const CalibrationFrameBase> >(),
-                                    bool apply_alignment = true,
-                                    std::shared_ptr<const LensCorrectionTool> lens_correction_tool = nullptr
-                                );
+                                    bool apply_alignment = true);
 
             /**
              * @brief Read hot pixels from a file
@@ -230,7 +227,6 @@ namespace AstroPhotoStacker {
 
             // 1st index = light frame index, 2nd index = calibration frame index
             std::vector<std::vector<std::shared_ptr<const CalibrationFrameBase> >> m_calibration_frame_handlers;
-            std::vector<std::shared_ptr<const LensCorrectionTool>> m_lens_correction_tools;
 
             std::atomic<int> m_n_tasks_processed = 0;
 

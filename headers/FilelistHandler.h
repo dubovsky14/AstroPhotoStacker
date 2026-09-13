@@ -274,6 +274,10 @@ namespace AstroPhotoStacker {
 
             void check_unaligned_frames();
 
+            void add_lens_corrections_for_checked_light_frames_from_summary_string(const std::string &lens_correction_summary_string);
+
+            void add_lens_corrections_for_checked_light_frames_from_text_file(const std::string &file_address);
+
         protected:
             const std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     &get_frames_list() const {
                 return m_frames_list;

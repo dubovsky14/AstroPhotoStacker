@@ -28,7 +28,7 @@ namespace AstroPhotoStacker   {
              * @param input_frame - path to the raw file
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetary(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap(), const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool = nullptr);
+            ReferencePhotoHandlerPlanetary(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap());
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -38,7 +38,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerPlanetary(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap(), const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool = nullptr);
+            ReferencePhotoHandlerPlanetary(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap());
 
             /**
              * @brief Calculate how the photo should be rotated and shifted to match the reference photo

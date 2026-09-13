@@ -5,11 +5,13 @@
 #include "../headers/MetadataReader.h"
 #include "../headers/AlignmentResultFactory.h"
 #include "../headers/PhotoAlignmentHandler.h"
+#include "../headers/LensCorrectionDictionary.h"
 
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include <stdexcept>
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -566,4 +568,41 @@ void FilelistHandler::check_unaligned_frames() {
             }
         }
     }
+};
+
+void FilelistHandler::add_lens_corrections_for_checked_light_frames_from_summary_string(const std::string &lens_correction_summary_string) {
+    for (auto &group : m_frames_list) {
+        for (auto &type : group.second) {
+            if (type.first != FrameType::LIGHT) {
+                continue;
+            }
+            std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
+            for (auto &frame : frames) {
+                if (frame.second.is_checked) {
+                    LensCorrectionDictionary::get_instance().add_corrections(frame.first, lens_correction_summary_string);
+                }
+            }
+        }
+    }
+};
+
+
+void FilelistHandler::add_lens_corrections_for_checked_light_frames_from_text_file(const std::string &file_address) {
+    std::ifstream input_file(file_address);
+    std::string line;
+
+    if (!input_file.is_open()) {
+        throw std::runtime_error("Failed to open lens correction file: " + file_address);
+    }
+
+    while (std::getline(input_file, line))   {
+        strip_string(&line, " \t\n\r\"");
+        if (starts_with(line, "#") || line.empty()) {
+            continue;
+        }
+
+        add_lens_corrections_for_checked_light_frames_from_summary_string(line);
+        return;
+    }
+    throw std::runtime_error("No valid lens correction summary string found in file: " + file_address);
 };

@@ -66,7 +66,7 @@ namespace AstroPhotoStacker {
 
             std::array<char, 4> get_bayer_pattern() const { return m_bayer_pattern; };
 
-            void apply_lens_correction(const LensCorrectionTool &lens_correction_tool);
+            void apply_lens_correction_if_available();
 
         private:
             InputFrame m_input_frame;

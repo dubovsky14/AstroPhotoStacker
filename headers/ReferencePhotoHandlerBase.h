@@ -9,7 +9,6 @@
 #include "../headers/AlignmentResultBase.h"
 #include "../headers/ConfigurableAlgorithmSettings.h"
 #include "../headers/ReferencePhotoHandlerFactory.h"
-#include "../headers/LensCorrectionTool.h"
 
 
 #include <memory>
@@ -35,9 +34,7 @@ namespace AstroPhotoStacker   {
              * @param input_frame - input frame data
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerBase(  const InputFrame& input_frame,
-                                        const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap(),
-                                        const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool = nullptr)   { m_lens_correction_tool = lens_correction_tool;};
+            ReferencePhotoHandlerBase(const InputFrame& input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap())   {};
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -47,11 +44,9 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerBase(  const PixelType *brightness,
-                                        int width,
-                                        int height,
-                                        const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap(),
-                                        const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool = nullptr)    { m_lens_correction_tool = lens_correction_tool; };
+            ReferencePhotoHandlerBase(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap())    {
+
+            };
 
             /**
              * @brief Get the width of the reference photo
@@ -98,6 +93,5 @@ namespace AstroPhotoStacker   {
 
             ConfigurableAlgorithmSettings   m_configurable_algorithm_settings;
 
-            std::shared_ptr<const LensCorrectionTool> m_lens_correction_tool = nullptr;
     };
 }

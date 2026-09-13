@@ -28,7 +28,7 @@ namespace AstroPhotoStacker   {
              * @param input_frame - input frame data
              * @param configuration_map - values of free parameters of the algorithm
             */
-            ReferencePhotoHandlerStars(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap(), const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool = nullptr);
+            ReferencePhotoHandlerStars(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap());
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -38,7 +38,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param configuration_map - values of free parameters of the algorithm
             */
-            ReferencePhotoHandlerStars(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap(), const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool = nullptr)  :
+            ReferencePhotoHandlerStars(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap())  :
                 ReferencePhotoHandlerBase(brightness, width, height, configuration_map) {
                 initialize(brightness, width, height, configuration_map);
             };

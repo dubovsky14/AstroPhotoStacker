@@ -20,15 +20,15 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
-ReferencePhotoHandlerEclipse::ReferencePhotoHandlerEclipse(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map, const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool)   :
-    ReferencePhotoHandlerBase(input_frame, configuration_map, lens_correction_tool) {
+ReferencePhotoHandlerEclipse::ReferencePhotoHandlerEclipse(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map)   :
+    ReferencePhotoHandlerBase(input_frame, configuration_map) {
 
     define_configuration_settings();
     const vector<PixelType> brightness = read_image_monochrome(input_frame, &m_width, &m_height);
     initialize(brightness.data(), m_width, m_height, configuration_map);
 };
 
-ReferencePhotoHandlerEclipse::ReferencePhotoHandlerEclipse(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map, const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool)  :
+ReferencePhotoHandlerEclipse::ReferencePhotoHandlerEclipse(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map)  :
     ReferencePhotoHandlerBase(brightness, width, height, configuration_map) {
     define_configuration_settings();
     initialize(brightness, width, height, configuration_map);

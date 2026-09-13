@@ -59,9 +59,7 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
         for (const auto &light_frame : light_frames) {
             const InputFrame &input_frame = light_frame.first;
             const AlignmentResultBase &alignment_result = *light_frame.second.alignment_result;
-            std::shared_ptr<const LensCorrectionTool> lens_correction_tool = std::make_shared<LensCorrectionTool>("k1=-0.0238779;k2=0;k3=0;c_x=3133.6;c_y=2106.38;sensor_half_diagonal_squared=1.41775e+07");
-            //std::shared_ptr<const LensCorrectionTool> lens_correction_tool = nullptr;
-            stacker->add_photo(input_frame, calibration_frames_handlers, true, lens_correction_tool);
+            stacker->add_photo(input_frame, calibration_frames_handlers, true);
             stacker->add_alignment_info(input_frame, alignment_result);
 
         }

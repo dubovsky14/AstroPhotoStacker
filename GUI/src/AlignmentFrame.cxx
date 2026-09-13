@@ -176,10 +176,6 @@ void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
         photo_alignment_handler.set_alignment_method(m_stack_settings->get_alignment_method(), m_configurable_algorithm_settings_map);
         photo_alignment_handler.set_number_of_cpu_threads(m_stack_settings->get_n_cpus());
 
-        std::shared_ptr<const LensCorrectionTool> lens_correction_tool = std::make_shared<LensCorrectionTool>("k1=-0.0238779;k2=0;k3=0;c_x=3133.6;c_y=2106.38;sensor_half_diagonal_squared=1.41775e+07");
-        //std::shared_ptr<const LensCorrectionTool> lens_correction_tool = nullptr;
-        photo_alignment_handler.set_lens_correction_tool(lens_correction_tool);
-
         if (m_stack_settings->get_alignment_method() == "comet") {
             std::map<InputFrame, std::pair<float,float>> comet_positions_storage;
             CometSelectionFrame comet_selection_frame(this, &comet_positions_storage, m_frames_to_align);

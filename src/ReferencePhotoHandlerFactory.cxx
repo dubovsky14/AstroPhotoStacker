@@ -13,8 +13,8 @@ using namespace std;
 std::map<std::string, ReferencePhotoHandlerFactoryFunctions> ReferencePhotoHandlerFactory::s_factory_functions = {
     {"stars",
         {
-            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map, const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool) {
-                return make_unique<ReferencePhotoHandlerStars>(input_frame, configuration_map, lens_correction_tool);
+            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) {
+                return make_unique<ReferencePhotoHandlerStars>(input_frame, configuration_map);
             },
             []() {
                 ReferencePhotoHandlerStars handler_dummy;
@@ -24,8 +24,8 @@ std::map<std::string, ReferencePhotoHandlerFactoryFunctions> ReferencePhotoHandl
     },
     {"planetary",
         {
-            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map, const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool) {
-                return make_unique<ReferencePhotoHandlerPlanetary>(input_frame, configuration_map, lens_correction_tool);
+            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) {
+                return make_unique<ReferencePhotoHandlerPlanetary>(input_frame, configuration_map);
             },
             []() {
                 ReferencePhotoHandlerPlanetary handler_dummy;
@@ -35,8 +35,8 @@ std::map<std::string, ReferencePhotoHandlerFactoryFunctions> ReferencePhotoHandl
     },
     {"surface",
         {
-            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map, const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool) {
-                return make_unique<ReferencePhotoHandlerSurface>(input_frame, configuration_map, lens_correction_tool);
+            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) {
+                return make_unique<ReferencePhotoHandlerSurface>(input_frame, configuration_map);
             },
             []() {
                 ReferencePhotoHandlerSurface handler_dummy;
@@ -46,8 +46,8 @@ std::map<std::string, ReferencePhotoHandlerFactoryFunctions> ReferencePhotoHandl
     },
     {"comet",
         {
-            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map, const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool) {
-                return make_unique<ReferencePhotoHandlerComet>(input_frame, configuration_map, lens_correction_tool);
+            [](const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) {
+                return make_unique<ReferencePhotoHandlerComet>(input_frame, configuration_map);
             },
             []() {
                 ReferencePhotoHandlerComet handler_dummy;
@@ -67,12 +67,9 @@ ConfigurableAlgorithmSettings ReferencePhotoHandlerFactory::get_configurable_alg
     }
 };
 
-unique_ptr<ReferencePhotoHandlerBase> ReferencePhotoHandlerFactory::get_reference_photo_handler(const InputFrame &reference_frame,
-                                                                                                const std::string &alignment_method,
-                                                                                                const ConfigurableAlgorithmSettingsMap &configuration_map,
-                                                                                                const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool)   {
+unique_ptr<ReferencePhotoHandlerBase> ReferencePhotoHandlerFactory::get_reference_photo_handler(const InputFrame &reference_frame, const std::string &alignment_method, const ConfigurableAlgorithmSettingsMap &configuration_map)   {
     if (s_factory_functions.find(alignment_method) != s_factory_functions.end()) {
-        return s_factory_functions.at(alignment_method).create_function(reference_frame, configuration_map, lens_correction_tool);
+        return s_factory_functions.at(alignment_method).create_function(reference_frame, configuration_map);
     }
     else {
         throw runtime_error("Invalid alignment method: " + alignment_method);

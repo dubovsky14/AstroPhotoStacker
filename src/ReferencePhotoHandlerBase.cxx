@@ -1,7 +1,6 @@
 #include "../headers/ReferencePhotoHandlerBase.h"
 #include "../headers/InputFrameReader.h"
-
-#include <iostream>
+#include "../headers/LensCorrectionDictionary.h"
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -11,8 +10,10 @@ std::vector<PixelType> ReferencePhotoHandlerBase::read_image_monochrome(const In
     *width = input_frame_reader.get_width();
     *height = input_frame_reader.get_height();
     vector<PixelType> monochrome_data = input_frame_reader.get_monochrome_data();
-    if (m_lens_correction_tool) {
-        monochrome_data = m_lens_correction_tool->get_undistorted_image(monochrome_data, *width, *height);
+
+    const shared_ptr<const LensCorrectionTool> lens_correction_tool = LensCorrectionDictionary::get_instance().get_lens_correction_tool(input_frame);
+    if (lens_correction_tool) {
+        monochrome_data = lens_correction_tool->get_undistorted_image(monochrome_data, *width, *height);
 
         // now let's fix empty pixels if any
         for (PixelType &x : monochrome_data) {

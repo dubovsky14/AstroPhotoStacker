@@ -30,7 +30,7 @@ namespace AstroPhotoStacker   {
              * @param reference_frame    - reference frame - local shifts will be calculated to match this frame
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerSurface(const InputFrame &reference_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap(), const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool = nullptr);
+            ReferencePhotoHandlerSurface(const InputFrame &reference_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap());
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -40,7 +40,7 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerSurface(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap(), const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool = nullptr);
+            ReferencePhotoHandlerSurface(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap());
 
 
             virtual std::unique_ptr<AlignmentResultBase> calculate_alignment(const InputFrame &input_frame) const override;
