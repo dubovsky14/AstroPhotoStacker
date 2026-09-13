@@ -6,8 +6,8 @@
 using namespace AstroPhotoStacker;
 using namespace std;
 
-ReferencePhotoHandlerComet::ReferencePhotoHandlerComet(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) :
-    ReferencePhotoHandlerStars(input_frame, configuration_map) {
+ReferencePhotoHandlerComet::ReferencePhotoHandlerComet(const InputFrame &input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map, const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool) :
+    ReferencePhotoHandlerStars(input_frame, configuration_map, lens_correction_tool) {
     m_reference_input_frame = input_frame;
 };
 

@@ -35,7 +35,9 @@ namespace AstroPhotoStacker   {
              * @param input_frame - input frame data
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerBase(const InputFrame& input_frame, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap())   {};
+            ReferencePhotoHandlerBase(  const InputFrame& input_frame,
+                                        const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap(),
+                                        const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool = nullptr)   { m_lens_correction_tool = lens_correction_tool;};
 
             /**
              * @brief Construct a new Reference Photo Handler object
@@ -45,9 +47,11 @@ namespace AstroPhotoStacker   {
              * @param height - height of the photo
              * @param threshold_fraction - fraction of the brightest pixels that will be considered as stars
             */
-            ReferencePhotoHandlerBase(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap())    {
-
-            };
+            ReferencePhotoHandlerBase(  const PixelType *brightness,
+                                        int width,
+                                        int height,
+                                        const ConfigurableAlgorithmSettingsMap &configuration_map = ConfigurableAlgorithmSettingsMap(),
+                                        const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool = nullptr)    { m_lens_correction_tool = lens_correction_tool; };
 
             /**
              * @brief Get the width of the reference photo
@@ -77,10 +81,6 @@ namespace AstroPhotoStacker   {
 
             ConfigurableAlgorithmSettings& get_configurable_algorithm_settings() {
                 return m_configurable_algorithm_settings;
-            };
-
-            void set_lens_correction_tool(std::shared_ptr<const LensCorrectionTool> lens_correction_tool) {
-                m_lens_correction_tool = lens_correction_tool;
             };
 
         protected:

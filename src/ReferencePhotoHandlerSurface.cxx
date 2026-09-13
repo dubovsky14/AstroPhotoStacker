@@ -17,7 +17,8 @@ using namespace AstroPhotoStacker;
 using namespace std;
 
 
-ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &reference_frame, const ConfigurableAlgorithmSettingsMap &configuration_map) : ReferencePhotoHandlerBase(reference_frame, configuration_map) {
+ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &reference_frame, const ConfigurableAlgorithmSettingsMap &configuration_map, const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool) :
+        ReferencePhotoHandlerBase(reference_frame, configuration_map, lens_correction_tool) {
     define_configuration_settings();
     CalibratedPhotoHandler calibrated_photo_handler(reference_frame, true);
     calibrated_photo_handler.calibrate();
@@ -43,9 +44,13 @@ ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const InputFrame &ref
 };
 
 
-ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map) : ReferencePhotoHandlerBase(brightness, width, height, configuration_map) {
+ReferencePhotoHandlerSurface::ReferencePhotoHandlerSurface(const PixelType *brightness,
+                                                            int width,
+                                                            int height,
+                                                            const ConfigurableAlgorithmSettingsMap &configuration_map,
+                                                            const std::shared_ptr<const LensCorrectionTool> &lens_correction_tool) : ReferencePhotoHandlerBase(brightness, width, height, configuration_map, lens_correction_tool) {
     define_configuration_settings();
-    initialize(brightness, width, height);
+    initialize(brightness, width, height, configuration_map);
 };
 
 std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_alignment(const InputFrame &input_frame) const {

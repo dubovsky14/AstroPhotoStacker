@@ -102,7 +102,9 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent, const PostPr
         if (crop_width > 0 && crop_height > 0) {
             m_aligned_images_producer->limit_output_image_size(crop_top_left_x, crop_top_left_y, crop_width, crop_height);
         }
-        m_aligned_images_producer->set_maximal_output_image_size(1920, 1080);
+        if (m_resize_to_1920x1080)  {
+            m_aligned_images_producer->set_maximal_output_image_size(1920, 1080);
+        }
 
         run_task_with_progress_dialog("Producing aligned images", "Finished", "", tasks_processed, tasks_total, [this](){
             if (m_apply_color_stretcher) {
@@ -275,34 +277,22 @@ void AlignedImagesProducerGUI::add_advanced_settings()    {
     wxSizer *left_vertical_sizer = new wxBoxSizer(wxVERTICAL);
     horizontal_sizer->Add(left_vertical_sizer, 1, wxEXPAND, 5);
 
-    wxCheckBox* use_grouping_checkbox = new wxCheckBox(this, wxID_ANY, "Use grouping");
-    use_grouping_checkbox->SetValue(m_use_grouping);
-    use_grouping_checkbox->SetToolTip("If checked, the photos will be grouped based on their time stamps and only one photo (or stack) from each group will be produced.");
-    use_grouping_checkbox->Bind(wxEVT_CHECKBOX, [use_grouping_checkbox, this](wxCommandEvent&){
-        const bool is_checked = use_grouping_checkbox->GetValue();
-        m_use_grouping = is_checked;
-    });
-    left_vertical_sizer->Add(use_grouping_checkbox, 0, wxEXPAND, 5);
+    auto add_checkbox = [this](wxSizer *sizer, const std::string &label, bool *value, const std::string &tooltip) {
+        wxCheckBox* checkbox = new wxCheckBox(this, wxID_ANY, label);
+        checkbox->SetValue(*value);
+        checkbox->SetToolTip(tooltip);
+        checkbox->Bind(wxEVT_CHECKBOX, [checkbox, value](wxCommandEvent&){
+            const bool is_checked = checkbox->GetValue();
+            *value = is_checked;
+        });
+        sizer->Add(checkbox, 0, wxEXPAND, 5);
+    };
 
 
-    wxCheckBox* stack_images_checkbox = new wxCheckBox(this, wxID_ANY, "Stack images");
-    stack_images_checkbox->SetValue(m_stack_images);
-    stack_images_checkbox->SetToolTip("If checked, the images will be stacked before producing the output image.");
-    stack_images_checkbox->Bind(wxEVT_CHECKBOX, [stack_images_checkbox, this](wxCommandEvent&){
-        const bool is_checked = stack_images_checkbox->GetValue();
-        m_stack_images = is_checked;
-    });
-    left_vertical_sizer->Add(stack_images_checkbox, 0, wxEXPAND, 5);
-
-
-    wxCheckBox* group_by_files_checkbox = new wxCheckBox(this, wxID_ANY, "Group by files");
-    group_by_files_checkbox->SetValue(m_group_by_files);
-    group_by_files_checkbox->SetToolTip("Use this option if you have multiple input videos and you want each input video to be stacked into one output frame.");
-    group_by_files_checkbox->Bind(wxEVT_CHECKBOX, [group_by_files_checkbox, this](wxCommandEvent&){
-        const bool is_checked = group_by_files_checkbox->GetValue();
-        m_group_by_files = is_checked;
-    });
-    left_vertical_sizer->Add(group_by_files_checkbox, 0, wxEXPAND, 5);
+    add_checkbox(left_vertical_sizer, "Use grouping", &m_use_grouping, "If checked, the photos will be grouped based on their time stamps and only one photo (or stack) from each group will be produced.");
+    add_checkbox(left_vertical_sizer, "Stack images", &m_stack_images, "If checked, the images will be stacked before producing the output image.");
+    add_checkbox(left_vertical_sizer, "Group by files", &m_group_by_files, "Use this option if you have multiple input videos and you want each input video to be stacked into one output frame.");
+    add_checkbox(left_vertical_sizer, "Resize to 1920x1080", &m_resize_to_1920x1080, "If checked, the output images will be resized to 1920x1080 resolution.");
 
 
 

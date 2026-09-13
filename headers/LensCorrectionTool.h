@@ -6,6 +6,10 @@
 
 
 namespace AstroPhotoStacker {
+
+    /**
+     * LensCorrectionTool is used to correct barrel distortion in images.
+     */
     struct LensCorrectionTool    {
         LensCorrectionTool() = default;
 
