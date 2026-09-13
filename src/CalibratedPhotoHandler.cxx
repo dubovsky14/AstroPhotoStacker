@@ -68,6 +68,8 @@ void CalibratedPhotoHandler::calibrate() {
         m_input_frame_data_original->debayer();
     }
 
+    m_input_frame_data_original->apply_lens_correction_if_available();
+
     // having the interpolated values for all pixels, let's just shift them
     m_data_shifted_color_interpolation = vector<vector<PixelType>>(3, vector<PixelType>(m_width*m_height, -1));
     for (int y_shifted = 0; y_shifted < m_height; y_shifted++)  {

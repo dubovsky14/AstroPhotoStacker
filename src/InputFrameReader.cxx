@@ -3,6 +3,7 @@
 #include "../headers/InputFormatTypes.h"
 #include "../headers/NonRawFrameReaderFactory.h"
 #include "../headers/RawFileReaderFactory.h"
+#include "../headers/LensCorrectionDictionary.h"
 
 #include "../headers/Debayring.h"
 
@@ -178,3 +179,15 @@ void InputFrameReader::read_non_raw() {
     m_is_raw_file = false;
 };
 
+void InputFrameReader::apply_lens_correction_if_available()  {
+    const std::shared_ptr<const LensCorrectionTool> lens_correction_tool = LensCorrectionDictionary::get_instance().get_lens_correction_tool(m_input_frame);
+
+    if (this->is_raw_file_before_debayering() && lens_correction_tool != nullptr)  {
+        throw std::runtime_error("Lens correction for raw files before debayering is not supported.");
+    }
+    else if (lens_correction_tool != nullptr) {
+        for (auto &channel_data : m_rgb_data) {
+            channel_data = lens_correction_tool->get_undistorted_image(channel_data, m_width, m_height);
+        }
+    }
+};

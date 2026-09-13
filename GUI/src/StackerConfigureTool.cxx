@@ -59,7 +59,7 @@ std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const Sta
         for (const auto &light_frame : light_frames) {
             const InputFrame &input_frame = light_frame.first;
             const AlignmentResultBase &alignment_result = *light_frame.second.alignment_result;
-            stacker->add_photo(input_frame, calibration_frames_handlers);
+            stacker->add_photo(input_frame, calibration_frames_handlers, true);
             stacker->add_alignment_info(input_frame, alignment_result);
 
         }

@@ -3,6 +3,7 @@
 #include "../headers/SettingsCustomization.h"
 
 #include "../../headers/Common.h"
+#include "../../headers/LensCorrectionDictionary.h"
 
 #include <algorithm>
 #include <numeric>
@@ -75,6 +76,9 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
         const std::string temperature_string = (metadata.temperature > -273) ? AstroPhotoStacker::round_and_convert_to_string(metadata.temperature,1) + " C" : " ";
         if (metadata_view_settings.show_temperature) result.push_back(temperature_string);
     }
+    const shared_ptr<const AstroPhotoStacker::LensCorrectionTool> lens_correction_tool = LensCorrectionDictionary::get_instance().get_lens_correction_tool(frame_id.input_frame);
+    result.push_back(std::string(lens_correction_tool ? "LC" : ""));
+
     const string score_string = (type == FrameType::LIGHT) ?
                                 (frame_info.alignment_result->is_valid() ? "score: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3) : "invalid alignment") :
                                 "";
