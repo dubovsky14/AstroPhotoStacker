@@ -326,6 +326,7 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
     };
 
     const std::vector<std::vector<PixelType>> &rgb_data_calibrated = frame_reader.get_calibrated_data_after_color_interpolation();
+    vector<vector<float>> values_around_cluster(rgb_data_calibrated.size()); // [color][index of pixel]
     vector<SelectedPixelInformation> selected_pixels_information;
     for (int y = 0; y < height; y++)    {
         for (int x = 0; x < width; x++) {
@@ -342,12 +343,62 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
             this_pixel_info.pixel_values[2] = rgb_data_calibrated[2][index];
             this_pixel_info.scale_factor = scale_factor_mask[index];
             selected_pixels_information.push_back(this_pixel_info);
+
+            if (scale_factor_mask[index] < 1)   {
+                for (unsigned int i_color = 0; i_color < rgb_data_calibrated.size(); i_color++) {
+                    values_around_cluster[i_color].push_back(rgb_data_calibrated[i_color][index]);
+                }
+            }
         }
     }
+
+    auto sort_and_get_medians = [](std::vector<std::vector<float>> &values) -> std::vector<float> {
+        std::vector<float> medians(values.size(), 0.0f);
+        for (size_t i = 0; i < values.size(); i++) {
+            if (values[i].empty()) continue;
+            std::sort(values[i].begin(), values[i].end());
+            const size_t mid = values[i].size() / 2;
+            if (values[i].size() % 2 == 0) {
+                medians[i] = (values[i][mid - 1] + values[i][mid]) / 2.0f;
+            } else {
+                medians[i] = values[i][mid];
+            }
+        }
+        return medians;
+    };
+
+    const vector<float> median_values_around = sort_and_get_medians(values_around_cluster);
+
 
     // at this point we prepared everything we could in multithreaded mode, time to lock the mutex
     {
         std::scoped_lock{m_stacking_mutex};
+        // firstly we need the median values around the cluster for background estimation
+        vector<vector<float>> values_around_in_background(rgb_data_calibrated.size());
+        for (const SelectedPixelInformation &pixel_info : selected_pixels_information)  {
+            const int x = pixel_info.x;
+            const int y = pixel_info.y;
+            const int index = m_stacked_result_width*y + x;
+
+            if (x >= m_stacked_result_width)    return;
+            if (y >= m_stacked_result_height)   return;
+
+            if (pixel_info.scale_factor <= 0.0f) continue;
+            if (pixel_info.scale_factor >= 1.0f) continue;
+
+            for (unsigned int i_color = 0; i_color < rgb_data_calibrated.size(); i_color++)   {
+                const float background_value = m_stacked_result_data[i_color][index];
+                values_around_in_background[i_color].push_back(background_value);
+            }
+        }
+        const vector<float> median_values_in_background = sort_and_get_medians(values_around_in_background);
+        vector <float> signal_median_minus_background(median_values_around.size(), 0.0f);
+        for (size_t i = 0; i < median_values_around.size(); i++) {
+            signal_median_minus_background[i] = median_values_around[i] - median_values_in_background[i];
+        }
+
+
+        // now let's actually stack it
         for (const SelectedPixelInformation &pixel_info : selected_pixels_information)  {
             const int x = pixel_info.x;
             const int y = pixel_info.y;
@@ -361,7 +412,7 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
 
             for (unsigned int i_color = 0; i_color < rgb_data_calibrated.size(); i_color++)   {
                 const float old_value = m_stacked_result_data[i_color][index];
-                const float new_value = pixel_info.pixel_values[i_color];
+                const float new_value = std::max<float>(pixel_info.pixel_values[i_color] - signal_median_minus_background[i_color],0.0f);
                 const float mixed_value = old_value*weight_background + new_value*weight_signal;
                 m_stacked_result_data[i_color][index] = mixed_value;
             }
