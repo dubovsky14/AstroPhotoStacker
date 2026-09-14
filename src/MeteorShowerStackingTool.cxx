@@ -29,17 +29,95 @@ void MeteorShowerStackingTool::set_cluster_selected(const FrameAndGroup &frame, 
     }
 };
 
+void MeteorShowerStackingTool::extend_cluster(const FrameAndGroup &frame, size_t cluster_id, std::pair<int,int> end_of_extentsion_coordinates_gui)    {
+    std::vector<std::vector<std::tuple<int, int> > > &clusters = m_frame_clusters_map[frame].clusters;
+    if (cluster_id >= clusters.size()) return;
+    std::vector<std::tuple<int, int> > &cluster = clusters[cluster_id];
+    const std::vector<std::vector<float>> covariance_matrix = PhotoRanker::get_covariance_matrix(cluster);
+
+    const int width = m_frame_clusters_map[frame].frame_width;
+    const int height = m_frame_clusters_map[frame].frame_height;
+
+
+    vector<float> eigenvalues;
+    vector<vector<float>> eigenvectors;
+    const bool eigenvals_valid = calculate_eigenvectors_and_eigenvalues(covariance_matrix, &eigenvalues, &eigenvectors);
+
+    if (!eigenvals_valid) return;
+
+    const std::vector<float> &leading_eigenvector = eigenvectors[0];
+    const std::vector<float> &subleading_eigenvector = eigenvectors[1];
+    array<float, 2> cluster_center = {0.0f, 0.0f};
+    for (const auto &point : cluster) {
+        cluster_center[0] += static_cast<float>(get<0>(point));
+        cluster_center[1] += static_cast<float>(get<1>(point));
+    }
+    cluster_center[0] /= static_cast<float>(cluster.size());
+    cluster_center[1] /= static_cast<float>(cluster.size());
+
+    set<pair<int,int>> extended_cluster_points;
+    for (const auto &point : cluster) {
+        extended_cluster_points.insert({get<0>(point), get<1>(point)});
+    }
+
+    // projection of extension along the leading eigenvector
+    const float extension_projection = static_cast<float>(end_of_extentsion_coordinates_gui.first - cluster_center[0]) * leading_eigenvector[0] +
+                                            static_cast<float>(end_of_extentsion_coordinates_gui.second - cluster_center[1]) * leading_eigenvector[1];
+
+    const float cluster_width = std::max<float>(2,sqrt(eigenvalues[1])/2);
+
+    auto blongs_to_extended_cluster = [&](int x, int y) {
+        const float dx = static_cast<float>(x) - cluster_center[0];
+        const float dy = static_cast<float>(y) - cluster_center[1];
+        const float projection = dx * leading_eigenvector[0] + dy * leading_eigenvector[1];
+        const float perpendicular_distance = fabs(dx * subleading_eigenvector[0] + dy * subleading_eigenvector[1]);
+
+        if (extension_projection < 0) {
+            if (projection < extension_projection || projection > 0) {
+                return false;
+            }
+        }
+        if (extension_projection > 0) {
+            if (projection > extension_projection || projection < 0) {
+                return false;
+            }
+        }
+
+        return perpendicular_distance <= cluster_width;
+    };
+    const float extension_projection_abs = fabs(extension_projection);
+
+    for (int x = static_cast<int>(cluster_center[0] - extension_projection_abs); x <= static_cast<int>(cluster_center[0] + extension_projection_abs); ++x) {
+        for (int y = static_cast<int>(cluster_center[1] - extension_projection_abs); y <= static_cast<int>(cluster_center[1] + extension_projection_abs); ++y) {
+            if (blongs_to_extended_cluster(x, y)) {
+                extended_cluster_points.insert({x, y});
+            }
+        }
+    }
+
+    cluster.clear();
+    for (const auto &point : extended_cluster_points) {
+        if (point.first < 0 || point.first >= width || point.second < 0 || point.second >= height) {
+            continue;
+        }
+        cluster.push_back({point.first, point.second});
+    }
+};
+
 void MeteorShowerStackingTool::recalculate_clusters(const FrameAndGroup &frame, float cluster_fraction_threshold, float minimal_excentricity, float minimal_eigenval_ratio, bool buffer_brightness)  {
     std::vector< std::vector<std::tuple<int, int> > > clusters;
+    int width = 0;
+    int height = 0;
     if (buffer_brightness && m_frame_in_brightness_buffer == frame) {
         const PixelType threshold = get_threshold_value<PixelType>(m_brightness_buffer.data(), m_brightness_buffer_width*m_brightness_buffer_height, cluster_fraction_threshold);
         clusters = get_clusters(m_brightness_buffer.data(), m_brightness_buffer_width, m_brightness_buffer_height, threshold);
+        width = m_brightness_buffer_width;
+        height = m_brightness_buffer_height;
     }
     else {
         InputFrameReader input_frame_reader(frame.input_frame, true);
         const std::vector<PixelType> &brightness = input_frame_reader.get_monochrome_data();
-        int width = 0;
-        int height = 0;
+
         input_frame_reader.get_photo_resolution(&width, &height);
 
         if (buffer_brightness) {
@@ -65,6 +143,8 @@ void MeteorShowerStackingTool::recalculate_clusters(const FrameAndGroup &frame, 
         cluster_info.clusters_correlation.push_back(PhotoRanker::get_cluster_correlation(cluster));
         cluster_info.clusters_cov_eigenval_ratio_sqrt.push_back(cov_eigenval_ratio_sqrt);
         cluster_info.cluster_fraction_threshold = cluster_fraction_threshold;
+        cluster_info.frame_width = width;
+        cluster_info.frame_height = height;
     }
     m_frame_clusters_map[frame] = cluster_info;
 };

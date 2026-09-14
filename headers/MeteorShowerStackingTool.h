@@ -48,6 +48,8 @@ namespace AstroPhotoStacker {
         std::vector<float> clusters_correlation;
         std::vector<float> clusters_cov_eigenval_ratio_sqrt;
         float cluster_fraction_threshold = 0.0;
+        int frame_width  = 0;
+        int frame_height = 0;
     };
 
 
@@ -70,6 +72,8 @@ namespace AstroPhotoStacker {
             FrameClusterInfo get_cluster_info(const FrameAndGroup &frame)  const;
 
             void set_cluster_selected(const FrameAndGroup &frame, size_t cluster_id, bool selected);
+
+            void extend_cluster(const FrameAndGroup &frame, size_t cluster_id, std::pair<int,int> end_of_extentsion_coordinates);
 
             void recalculate_clusters(const FrameAndGroup &frame, float cluster_fraction_threshold, float minimal_excentricity, float minimal_eigenval_ratio, bool buffer_brightness = false);
 

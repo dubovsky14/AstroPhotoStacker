@@ -393,25 +393,25 @@ namespace AstroPhotoStacker {
         }
 
         const double a = 1;
-        const double b = -covariance_matrix[0][0] - covariance_matrix[1][1];
-        const double c = covariance_matrix[0][0] * covariance_matrix[1][1] - covariance_matrix[0][1] * covariance_matrix[1][0];
+        const double b = -covariance_matrix[0][0] - covariance_matrix[1][1]; // -1184.715
+        const double c = covariance_matrix[0][0] * covariance_matrix[1][1] - covariance_matrix[0][1] * covariance_matrix[1][0]; // 1530.64
 
-        const double delta = b*b - 4*a*c;
+        const double delta = b*b - 4*a*c; // sqrt(delta) = 1182.128195766
 
         if (delta < 0) {
             return false;
         }
 
-        const double lambda1 = (-b + sqrt(delta))/(2*a);
-        const double lambda2 = (-b - sqrt(delta))/(2*a);
+        const double lambda1 = (-b + sqrt(delta))/(2*a); // 1183.421
+        const double lambda2 = (-b - sqrt(delta))/(2*a); // 1.293
 
         eigenvalues->clear();
         eigenvalues->push_back(lambda1);
         eigenvalues->push_back(lambda2);
 
         eigenvectors->clear();
-        eigenvectors->push_back({covariance_matrix[0][1], static_cast<ValueType>(covariance_matrix[0][0] - lambda1)});
-        eigenvectors->push_back({covariance_matrix[0][1], static_cast<ValueType>(covariance_matrix[0][0] - lambda2)});
+        eigenvectors->push_back({-covariance_matrix[0][1], static_cast<ValueType>(covariance_matrix[0][0] - lambda1)}); // 534.762 , -333.8
+        eigenvectors->push_back({-covariance_matrix[0][1], static_cast<ValueType>(covariance_matrix[0][0] - lambda2)}); // 534.762 , 842.83
 
         for (auto &eigenvector : *eigenvectors) {
             const double length = sqrt(eigenvector[0]*eigenvector[0] + eigenvector[1]*eigenvector[1]);
@@ -424,7 +424,7 @@ namespace AstroPhotoStacker {
             }
         }
 
-        if (eigenvalues->at(0) < eigenvalues->at(1)) {
+        if (abs(eigenvalues->at(0)) < abs(eigenvalues->at(1))) {
             std::swap(eigenvalues->at(0), eigenvalues->at(1));
             std::swap(eigenvectors->at(0), eigenvectors->at(1));
         }

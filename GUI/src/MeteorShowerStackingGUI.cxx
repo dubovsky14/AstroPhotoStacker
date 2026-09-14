@@ -58,25 +58,36 @@ MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent, int n_cpus) :
 
     // bind select/unselect cluster on click event
     m_image_preview->bind_right_click_event([this](int x, int y) {
-        if (m_cluster_kd_tree == nullptr) {
-            return;
-        }
-        const array<int,2> query_point = {x, y};
-        vector<tuple<array<int, 2>, int>> nearest_neighbors = m_cluster_kd_tree->get_k_nearest_neighbors(query_point.data(), 1);
-        if (nearest_neighbors.empty()) {
-            return;
-        }
-        const int cluster_index = std::get<1>(nearest_neighbors[0]);
+        if (!m_extend_cluster_is_active) {
+            if (m_cluster_kd_tree == nullptr) {
+                return;
+            }
+            const array<int,2> query_point = {x, y};
+            vector<tuple<array<int, 2>, int>> nearest_neighbors = m_cluster_kd_tree->get_k_nearest_neighbors(query_point.data(), 1);
+            if (nearest_neighbors.empty()) {
+                return;
+            }
+            const int cluster_index = std::get<1>(nearest_neighbors[0]);
 
-        const std::array<int, 2> cluster_pixel = std::get<0>(nearest_neighbors[0]);
-        const int dx = cluster_pixel[0] - x;
-        const int dy = cluster_pixel[1] - y;
-        const int distance = sqrt(dx * dx + dy * dy);
-        if (distance > 20) {
-            return;
-        }
+            const std::array<int, 2> cluster_pixel = std::get<0>(nearest_neighbors[0]);
+            const int dx = cluster_pixel[0] - x;
+            const int dy = cluster_pixel[1] - y;
+            const int distance = sqrt(dx * dx + dy * dy);
+            if (distance > 20) {
+                return;
+            }
 
-        select_unselect_cluster_from_preview(cluster_index);
+            select_unselect_cluster_from_preview(cluster_index);
+        }
+        if (m_extend_cluster_is_active) {
+            if (m_active_cluster_index == -1) {
+                return;
+            }
+            m_meteor_shower_stacking_tool.extend_cluster(m_currently_displayed_frame, m_active_cluster_index, {x, y});
+            update_clusters_in_preview();
+            update_extend_cluster_state(false);
+
+        }
     });
 
 
@@ -137,6 +148,7 @@ bool MeteorShowerStackingGUI::select_unselect_cluster_from_preview(int index_in_
     m_meteor_shower_stacking_tool.set_cluster_selected(m_currently_displayed_frame, index_in_cluster_info, !was_checked);
     m_clusters_checkbox->Check(index_gui, !was_checked);
     m_clusters_checkbox->SetSelection(index_gui);
+    m_active_cluster_index = index_gui;
     update_clusters_in_preview();
     return !was_checked;
 };
@@ -216,6 +228,14 @@ void MeteorShowerStackingGUI::update_cluster_list() {
     });
 };
 
+void MeteorShowerStackingGUI::update_extend_cluster_state(bool new_value) {
+    m_extend_cluster_is_active = new_value && m_active_cluster_index != -1;
+    if (m_extend_cluster_is_active) {
+        m_button_extend_cluster->SetLabel("Cancel cluster extension");
+    } else {
+        m_button_extend_cluster->SetLabel("Extend cluster");
+    }
+};
 
 void MeteorShowerStackingGUI::add_cluster_buttons()  {
     m_cluster_buttons_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -238,6 +258,12 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
             m_button_show_cluster->SetLabel("Show clusters");
         }
         update_clusters_in_preview();
+    });
+
+
+    m_button_extend_cluster = add_button("Extend cluster", [this]() {
+        // check if there is active cluster
+        update_extend_cluster_state(!m_extend_cluster_is_active);
     });
 
     m_button_recalculate_clusters = add_button("Recalculate clusters", [this]() {
@@ -551,6 +577,7 @@ void MeteorShowerStackingGUI::add_list_of_files() {
 
 void MeteorShowerStackingGUI::update_image_preview_file(size_t frame_index)  {
     update_files_to_stack_checkbox();
+    update_extend_cluster_state(false);
 
     if (frame_index >= m_filelist_handler_gui_interface.get_number_of_shown_frames()) {
         return;
