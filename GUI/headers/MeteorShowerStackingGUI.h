@@ -37,6 +37,10 @@ class MeteorShowerStackingGUI : public wxFrame  {
         wxSize m_window_size;
         int m_image_preview_width = 600;
         int m_image_preview_height = 400;
+        void add_save_and_load_menu();
+        void add_menu_bar();
+        wxMenuBar   *m_menu_bar         = nullptr;
+        wxMenu *m_save_and_load_menu = nullptr;
 
         AstroPhotoStacker::MeteorShowerStackingTool m_meteor_shower_stacking_tool;
 

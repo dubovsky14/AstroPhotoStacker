@@ -231,6 +231,143 @@ void MeteorShowerStackingTool::stack_frames(const FilelistHandler &filelist_hand
 
 };
 
+
+void MeteorShowerStackingTool::save_selected_clusters_to_file(const std::string &file_address) const    {
+    // in the format "input_frame \t group_number \t list of coordinates of 1st cluster in form x1,y1;x2,y2;...| list of coordinates of 2nd cluster ...|"
+
+    std::ofstream file(file_address);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file for writing: " + file_address);
+    }
+
+    // string in a form of:
+    // - frame: input_frame | frame_number
+    //   group_number: integer
+    //   cluster_fraction_threshold: <threshold value>
+    //   frame_width: integer
+    //   frame_height: integer
+    //   pixels_in_clusters: x1,y1;x2,y2;...|x1,y1;x2,y2;...
+
+    for (const auto &entry : m_frame_clusters_map) {
+        const FrameAndGroup &frame = entry.first;
+        const FrameClusterInfo &cluster_info = entry.second;
+
+        file << "- frame: " << frame.input_frame.to_string() << endl;
+        file << "  group_number: " << frame.group_number << endl;
+        file << "  cluster_fraction_threshold: " << cluster_info.cluster_fraction_threshold << endl;
+        file << "  frame_width: " << cluster_info.frame_width << endl;
+        file << "  frame_height: " << cluster_info.frame_height << endl;
+        file << "  pixels_in_clusters: ";
+        int selected_clusters_count = 0;
+        for (size_t i_cluster = 0; i_cluster < cluster_info.clusters.size(); i_cluster++) {
+            if (!cluster_info.clusters_selected.at(i_cluster)) {
+                continue;
+            }
+            if (selected_clusters_count > 0) {
+                file << "|";
+            }
+            selected_clusters_count++;
+            for (size_t i_pixel = 0; i_pixel < cluster_info.clusters.at(i_cluster).size(); i_pixel++) {
+                if (i_pixel > 0) {
+                    file << ";";
+                }
+                const auto &pixel = cluster_info.clusters.at(i_cluster).at(i_pixel);
+                file << std::get<0>(pixel) << "," << std::get<1>(pixel);
+            }
+        }
+        file << endl;
+
+    }
+    file.close();
+};
+
+void MeteorShowerStackingTool::load_selected_clusters_from_file(const std::string &file_address) {
+    std::ifstream file(file_address);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file for reading: " + file_address);
+    }
+
+    m_frame_clusters_map.clear();
+
+    auto get_key_and_value_from_line = [](const std::string &line) -> std::pair<std::string, std::string> {
+        size_t colon_pos = line.find(':');
+        if (colon_pos == std::string::npos) {
+            return {"", ""};
+        }
+        std::string key = line.substr(0, colon_pos);
+        std::string value = line.substr(colon_pos + 1);
+        strip_string(&key);
+        strip_string(&value);
+        return {key, value};
+    };
+
+    std::string line;
+    FrameAndGroup current_frame_and_group;
+    FrameClusterInfo current_cluster_info;
+    while (std::getline(file, line)) {
+        strip_string(&line);
+        if (line.empty()) {
+            continue;
+        }
+        if (starts_with(line, "-")) {
+            if (current_frame_and_group != FrameAndGroup()) {
+                m_frame_clusters_map[current_frame_and_group] = current_cluster_info;
+
+                cout << "Saved cluster for frame: " << current_frame_and_group.input_frame.to_string() << ", group: " << current_frame_and_group.group_number << endl;
+                cout << "Current frame has " << current_cluster_info.clusters.size() << " clusters." << endl;
+            }
+            current_cluster_info = FrameClusterInfo();
+            current_frame_and_group = FrameAndGroup();
+            line = line.substr(1); // remove the leading "-"
+        }
+
+        auto[key, value] = get_key_and_value_from_line(line);
+        if (key == "frame") {
+            current_frame_and_group.input_frame = InputFrame(value);
+        }
+        else if (key == "group_number") {
+            current_frame_and_group.group_number = std::stoi(value);
+        }
+        else if (key == "cluster_fraction_threshold")   {
+            current_cluster_info.cluster_fraction_threshold = std::stod(value);
+        }
+        else if (key == "frame_width") {
+            current_cluster_info.frame_width = std::stoi(value);
+        }
+        else if (key == "frame_height") {
+            current_cluster_info.frame_height = std::stoi(value);
+        }
+        else if (key == "pixels_in_clusters") {
+            vector<string> cluster_stings = split_string(value, "|");
+            for (const string &cluster_string : cluster_stings) {
+                vector<string> pixel_strings = split_string(cluster_string, ";");
+                vector<tuple<int, int>> cluster;
+                for (const string &pixel_string : pixel_strings) {
+                    vector<string> coordinates = split_string(pixel_string, ",");
+                    if (coordinates.size() == 2) {
+                        int x = std::stoi(coordinates[0]);
+                        int y = std::stoi(coordinates[1]);
+                        cluster.emplace_back(x, y);
+                    }
+                }
+                const float excentricity = PhotoRanker::get_cluster_excentricity(cluster);
+                const float cov_eigenval_ratio_sqrt = PhotoRanker::get_covariance_eigenvalues_ratio_sqrt(cluster);
+                current_cluster_info.clusters.push_back(cluster);
+                current_cluster_info.clusters_selected.push_back(true);
+                current_cluster_info.clusters_excentricity.push_back(excentricity);
+                current_cluster_info.clusters_correlation.push_back(PhotoRanker::get_cluster_correlation(cluster));
+                current_cluster_info.clusters_cov_eigenval_ratio_sqrt.push_back(cov_eigenval_ratio_sqrt);
+            }
+        }
+
+    }
+    if (current_frame_and_group != FrameAndGroup()) {
+        m_frame_clusters_map[current_frame_and_group] = current_cluster_info;
+    }
+
+    file.close();
+}
+
 void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const FilelistHandler &filelist_handler, const std::vector<std::shared_ptr<const CalibrationFrameBase>> &calibration_frames)   {
     const AlignmentResultBase &alignment = filelist_handler.get_alignment_info(frame.group_number, frame.input_frame);
 

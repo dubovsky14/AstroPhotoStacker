@@ -89,6 +89,10 @@ namespace AstroPhotoStacker {
 
             void stack_frames(const FilelistHandler &filelist_handler, const FrameAndGroup &background_frame);
 
+            void save_selected_clusters_to_file(const std::string &file_address) const;
+
+            void load_selected_clusters_from_file(const std::string &file_address);
+
         private:
             std::map<FrameAndGroup, FrameClusterInfo> m_frame_clusters_map;
             unsigned int m_n_cpus = 1;

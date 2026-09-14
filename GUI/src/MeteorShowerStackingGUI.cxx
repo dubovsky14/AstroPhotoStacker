@@ -111,9 +111,54 @@ MeteorShowerStackingGUI::MeteorShowerStackingGUI(MyFrame *parent, int n_cpus) :
     add_buttons();
     add_background_frame_selector();
     add_list_of_files();
+    add_menu_bar();
 
     SetSizer(m_main_vertical_sizer);
 };
+
+
+
+void MeteorShowerStackingGUI::add_menu_bar()    {
+    m_menu_bar = new wxMenuBar;
+    add_save_and_load_menu();
+
+    SetMenuBar(m_menu_bar);
+};
+
+
+
+void MeteorShowerStackingGUI::add_save_and_load_menu()  {
+    m_save_and_load_menu = new wxMenu;
+
+    int id = unique_counter();
+    m_save_and_load_menu->Append(id, "Save clusters to file", "Save clusters to file");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const std::string default_path = "";
+        wxFileDialog dialog(this, "Save clusters to file", "", default_path, "*.txt", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        if (dialog.ShowModal() == wxID_OK) {
+            const std::string file_address = dialog.GetPath().ToStdString();
+            m_meteor_shower_stacking_tool.save_selected_clusters_to_file(file_address);
+        }
+    }, id);
+
+
+    id = unique_counter();
+    m_save_and_load_menu->Append(id, "Load clusters from file", "Load clusters from file");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const std::string default_path = "";
+        wxFileDialog dialog(this, "Load clusters from file", "", default_path, "*.txt", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        if (dialog.ShowModal() == wxID_OK) {
+            const std::string file_address = dialog.GetPath().ToStdString();
+            m_meteor_shower_stacking_tool.load_selected_clusters_from_file(file_address);
+        }
+        update_cluster_list();
+        update_image_preview_file(m_previously_selected_frame_index);
+        update_files_to_stack_checkbox();
+    }, id);
+
+    m_menu_bar->Append(m_save_and_load_menu, "&Save and Load");
+};
+
 
 
 void MeteorShowerStackingGUI::add_exposure_correction_spin_ctrl()   {
