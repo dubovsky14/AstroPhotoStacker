@@ -11,6 +11,7 @@
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/ImageFilesInputOutput.h"
 #include "../../headers/Common.h"
+#include "../../headers/SummaryYamlCreator.h"
 
 
 #include "../headers/MainFrame.h"
@@ -435,7 +436,7 @@ void MeteorShowerStackingGUI::add_buttons()  {
     m_button_stack = add_button("Stack files", [this]() {
         const std::atomic<int>& tasks_processed = m_meteor_shower_stacking_tool.get_tasks_processed();
         const int tasks_total = m_filelist_handler_gui_interface.get_checked_frames_of_type(FrameType::LIGHT).size();
-        run_task_with_progress_dialog(  "Recalculating clusters for selected frames...",
+        run_task_with_progress_dialog(  "Stacking frames...",
                         "Finished",
                         "",
                         tasks_processed,
@@ -488,6 +489,12 @@ void MeteorShowerStackingGUI::add_buttons()  {
                                             width,
                                             height,
                                             CV_16UC3);
+
+            StackSettings stack_settings;
+            SummaryYamlCreator summary_yaml_creator(m_filelist_handler_gui_interface, stack_settings);
+            summary_yaml_creator.create_and_save_yaml_file(file_address + ".yaml", nullptr);
+            summary_yaml_creator.add_as_exif_metadata(file_address);
+
         }
     });
 };

@@ -24,7 +24,7 @@ FrameClusterInfo MeteorShowerStackingTool::get_cluster_info(const FrameAndGroup 
 void MeteorShowerStackingTool::set_cluster_selected(const FrameAndGroup &frame, size_t cluster_id, bool selected)  {
     if (m_frame_clusters_map.find(frame) != m_frame_clusters_map.end()) {
         if (cluster_id < m_frame_clusters_map[frame].clusters_selected.size()) {
-            m_frame_clusters_map[frame].clusters_selected[cluster_id] = selected;
+            m_frame_clusters_map[frame].clusters_selected.at(cluster_id) = selected;
         }
     }
 };
@@ -45,8 +45,8 @@ void MeteorShowerStackingTool::extend_cluster(const FrameAndGroup &frame, size_t
 
     if (!eigenvals_valid) return;
 
-    const std::vector<float> &leading_eigenvector = eigenvectors[0];
-    const std::vector<float> &subleading_eigenvector = eigenvectors[1];
+    const std::vector<float> &leading_eigenvector = eigenvectors.at(0);
+    const std::vector<float> &subleading_eigenvector = eigenvectors.at(1);
     array<float, 2> cluster_center = {0.0f, 0.0f};
     for (const auto &point : cluster) {
         cluster_center[0] += static_cast<float>(get<0>(point));
@@ -69,8 +69,8 @@ void MeteorShowerStackingTool::extend_cluster(const FrameAndGroup &frame, size_t
     auto blongs_to_extended_cluster = [&](int x, int y) {
         const float dx = static_cast<float>(x) - cluster_center[0];
         const float dy = static_cast<float>(y) - cluster_center[1];
-        const float projection = dx * leading_eigenvector[0] + dy * leading_eigenvector[1];
-        const float perpendicular_distance = fabs(dx * subleading_eigenvector[0] + dy * subleading_eigenvector[1]);
+        const float projection = dx * leading_eigenvector.at(0) + dy * leading_eigenvector.at(1);
+        const float perpendicular_distance = fabs(dx * subleading_eigenvector.at(0) + dy * subleading_eigenvector.at(1));
 
         if (extension_projection < 0) {
             if (projection < extension_projection || projection > 0) {
@@ -342,8 +342,8 @@ void MeteorShowerStackingTool::load_selected_clusters_from_file(const std::strin
                 for (const string &pixel_string : pixel_strings) {
                     vector<string> coordinates = split_string(pixel_string, ",");
                     if (coordinates.size() == 2) {
-                        int x = std::stoi(coordinates[0]);
-                        int y = std::stoi(coordinates[1]);
+                        int x = std::stoi(coordinates.at(0));
+                        int y = std::stoi(coordinates.at(1));
                         cluster.emplace_back(x, y);
                     }
                 }
@@ -384,14 +384,14 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
 
     vector<bool> cluster_mask_original_coordinates(width*height, false);
     for (unsigned int i_cluster = 0; i_cluster < frame_cluster_info.clusters.size(); i_cluster++)   {
-        if (!frame_cluster_info.clusters_selected[i_cluster]) {
+        if (!frame_cluster_info.clusters_selected.at(i_cluster)) {
             continue;
         }
 
-        for (const tuple<int, int> &pixel : frame_cluster_info.clusters[i_cluster])   {
+        for (const tuple<int, int> &pixel : frame_cluster_info.clusters.at(i_cluster))   {
             int x = get<0>(pixel);
             int y = get<1>(pixel);
-            cluster_mask_original_coordinates[y*width + x] = true;
+            cluster_mask_original_coordinates.at(y*width + x) = true;
         }
     }
 
@@ -406,8 +406,8 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
 
             const int index_this_frame_coordinates = int(y_this_frame_coordinates)*width + int(x_this_frame_coordinates);
             const int index_background_frame_coordinates = y*m_stacked_result_width + x;
-            if (cluster_mask_original_coordinates[index_this_frame_coordinates])   {
-                selected_pixels_mask[index_background_frame_coordinates] = true;
+            if (cluster_mask_original_coordinates.at(index_this_frame_coordinates))   {
+                selected_pixels_mask.at(index_background_frame_coordinates) = true;
                 pixels_in_clusters_background_frame_coordinates.push_back({x,y});
             }
         }
@@ -423,16 +423,16 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
         const int x = pixel_in_cluster.first;
         const int y = pixel_in_cluster.second;
 
-        scale_factor_mask[width*y + x] = 1;
+        scale_factor_mask.at(width*y + x) = 1;
 
         for (int dx = -smearing_radius; dx <= smearing_radius; dx++)    {
             const int shifted_x = x+dx;
-            if (shifted_x < 0 || shifted_x > width) {
+            if (shifted_x < 0 || shifted_x >= width) {
                 continue;
             }
             for (int dy = -smearing_radius; dy <= smearing_radius; dy++)    {
                 const int shifted_y = y+dy;
-                if (shifted_y < 0 || shifted_y > height) {
+                if (shifted_y < 0 || shifted_y >= height) {
                     continue;
                 }
                 const unsigned int index = width*(shifted_y) + shifted_x;
@@ -442,11 +442,11 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
                     continue;
                 }
                 else if (r < cluster_radius) {
-                    scale_factor_mask[index] = 1.;
+                    scale_factor_mask.at(index) = 1.;
                 }
                 else {
                     const float this_sf = (smearing_radius -r)/radius_diff ;
-                    scale_factor_mask[index] = std::max<float>(scale_factor_mask[index], this_sf);
+                    scale_factor_mask.at(index) = std::max<float>(scale_factor_mask.at(index), this_sf);
                 }
             }
         }
@@ -472,15 +472,15 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
             SelectedPixelInformation this_pixel_info;
             this_pixel_info.x = x;
             this_pixel_info.y = y;
-            this_pixel_info.pixel_values[0] = rgb_data_calibrated[0][index];
-            this_pixel_info.pixel_values[1] = rgb_data_calibrated[1][index];
-            this_pixel_info.pixel_values[2] = rgb_data_calibrated[2][index];
-            this_pixel_info.scale_factor = scale_factor_mask[index];
+            this_pixel_info.pixel_values.at(0) = rgb_data_calibrated.at(0).at(index);
+            this_pixel_info.pixel_values.at(1) = rgb_data_calibrated.at(1).at(index);
+            this_pixel_info.pixel_values.at(2) = rgb_data_calibrated.at(2).at(index);
+            this_pixel_info.scale_factor = scale_factor_mask.at(index);
             selected_pixels_information.push_back(this_pixel_info);
 
-            if (scale_factor_mask[index] < 1)   {
+            if (scale_factor_mask.at(index) < 1)   {
                 for (unsigned int i_color = 0; i_color < rgb_data_calibrated.size(); i_color++) {
-                    values_around_cluster[i_color].push_back(rgb_data_calibrated[i_color][index]);
+                    values_around_cluster.at(i_color).push_back(rgb_data_calibrated.at(i_color).at(index));
                 }
             }
         }
@@ -489,13 +489,13 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
     auto sort_and_get_medians = [](std::vector<std::vector<float>> &values) -> std::vector<float> {
         std::vector<float> medians(values.size(), 0.0f);
         for (size_t i = 0; i < values.size(); i++) {
-            if (values[i].empty()) continue;
-            std::sort(values[i].begin(), values[i].end());
-            const size_t mid = values[i].size() / 2;
-            if (values[i].size() % 2 == 0) {
-                medians[i] = (values[i][mid - 1] + values[i][mid]) / 2.0f;
+            if (values.at(i).empty()) continue;
+            std::sort(values.at(i).begin(), values.at(i).end());
+            const size_t mid = values.at(i).size() / 2;
+            if (values.at(i).size() % 2 == 0) {
+                medians.at(i) = (values.at(i).at(mid - 1) + values.at(i).at(mid)) / 2.0f;
             } else {
-                medians[i] = values[i][mid];
+                medians.at(i) = values.at(i).at(mid);
             }
         }
         return medians;
@@ -521,14 +521,14 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
             if (pixel_info.scale_factor >= 1.0f) continue;
 
             for (unsigned int i_color = 0; i_color < rgb_data_calibrated.size(); i_color++)   {
-                const float background_value = m_stacked_result_data[i_color][index];
-                values_around_in_background[i_color].push_back(background_value);
+                const float background_value = m_stacked_result_data.at(i_color).at(index);
+                values_around_in_background.at(i_color).push_back(background_value);
             }
         }
         const vector<float> median_values_in_background = sort_and_get_medians(values_around_in_background);
         vector <float> signal_median_minus_background(median_values_around.size(), 0.0f);
         for (size_t i = 0; i < median_values_around.size(); i++) {
-            signal_median_minus_background[i] = median_values_around[i] - median_values_in_background[i];
+            signal_median_minus_background.at(i) = median_values_around.at(i) - median_values_in_background.at(i);
         }
 
 
@@ -545,10 +545,10 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
             const float weight_background = 1-weight_signal;
 
             for (unsigned int i_color = 0; i_color < rgb_data_calibrated.size(); i_color++)   {
-                const float old_value = m_stacked_result_data[i_color][index];
-                const float new_value = std::max<float>(pixel_info.pixel_values[i_color] - signal_median_minus_background[i_color],0.0f);
+                const float old_value = m_stacked_result_data.at(i_color).at(index);
+                const float new_value = std::max<float>(pixel_info.pixel_values.at(i_color) - signal_median_minus_background.at(i_color),0.0f);
                 const float mixed_value = old_value*weight_background + new_value*weight_signal;
-                m_stacked_result_data[i_color][index] = mixed_value;
+                m_stacked_result_data.at(i_color).at(index) = mixed_value;
             }
         }
     }
