@@ -83,8 +83,6 @@ namespace AstroPhotoStacker   {
 
             virtual void initialize(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map)   override;
 
-            static void calculate_eigenvectors_and_eigenvalues(const std::vector<std::vector<double>> &covariance_matrix, std::vector<double> *eigenvalues, std::vector<std::vector<double>> *eigenvectors);
-
             virtual void define_configuration_settings() override;
 
             double m_center_of_mass_x = 0;

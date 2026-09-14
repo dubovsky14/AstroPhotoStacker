@@ -94,6 +94,7 @@ Metadata RawFileReaderDSLR::read_metadata_without_cache() {
     result.max_value     = raw_processor.imgdata.color.maximum;
     result.timestamp     = raw_processor.imgdata.other.timestamp;
     result.temperature   = raw_processor.imgdata.makernotes.common.CameraTemperature;
+    result.bit_depth     = 16;
     result.is_raw        = true;
 
     // 0th element ir 'R', 1st is 'G', 2nd is 'B', 3rd is 'G'

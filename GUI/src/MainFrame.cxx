@@ -10,6 +10,7 @@
 #include "../headers/SettingsCustomizationGUI.h"
 #include "../headers/SettingsCustomization.h"
 #include "../headers/LightPollutionRemovalToolGUI.h"
+#include "../headers/MeteorShowerStackingGUI.h"
 
 
 
@@ -22,6 +23,7 @@
 #include "../../headers/PixelType.h"
 #include "../../headers/CalibratedPhotoHandler.h"
 #include "../../headers/AdditionalStackerSettingNumerical.h"
+#include "../../headers/FramesToSERVideoConvertor.h"
 
 #include <wx/spinctrl.h>
 #include <wx/progdlg.h>
@@ -109,11 +111,33 @@ void MyFrame::add_file_menu()  {
 
     id = unique_counter();
     m_file_menu->Append(id, "Save stacked file", "Save stacked file");
-    Bind(wxEVT_MENU, &MyFrame::on_save_stacked, this, id);
+    Bind(wxEVT_MENU,  &MyFrame::save_stacked_with_post_process, this, id);
+
+    id = unique_counter();
+    m_file_menu->Append(id, "Save stacked file without post-processing", "Save stacked file without post-processing");
+    Bind(wxEVT_MENU,  &MyFrame::save_stacked_without_post_process, this, id);
 
     id = unique_counter();
     m_file_menu->Append(id, "Save selected files as FIT", "Save selected files as FIT");
     Bind(wxEVT_MENU, &MyFrame::on_save_selected_as_fit, this, id);
+
+    id = unique_counter();
+    m_file_menu->Append(id, "Save selected files as SER", "Save selected files as SER");
+    Bind(wxEVT_MENU, &MyFrame::on_save_selected_as_ser, this, id);
+
+    id = unique_counter();
+    m_file_menu->Append(id, "Load lens corrections", "Load lens corrections");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(RecentPathSettings::LENS_CORRECTIONS, "");
+        wxFileDialog dialog(this, "Load lens corrections", "", default_path, "*.txt", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        if (dialog.ShowModal() == wxID_OK) {
+            const std::string file_address = dialog.GetPath().ToStdString();
+            m_filelist_handler_gui_interface.add_lens_corrections_for_checked_light_frames_from_text_file(file_address);
+            m_recent_paths_handler->set_recent_file_path(RecentPathSettings::LENS_CORRECTIONS, file_address);
+            update_files_to_stack_checkbox();
+        }
+    }, id);
+
 
     m_file_menu->Append(wxID_EXIT);
     Bind(wxEVT_MENU, &MyFrame::on_exit,  this, wxID_EXIT);
@@ -404,6 +428,34 @@ void MyFrame::add_customization_menu() {
     m_menu_bar->Append(customization_menu, "&Customization");
 };
 
+
+void MyFrame::add_other_tools_menu()    {
+    wxMenu *other_tools_menu = new wxMenu;
+
+    int id = unique_counter();
+    other_tools_menu->Append(id, "Meteor shower stacking", "Meteor shower stacking");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        update_checked_files_in_filelist();
+        const bool frames_aligned = m_filelist_handler_gui_interface.all_checked_frames_are_aligned();
+        if (!frames_aligned) {
+            wxMessageDialog dialog(this, "Please align the files first!", "Files not aligned");
+            if (dialog.ShowModal() == wxID_YES) {
+                AlignmentFrame *select_alignment_window = new AlignmentFrame(this, &m_filelist_handler_gui_interface, static_cast<StackSettings *>(m_stack_settings.get()));
+                select_alignment_window->Show(true);
+            }
+            else {
+                return;
+            }
+        }
+
+        MeteorShowerStackingGUI *meteor_shower_stacking_gui = new MeteorShowerStackingGUI(this, m_stack_settings->get_n_cpus());
+        meteor_shower_stacking_gui->set_default_cluster_text_file_path(m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, ""));
+        meteor_shower_stacking_gui->Show(true);
+    }, id);
+
+    m_menu_bar->Append(other_tools_menu, "&Other tools");
+};
+
 void MyFrame::add_menu_bar()    {
     m_menu_bar = new wxMenuBar;
 
@@ -415,6 +467,7 @@ void MyFrame::add_menu_bar()    {
     add_aligned_images_producer_menu();
     add_postprocessing_menu();
     add_customization_menu();
+    add_other_tools_menu();
 
     SetMenuBar(m_menu_bar);
 };
@@ -1343,7 +1396,7 @@ void MyFrame::on_open_darks(wxCommandEvent& event)    {
     on_open_frames(event, FrameType::DARK, "Open dark frames");
 }
 
-void MyFrame::on_save_stacked(wxCommandEvent& event) {
+void MyFrame::save_stacked(wxCommandEvent& event, bool post_process) {
     const bool has_stacked_image = m_stacker != nullptr ? !m_stacker->get_stacked_image().empty() : false;
     if (!has_stacked_image) {
         wxMessageDialog dialog(this, "Files have not been stacked yet!", "Frames not stacked");
@@ -1366,18 +1419,28 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
 
 
         std::vector<std::vector<double> > stacked_image = m_stacker->get_stacked_image();
-
-        if (m_stack_settings->apply_color_stretching()) {
-            m_color_stretcher.stretch_image(&stacked_image, pow(2,15)-1, false);
+        if (!post_process)  {
+            // we still need to multiply it by 2
+            for (std::vector<double> &color_channel : stacked_image)    {
+                for (double &value : color_channel) {
+                    value *= 2;
+                }
+            }
+            create_color_image(&stacked_image.at(0)[0], &stacked_image.at(1)[0], &stacked_image.at(2)[0] , m_stacker->get_width(), m_stacker->get_height(), file_address, CV_16UC3);
         }
+        else {
+            if (m_stack_settings->apply_color_stretching()) {
+                m_color_stretcher.stretch_image(&stacked_image, pow(2,15)-1, false);
+            }
 
-        stacked_image = m_post_processing_tool.post_process_image(stacked_image, m_stacker->get_width(), m_stacker->get_height());
+            stacked_image = m_post_processing_tool.post_process_image(stacked_image, m_stacker->get_width(), m_stacker->get_height());
 
-        AstroPhotoStacker::StackerBase::save_stacked_photo(file_address,
-                                        stacked_image,
-                                        m_stacker->get_width(),
-                                        m_stacker->get_height(),
-                                        CV_16UC3);
+            AstroPhotoStacker::StackerBase::save_stacked_photo(file_address,
+                                            stacked_image,
+                                            m_stacker->get_width(),
+                                            m_stacker->get_height(),
+                                            CV_16UC3);
+        }
 
         if (m_summary_yaml_creator) {
             m_summary_yaml_creator->create_and_save_yaml_file(file_address + ".yaml", &m_post_processing_tool);
@@ -1386,6 +1449,13 @@ void MyFrame::on_save_stacked(wxCommandEvent& event) {
     }
 };
 
+void MyFrame::save_stacked_with_post_process(wxCommandEvent& event) {
+    save_stacked(event, true);
+};
+
+void MyFrame::save_stacked_without_post_process(wxCommandEvent& event) {
+    save_stacked(event, false);
+};
 
 void MyFrame::on_save_selected_as_fit(wxCommandEvent& event) {
 
@@ -1438,6 +1508,46 @@ void MyFrame::on_save_selected_as_fit(wxCommandEvent& event) {
         convert_selected_to_fit,
         "Saving selected files as FIT ...");
 
+
+};
+
+void MyFrame::on_save_selected_as_ser(wxCommandEvent& event) {
+
+
+    const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
+    wxFileDialog dialog(this, "Save to .ser video file", "", default_path, "*['.ser']", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    if (dialog.ShowModal() == wxID_OK) {
+        std::string file_address = dialog.GetPath().ToStdString();
+
+        // if the extension is not .tif, add it
+        if (file_address.substr(file_address.size()-4) != ".ser") {
+            file_address += ".ser";
+        }
+
+        const vector<FrameInfo> selected_frames_info = m_filelist_handler_gui_interface.get_checked_frames_of_type(FrameType::LIGHT);
+        vector<InputFrame> selected_frames;
+        for (const FrameInfo &frame_info : selected_frames_info)    {
+            selected_frames.push_back(frame_info.input_frame);
+        }
+
+        AstroPhotoStacker::FramesToSERVideoConvertor frames_to_ser_convertor(selected_frames);
+
+        const std::atomic<int> &tasks_processed = frames_to_ser_convertor.get_tasks_processed();
+        auto save_to_ser = [this, selected_frames, file_address, &frames_to_ser_convertor](){
+            frames_to_ser_convertor.save_to_file(file_address);
+        };
+
+        run_task_with_progress_dialog(  "Saving into SER",
+            "Saving selected files as SER:",
+            "",
+            tasks_processed,
+            selected_frames.size(),
+            save_to_ser,
+            "Saving selected files as SER ...");
+    }
+    else {
+        return;
+    }
 
 };
 

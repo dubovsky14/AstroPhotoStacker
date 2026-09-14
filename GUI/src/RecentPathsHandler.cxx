@@ -50,3 +50,30 @@ void RecentPathsHandler::set_recent_file_path_from_file(AstroPhotoStacker::Frame
         set_recent_file_path(frame_type, "");
     }
 };
+
+
+std::string RecentPathsHandler::get_recent_file_path(RecentPathSettings recent_path_setting, const std::string &default_value)  const {
+    const std::string file_address = m_storage_path + "/" + m_recent_path_setting_to_txt_file.at(recent_path_setting);
+    string line;
+    ifstream input_file (file_address);
+    if (input_file.is_open())    {
+        while ( getline (input_file,line) )        {
+            AstroPhotoStacker::strip_string(&line);
+            if (line.length() != 0) {
+                input_file.close();
+                return line;
+            }
+        }
+        input_file.close();
+    }
+    return default_value;
+};
+
+void RecentPathsHandler::set_recent_file_path(RecentPathSettings recent_path_setting, const std::string &recent_path) const {
+    const std::string file_address = m_storage_path + "/" + m_recent_path_setting_to_txt_file.at(recent_path_setting);
+    ofstream output_file(file_address);
+    if (output_file.is_open())    {
+        output_file << recent_path;
+    }
+    output_file.close();
+};

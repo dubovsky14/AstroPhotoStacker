@@ -85,6 +85,7 @@ class AlignedImagesProducerGUI : public wxFrame  {
         bool m_add_datetime = false;
         bool m_use_dynamic_exposure_adjustment = true;
         bool m_apply_color_stretcher = false;
+        bool m_resize_to_1920x1080 = true;
 
         bool m_use_grouping = false;
         int  m_grouping_time_interval = 0;

@@ -182,6 +182,30 @@ void ImagePreview::remove_layer(const std::string &layer_name)    {
     update_additional_layers_data();
 };
 
+void ImagePreview::bind_right_click_event(const std::function<void(int, int)> &functor) {
+    m_preview_bitmap->Bind(wxEVT_RIGHT_DOWN, [this, functor](wxMouseEvent &event) {
+        if (!image_loaded()) {
+            return;
+        }
+
+        // Get the mouse position in screen coordinates
+        wxPoint screen_pos = event.GetPosition();
+
+        // Check if the mouse is over the wxGenericStaticBitmap
+        if (wxRect(m_preview_bitmap->GetSize()).Contains(screen_pos)) {
+            // Calculate the relative position of the mouse within the wxGenericStaticBitmap
+            wxSize bitmapSize = m_preview_bitmap->GetSize();
+            float relative_x = static_cast<float>(screen_pos.x) / bitmapSize.GetWidth();
+            float relative_y = static_cast<float>(screen_pos.y) / bitmapSize.GetHeight();
+
+            int original_x = static_cast<int>(m_image_resize_tool.get_original_coordinate_x(relative_x));
+            int original_y = static_cast<int>(m_image_resize_tool.get_original_coordinate_y(relative_y));
+
+            functor(original_x, original_y);
+        }
+    });
+};
+
 void ImagePreview::update_max_values_original()    {
     m_max_values_original = std::vector<int>(3,0);
     for (int i_color = 0; i_color < 3; i_color++)   {

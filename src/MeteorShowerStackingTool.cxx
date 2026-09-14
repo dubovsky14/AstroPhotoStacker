@@ -1,0 +1,593 @@
+#include "../headers/MeteorShowerStackingTool.h"
+
+#include "../headers/StarFinder.h"
+#include "../headers/TaskScheduler.hxx"
+#include "../headers/InputFrameReader.h"
+#include "../headers/PhotoRanker.h"
+#include "../headers/CalibratedPhotoHandler.h"
+#include "../headers/Common.h"
+
+#include "../headers/FlatFrameHandler.h"
+#include "../headers/DarkFrameHandler.h"
+
+using namespace AstroPhotoStacker;
+using namespace std;
+
+
+FrameClusterInfo MeteorShowerStackingTool::get_cluster_info(const FrameAndGroup &frame) const {
+    if (m_frame_clusters_map.find(frame) != m_frame_clusters_map.end()) {
+        return m_frame_clusters_map.at(frame);
+    }
+    return FrameClusterInfo();
+};
+
+void MeteorShowerStackingTool::set_cluster_selected(const FrameAndGroup &frame, size_t cluster_id, bool selected)  {
+    if (m_frame_clusters_map.find(frame) != m_frame_clusters_map.end()) {
+        if (cluster_id < m_frame_clusters_map[frame].clusters_selected.size()) {
+            m_frame_clusters_map[frame].clusters_selected.at(cluster_id) = selected;
+        }
+    }
+};
+
+void MeteorShowerStackingTool::extend_cluster(const FrameAndGroup &frame, size_t cluster_id, std::pair<int,int> end_of_extentsion_coordinates_gui)    {
+    std::vector<std::vector<std::tuple<int, int> > > &clusters = m_frame_clusters_map[frame].clusters;
+    if (cluster_id >= clusters.size()) return;
+    std::vector<std::tuple<int, int> > &cluster = clusters[cluster_id];
+    const std::vector<std::vector<float>> covariance_matrix = PhotoRanker::get_covariance_matrix(cluster);
+
+    const int width = m_frame_clusters_map[frame].frame_width;
+    const int height = m_frame_clusters_map[frame].frame_height;
+
+
+    vector<float> eigenvalues;
+    vector<vector<float>> eigenvectors;
+    const bool eigenvals_valid = calculate_eigenvectors_and_eigenvalues(covariance_matrix, &eigenvalues, &eigenvectors);
+
+    if (!eigenvals_valid) return;
+
+    const std::vector<float> &leading_eigenvector = eigenvectors.at(0);
+    const std::vector<float> &subleading_eigenvector = eigenvectors.at(1);
+    array<float, 2> cluster_center = {0.0f, 0.0f};
+    for (const auto &point : cluster) {
+        cluster_center[0] += static_cast<float>(get<0>(point));
+        cluster_center[1] += static_cast<float>(get<1>(point));
+    }
+    cluster_center[0] /= static_cast<float>(cluster.size());
+    cluster_center[1] /= static_cast<float>(cluster.size());
+
+    set<pair<int,int>> extended_cluster_points;
+    for (const auto &point : cluster) {
+        extended_cluster_points.insert({get<0>(point), get<1>(point)});
+    }
+
+    // projection of extension along the leading eigenvector
+    const float extension_projection = static_cast<float>(end_of_extentsion_coordinates_gui.first - cluster_center[0]) * leading_eigenvector[0] +
+                                            static_cast<float>(end_of_extentsion_coordinates_gui.second - cluster_center[1]) * leading_eigenvector[1];
+
+    const float cluster_width = std::max<float>(2,sqrt(eigenvalues[1])/2);
+
+    auto blongs_to_extended_cluster = [&](int x, int y) {
+        const float dx = static_cast<float>(x) - cluster_center[0];
+        const float dy = static_cast<float>(y) - cluster_center[1];
+        const float projection = dx * leading_eigenvector.at(0) + dy * leading_eigenvector.at(1);
+        const float perpendicular_distance = fabs(dx * subleading_eigenvector.at(0) + dy * subleading_eigenvector.at(1));
+
+        if (extension_projection < 0) {
+            if (projection < extension_projection || projection > 0) {
+                return false;
+            }
+        }
+        if (extension_projection > 0) {
+            if (projection > extension_projection || projection < 0) {
+                return false;
+            }
+        }
+
+        return perpendicular_distance <= cluster_width;
+    };
+    const float extension_projection_abs = fabs(extension_projection);
+
+    for (int x = static_cast<int>(cluster_center[0] - extension_projection_abs); x <= static_cast<int>(cluster_center[0] + extension_projection_abs); ++x) {
+        for (int y = static_cast<int>(cluster_center[1] - extension_projection_abs); y <= static_cast<int>(cluster_center[1] + extension_projection_abs); ++y) {
+            if (blongs_to_extended_cluster(x, y)) {
+                extended_cluster_points.insert({x, y});
+            }
+        }
+    }
+
+    cluster.clear();
+    for (const auto &point : extended_cluster_points) {
+        if (point.first < 0 || point.first >= width || point.second < 0 || point.second >= height) {
+            continue;
+        }
+        cluster.push_back({point.first, point.second});
+    }
+};
+
+void MeteorShowerStackingTool::recalculate_clusters(const FrameAndGroup &frame, float cluster_fraction_threshold, float minimal_excentricity, float minimal_eigenval_ratio, bool buffer_brightness)  {
+    std::vector< std::vector<std::tuple<int, int> > > clusters;
+    int width = 0;
+    int height = 0;
+    if (buffer_brightness && m_frame_in_brightness_buffer == frame) {
+        const PixelType threshold = get_threshold_value<PixelType>(m_brightness_buffer.data(), m_brightness_buffer_width*m_brightness_buffer_height, cluster_fraction_threshold);
+        clusters = get_clusters(m_brightness_buffer.data(), m_brightness_buffer_width, m_brightness_buffer_height, threshold);
+        width = m_brightness_buffer_width;
+        height = m_brightness_buffer_height;
+    }
+    else {
+        InputFrameReader input_frame_reader(frame.input_frame, true);
+        const std::vector<PixelType> &brightness = input_frame_reader.get_monochrome_data();
+
+        input_frame_reader.get_photo_resolution(&width, &height);
+
+        if (buffer_brightness) {
+            m_brightness_buffer = brightness;
+            m_brightness_buffer_width = width;
+            m_brightness_buffer_height = height;
+            m_frame_in_brightness_buffer = frame;
+        }
+        const PixelType threshold = get_threshold_value<PixelType>(brightness.data(), width*height, cluster_fraction_threshold);
+        clusters = get_clusters(brightness.data(), width, height, threshold);
+    }
+
+    FrameClusterInfo cluster_info;
+    cluster_info.cluster_fraction_threshold = cluster_fraction_threshold;
+    cluster_info.frame_width = width;
+    cluster_info.frame_height = height;
+    keep_clusters_with_at_least_n_pixels(&clusters, 10);
+    for (const std::vector<std::tuple<int, int> > &cluster : clusters) {
+        const float excentricity = PhotoRanker::get_cluster_excentricity(cluster);
+        const float cov_eigenval_ratio_sqrt = PhotoRanker::get_covariance_eigenvalues_ratio_sqrt(cluster);
+        if (excentricity < minimal_excentricity) continue;
+        if (cov_eigenval_ratio_sqrt < minimal_eigenval_ratio) continue;
+        cluster_info.clusters.push_back(cluster);
+        cluster_info.clusters_selected.push_back(false);
+        cluster_info.clusters_excentricity.push_back(excentricity);
+        cluster_info.clusters_correlation.push_back(PhotoRanker::get_cluster_correlation(cluster));
+        cluster_info.clusters_cov_eigenval_ratio_sqrt.push_back(cov_eigenval_ratio_sqrt);
+    }
+    m_frame_clusters_map[frame] = cluster_info;
+};
+
+void MeteorShowerStackingTool::recalculate_clusters(const std::vector<FrameAndGroup> &frames, float cluster_fraction_threshold, float minimal_excentricity, float minimal_eigenval_ratio)  {
+    TaskScheduler task_scheduler({m_n_cpus});
+    m_tasks_processed = 0;
+    for (const FrameAndGroup &frame : frames) {
+        task_scheduler.submit([this, frame, cluster_fraction_threshold, minimal_excentricity, minimal_eigenval_ratio]() {
+            recalculate_clusters(frame, cluster_fraction_threshold, cluster_fraction_threshold, minimal_excentricity, minimal_eigenval_ratio);
+            m_tasks_processed++;
+        }, {1});
+    }
+    task_scheduler.wait_for_tasks();
+    m_tasks_processed = 0;
+};
+
+void MeteorShowerStackingTool::clear_buffer() {
+    m_brightness_buffer.clear();
+    m_brightness_buffer_width = 0;
+    m_brightness_buffer_height = 0;
+    m_frame_in_brightness_buffer = FrameAndGroup();
+};
+
+void MeteorShowerStackingTool::clear_clusters() {
+    m_frame_clusters_map.clear();
+};
+
+void MeteorShowerStackingTool::keep_clusters_with_at_least_n_pixels(std::vector< std::vector<std::tuple<int, int> > > *clusters, int min_n_pixels) {
+    clusters->erase(
+        std::remove_if(clusters->begin(), clusters->end(),
+                       [min_n_pixels](const std::vector<std::tuple<int, int> > &cluster) {
+                           return cluster.size() < static_cast<size_t>(min_n_pixels);
+                       }),
+        clusters->end());
+};
+
+const std::vector<std::vector<float>> &MeteorShowerStackingTool::get_stacked_image(int *width, int *height)    {
+    *width  = m_stacked_result_width;
+    *height = m_stacked_result_height;
+    return m_stacked_result_data;
+};
+
+void MeteorShowerStackingTool::stack_frames(const FilelistHandler &filelist_handler, const FrameAndGroup &background_frame)    {
+    CalibratedPhotoHandler background_frame_reader(background_frame.input_frame, true);
+
+    const AlignmentResultBase &alignment_background_frame = filelist_handler.get_alignment_info(background_frame.group_number, background_frame.input_frame);
+    std::map<int, std::vector<std::shared_ptr<CalibrationFrameBase>>> calibration_handlers_map; // group number to vector of calibration frame handlers
+    std::vector<std::shared_ptr<CalibrationFrameBase>> background_calibration_frames = calibration_handlers_map[background_frame.group_number];
+    for (const std::shared_ptr<CalibrationFrameBase> &calibration_frame_handler : background_calibration_frames)    {
+        background_frame_reader.register_calibration_frame(calibration_frame_handler);
+    }
+    background_frame_reader.define_alignment(alignment_background_frame);
+    background_frame_reader.calibrate();
+
+    const std::vector<std::vector<PixelType>> &background_frame_rgb_data_int = background_frame_reader.get_calibrated_data_after_color_interpolation();
+    m_stacked_result_width  = background_frame_reader.get_width();
+    m_stacked_result_height = background_frame_reader.get_height();
+    m_stacked_result_data.clear();
+    for (const std::vector<PixelType> &input_channel : background_frame_rgb_data_int)    {
+        std::vector<float> this_channel;
+        for (PixelType value : input_channel)   {
+            this_channel.push_back(value);
+        }
+        m_stacked_result_data.push_back(std::move(this_channel));
+    }
+    std::map<int, std::vector<std::shared_ptr<const CalibrationFrameBase>>> calibration_frames_map = get_calibration_frames_map(filelist_handler);
+
+    TaskScheduler task_scheduler({m_n_cpus});
+    m_tasks_processed = 0;
+    const std::vector<FrameInfo> light_frames = filelist_handler.get_checked_frames_of_type(FrameType::LIGHT);
+    for (const FrameInfo &frame : light_frames) {
+        FrameAndGroup frame_and_group;
+        frame_and_group.input_frame = frame.input_frame;
+        frame_and_group.group_number = frame.group_number;
+        const std::vector<std::shared_ptr<const CalibrationFrameBase>> &calibration_frames = calibration_frames_map.at(frame.group_number);
+        task_scheduler.submit([this, frame_and_group, &filelist_handler, &calibration_frames]() {
+            process_one_frame(frame_and_group, filelist_handler, calibration_frames);
+            m_tasks_processed++;
+        }, {1});
+    }
+    task_scheduler.wait_for_tasks();
+    m_tasks_processed = 0;
+
+};
+
+
+void MeteorShowerStackingTool::save_selected_clusters_to_file(const std::string &file_address) const    {
+    // in the format "input_frame \t group_number \t list of coordinates of 1st cluster in form x1,y1;x2,y2;...| list of coordinates of 2nd cluster ...|"
+
+    std::ofstream file(file_address);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file for writing: " + file_address);
+    }
+
+    // string in a form of:
+    // - frame: input_frame | frame_number
+    //   group_number: integer
+    //   cluster_fraction_threshold: <threshold value>
+    //   frame_width: integer
+    //   frame_height: integer
+    //   pixels_in_clusters: x1,y1;x2,y2;...|x1,y1;x2,y2;...
+
+    for (const auto &entry : m_frame_clusters_map) {
+        const FrameAndGroup &frame = entry.first;
+        const FrameClusterInfo &cluster_info = entry.second;
+
+        file << "- frame: " << frame.input_frame.to_string() << endl;
+        file << "  group_number: " << frame.group_number << endl;
+        file << "  cluster_fraction_threshold: " << cluster_info.cluster_fraction_threshold << endl;
+        file << "  frame_width: " << cluster_info.frame_width << endl;
+        file << "  frame_height: " << cluster_info.frame_height << endl;
+        file << "  pixels_in_clusters: ";
+        int selected_clusters_count = 0;
+        for (size_t i_cluster = 0; i_cluster < cluster_info.clusters.size(); i_cluster++) {
+            if (!cluster_info.clusters_selected.at(i_cluster)) {
+                continue;
+            }
+            if (selected_clusters_count > 0) {
+                file << "|";
+            }
+            selected_clusters_count++;
+            for (size_t i_pixel = 0; i_pixel < cluster_info.clusters.at(i_cluster).size(); i_pixel++) {
+                if (i_pixel > 0) {
+                    file << ";";
+                }
+                const auto &pixel = cluster_info.clusters.at(i_cluster).at(i_pixel);
+                file << std::get<0>(pixel) << "," << std::get<1>(pixel);
+            }
+        }
+        file << endl;
+
+    }
+    file.close();
+};
+
+void MeteorShowerStackingTool::load_selected_clusters_from_file(const std::string &file_address) {
+    std::ifstream file(file_address);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file for reading: " + file_address);
+    }
+
+    m_frame_clusters_map.clear();
+
+    auto get_key_and_value_from_line = [](const std::string &line) -> std::pair<std::string, std::string> {
+        size_t colon_pos = line.find(':');
+        if (colon_pos == std::string::npos) {
+            return {"", ""};
+        }
+        std::string key = line.substr(0, colon_pos);
+        std::string value = line.substr(colon_pos + 1);
+        strip_string(&key);
+        strip_string(&value);
+        return {key, value};
+    };
+
+    std::string line;
+    FrameAndGroup current_frame_and_group;
+    FrameClusterInfo current_cluster_info;
+    while (std::getline(file, line)) {
+        strip_string(&line);
+        if (line.empty()) {
+            continue;
+        }
+        if (starts_with(line, "-")) {
+            if (current_frame_and_group != FrameAndGroup()) {
+                m_frame_clusters_map[current_frame_and_group] = current_cluster_info;
+            }
+            current_cluster_info = FrameClusterInfo();
+            current_frame_and_group = FrameAndGroup();
+            line = line.substr(1); // remove the leading "-"
+        }
+
+        auto[key, value] = get_key_and_value_from_line(line);
+        if (key == "frame") {
+            current_frame_and_group.input_frame = InputFrame(value);
+        }
+        else if (key == "group_number") {
+            current_frame_and_group.group_number = std::stoi(value);
+        }
+        else if (key == "cluster_fraction_threshold")   {
+            current_cluster_info.cluster_fraction_threshold = std::stod(value);
+        }
+        else if (key == "frame_width") {
+            current_cluster_info.frame_width = std::stoi(value);
+        }
+        else if (key == "frame_height") {
+            current_cluster_info.frame_height = std::stoi(value);
+        }
+        else if (key == "pixels_in_clusters") {
+            vector<string> cluster_stings = split_string(value, "|");
+            for (const string &cluster_string : cluster_stings) {
+                vector<string> pixel_strings = split_string(cluster_string, ";");
+                vector<tuple<int, int>> cluster;
+                for (const string &pixel_string : pixel_strings) {
+                    vector<string> coordinates = split_string(pixel_string, ",");
+                    if (coordinates.size() == 2) {
+                        int x = std::stoi(coordinates.at(0));
+                        int y = std::stoi(coordinates.at(1));
+                        cluster.emplace_back(x, y);
+                    }
+                }
+                const float excentricity = PhotoRanker::get_cluster_excentricity(cluster);
+                const float cov_eigenval_ratio_sqrt = PhotoRanker::get_covariance_eigenvalues_ratio_sqrt(cluster);
+                current_cluster_info.clusters.push_back(cluster);
+                current_cluster_info.clusters_selected.push_back(true);
+                current_cluster_info.clusters_excentricity.push_back(excentricity);
+                current_cluster_info.clusters_correlation.push_back(PhotoRanker::get_cluster_correlation(cluster));
+                current_cluster_info.clusters_cov_eigenval_ratio_sqrt.push_back(cov_eigenval_ratio_sqrt);
+            }
+        }
+
+    }
+    if (current_frame_and_group != FrameAndGroup()) {
+        m_frame_clusters_map[current_frame_and_group] = current_cluster_info;
+    }
+
+    file.close();
+}
+
+void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const FilelistHandler &filelist_handler, const std::vector<std::shared_ptr<const CalibrationFrameBase>> &calibration_frames)   {
+    const AlignmentResultBase &alignment = filelist_handler.get_alignment_info(frame.group_number, frame.input_frame);
+
+    CalibratedPhotoHandler frame_reader(frame.input_frame, true);
+    for (const std::shared_ptr<const CalibrationFrameBase> &calibration_frame_handler : calibration_frames)    {
+        frame_reader.register_calibration_frame(calibration_frame_handler);
+    }
+    frame_reader.define_alignment(alignment);
+    frame_reader.calibrate();
+
+    const int width = frame_reader.get_width();
+    const int height = frame_reader.get_height();
+    vector<bool> selected_pixels_mask(width*height, 0);
+    vector<pair<int,int>> pixels_in_clusters_background_frame_coordinates;
+
+    FrameClusterInfo frame_cluster_info = m_frame_clusters_map.at(frame);
+
+    vector<bool> cluster_mask_original_coordinates(width*height, false);
+    for (unsigned int i_cluster = 0; i_cluster < frame_cluster_info.clusters.size(); i_cluster++)   {
+        if (!frame_cluster_info.clusters_selected.at(i_cluster)) {
+            continue;
+        }
+
+        for (const tuple<int, int> &pixel : frame_cluster_info.clusters.at(i_cluster))   {
+            int x = get<0>(pixel);
+            int y = get<1>(pixel);
+            cluster_mask_original_coordinates.at(y*width + x) = true;
+        }
+    }
+
+    // the same pixel from this frame might end-up in multiple pixels of background frame, that's why we have do the mapping this way
+    for (int y = 0; y < m_stacked_result_height; y++)    {
+        for (int x = 0; x < m_stacked_result_width; x++) {
+            float y_this_frame_coordinates = y;
+            float x_this_frame_coordinates = x;
+            alignment.transform_from_reference_to_shifted_frame(&x_this_frame_coordinates, &y_this_frame_coordinates);
+            if (x_this_frame_coordinates < 0 || x_this_frame_coordinates >= width)    continue;
+            if (y_this_frame_coordinates < 0 || y_this_frame_coordinates >= height)   continue;
+
+            const int index_this_frame_coordinates = int(y_this_frame_coordinates)*width + int(x_this_frame_coordinates);
+            const int index_background_frame_coordinates = y*m_stacked_result_width + x;
+            if (cluster_mask_original_coordinates.at(index_this_frame_coordinates))   {
+                selected_pixels_mask.at(index_background_frame_coordinates) = true;
+                pixels_in_clusters_background_frame_coordinates.push_back({x,y});
+            }
+        }
+    }
+
+
+    const float smearing_radius = 8.;
+    const float cluster_radius = 3.;
+    const float radius_diff = smearing_radius - cluster_radius;
+    vector<float> scale_factor_mask(width*height, 0);
+
+    for (const std::pair<int,int> &pixel_in_cluster : pixels_in_clusters_background_frame_coordinates)    {
+        const int x = pixel_in_cluster.first;
+        const int y = pixel_in_cluster.second;
+
+        scale_factor_mask.at(width*y + x) = 1;
+
+        for (int dx = -smearing_radius; dx <= smearing_radius; dx++)    {
+            const int shifted_x = x+dx;
+            if (shifted_x < 0 || shifted_x >= width) {
+                continue;
+            }
+            for (int dy = -smearing_radius; dy <= smearing_radius; dy++)    {
+                const int shifted_y = y+dy;
+                if (shifted_y < 0 || shifted_y >= height) {
+                    continue;
+                }
+                const unsigned int index = width*(shifted_y) + shifted_x;
+                const float r2 = dx*dx + dy*dy;
+                const float r = sqrt(r2);
+                if (r > smearing_radius)    {
+                    continue;
+                }
+                else if (r < cluster_radius) {
+                    scale_factor_mask.at(index) = 1.;
+                }
+                else {
+                    const float this_sf = (smearing_radius -r)/radius_diff ;
+                    scale_factor_mask.at(index) = std::max<float>(scale_factor_mask.at(index), this_sf);
+                }
+            }
+        }
+    }
+
+    struct SelectedPixelInformation {
+        int x;
+        int y;
+        std::array<float,3> pixel_values; // values in RGB channels
+        float scale_factor;
+    };
+
+    const std::vector<std::vector<PixelType>> &rgb_data_calibrated = frame_reader.get_calibrated_data_after_color_interpolation();
+    vector<vector<float>> values_around_cluster(rgb_data_calibrated.size()); // [color][index of pixel]
+    vector<SelectedPixelInformation> selected_pixels_information;
+    for (int y = 0; y < height; y++)    {
+        for (int x = 0; x < width; x++) {
+            if (scale_factor_mask[width*y + x] == 0)    {
+                continue;
+            }
+
+            const int index = width*y + x;
+            SelectedPixelInformation this_pixel_info;
+            this_pixel_info.x = x;
+            this_pixel_info.y = y;
+            this_pixel_info.pixel_values.at(0) = rgb_data_calibrated.at(0).at(index);
+            this_pixel_info.pixel_values.at(1) = rgb_data_calibrated.at(1).at(index);
+            this_pixel_info.pixel_values.at(2) = rgb_data_calibrated.at(2).at(index);
+            this_pixel_info.scale_factor = scale_factor_mask.at(index);
+            selected_pixels_information.push_back(this_pixel_info);
+
+            if (scale_factor_mask.at(index) < 1)   {
+                for (unsigned int i_color = 0; i_color < rgb_data_calibrated.size(); i_color++) {
+                    values_around_cluster.at(i_color).push_back(rgb_data_calibrated.at(i_color).at(index));
+                }
+            }
+        }
+    }
+
+    auto sort_and_get_medians = [](std::vector<std::vector<float>> &values) -> std::vector<float> {
+        std::vector<float> medians(values.size(), 0.0f);
+        for (size_t i = 0; i < values.size(); i++) {
+            if (values.at(i).empty()) continue;
+            std::sort(values.at(i).begin(), values.at(i).end());
+            const size_t mid = values.at(i).size() / 2;
+            if (values.at(i).size() % 2 == 0) {
+                medians.at(i) = (values.at(i).at(mid - 1) + values.at(i).at(mid)) / 2.0f;
+            } else {
+                medians.at(i) = values.at(i).at(mid);
+            }
+        }
+        return medians;
+    };
+
+    const vector<float> median_values_around = sort_and_get_medians(values_around_cluster);
+
+
+    // at this point we prepared everything we could in multithreaded mode, time to lock the mutex
+    {
+        std::scoped_lock{m_stacking_mutex};
+        // firstly we need the median values around the cluster for background estimation
+        vector<vector<float>> values_around_in_background(rgb_data_calibrated.size());
+        for (const SelectedPixelInformation &pixel_info : selected_pixels_information)  {
+            const int x = pixel_info.x;
+            const int y = pixel_info.y;
+            const int index = m_stacked_result_width*y + x;
+
+            if (x >= m_stacked_result_width)    return;
+            if (y >= m_stacked_result_height)   return;
+
+            if (pixel_info.scale_factor <= 0.0f) continue;
+            if (pixel_info.scale_factor >= 1.0f) continue;
+
+            for (unsigned int i_color = 0; i_color < rgb_data_calibrated.size(); i_color++)   {
+                const float background_value = m_stacked_result_data.at(i_color).at(index);
+                values_around_in_background.at(i_color).push_back(background_value);
+            }
+        }
+        const vector<float> median_values_in_background = sort_and_get_medians(values_around_in_background);
+        vector <float> signal_median_minus_background(median_values_around.size(), 0.0f);
+        for (size_t i = 0; i < median_values_around.size(); i++) {
+            signal_median_minus_background.at(i) = median_values_around.at(i) - median_values_in_background.at(i);
+        }
+
+
+        // now let's actually stack it
+        for (const SelectedPixelInformation &pixel_info : selected_pixels_information)  {
+            const int x = pixel_info.x;
+            const int y = pixel_info.y;
+            const int index = m_stacked_result_width*y + x;
+
+            if (x >= m_stacked_result_width)    return;
+            if (y >= m_stacked_result_height)   return;
+
+            const float weight_signal = pixel_info.scale_factor;
+            const float weight_background = 1-weight_signal;
+
+            for (unsigned int i_color = 0; i_color < rgb_data_calibrated.size(); i_color++)   {
+                const float old_value = m_stacked_result_data.at(i_color).at(index);
+                const float new_value = std::max<float>(pixel_info.pixel_values.at(i_color) - signal_median_minus_background.at(i_color),0.0f);
+                const float mixed_value = old_value*weight_background + new_value*weight_signal;
+                m_stacked_result_data.at(i_color).at(index) = mixed_value;
+            }
+        }
+    }
+};
+
+std::map<int, std::vector<std::shared_ptr<const CalibrationFrameBase>>>   MeteorShowerStackingTool::get_calibration_frames_map(const FilelistHandler &filelist_handler)   {
+    std::map<int, std::vector<std::shared_ptr<const CalibrationFrameBase>>> result;
+
+    FilelistHandler filelist_handler_only_checked = filelist_handler.get_filelist_with_checked_frames();
+    std::vector<int> group_numbers = filelist_handler_only_checked.get_group_numbers();
+
+    for (int group_number : group_numbers) {
+        vector<shared_ptr<const CalibrationFrameBase>> calibration_frames_handlers_in_group;
+
+        const std::map<InputFrame, FrameInfo> &dark_frames = filelist_handler_only_checked.get_frames(FrameType::DARK, group_number);
+        if (dark_frames.size() > 0) {
+            const InputFrame &dark_frame = dark_frames.begin()->first;
+            if (!dark_frame.is_still_image()) {
+                throw std::runtime_error("Dark frame must be a still image");
+            }
+            std::shared_ptr<const CalibrationFrameBase> dark_frames_handler = std::make_shared<DarkFrameHandler>(dark_frame);
+            calibration_frames_handlers_in_group.push_back(dark_frames_handler);
+            cout << "Adding dark frame: " << dark_frame.to_string() << endl;
+        }
+
+        const std::map<InputFrame, FrameInfo> &flat_frames = filelist_handler_only_checked.get_frames(FrameType::FLAT, group_number);
+        if (flat_frames.size() > 0) {
+            const InputFrame &flat_frame = flat_frames.begin()->first;
+            if (!flat_frame.is_still_image()) {
+                throw std::runtime_error("Flat frame must be a still image");
+            }
+            std::shared_ptr<const CalibrationFrameBase> flat_frames_handler = std::make_shared<FlatFrameHandler>(flat_frame);
+            calibration_frames_handlers_in_group.push_back(flat_frames_handler);
+            cout << "Adding flat frame: " << flat_frame.to_string() << endl;
+        }
+
+        result[group_number] = calibration_frames_handlers_in_group;
+    }
+
+    return result;
+};
+

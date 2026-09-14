@@ -79,6 +79,10 @@ class MyFrame : public wxFrame  {
             return m_hot_pixel_identifier.get();
         };
 
+        const RecentPathsHandler &get_recent_paths_handler() const {
+            return *m_recent_paths_handler;
+        };
+
     private:
 
         void add_file_menu();
@@ -89,6 +93,7 @@ class MyFrame : public wxFrame  {
         void add_aligned_images_producer_menu();
         void add_postprocessing_menu();
         void add_customization_menu();
+        void add_other_tools_menu();
 
         void add_menu_bar();
 
@@ -189,8 +194,11 @@ class MyFrame : public wxFrame  {
         void on_open_darks (wxCommandEvent& event);
         std::unique_ptr<RecentPathsHandler> m_recent_paths_handler = nullptr;
 
-        void on_save_stacked(wxCommandEvent& event);
+        void save_stacked(wxCommandEvent& event, bool post_process);
+        void save_stacked_with_post_process(wxCommandEvent& event);
+        void save_stacked_without_post_process(wxCommandEvent& event);
         void on_save_selected_as_fit(wxCommandEvent& event);
+        void on_save_selected_as_ser(wxCommandEvent& event);
         void on_exit(wxCommandEvent& event);
 
         std::vector<std::shared_ptr<wxSizer>> m_sizers;  // this is such a mess ...

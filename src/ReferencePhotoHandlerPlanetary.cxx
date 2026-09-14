@@ -215,7 +215,10 @@ std::tuple<float,float,vector<vector<double>>,vector<double>> ReferencePhotoHand
 
     vector<double> eigenvalues;
     vector<vector<double>> eigenvectors;
-    calculate_eigenvectors_and_eigenvalues(covariance_matrix, &eigenvalues, &eigenvectors);
+    const bool eigenvals_valid = calculate_eigenvectors_and_eigenvalues(covariance_matrix, &eigenvalues, &eigenvectors);
+    if (!eigenvals_valid)   {
+        throw std::runtime_error("Cannot calculate eigenvalues, the matrix is singular.");
+    }
 
 
     return make_tuple(center_of_mass_x, center_of_mass_y, eigenvectors, eigenvalues);
@@ -241,56 +244,6 @@ void  ReferencePhotoHandlerPlanetary::initialize(const PixelType *brightness, in
 
 };
 
-
-void ReferencePhotoHandlerPlanetary::calculate_eigenvectors_and_eigenvalues(
-                                            const std::vector<std::vector<double>> &covariance_matrix,
-                                            std::vector<double> *eigenvalues,
-                                            std::vector<std::vector<double>> *eigenvectors) {
-
-    if (covariance_matrix.size() != 2) {
-        throw runtime_error("Covariance matrix should be 2x2");
-    }
-    if (covariance_matrix[0].size() != 2 || covariance_matrix[1].size() != 2) {
-        throw runtime_error("Covariance matrix should be 2x2");
-    }
-
-    const double a = 1;
-    const double b = -covariance_matrix[0][0] - covariance_matrix[1][1];
-    const double c = covariance_matrix[0][0] * covariance_matrix[1][1] - covariance_matrix[0][1] * covariance_matrix[1][0];
-
-    const double delta = b*b - 4*a*c;
-
-    if (delta < 0) {
-        throw runtime_error("Delta is negative");
-    }
-
-    const double lambda1 = (-b + sqrt(delta))/(2*a);
-    const double lambda2 = (-b - sqrt(delta))/(2*a);
-
-    eigenvalues->clear();
-    eigenvalues->push_back(lambda1);
-    eigenvalues->push_back(lambda2);
-
-    eigenvectors->clear();
-    eigenvectors->push_back({covariance_matrix[0][1], covariance_matrix[0][0] - lambda1});
-    eigenvectors->push_back({covariance_matrix[0][1], covariance_matrix[0][0] - lambda2});
-
-    for (auto &eigenvector : *eigenvectors) {
-        const double length = sqrt(eigenvector[0]*eigenvector[0] + eigenvector[1]*eigenvector[1]);
-        eigenvector[0] /= length;
-        eigenvector[1] /= length;
-
-        if (eigenvector[0] < 0 && eigenvector[1] < 0) {
-            eigenvector[0] = -eigenvector[0];
-            eigenvector[1] = -eigenvector[1];
-        }
-    }
-
-    if (eigenvalues->at(0) < eigenvalues->at(1)) {
-        swap(eigenvalues->at(0), eigenvalues->at(1));
-        swap(eigenvectors->at(0), eigenvectors->at(1));
-    }
-};
 
 void ReferencePhotoHandlerPlanetary::define_configuration_settings()    {
     m_configurable_algorithm_settings.add_additional_setting_numerical("gaussian sigma for denoising", &m_gaussian_sigma, 0.1, 15.0, 0.2);

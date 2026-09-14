@@ -27,6 +27,7 @@ Metadata ZWOVideoTextFileInfo::get_metadata() const {
     metadata.is_raw = true;
     metadata.camera_model = m_camera_model;
     metadata.temperature = m_temperature;
+    metadata.bit_depth = 8; // ZWO avi files do not support 16 bits
 
     if (m_bayer_matrix[0] >= 0) {
         metadata.bayer_matrix = convert_bayer_int_array_to_string(m_bayer_matrix);

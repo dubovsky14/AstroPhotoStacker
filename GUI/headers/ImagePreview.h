@@ -174,7 +174,7 @@ class ImagePreview {
          * @brief Add additional layer to the image preview - for example to show alignment boxes or crop borders
          *
          * @param layer_name name of the layer
-         * @param functor function to apply the layer
+         * @param functor function to apply the layer. The functor takes a pointer to the image data (vector<vector<PixelType>>), width and height of the image. The functor should modify the image data in place.
         */
         void add_layer(const std::string &layer_name, const std::function<void(std::vector<std::vector<PixelType>> *, int, int)> &functor);
 
@@ -182,6 +182,15 @@ class ImagePreview {
          * @brief Remove additional layer
         */
         void remove_layer(const std::string &layer_name);
+
+        void update_additional_layers_data();
+
+        /**
+         * @brief Bind right click event to the image preview
+         *
+         * @param functor function to call on right click. The functor takes two float arguments: x and y coordinates in the original image coordinates
+        */
+        void bind_right_click_event(const std::function<void(int, int)> &functor);
 
     protected:
         wxWindow *m_parent = nullptr;
@@ -221,8 +230,6 @@ class ImagePreview {
         wxImage get_updated_wximage() const;
 
         void bind_shift_events();
-
-        void update_additional_layers_data();
 
         int get_interpolated_original_image_data(const std::vector<PixelType> &original_image_channel_data, float x, float y) const;
 

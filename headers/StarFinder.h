@@ -56,15 +56,15 @@ namespace AstroPhotoStacker {
             int result = -1;
             // check pixel on the left
             if (x > 0) {
-                if (cluster_indices[y*width + x-1] != -1) {
-                    result = cluster_indices[y*width + x-1];
+                if (cluster_indices.at(y*width + x-1) != -1) {
+                    result = cluster_indices.at(y*width + x-1);
                 }
             }
 
             // check pixels on the top
             if (y > 0) {
                 if (x > 0) {
-                    const int cluster_index = cluster_indices[(y-1)*width + x-1];
+                    const int cluster_index = cluster_indices.at((y-1)*width + x-1);
                     if (cluster_index != -1) {
                         if (result != -1){
                             add_cluster_mapping(result, cluster_index);
@@ -72,15 +72,15 @@ namespace AstroPhotoStacker {
                         result = result < 0 ? cluster_index : std::min(result, cluster_index);
                     }
                 }
-                if (cluster_indices[(y-1)*width + x] != -1) {
-                    const int cluster_index = cluster_indices[(y-1)*width + x];
+                if (cluster_indices.at((y-1)*width + x) != -1) {
+                    const int cluster_index = cluster_indices.at((y-1)*width + x);
                     if (result != -1) {
                         add_cluster_mapping(result, cluster_index);
                     }
                         result = result < 0 ? cluster_index : std::min(result, cluster_index);
                 }
                 if (x < (width - 1)) {
-                    const int cluster_index = cluster_indices[(y-1)*width + x+1];
+                    const int cluster_index = cluster_indices.at((y-1)*width + x+1);
                     if (cluster_index != -1) {
                         if (result != -1) {
                             add_cluster_mapping(result, cluster_index);
@@ -101,7 +101,7 @@ namespace AstroPhotoStacker {
                 if (brightness[y_pos*width + x_pos] < threshold)   continue;
 
                 const int index = get_cluster_index(x_pos, y_pos);
-                cluster_indices[y_pos*width + x_pos] = index;
+                cluster_indices.at(y_pos*width + x_pos) = index;
             }
         }
 
@@ -127,7 +127,7 @@ namespace AstroPhotoStacker {
         for (int y_pos = 0; y_pos < height; y_pos++)    {
             for (int x_pos = 0; x_pos < width; x_pos++)    {
                 if (cluster_indices[y_pos*width + x_pos] != -1) {
-                    const int mapped_to = cluster_index_mapping[cluster_indices[y_pos*width + x_pos]];
+                    const int mapped_to = cluster_index_mapping[cluster_indices.at(y_pos*width + x_pos)];
                     result[mapped_to].push_back(std::make_tuple(x_pos, y_pos));
                 }
             }

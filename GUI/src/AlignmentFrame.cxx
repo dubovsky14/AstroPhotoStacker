@@ -6,6 +6,7 @@
 #include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/InputFrame.h"
 #include "../../headers/ReferencePhotoHandlerFactory.h"
+#include "../../headers/LensCorrectionTool.h"
 
 #include <wx/progdlg.h>
 

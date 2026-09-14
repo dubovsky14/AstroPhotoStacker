@@ -11,8 +11,15 @@ namespace AstroPhotoStacker {
         public:
             InputFrame() = default;
 
-            explicit InputFrame(const std::string &file_address) {
-                m_file_address = file_address;
+            explicit InputFrame(const std::string &input_frame_str) {
+                size_t delimiter_pos = input_frame_str.find('|');
+                if (delimiter_pos != std::string::npos) {
+                    m_file_address = input_frame_str.substr(0, delimiter_pos);
+                    m_frame_number = std::stoi(input_frame_str.substr(delimiter_pos + 1));
+                } else {
+                    m_file_address = input_frame_str;
+                    m_frame_number = -1;
+                }
             };
 
             InputFrame(const std::string &video_address, int frame_number)  {
