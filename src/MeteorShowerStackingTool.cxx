@@ -131,6 +131,9 @@ void MeteorShowerStackingTool::recalculate_clusters(const FrameAndGroup &frame, 
     }
 
     FrameClusterInfo cluster_info;
+    cluster_info.cluster_fraction_threshold = cluster_fraction_threshold;
+    cluster_info.frame_width = width;
+    cluster_info.frame_height = height;
     keep_clusters_with_at_least_n_pixels(&clusters, 10);
     for (const std::vector<std::tuple<int, int> > &cluster : clusters) {
         const float excentricity = PhotoRanker::get_cluster_excentricity(cluster);
@@ -142,9 +145,6 @@ void MeteorShowerStackingTool::recalculate_clusters(const FrameAndGroup &frame, 
         cluster_info.clusters_excentricity.push_back(excentricity);
         cluster_info.clusters_correlation.push_back(PhotoRanker::get_cluster_correlation(cluster));
         cluster_info.clusters_cov_eigenval_ratio_sqrt.push_back(cov_eigenval_ratio_sqrt);
-        cluster_info.cluster_fraction_threshold = cluster_fraction_threshold;
-        cluster_info.frame_width = width;
-        cluster_info.frame_height = height;
     }
     m_frame_clusters_map[frame] = cluster_info;
 };
