@@ -312,9 +312,6 @@ void MeteorShowerStackingTool::load_selected_clusters_from_file(const std::strin
         if (starts_with(line, "-")) {
             if (current_frame_and_group != FrameAndGroup()) {
                 m_frame_clusters_map[current_frame_and_group] = current_cluster_info;
-
-                cout << "Saved cluster for frame: " << current_frame_and_group.input_frame.to_string() << ", group: " << current_frame_and_group.group_number << endl;
-                cout << "Current frame has " << current_cluster_info.clusters.size() << " clusters." << endl;
             }
             current_cluster_info = FrameClusterInfo();
             current_frame_and_group = FrameAndGroup();

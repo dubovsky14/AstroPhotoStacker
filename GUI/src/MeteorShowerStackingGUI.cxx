@@ -133,8 +133,7 @@ void MeteorShowerStackingGUI::add_save_and_load_menu()  {
     int id = unique_counter();
     m_save_and_load_menu->Append(id, "Save clusters to file", "Save clusters to file");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        const std::string default_path = "";
-        wxFileDialog dialog(this, "Save clusters to file", "", default_path, "*.txt", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+        wxFileDialog dialog(this, "Save clusters to file", "", m_default_cluster_text_file_path, "*.txt", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_meteor_shower_stacking_tool.save_selected_clusters_to_file(file_address);
@@ -145,8 +144,7 @@ void MeteorShowerStackingGUI::add_save_and_load_menu()  {
     id = unique_counter();
     m_save_and_load_menu->Append(id, "Load clusters from file", "Load clusters from file");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
-        const std::string default_path = "";
-        wxFileDialog dialog(this, "Load clusters from file", "", default_path, "*.txt", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        wxFileDialog dialog(this, "Load clusters from file", "", m_default_cluster_text_file_path, "*.txt", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             m_meteor_shower_stacking_tool.load_selected_clusters_from_file(file_address);
@@ -317,7 +315,7 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
         update_image_preview_file(m_previously_selected_frame_index);
     });
 
-    m_button_recalculate_clusters_for_all_images = add_button("Recalculate clusters for all images", [this]() {
+    m_button_recalculate_clusters_for_all_images = add_button("Recalculate clusters for selected frames", [this]() {
         vector<FrameAndGroup> frames_to_process;
         for (const FrameInfo &frame_info : m_filelist_handler_gui_interface.get_checked_frames_of_type(FrameType::LIGHT)) {
             FrameAndGroup frame_and_group;
@@ -327,7 +325,7 @@ void MeteorShowerStackingGUI::add_cluster_buttons()  {
         }
         const int tasks_total = frames_to_process.size();
         const std::atomic<int> &tasks_processed = m_meteor_shower_stacking_tool.get_tasks_processed();
-        run_task_with_progress_dialog(  "Recalculating clusters for all images...",
+        run_task_with_progress_dialog(  "Recalculating clusters for selected frames...",
                                 "Finished",
                                 "",
                                 tasks_processed,
@@ -435,7 +433,18 @@ void MeteorShowerStackingGUI::add_buttons()  {
     });
 
     m_button_stack = add_button("Stack files", [this]() {
-        m_meteor_shower_stacking_tool.stack_frames(m_filelist_handler_gui_interface, m_background_frame);
+        const std::atomic<int>& tasks_processed = m_meteor_shower_stacking_tool.get_tasks_processed();
+        const int tasks_total = m_filelist_handler_gui_interface.get_checked_frames_of_type(FrameType::LIGHT).size();
+        run_task_with_progress_dialog(  "Recalculating clusters for selected frames...",
+                        "Finished",
+                        "",
+                        tasks_processed,
+                        tasks_total,
+                        [this](){
+                            m_meteor_shower_stacking_tool.stack_frames(m_filelist_handler_gui_interface, m_background_frame);
+                        },
+                        "");
+
     });
 
     m_button_show_stacked_image = add_button("Show stacked image", [this]() {

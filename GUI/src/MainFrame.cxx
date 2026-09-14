@@ -449,6 +449,7 @@ void MyFrame::add_other_tools_menu()    {
         }
 
         MeteorShowerStackingGUI *meteor_shower_stacking_gui = new MeteorShowerStackingGUI(this, m_stack_settings->get_n_cpus());
+        meteor_shower_stacking_gui->set_default_cluster_text_file_path(m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, ""));
         meteor_shower_stacking_gui->Show(true);
     }, id);
 

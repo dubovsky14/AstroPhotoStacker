@@ -30,6 +30,9 @@ class MeteorShowerStackingGUI : public wxFrame  {
          */
         MeteorShowerStackingGUI(MyFrame *parent, int n_cpus);
 
+        void set_default_cluster_text_file_path(const std::string &file_path) {
+            m_default_cluster_text_file_path = file_path;
+        };
 
     private:
 
@@ -41,6 +44,7 @@ class MeteorShowerStackingGUI : public wxFrame  {
         void add_menu_bar();
         wxMenuBar   *m_menu_bar         = nullptr;
         wxMenu *m_save_and_load_menu = nullptr;
+        std::string                     m_default_cluster_text_file_path = "";
 
         AstroPhotoStacker::MeteorShowerStackingTool m_meteor_shower_stacking_tool;
 
