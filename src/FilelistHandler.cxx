@@ -467,7 +467,7 @@ void FilelistHandler::save_filelist_to_file(const std::string &output_address)  
     }
 };
 
-void FilelistHandler::load_filelist_from_file(const std::string &input_address)  {
+void FilelistHandler::load_filelist_from_file(const std::string &input_address, std::map<FrameType, InputFrame> *last_read_frames)  {
     m_frames_list.clear();
     std::ifstream input_file(input_address);
     std::string line;
@@ -488,6 +488,10 @@ void FilelistHandler::load_filelist_from_file(const std::string &input_address) 
         const InputFrame input_frame(file_address, frame_number);
         const Metadata metadata        = AstroPhotoStacker::read_metadata(input_frame);
         add_frame(input_frame, type, group_number, is_checked, AlignmentResultDummy(), metadata);
+
+        if (last_read_frames) {
+            (*last_read_frames)[type] = input_frame;
+        }
     }
 };
 

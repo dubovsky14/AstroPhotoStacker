@@ -36,7 +36,7 @@ class RecentPathsHandler    {
          * @param frame_type type of the frame
          * @param recent_path path to the most recently used folder
         */
-        void set_recent_file_path(AstroPhotoStacker::FrameType frame_type, const std::string &recent_path) const;
+        void set_recent_file_path(AstroPhotoStacker::FrameType frame_type, const std::string &recent_path, bool reduce_to_folder_only = true) const;
 
         /**
          * @brief Set the recent file path from file
@@ -62,7 +62,7 @@ class RecentPathsHandler    {
          * @param frame_type type of the frame
          * @param recent_path path to the most recently used folder
         */
-        void set_recent_file_path(RecentPathSettings recent_path_setting, const std::string &recent_path) const;
+        void set_recent_file_path(RecentPathSettings recent_path_setting, const std::string &recent_path, bool reduce_to_folder_only = true) const;
 
     private:
         std::string m_storage_path;
@@ -79,4 +79,8 @@ class RecentPathsHandler    {
         std::map<RecentPathSettings, std::string> m_recent_path_setting_to_txt_file = std::map<RecentPathSettings, std::string>({
             {RecentPathSettings::LENS_CORRECTIONS ,    "recent_lens_corrections_paths.txt"},
         });
+
+        static std::string get_reduced_path(const std::string &path, bool reduce_to_folder_only);
+
+
 };

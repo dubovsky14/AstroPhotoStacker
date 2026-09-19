@@ -66,7 +66,7 @@ AlignedImagesProducerGUI::AlignedImagesProducerGUI(MyFrame *parent, const PostPr
 
     wxButton *button_select_output_folder      = new wxButton(this, wxID_ANY, "Select output folder", wxDefaultPosition, wxSize(200, 50));
     button_select_output_folder->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
-        wxDirDialog dialog(this, "Select folder for output images", m_default_path, wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+        wxDirDialog dialog(this, "Select folder for output images", m_default_path);
         if (dialog.ShowModal() == wxID_OK) {
             m_output_folder_address = dialog.GetPath().ToStdString();
         }

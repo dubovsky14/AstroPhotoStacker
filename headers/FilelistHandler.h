@@ -264,7 +264,7 @@ namespace AstroPhotoStacker {
 
             void save_filelist_to_file(const std::string &output_address);
 
-            void load_filelist_from_file(const std::string &input_address);
+            void load_filelist_from_file(const std::string &input_address, std::map<FrameType, InputFrame> *last_read_frames = nullptr);
 
             void calculate_frame_statistics(unsigned int n_cpu = 1, std::atomic<int> *counter = nullptr);
 

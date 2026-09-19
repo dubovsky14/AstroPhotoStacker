@@ -165,13 +165,18 @@ void MyFrame::add_filelist_menu()    {
     filelist_menu->Append(id, "Load filelist", "Load filelist");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
-        wxFileDialog dialog(this, "Load filelist", "", default_path, "*.txt", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        wxFileDialog dialog(this, "Load filelist", "", default_path, "Text files |*.txt;*.TXT;", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
-            m_filelist_handler_gui_interface.load_filelist_from_file(file_address);
+            std::map<FrameType, InputFrame> last_read_frames;
+            m_filelist_handler_gui_interface.load_filelist_from_file(file_address, &last_read_frames);
             update_alignment_status();
             update_files_to_stack_checkbox();
             update_input_numbers_overview();
+
+            for (const auto &pair : last_read_frames) {
+                m_recent_paths_handler->set_recent_file_path(pair.first, pair.second.get_file_address());
+            }
         }
     }, id);
 
