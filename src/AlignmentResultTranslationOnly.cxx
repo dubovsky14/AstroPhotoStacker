@@ -14,12 +14,11 @@ AlignmentResultTranslationOnly::AlignmentResultTranslationOnly(const string &des
     AlignmentResultBase() {
     // parse the description string to extract the parameters
     vector<string> tokens = split_string(description_string, c_separator_in_description);
-    if (tokens.size() < 3) {
+    if (tokens.size() < 2) {
         throw runtime_error("Invalid description string for AlignmentResultTranslationOnly: " + description_string);
     }
     m_shift_x = stof(tokens[0]);
     m_shift_y = stof(tokens[1]);
-    m_ranking_score = stof(tokens[2]);
     m_is_valid = true;
 };
 
@@ -49,8 +48,7 @@ void AlignmentResultTranslationOnly::transform_to_reference_frame(float *x, floa
 
 std::string AlignmentResultTranslationOnly::get_method_specific_description_string() const {
     return to_string(m_shift_x) + c_separator_in_description +
-           to_string(m_shift_y) + c_separator_in_description +
-           to_string(m_ranking_score);
+           to_string(m_shift_y);
 };
 
 void AlignmentResultTranslationOnly::get_shift(float *shift_x, float *shift_y) const {

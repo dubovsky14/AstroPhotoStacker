@@ -4,7 +4,7 @@
 #include "../headers/MonochromeImageData.h"
 #include "../headers/ImageFilesInputOutput.h"
 #include "../headers/Common.h"
-#include "../headers/ImageRanking.h"
+#include "../headers/FrameRankingTool.h"
 #include "../headers/LocalShiftsClusteringTool.h"
 
 #include "../headers/AlignmentResultSurface.h"
@@ -61,9 +61,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
     image_data.height = height;
 
     const int gaussian_kernel_size = 2 *int(m_gaussian_sigma + 0.5) + 1; // we need this to be odd
-    ImageRanker image_ranker(brightness, width, height, gaussian_kernel_size, m_gaussian_sigma);
-    const double sharpness = image_ranker.get_sharpness_score();
-    const float ranking = 100./sharpness;
+    const FrameScore frame_score = FrameRankingTool::get_ranking_for_planetary_objects(brightness, width, height, gaussian_kernel_size, m_gaussian_sigma);
 
     std::vector<cv::KeyPoint> keypoints;
     cv::Mat descriptors;
@@ -126,7 +124,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerSurface::calculate_ali
     LocalShiftsClusteringTool clustering_tool(0.01 * sqrt(width*width + height*height));
     selected_local_shifts = clustering_tool.cluster_local_shifts(selected_local_shifts);
 
-    return make_unique<AlignmentResultSurface>(selected_local_shifts, ranking);
+    return std::make_unique<AlignmentResultSurface>(selected_local_shifts, frame_score);
 };
 
 void ReferencePhotoHandlerSurface::initialize(const PixelType *brightness, int width, int height, const ConfigurableAlgorithmSettingsMap &configuration_map)  {

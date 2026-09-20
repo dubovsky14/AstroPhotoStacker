@@ -68,12 +68,16 @@ float ImageRanker::get_fraction_of_pixels_above_otsu_threshold(const std::vector
     return static_cast<float>(count_above_threshold) / static_cast<float>(width*height);
 }
 
-float ImageRanker::get_sharpness_score() const {
+FrameScore ImageRanker::get_sharpness_score() const {
     cv::Mat lap;
     cv::Laplacian(m_preprocessed_image, lap, CV_32F);
 
     // Masked variance
     cv::Scalar mean, stddev;
     cv::meanStdDev(lap, mean, stddev, m_planet_mask);
-    return stddev[0] * stddev[0]; // variance
+
+    FrameScore result;
+    result.sharpness_score = stddev[0] * stddev[0]; // variance
+
+    return result;
 }

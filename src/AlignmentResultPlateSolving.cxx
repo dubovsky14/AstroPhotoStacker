@@ -27,9 +27,6 @@ AlignmentResultPlateSolving::AlignmentResultPlateSolving(const string &descripti
     float rotation = stof(tokens[4]);
     float zoom = 1.0f;
     if (tokens.size() == 6) {   // yeah, this is a mess, but we need to keep compatibility with older versions
-        m_ranking_score = stof(tokens[5]);
-    } else if (tokens.size() == 7) {
-        m_ranking_score = stof(tokens[6]);
         zoom = stof(tokens[5]);
     }
 
@@ -84,8 +81,7 @@ string AlignmentResultPlateSolving::get_method_specific_description_string() con
             to_string(rotation_center_x) + c_separator_in_description +
             to_string(rotation_center_y) + c_separator_in_description +
             to_string(rotation) + c_separator_in_description +
-            to_string(zoom) + c_separator_in_description +
-            to_string(m_ranking_score);
+            to_string(zoom);
 };
 
 void AlignmentResultPlateSolving::get_parameters(float *shift_x,

@@ -1,7 +1,7 @@
 #include "../headers/ReferencePhotoHandlerStars.h"
 #include "../headers/InputFrameReader.h"
 #include "../headers/AsterismHasher.h"
-#include "../headers/PhotoRanker.h"
+#include "../headers/FrameRankingTool.h"
 
 #include "../headers/AlignmentResultPlateSolving.h"
 
@@ -60,7 +60,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerStars::calculate_align
         }
 
         unique_ptr<AlignmentResultBase> result = plate_solve(stars);
-        result->set_ranking_score(PhotoRanker::calculate_frame_ranking(input_frame));
+        result->set_frame_score(FrameRankingTool::get_ranking_for_deep_sky_objects(brightness, width, height, threshold));
         return result;
     }
     catch (runtime_error &e)    {

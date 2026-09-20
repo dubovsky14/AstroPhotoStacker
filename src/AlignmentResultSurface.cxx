@@ -19,16 +19,14 @@ AlignmentResultSurface::AlignmentResultSurface(const string &description_string)
     if (tokens.size() < 2) {
         throw runtime_error("Invalid description string for AlignmentResultSurface: " + description_string);
     }
-    m_ranking_score = stof(tokens[0]);
-    const std::string local_shifts_string = tokens[1];
-    m_local_shifts_handler = make_unique<LocalShiftsHandler>(local_shifts_string);
+    m_local_shifts_handler = make_unique<LocalShiftsHandler>(description_string);
     m_is_valid = true;
 };
 
-AlignmentResultSurface::AlignmentResultSurface( const std::vector<LocalShift> &local_shifts, float ranking_score) :
+AlignmentResultSurface::AlignmentResultSurface( const std::vector<LocalShift> &local_shifts, const FrameScore &frame_score) :
     AlignmentResultBase() {
     set_parameters(local_shifts);
-    m_ranking_score = ranking_score;
+    m_frame_score = frame_score;
 };
 
 
@@ -46,8 +44,7 @@ void AlignmentResultSurface::transform_to_reference_frame(float *x, float *y) co
 };
 
 string AlignmentResultSurface::get_method_specific_description_string() const {
-    return  to_string(m_ranking_score) + c_separator_in_description +
-            m_local_shifts_handler->to_string();
+    return  m_local_shifts_handler->to_string();
 };
 
 float AlignmentResultSurface::get_local_score(float x, float y) const   {

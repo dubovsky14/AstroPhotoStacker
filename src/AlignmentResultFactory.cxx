@@ -33,13 +33,16 @@ std::unique_ptr<AlignmentResultBase> AlignmentResultFactory::create_alignment_re
 }
 
 std::unique_ptr<AlignmentResultBase> AlignmentResultFactory::create_alignment_result_from_description_string(const std::string &description_string) const {
-    const std::pair<std::string, std::string> type_and_description = AlignmentResultBase::split_type_and_description(description_string);
-    const std::string &type_string = type_and_description.first;
-    const std::string &method_specific_description = type_and_description.second;
+    const std::array<std::string, 3> type_and_description = AlignmentResultBase::split_type_and_description_and_score(description_string);
+    const std::string &type_string = type_and_description[0];
+    const std::string &method_specific_description = type_and_description[1];
+    const std::string &score_string = type_and_description[2];
 
     auto it = m_alignment_result_constructors_description.find(type_string);
     if (it != m_alignment_result_constructors_description.end()) {
-        return it->second(method_specific_description);
+        std::unique_ptr<AlignmentResultBase> result = it->second(method_specific_description);
+        result->set_frame_score(score_string);
+        return result;
     }
     throw runtime_error("Unknown alignment result type: " + type_string);
 }

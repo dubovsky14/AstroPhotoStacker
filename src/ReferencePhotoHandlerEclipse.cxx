@@ -6,6 +6,7 @@
 #include "../headers/Common.h"
 #include "../headers/CommonImageOperations.h"
 #include "../headers/AlignmentResultTranslationOnly.h"
+#include "../headers/FrameRankingTool.h"
 
 #include "../headers/ImageFilesInputOutput.h"
 #include <opencv2/opencv.hpp>
@@ -52,20 +53,17 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerEclipse::calculate_ali
     const float shift_x = m_center_x - center_x;
     const float shift_y = m_center_y - center_y;
 
-
-    double sharpness_score = 0;
+    FrameScore frame_score;
     if (m_use_number_of_pixels_above_otsu_threshold_for_ranking) {
-        const float fraction_of_pixels_above_otsu_threshold = ImageRanker::get_fraction_of_pixels_above_otsu_threshold(brightness, width, height);
-        sharpness_score = 100.f * fraction_of_pixels_above_otsu_threshold;
+        frame_score = FrameRankingTool::get_ranking_otsu_based(brightness, width, height);
     }
     else {
         const int gaussian_kernel_size = 2 *int(m_gaussian_sigma + 0.5) + 1; // we need this to be odd
-        ImageRanker image_ranker(brightness, width, height, gaussian_kernel_size, m_gaussian_sigma);
-        sharpness_score = 100./image_ranker.get_sharpness_score();
+        frame_score = FrameRankingTool::get_ranking_for_planetary_objects(brightness, width, height, gaussian_kernel_size, m_gaussian_sigma);
     }
 
     std::unique_ptr<AlignmentResultTranslationOnly> plate_solving_result = std::make_unique<AlignmentResultTranslationOnly>(shift_x, shift_y);
-    plate_solving_result->set_ranking_score(sharpness_score);
+    plate_solving_result->set_frame_score(frame_score);
     return plate_solving_result;
 };
 

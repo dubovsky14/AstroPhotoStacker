@@ -21,7 +21,7 @@ namespace AstroPhotoStacker {
 
             AlignmentResultSurface(const std::string &description_string);
 
-            AlignmentResultSurface( const std::vector<LocalShift> &local_shifts, float ranking_score);
+            AlignmentResultSurface( const std::vector<LocalShift> &local_shifts, const FrameScore &frame_score);
 
             AlignmentResultSurface(const AlignmentResultSurface &other);
 
