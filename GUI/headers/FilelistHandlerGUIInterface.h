@@ -102,10 +102,6 @@ class FilelistHandlerGUIInterface : public AstroPhotoStacker::FilelistHandler  {
 
         void set_show_statistics(bool show_statistics) {
             m_show_statistics = show_statistics;
-
-            if (show_statistics) {
-                this->calculate_frame_statistics();
-            }
         };
 
         bool show_statistics() const {

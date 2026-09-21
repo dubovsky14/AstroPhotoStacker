@@ -2,7 +2,6 @@
 
 #include "../headers/StarFinder.h"
 #include "../headers/PhotoRanker.h"
-#include "../headers/FrameStatistics.h"
 #include "../headers/CommonImageOperations.h"
 
 #include <stdexcept>
@@ -119,10 +118,19 @@ FrameScore FrameRankingTool::get_ranking_otsu_based(const std::vector<PixelType>
 
 
 FrameScore FrameRankingTool::add_brighness_info(const std::vector<PixelType>& brightness, FrameScore frame_score)  {
-    FrameStatistics stats = get_frame_statistics(brightness);
-    frame_score.brightness_mean = stats.brightness_avg;
-    frame_score.brightness_std  = stats.brightness_std;
-    frame_score.brightness_min = stats.brightness_min;
-    frame_score.brightness_max = stats.brightness_max;
+    unsigned long long sum_brightness           = 0;
+    unsigned long long sum_brightness_squared   = 0;
+    for (const PixelType &pixel : brightness) {
+        frame_score.brightness_min = std::min<unsigned int>(frame_score.brightness_min, pixel);
+        frame_score.brightness_max = std::max<unsigned int>(frame_score.brightness_max, pixel);
+        sum_brightness += pixel;
+        sum_brightness_squared += pixel * static_cast<unsigned long long>(pixel);
+    }
+
+    const double pixel_count = brightness.size();
+
+    frame_score.brightness_mean = static_cast<float>(sum_brightness) / pixel_count;
+    frame_score.brightness_std  = static_cast<float>(std::sqrt(sum_brightness_squared / pixel_count - frame_score.brightness_mean * frame_score.brightness_mean));
+
     return frame_score;
 };

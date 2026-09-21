@@ -49,7 +49,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerStars::calculate_align
     try {
         int width, height;
         const vector<PixelType> brightness = read_image_monochrome(input_frame, &width, &height);
-        const PixelType threshold = get_threshold_value(brightness.data(), width*height, 0.0005);
+        const PixelType threshold = get_threshold_value(brightness.data(), width*height, m_threshold_fraction);
 
         vector<tuple<float,float,int> > stars = get_stars(brightness.data(), width, height, threshold);
         keep_only_stars_above_size(&stars, m_minimal_number_of_pixels_per_star*0.6);

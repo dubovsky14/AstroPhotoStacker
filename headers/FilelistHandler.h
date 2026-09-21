@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../headers/FrameStatistics.h"
 #include "../headers/LocalShiftsHandler.h"
 #include "../headers/Metadata.h"
 #include "../headers/InputFrame.h"
@@ -24,7 +23,6 @@ namespace AstroPhotoStacker {
         std::unique_ptr<AstroPhotoStacker::AlignmentResultBase> alignment_result = std::make_unique<AstroPhotoStacker::AlignmentResultDummy>();
         AstroPhotoStacker::Metadata             metadata;
         AstroPhotoStacker::InputFrame           input_frame;
-        AstroPhotoStacker::FrameStatistics      statistics;
         FrameType                               type;
         int                                     group_number;
         bool                                    is_checked = true;
@@ -37,7 +35,6 @@ namespace AstroPhotoStacker {
             group_number = other.group_number;
             is_checked = other.is_checked;
             metadata = other.metadata;
-            statistics = other.statistics;
             alignment_result = other.alignment_result->clone();
         };
 
@@ -48,7 +45,6 @@ namespace AstroPhotoStacker {
                 group_number = other.group_number;
                 is_checked = other.is_checked;
                 metadata = other.metadata;
-                statistics = other.statistics;
                 alignment_result = other.alignment_result->clone();
             }
             return *this;
@@ -217,8 +213,6 @@ namespace AstroPhotoStacker {
             */
             void get_alignment_info_tabular_data(std::vector<std::vector<std::string>> *tabular_data, std::vector<std::string> *description) const;
 
-            const AstroPhotoStacker::FrameStatistics &get_frame_statistics(int group, FrameType type, const AstroPhotoStacker::InputFrame &input_frame) const;
-
             /**
              * @brief Get the alignment info for a single frame
              *
@@ -265,12 +259,6 @@ namespace AstroPhotoStacker {
             void save_filelist_to_file(const std::string &output_address);
 
             void load_filelist_from_file(const std::string &input_address, std::map<FrameType, InputFrame> *last_read_frames = nullptr);
-
-            void calculate_frame_statistics(unsigned int n_cpu = 1, std::atomic<int> *counter = nullptr);
-
-            int get_number_of_frames_without_statistics() const;
-
-            bool statistics_calculated_for_all_frames() const;
 
             void check_unaligned_frames();
 

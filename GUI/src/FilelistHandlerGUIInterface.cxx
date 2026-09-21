@@ -84,20 +84,26 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
                                 "";
     result.push_back(score_string);
 
+    const bool valid_brightness_info =  frame_info.alignment_result->get_frame_score().brightness_mean >= 0;
+    auto get_brightness_info_string = [valid_brightness_info](const std::string &title, float value) -> const std::string {
+        if (!valid_brightness_info) {
+            return "";
+        }
+        return title + ": " + AstroPhotoStacker::round_and_convert_to_string(value);
+    };
 
-    std::string statistics_string = "";
     if (m_show_statistics) {
         if (frame_statistics_view_settings.show_mean) {
-            result.push_back("mean: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_avg));
+            result.push_back(get_brightness_info_string("mean", frame_info.alignment_result->get_frame_score().brightness_mean));
         }
         if (frame_statistics_view_settings.show_stddev) {
-            result.push_back("std: "  + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_std));
+            result.push_back(get_brightness_info_string("std", frame_info.alignment_result->get_frame_score().brightness_std));
         }
         if (frame_statistics_view_settings.show_min) {
-            result.push_back("min: "  + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_min));
+            result.push_back(get_brightness_info_string("min", frame_info.alignment_result->get_frame_score().brightness_min));
         }
         if (frame_statistics_view_settings.show_max) {
-            result.push_back("max: "  + AstroPhotoStacker::round_and_convert_to_string(frame_info.statistics.brightness_max));
+            result.push_back(get_brightness_info_string("max", frame_info.alignment_result->get_frame_score().brightness_max));
         }
     }
 
@@ -218,18 +224,22 @@ void FilelistHandlerGUIInterface::sort_by_ranking_internal()    {
 
 void FilelistHandlerGUIInterface::sort_by_mean_brightness_internal()   {
     const bool ascending = m_sort_ascending;
-    std::vector<std::tuple<size_t, float, FrameType>> index_brightness_type_vector;
+    std::vector<std::tuple<size_t, float, FrameType>> index_average_brightness_type_vector;
     for (size_t i = 0; i < m_shown_frames.size(); ++i) {
         const FrameType type = m_shown_frames[i].second.type;
-        const float brightness = get_frame_statistics(m_shown_frames[i].second.group_number, type, m_shown_frames[i].second.input_frame).brightness_avg;
-        index_brightness_type_vector.push_back({
+        float average_brightness = 0;
+        if (type == FrameType::LIGHT) {
+            const AlignmentResultBase& alignment_result = get_alignment_info(m_shown_frames[i].second.group_number, m_shown_frames[i].second.input_frame);
+            average_brightness = alignment_result.is_valid() ? alignment_result.get_frame_score().brightness_mean : std::numeric_limits<float>::max();
+        }
+        index_average_brightness_type_vector.push_back({
             i,
-            brightness,
+            average_brightness,
             m_shown_frames[i].second.type
         });
     }
 
-    std::sort(index_brightness_type_vector.begin(), index_brightness_type_vector.end(), [ascending](const std::tuple<size_t, float, FrameType> &a, const std::tuple<size_t, float, FrameType> &b) {
+    std::sort(index_average_brightness_type_vector.begin(), index_average_brightness_type_vector.end(), [ascending](const std::tuple<size_t, float, FrameType> &a, const std::tuple<size_t, float, FrameType> &b) {
         if (std::get<2>(a) != std::get<2>(b)) {
             return std::get<2>(a) < std::get<2>(b);
         }
@@ -242,7 +252,7 @@ void FilelistHandlerGUIInterface::sort_by_mean_brightness_internal()   {
     });
 
     std::vector<size_t> indices;
-    for (const auto &element : index_brightness_type_vector) {
+    for (const auto &element : index_average_brightness_type_vector) {
         indices.push_back(std::get<0>(element));
     }
 

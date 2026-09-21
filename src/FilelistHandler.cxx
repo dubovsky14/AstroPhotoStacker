@@ -254,19 +254,6 @@ void FilelistHandler::get_alignment_info_tabular_data(std::vector<std::vector<st
     }
 };
 
-const AstroPhotoStacker::FrameStatistics &FilelistHandler::get_frame_statistics(int group, FrameType type, const AstroPhotoStacker::InputFrame &input_frame) const   {
-    if (m_frames_list.find(group) == m_frames_list.end())   {
-        throw std::runtime_error("FilelistHandler::get_frame_statistics: group not found");
-    }
-    if (m_frames_list.at(group).find(type) == m_frames_list.at(group).end())   {
-        throw std::runtime_error("FilelistHandler::get_frame_statistics: frame type not found");
-    }
-    if (m_frames_list.at(group).at(type).find(input_frame) == m_frames_list.at(group).at(type).end())   {
-        throw std::runtime_error("FilelistHandler::get_frame_statistics: frame not found");
-    }
-    return m_frames_list.at(group).at(type).at(input_frame).statistics;
-};
-
 const AstroPhotoStacker::AlignmentResultBase&  FilelistHandler::get_alignment_info(int group, const AstroPhotoStacker::InputFrame &input_frame) const {
     if (m_frames_list.find(group) == m_frames_list.end())   {
         throw std::runtime_error("FilelistHandler::get_alignment_info: group not found");
@@ -494,69 +481,6 @@ void FilelistHandler::load_filelist_from_file(const std::string &input_address, 
         }
     }
 };
-
-void FilelistHandler::calculate_frame_statistics(unsigned int n_cpu, std::atomic<int> *counter) {
-    AstroPhotoStacker::TaskScheduler task_scheduler({n_cpu});
-    auto process_frame = [counter, n_cpu, &task_scheduler](AstroPhotoStacker::FrameStatistics *frame_statistics, const AstroPhotoStacker::InputFrame &input_frame) {
-        if (n_cpu > 1) {
-            task_scheduler.submit([frame_statistics, input_frame, counter]() {
-                *frame_statistics = AstroPhotoStacker::get_frame_statistics(input_frame);
-                if (counter) {
-                    (*counter)++;
-                }
-            }, {1});
-        }
-        else {
-            *frame_statistics = AstroPhotoStacker::get_frame_statistics(input_frame);
-            if (counter) {
-                (*counter)++;
-            }
-        }
-    };
-
-    for (auto &group : m_frames_list) {
-        for (auto &type : group.second) {
-            std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
-            for (auto &frame : frames) {
-                FrameInfo &frame_info = frame.second;
-                if (!frame_info.statistics.is_valid) {
-                    process_frame(&frame_info.statistics, frame.first);
-                }
-            }
-        }
-    }
-}
-
-int FilelistHandler::get_number_of_frames_without_statistics() const    {
-    int count = 0;
-    for (const auto &group : m_frames_list) {
-        for (const auto &type : group.second) {
-            const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
-            for (const auto &frame : frames) {
-                const FrameInfo &frame_info = frame.second;
-                if (!frame_info.statistics.is_valid) {
-                    count++;
-                }
-            }
-        }
-    }
-    return count;
-};
-
-bool FilelistHandler::statistics_calculated_for_all_frames() const {
-    for (const auto &group : m_frames_list) {
-        for (const auto &type : group.second) {
-            const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
-            for (const auto &frame : frames) {
-                const FrameInfo &frame_info = frame.second;
-                if (!frame_info.statistics.is_valid) {
-                    return false;
-                }
-            }
-        }
-    }
-    return true;
-}
 
 void FilelistHandler::check_unaligned_frames() {
     for (auto &group : m_frames_list)   {
