@@ -134,3 +134,4 @@ FrameScore FrameRankingTool::add_brighness_info(const std::vector<PixelType>& br
 
     return frame_score;
 };
+
