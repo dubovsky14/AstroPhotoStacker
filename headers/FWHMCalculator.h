@@ -28,6 +28,7 @@ namespace AstroPhotoStacker {
          */
         std::vector<std::vector<PixelType>> get_pixel_values_in_given_distance_from_cluster(const std::vector<PixelType> &brightness, const std::vector<char> &distance_mask);
 
+        std::vector<std::vector<PixelType>> get_pixel_values_in_given_distance_from_cluster(const std::vector<PixelType> &brightness, int width, int height, const std::vector<std::pair<int, int>> &pixels_in_cluster);
 
         /**
          * @brief Calculates the Full Width at Half Maximum (FWHM) of the pixel brightness distribution around the cluster (star).
@@ -39,5 +40,15 @@ namespace AstroPhotoStacker {
          * @return The calculated FWHM as a float.
          */
         float calculate_fwhm(const std::vector<PixelType> &brightness, int width, int height, PixelType threshold);
+
+
+        std::vector<double> fit_by_1d_gaussian( const std::vector<double> &data_x,
+                                                const std::vector<double> &data_y,
+                                                const std::vector<double> &initial_guess,
+                                                double learning_rate,
+                                                double decay_rate,
+                                                double beta,
+                                                int max_iterations);
+
     }
 }

@@ -59,6 +59,53 @@ std::vector<std::vector<PixelType>> AstroPhotoStacker::FWHMCalculator::get_pixel
     return result;
 };
 
+std::vector<std::vector<PixelType>> AstroPhotoStacker::FWHMCalculator::get_pixel_values_in_given_distance_from_cluster( const std::vector<PixelType> &brightness,
+                                                                                                                        int width,
+                                                                                                                        int height,
+                                                                                                                        const std::vector<std::pair<int, int>> &pixels_in_cluster)  {
+    double center_x(0), center_y(0);
+    for (const auto &p : pixels_in_cluster) {
+        center_x += p.first;
+        center_y += p.second;
+    }
+    if (!pixels_in_cluster.empty()) {
+        center_x /= pixels_in_cluster.size();
+        center_y /= pixels_in_cluster.size();
+    }
+
+    vector<float> distance_vector(width * height, 0.0f);
+    for (float x = 0; x < width; x++) {
+        for (float y = 0; y < height; y++) {
+            const float dx = x - center_x;
+            const float dy = y - center_y;
+            const float distance = std::sqrt(dx * dx + dy * dy);
+            const int idx = static_cast<int>(y) * width + static_cast<int>(x);
+            distance_vector.at(idx) = distance;
+        }
+    }
+
+    for (const pair<int, int> &p : pixels_in_cluster) {
+        const int x = p.first;
+        const int y = p.second;
+        const int idx = y * width + x;
+        distance_vector.at(idx) = 0;
+    }
+
+    vector<vector<PixelType>> result;
+
+    for (int idx = 0; idx < width * height; idx++) {
+        const int d = static_cast<int>(distance_vector.at(idx));
+        if (d <= 0) {
+            continue;
+        }
+        if (d >= int(result.size())) {
+            result.resize(d + 1);
+        }
+        result.at(d).push_back(brightness.at(idx));
+    }
+    return result;
+};
+
 float AstroPhotoStacker::FWHMCalculator::calculate_fwhm(const std::vector<PixelType> &brightness, int width, int height, PixelType threshold) {
     vector<vector<tuple<int,int>>> clusters = get_clusters(brightness.data(), width, height, threshold);
     if (clusters.empty()) {
@@ -99,16 +146,16 @@ float AstroPhotoStacker::FWHMCalculator::calculate_fwhm(const std::vector<PixelT
         median_values_by_distance.push_back(median);
     }
 
-    vector<float> values_for_gaussian_fit;
+    vector<double> values_for_gaussian_fit_y;
     for (int i = 0; i < n_neighbors_for_gaussian_fit && i < median_values_by_distance.size(); i++) {
-        values_for_gaussian_fit.push_back(median_values_by_distance.at(i));
+        values_for_gaussian_fit_y.push_back(median_values_by_distance.at(i));
     }
-    vector<float> values_for_background;
+    vector<double> values_for_background;
     for (int i = n_neighbors_for_gaussian_fit; i < n_nearest && i < median_values_by_distance.size(); i++) {
         values_for_background.push_back(median_values_by_distance.at(i));
     }
     std::sort(values_for_background.begin(), values_for_background.end());
-    float background_median = 0.0f;
+    double background_median = 0.0;
     if (!values_for_background.empty()) {
         size_t mid = values_for_background.size() / 2;
         background_median = (values_for_background.size() % 2 == 0) ? (values_for_background[mid - 1] + values_for_background[mid]) / 2.0f : values_for_background[mid];
@@ -116,79 +163,101 @@ float AstroPhotoStacker::FWHMCalculator::calculate_fwhm(const std::vector<PixelT
 
 
     unsigned int n_terms_to_use = 0;
-    for (unsigned int i = 1; i < values_for_gaussian_fit.size(); i++) {
-        if (values_for_gaussian_fit.at(i) > 0.0f && values_for_gaussian_fit.at(i) < values_for_gaussian_fit.at(i - 1)) {
+    for (unsigned int i = 1; i < values_for_gaussian_fit_y.size(); i++) {
+        if (values_for_gaussian_fit_y.at(i) > 0.0f && values_for_gaussian_fit_y.at(i) < values_for_gaussian_fit_y.at(i - 1)) {
             n_terms_to_use++;
         } else {
             break;
         }
     }
-    values_for_gaussian_fit.resize(n_terms_to_use);
+    values_for_gaussian_fit_y.resize(n_terms_to_use);
 
 
     // Subtract background median from values for Gaussian fit
-    for (float &value : values_for_gaussian_fit) {
+    for (double &value : values_for_gaussian_fit_y) {
         value -= background_median;
     }
 
     cout << "Values to fit and ratio to previous: \n";
-    for (size_t i = 0; i < values_for_gaussian_fit.size(); i++) {
-        cout << values_for_gaussian_fit.at(i);
+    for (size_t i = 0; i < values_for_gaussian_fit_y.size(); i++) {
+        cout << values_for_gaussian_fit_y.at(i);
         if (i > 0) {
-            cout << " (" << values_for_gaussian_fit.at(i) / values_for_gaussian_fit.at(i - 1) << ")";
+            cout << " (" << values_for_gaussian_fit_y.at(i) / values_for_gaussian_fit_y.at(i - 1) << ")";
         }
         cout << "\n";
     }
+    cout << "Cluster radius: " << cluser_radius << "\n";
 
-    // Now values_for_gaussian_fit contains the background-subtracted values ready for Gaussian fitting
-    vector<double> initial_params = {0.0, 3.0}; // mean, sigma
-    const vector<pair<double, double>> limits = {{-2 * cluser_radius, 2.0}, {0.1, 20.0}}; // mean, sigma
-
-
-    auto get_gaussian_loss = [values_for_gaussian_fit](const double *params) -> double {
-        const double mean = params[0];
-        const double sigma = params[1];
-
-        double sum_values = 0.0;
-        for (const float &value : values_for_gaussian_fit) {
-            sum_values += static_cast<double>(value);
-        }
-
-        vector<double> model_probabilities;
-        double sum_model_probabilities = 0.0;
-        for (size_t i = 0; i < values_for_gaussian_fit.size(); i++) {
-            const double x = static_cast<double>(i) - mean;
-            const double y = std::exp(-x * x / (2.0f * sigma * sigma));
-            model_probabilities.push_back(y);
-            sum_model_probabilities += y;
-        }
-
-        // Normalize model probabilities
-        for (double &prob : model_probabilities) {
-            prob *= sum_values /sum_model_probabilities;
-        }
-
-        double loss = 0.0f;
-        for (size_t i = 0; i < values_for_gaussian_fit.size(); i++) {
-            const double value = values_for_gaussian_fit.at(i);
-            const double y = model_probabilities.at(i);
-            const double diff = value - y;
-            loss += diff * diff;
-        }
-        return loss;
-    };
-
-    Fitter fitter(&initial_params, limits);
-    //fitter.set_debug(true);
-    fitter.fit_gradient(get_gaussian_loss, 0.5, 0.9998, 10000);
-
-    cout << "Cluster size: " << largest_cluster_pixels.size() << "\n";
-    cout << "Fitted parameters (mean, sigma): " << initial_params.at(0) << ", " << initial_params.at(1) << "\n";
-    cout << "Limits: ";
-    for (const auto &limit : limits) {
-        cout << "(" << limit.first << ", " << limit.second << ") ";
+    vector<double> values_for_gaussian_fit_x;
+    for (size_t i = 0; i < values_for_gaussian_fit_y.size(); i++) {
+        values_for_gaussian_fit_x.push_back(static_cast<double>(i));
     }
-    cout << "\n";
 
-    return initial_params.at(1);
-};
+    vector<double> initial_guess = {values_for_gaussian_fit_y.at(0), -cluser_radius, 3};
+    vector<double> fitted_parameters = AstroPhotoStacker::FWHMCalculator::fit_by_1d_gaussian(
+        values_for_gaussian_fit_x,
+        values_for_gaussian_fit_y,
+        initial_guess,
+        0.000000001,  // learning_rate
+        0.99,  // decay_rate
+        0.,   // beta
+        2000   // max_iterations
+    );
+    return fitted_parameters.at(2);
+}
+
+
+
+std::vector<double> AstroPhotoStacker::FWHMCalculator::fit_by_1d_gaussian(  const std::vector<double> &data_x,
+                                                                            const std::vector<double> &data_y,
+                                                                            const std::vector<double> &initial_guess,
+                                                                            double learning_rate,
+                                                                            double decay_rate,
+                                                                            double beta,
+                                                                            int max_iterations) {
+
+
+    std::vector<double> fitted_parameters = initial_guess;
+    std::vector<double> accumulated_gradients(initial_guess.size(), 0.0);
+
+    for (int iteration = 0; iteration < max_iterations; iteration++) {
+        std::vector<double> gradients(initial_guess.size(), 0.0);
+        double loss = 0.0;
+
+        for (size_t i_point = 0; i_point < data_x.size(); i_point++) {
+            double x = data_x.at(i_point);
+            double y = data_y.at(i_point);
+            double A = fitted_parameters.at(0);
+            double mu = fitted_parameters.at(1);
+            double sigma = fitted_parameters.at(2);
+
+            double exponential_term = std::exp(-((x - mu) * (x - mu)) / (2 * sigma * sigma));
+            double fx = A * exponential_term;
+            double dLdf = 2 * (fx - y);
+            loss += (fx - y) * (fx - y);
+
+            gradients.at(0) += dLdf * exponential_term;
+            gradients.at(1) += dLdf * A * exponential_term * (x - mu) / (sigma * sigma);
+            gradients.at(2) += dLdf * A * exponential_term * (x - mu) * (x - mu) / (sigma * sigma * sigma);
+        }
+
+        //cout << "Iteration " << iteration << ": ";
+        //cout << "A = " << fitted_parameters.at(0) << ", ";
+        //cout << "mu = " << fitted_parameters.at(1) << ", ";
+        //cout << "sigma = " << fitted_parameters.at(2) << endl;
+        //cout << "Gradients: ";
+        //for (size_t i_param = 0; i_param < gradients.size(); i_param++) {
+        //    cout << gradients.at(i_param) << " ";
+        //}
+        //cout << endl << "Loss: " << loss << endl << endl;
+
+        for (size_t i_param = 0; i_param < fitted_parameters.size(); i_param++) {
+            accumulated_gradients.at(i_param) = beta * accumulated_gradients.at(i_param) + (1 - beta) * gradients.at(i_param);
+            fitted_parameters.at(i_param) -= learning_rate * accumulated_gradients.at(i_param);
+        }
+        learning_rate *= decay_rate;
+
+    }
+
+    return fitted_parameters;
+}
