@@ -20,14 +20,17 @@ AlignmentResultPlateSolving::AlignmentResultPlateSolving(const string &descripti
     if (tokens.size() < 5) {
         throw runtime_error("Invalid description string for AlignmentResultPlateSolving: " + description_string);
     }
-    float shift_x = stof(tokens[0]);
-    float shift_y = stof(tokens[1]);
-    float rotation_center_x = stof(tokens[2]);
-    float rotation_center_y = stof(tokens[3]);
-    float rotation = stof(tokens[4]);
+    float shift_x = stof(tokens.at(0));
+    float shift_y = stof(tokens.at(1));
+    float rotation_center_x = stof(tokens.at(2));
+    float rotation_center_y = stof(tokens.at(3));
+    float rotation = stof(tokens.at(4));
     float zoom = 1.0f;
     if (tokens.size() >= 6) {   // yeah, this is a mess, but we need to keep compatibility with older versions
-        zoom = stof(tokens[5]);
+        strip_string(&tokens.at(5));
+        if (!tokens.at(5).empty() && string_is_float(tokens.at(5))) {
+            zoom = stof(tokens.at(5));
+        }
     }
 
     m_geometric_transformer = make_unique<GeometricTransformer>(shift_x,
