@@ -42,18 +42,7 @@ FWHMCalculator::FWHMCalculator(const std::vector<PixelType> &brightness, int wid
 
 
 
-float FWHMCalculator::calculate_fwhm(int stars_to_use, int pixels_to_use) const {
-    // Brief description of the algorithm:
-    // 1. Take a random cluster
-    // 1. Find min and max values of x and y coordinates for the cluster
-    // 2. Calculate mean background brightness around the cluster, subrtract if from data
-    // 3. Take the lines x_min-1 and x_max+1 and get the pixel brightness values along these lines around center
-    // 4. Apply piece-wise polynomial fit on these data around the peak, extract value of maximum and x-positions where brightness is half of the maximum
-    // 5. Calculate the Full Width at Half Maximum (FWHM) along x-axis as their average
-    // 6. Repeat the same for the y-axis
-    // 7. Star's FWHM is obtained as the average of the FWHM along x and y axes
-    // 8. Repeat for N clusters and get median - this is the overall FWHM of the image
-
+float FWHMCalculator::calculate_fwhm(int stars_to_use) const {
     vector<float> fwhm_values;
     for (int i_cluster_selection = 0; i_cluster_selection < stars_to_use; i_cluster_selection++) {
         const size_t random_index = rand() % m_clusters.size();
@@ -76,11 +65,10 @@ float FWHMCalculator::calculate_fwhm(int stars_to_use, int pixels_to_use) const 
         } else if (fwhm_diagonal_orientation > 0) {
             fwhm_values.push_back(fwhm_diagonal_orientation);
         }
-
     }
 
     if (fwhm_values.empty()) {
-        return 0.0f;
+        return -1;
     }
 
     std::sort(fwhm_values.begin(), fwhm_values.end());
@@ -131,16 +119,6 @@ std::array<double, 3> FWHMCalculator::fit_by_1d_gaussian(   const std::vector<do
             gradients.at(2) += dLdf * A * exponential_term * (x - mu) * (x - mu) / (sigma * sigma * sigma);
         }
 
-        //cout << "Iteration " << iteration << ": ";
-        //cout << "A = " << fitted_parameters.at(0) << ", ";
-        //cout << "mu = " << fitted_parameters.at(1) << ", ";
-        //cout << "sigma = " << fitted_parameters.at(2) << endl;
-        //cout << "Gradients: ";
-        //for (size_t i_param = 0; i_param < gradients.size(); i_param++) {
-        //    cout << gradients.at(i_param) << " ";
-        //}
-        //cout << endl << "Loss: " << loss << endl << endl;
-
         for (size_t i_param = 0; i_param < fitted_parameters.size(); i_param++) {
             accumulated_gradients2.at(i_param) = beta_grad2 * accumulated_gradients2.at(i_param) + (1 - beta_grad2) * gradients.at(i_param) * gradients.at(i_param);
             accumulated_gradients.at(i_param) = beta * accumulated_gradients.at(i_param) + (1 - beta) * gradients.at(i_param);
@@ -155,14 +133,14 @@ std::array<double, 3> FWHMCalculator::fit_by_1d_gaussian(   const std::vector<do
 };
 
 
-float FWHMCalculator::calculate_fwhm_for_star(std::array<int, 2> star_position, std::array<int, 2> direction, int pixels_to_use) const {
+float FWHMCalculator::calculate_fwhm_for_star(std::array<int, 2> star_position, std::array<int, 2> direction) const {
     vector<double> values_x; // signed distance from cluster center
     vector<double> values_y; // intensity values along the direction
 
     const double step_size = sqrt(direction[0] * direction[0] + direction[1] * direction[1]);
     // Collect pixel values along the specified direction
     for (int i_direction = 0; i_direction < 2; i_direction++) {
-        for (int i = 0; i <= 200; i++) {
+        for (int i = i_direction; i <= 200; i++) {
             int x = star_position[0] + i * direction[0];
             int y = star_position[1] + i * direction[1];
 

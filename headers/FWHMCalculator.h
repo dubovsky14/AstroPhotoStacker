@@ -17,7 +17,7 @@ namespace AstroPhotoStacker {
 
             FWHMCalculator(const std::vector<PixelType> &brightness, int width, int height, std::vector<std::tuple<float, float, int>> &clusters, PixelType threshold);
 
-            float calculate_fwhm(int stars_to_use = 50, int pixels_to_use = 10) const;
+            float calculate_fwhm(int stars_to_use = 200) const;
 
             static std::array<double, 3> fit_by_1d_gaussian(const std::vector<double> &data_x,
                                                             const std::vector<double> &data_y,
@@ -34,7 +34,7 @@ namespace AstroPhotoStacker {
             int m_height = 0;
             std::vector<std::tuple<float,float,int>> m_clusters;
 
-            float calculate_fwhm_for_star(std::array<int, 2> star_position, std::array<int, 2> direction, int pixels_to_use = 10) const;
+            float calculate_fwhm_for_star(std::array<int, 2> star_position, std::array<int, 2> direction) const;
 
     };
 }
