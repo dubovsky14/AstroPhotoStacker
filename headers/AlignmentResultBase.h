@@ -58,6 +58,10 @@ namespace AstroPhotoStacker {
                 return m_frame_score;
             };
 
+            FrameScore& get_frame_score() {
+                return m_frame_score;
+            };
+
             // for backward compatibility (to be removed later)
             void set_ranking_score(float ranking_score) {
                 m_frame_score.stars_excentricity = ranking_score;

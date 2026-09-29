@@ -42,6 +42,12 @@ void FilelistHandlerGUIInterface::sort_by_mean_brightness(bool ascending)  {
     sort_frames();
 };
 
+void FilelistHandlerGUIInterface::sort_by_fwhm(bool ascending)  {
+    m_sort_type = SortType::FWHM;
+    m_sort_ascending = ascending;
+    sort_frames();
+};
+
 
 std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const FrameID &frame_id)    {
     vector<string> result;
@@ -83,6 +89,13 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
                                 (frame_info.alignment_result->is_valid() ? "score: " + AstroPhotoStacker::round_and_convert_to_string(alignment_score, 3) : "invalid alignment") :
                                 "";
     result.push_back(score_string);
+
+    if (type == FrameType::LIGHT && frame_info.alignment_result->is_valid() && frame_info.alignment_result->get_frame_score().stars_fwhm > 0) {
+        result.push_back("FWHM: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.alignment_result->get_frame_score().stars_fwhm, 3));
+    }
+    else {
+        result.push_back("");
+    }
 
     const bool valid_brightness_info =  frame_info.alignment_result->get_frame_score().brightness_mean >= 0;
     auto get_brightness_info_string = [valid_brightness_info](const std::string &title, float value) -> const std::string {
@@ -259,6 +272,44 @@ void FilelistHandlerGUIInterface::sort_by_mean_brightness_internal()   {
     rearange_vector(&m_shown_frames, indices.data());
 };
 
+
+void FilelistHandlerGUIInterface::sort_by_fwhm_internal()   {
+    const bool ascending = m_sort_ascending;
+    std::vector<std::tuple<size_t, float, FrameType>> index_fwhm_type_vector;
+    for (size_t i = 0; i < m_shown_frames.size(); ++i) {
+        const FrameType type = m_shown_frames[i].second.type;
+        float fwhm = 0;
+        if (type == FrameType::LIGHT) {
+            const AlignmentResultBase& alignment_result = get_alignment_info(m_shown_frames[i].second.group_number, m_shown_frames[i].second.input_frame);
+            fwhm = alignment_result.is_valid() ? alignment_result.get_frame_score().stars_fwhm : std::numeric_limits<float>::max();
+        }
+        index_fwhm_type_vector.push_back({
+            i,
+            fwhm,
+            m_shown_frames[i].second.type
+        });
+    }
+
+    std::sort(index_fwhm_type_vector.begin(), index_fwhm_type_vector.end(), [ascending](const std::tuple<size_t, float, FrameType> &a, const std::tuple<size_t, float, FrameType> &b) {
+        if (std::get<2>(a) != std::get<2>(b)) {
+            return std::get<2>(a) < std::get<2>(b);
+        }
+
+        if (ascending) {
+            return std::get<1>(a) < std::get<1>(b);
+        } else {
+            return std::get<1>(a) > std::get<1>(b);
+        }
+    });
+
+    std::vector<size_t> indices;
+    for (const auto &element : index_fwhm_type_vector) {
+        indices.push_back(std::get<0>(element));
+    }
+
+    rearange_vector(&m_shown_frames, indices.data());
+};
+
 void FilelistHandlerGUIInterface::sort_by_group_internal()  {
     const bool ascending = m_sort_ascending;
     const auto lambda = [ascending](const std::pair<std::string,FrameID> &a, const std::pair<std::string,FrameID> &b) {
@@ -316,6 +367,9 @@ void FilelistHandlerGUIInterface::sort_frames() {
             break;
         case SortType::BRIGHTNESS_MEAN:
             sort_by_mean_brightness_internal();
+            break;
+        case SortType::FWHM:
+            sort_by_fwhm_internal();
             break;
     }
 };

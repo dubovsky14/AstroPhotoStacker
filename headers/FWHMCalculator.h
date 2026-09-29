@@ -9,122 +9,32 @@
 #include <tuple>
 
 namespace AstroPhotoStacker {
-
-
-    /**
-     * @brief A view into a 2D image, allowing access to a subregion of the original image without copying the data.
-     */
-    template<typename PixelValueType>
-    class ImageView2D {
+    class FWHMCalculator {
         public:
-            ImageView2D(const PixelValueType *data, size_t original_width, size_t original_height, size_t top_left_x, size_t top_left_y, size_t view_width, size_t view_height) {
-                m_original_width = original_width;
-                m_original_height = original_height;
-                m_top_left_x = top_left_x;
-                m_top_left_y = top_left_y;
-                m_view_width = view_width;
-                m_view_height = view_height;
-                m_data = data;
+            FWHMCalculator() = delete;
 
-                if (m_top_left_x + m_view_width > m_original_width || m_top_left_y + m_view_height > m_original_height) {
-                    throw std::out_of_range("View exceeds original image bounds");
-                }
-            }
+            FWHMCalculator(const std::vector<PixelType> &brightness, int width, int height);
 
-            const PixelValueType at(int x, int y) const {
-                if (x < 0 || x >= m_view_width || y < 0 || y >= m_view_height) {
-                    throw std::out_of_range("Index out of range");
-                }
+            FWHMCalculator(const std::vector<PixelType> &brightness, int width, int height, std::vector<std::tuple<float, float, int>> &clusters, PixelType threshold);
 
-                const size_t original_x = m_top_left_x + x;
-                const size_t original_y = m_top_left_y + y;
+            float calculate_fwhm(int stars_to_use = 50, int pixels_to_use = 10) const;
 
-                return m_data[original_y * m_original_width + original_x];
-            }
-
-            size_t get_view_width() const { return m_view_width; };
-            size_t get_view_height() const { return m_view_height; };
-
-            size_t get_original_width() const { return m_original_width; };
-            size_t get_original_height() const { return m_original_height; };
+            static std::array<double, 3> fit_by_1d_gaussian(const std::vector<double> &data_x,
+                                                            const std::vector<double> &data_y,
+                                                            const std::array<double, 3> &initial_guess,
+                                                            double learning_rate,
+                                                            double beta,
+                                                            int max_iterations);
 
         private:
-            size_t m_view_width;
-            size_t m_view_height;
-            size_t m_top_left_x;
-            size_t m_top_left_y;
+            PixelType m_star_threshold         = 32767;
+            PixelType m_background_threshold   = 32767;
+            const std::vector<PixelType> *m_brightness = nullptr;
+            int m_width  = 0;
+            int m_height = 0;
+            std::vector<std::tuple<float,float,int>> m_clusters;
 
-            size_t m_original_width;
-            size_t m_original_height;
+            float calculate_fwhm_for_star(std::array<int, 2> star_position, std::array<int, 2> direction, int pixels_to_use = 10) const;
 
-            const PixelValueType *m_data;
     };
-
-
-
-    namespace FWHMCalculator {
-
-        /**
-         * @brief Calculates the Full Width at Half Maximum (FWHM) of the pixel brightness distribution around the cluster (star).
-         *
-         * @param brightness A vector of pixel brightness values.
-         * @param width The width of the image.
-         * @param height The height of the image.
-         * @param threshold The brightness threshold to determine if the pixel is considered part of the star.
-         * @return The calculated FWHM as a float.
-         */
-        float calculate_fwhm(const std::vector<PixelType> &brightness, int width, int height, PixelType threshold);
-
-        float get_background_median(const ImageView2D<PixelType> &image_view, int edge_margin = 2);
-
-        // Returns the bounding box of the cluster as {min_x, min_y, max_x, max_y}
-        std::array<int, 4> get_cluster_bounds(const std::vector<std::tuple<int,int>> &cluster);
-
-        std::pair<std::vector<PixelType>, std::vector<PixelType>> get_line_above_and_below(
-            const ImageView2D<PixelType> &image_view,
-            const std::vector<std::tuple<int,int>> &cluster,
-            int cluster_y_min,
-            int cluster_y_max,
-            float background_median,
-            int edge_margin = 20
-        );
-
-        /**
-         * @brief Fits a Full Width at Half Maximum (FWHM) model to the provided data using polynomial approximation.
-         *
-         * @param x_data The x-coordinates of the data points.
-         * @param y_data The y-coordinates of the data points.
-         */
-        class FWHMFitter {
-            public:
-                FWHMFitter() = delete;
-
-                FWHMFitter(const std::vector<float> &x_data, const std::vector<float> &y_data);
-
-                //float get_fwhm() const;
-
-                float operator()(float x, int segment_index) const;
-
-                // [x,y] coordinates of the maximum point within the specified segment.
-                std::pair<float, float> get_segment_maximum(int segment_index) const;
-
-                //float get_amplitude() const;
-
-            private:
-                std::vector<float> m_x_data;
-                std::vector<float> m_y_data;
-
-                std::vector<std::pair<float, float>> m_slopes_and_offsets;
-        };
-
-
-        std::array<double, 3> fit_by_1d_gaussian( const std::vector<double> &data_x,
-                                                const std::vector<double> &data_y,
-                                                const std::array<double, 3> &initial_guess,
-                                                double learning_rate,
-                                                double decay_rate,
-                                                double beta,
-                                                int max_iterations);
-
-    }
 }

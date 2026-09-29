@@ -33,7 +33,8 @@ class FilelistHandlerGUIInterface : public AstroPhotoStacker::FilelistHandler  {
         NAME,
         RANKING,
         GROUP,
-        BRIGHTNESS_MEAN
+        BRIGHTNESS_MEAN,
+        FWHM
     };
 
     public:
@@ -50,6 +51,8 @@ class FilelistHandlerGUIInterface : public AstroPhotoStacker::FilelistHandler  {
         void sort_by_group(bool ascending = true);
 
         void sort_by_mean_brightness(bool ascending = true);
+
+        void sort_by_fwhm(bool ascending = true);
 
         std::vector<std::string> get_gui_string_cells(const FrameID &frame_info);
 
@@ -126,6 +129,7 @@ class FilelistHandlerGUIInterface : public AstroPhotoStacker::FilelistHandler  {
         void sort_by_ranking_internal();
         void sort_by_group_internal();
         void sort_by_mean_brightness_internal();
+        void sort_by_fwhm_internal();
 
         std::vector<std::pair<std::string,FrameID>> m_shown_frames;
         int m_selected_frame_index = -1;

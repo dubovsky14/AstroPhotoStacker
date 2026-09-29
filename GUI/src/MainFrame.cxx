@@ -515,6 +515,7 @@ void MyFrame::add_files_to_stack_checkbox()  {
     add_sorting_option("Sort by Score",         &FilelistHandlerGUIInterface::sort_by_ranking);
     add_sorting_option("Sort by Group",         &FilelistHandlerGUIInterface::sort_by_group);
     add_sorting_option("Sort by Brightness",    &FilelistHandlerGUIInterface::sort_by_mean_brightness);
+    add_sorting_option("Sort by FWHM",          &FilelistHandlerGUIInterface::sort_by_fwhm);
 
     // button for keeping only best N files
     wxButton *button_keep_best = new wxButton(header_panel, wxID_ANY, "Keep best N", wxDefaultPosition, wxDefaultSize);
