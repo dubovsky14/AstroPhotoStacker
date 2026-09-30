@@ -44,8 +44,11 @@ FWHMCalculator::FWHMCalculator(const std::vector<PixelType> &brightness, int wid
 
 float FWHMCalculator::calculate_fwhm(int stars_to_use) const {
     vector<float> fwhm_values;
+
+    // to get consistent results for CI tests
+    FWHMCalculatorPRNG prng(static_cast<unsigned int>(m_clusters.size()) ^ (static_cast<unsigned int>(m_star_threshold) << 16) ^ (static_cast<unsigned int>(m_background_threshold)));
     for (int i_cluster_selection = 0; i_cluster_selection < stars_to_use; i_cluster_selection++) {
-        const size_t random_index = rand() % m_clusters.size();
+        const size_t random_index = prng.rand() % m_clusters.size();
         const tuple<float,float,int> &cluster = m_clusters.at(random_index);
 
         const std::array<int, 2> star_position = {static_cast<int>(get<0>(cluster)), static_cast<int>(get<1>(cluster))};
@@ -140,16 +143,19 @@ float FWHMCalculator::calculate_fwhm_for_star(std::array<int, 2> star_position, 
     const double step_size = sqrt(direction[0] * direction[0] + direction[1] * direction[1]);
     // Collect pixel values along the specified direction
     for (int i_direction = 0; i_direction < 2; i_direction++) {
+        int n_used_pixels = 0;
         for (int i = i_direction; i <= 200; i++) {
             int x = star_position[0] + i * direction[0];
             int y = star_position[1] + i * direction[1];
 
+            if (n_used_pixels >= 20) break;
 
             if (x >= 0 && x < m_width && y >= 0 && y < m_height) {
                 PixelType brighness = m_brightness->at(y * m_width + x);
                 if (brighness <= m_background_threshold) break;
                 values_x.push_back(i * step_size);
                 values_y.push_back(static_cast<double>(brighness) - m_background_threshold);
+                n_used_pixels++;
             }
             else {
                 break;

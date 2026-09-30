@@ -37,4 +37,22 @@ namespace AstroPhotoStacker {
             float calculate_fwhm_for_star(std::array<int, 2> star_position, std::array<int, 2> direction) const;
 
     };
+
+    /**
+     * Pseudo-random number generator used by the FWHM Calculator.
+     */
+    class FWHMCalculatorPRNG {
+        public:
+            FWHMCalculatorPRNG() = delete;
+
+            FWHMCalculatorPRNG(unsigned int seed) { m_seed = seed; };
+
+            unsigned int rand() {
+                m_seed = 1664525 * m_seed + 1013904223;
+                return m_seed;
+            };
+
+        private:
+            unsigned int m_seed = 0;
+    };
 }
