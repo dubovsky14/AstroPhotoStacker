@@ -43,6 +43,7 @@ SettingsCustomizationGUI::SettingsCustomizationGUI(MyFrame *parent, const std::f
     add_checkbox(frame_stats_sizer, "Show Standard Deviation", &m_frame_statistics_view_settings->show_stddev, &m_show_stddev_checkbox);
     add_checkbox(frame_stats_sizer, "Show Minimum", &m_frame_statistics_view_settings->show_min, &m_show_min_checkbox);
     add_checkbox(frame_stats_sizer, "Show Maximum", &m_frame_statistics_view_settings->show_max, &m_show_max_checkbox);
+    add_checkbox(frame_stats_sizer, "Show FWHM", &m_frame_statistics_view_settings->show_fwhm, &m_show_fwhm_checkbox);
 
     main_sizer->Add(frame_stats_sizer, 0, wxEXPAND | wxALL, 10);
 

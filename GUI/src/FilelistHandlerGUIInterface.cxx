@@ -90,11 +90,14 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
                                 "";
     result.push_back(score_string);
 
-    if (type == FrameType::LIGHT && frame_info.alignment_result->is_valid() && frame_info.alignment_result->get_frame_score().stars_fwhm > 0) {
-        result.push_back("FWHM: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.alignment_result->get_frame_score().stars_fwhm, 3));
-    }
-    else {
-        result.push_back("");
+
+    if (frame_statistics_view_settings.show_fwhm) {
+        if (type == FrameType::LIGHT && frame_info.alignment_result->is_valid() && frame_info.alignment_result->get_frame_score().stars_fwhm > 0) {
+            result.push_back("FWHM: " + AstroPhotoStacker::round_and_convert_to_string(frame_info.alignment_result->get_frame_score().stars_fwhm, 3));
+        }
+        else {
+            result.push_back("");
+        }
     }
 
     const bool valid_brightness_info =  frame_info.alignment_result->get_frame_score().brightness_mean >= 0;

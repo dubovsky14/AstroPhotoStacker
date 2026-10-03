@@ -36,6 +36,7 @@ class SettingsCustomizationGUI : public wxFrame {
         wxCheckBox *m_show_stddev_checkbox = nullptr;
         wxCheckBox *m_show_min_checkbox = nullptr;
         wxCheckBox *m_show_max_checkbox = nullptr;
+        wxCheckBox *m_show_fwhm_checkbox = nullptr;
 
         wxCheckBox *m_show_full_frame_paths_checkbox = nullptr;
 

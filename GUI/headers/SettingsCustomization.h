@@ -45,6 +45,7 @@ struct FrameStatisticsViewSettings {
     bool show_stddev        = true;
     bool show_min           = false;
     bool show_max           = false;
+    bool show_fwhm          = false;
 
     std::map<std::string, bool*> get_boolean_map() {
         std::map<std::string, bool*> result;
@@ -52,6 +53,7 @@ struct FrameStatisticsViewSettings {
         result["show_stddev"] =  &show_stddev;
         result["show_min"] =     &show_min;
         result["show_max"] =     &show_max;
+        result["show_fwhm"] =    &show_fwhm;
         return result;
     };
 

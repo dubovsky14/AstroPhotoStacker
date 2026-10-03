@@ -69,7 +69,7 @@ namespace AstroPhotoStacker {
 
             // for backward compatibility (to be removed later)
             float get_ranking_score() const {
-                return m_frame_score.stars_excentricity;
+                return m_frame_score.stars_excentricity >= 0 ? m_frame_score.stars_excentricity : m_frame_score.sharpness_score;
             };
 
 
