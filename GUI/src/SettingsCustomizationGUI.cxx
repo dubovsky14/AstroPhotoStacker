@@ -31,6 +31,8 @@ SettingsCustomizationGUI::SettingsCustomizationGUI(MyFrame *parent, const std::f
     add_checkbox(metadata_sizer, "Show Focal Length", &m_metadata_view_settings->show_focal_length, &m_show_focal_length_checkbox);
     add_checkbox(metadata_sizer, "Show DateTime", &m_metadata_view_settings->show_datetime, &m_show_datetime_checkbox);
     //add_checkbox(metadata_sizer, "Show Resolution", &m_metadata_view_settings->show_resolution, &m_show_resolution_checkbox);
+    add_checkbox(metadata_sizer, "Show Camera Model", &m_metadata_view_settings->show_camera_model, &m_show_camera_model_checkbox);
+
 
     main_sizer->Add(metadata_sizer, 0, wxEXPAND | wxALL, 10);
 

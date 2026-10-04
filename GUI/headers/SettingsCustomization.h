@@ -20,6 +20,7 @@ struct MetadataViewSettings {
     bool show_focal_length  = false;
     bool show_resolution    = false;
     bool show_datetime      = false;
+    bool show_camera_model  = false;
 
     std::map<std::string, bool*> get_boolean_map() {
         std::map<std::string, bool*> result;
@@ -30,6 +31,7 @@ struct MetadataViewSettings {
         result["show_focal_length"] =   &show_focal_length;
         result["show_resolution"] =     &show_resolution;
         result["show_datetime"] =       &show_datetime;
+        result["show_camera_model"] =   &show_camera_model;
         return result;
     };
 

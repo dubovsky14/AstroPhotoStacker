@@ -31,6 +31,7 @@ class SettingsCustomizationGUI : public wxFrame {
         wxCheckBox *m_show_focal_length_checkbox = nullptr;
         wxCheckBox *m_show_datetime_checkbox = nullptr;
         wxCheckBox *m_show_resolution_checkbox = nullptr;
+        wxCheckBox *m_show_camera_model_checkbox = nullptr;
 
         wxCheckBox *m_show_mean_checkbox = nullptr;
         wxCheckBox *m_show_stddev_checkbox = nullptr;

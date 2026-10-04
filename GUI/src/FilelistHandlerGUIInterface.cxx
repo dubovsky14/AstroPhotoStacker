@@ -73,6 +73,7 @@ std::vector<std::string> FilelistHandlerGUIInterface::get_gui_string_cells(const
     const FrameStatisticsViewSettings &frame_statistics_view_settings = settings_customization.frame_statistics_view_settings;
 
     if (show_metadata()) {
+        if (metadata_view_settings.show_camera_model)   result.push_back(metadata.camera_model);
         if (metadata_view_settings.show_aperture)       result.push_back("f/" + AstroPhotoStacker::round_and_convert_to_string(metadata.aperture));
         if (metadata_view_settings.show_exposure_time)  result.push_back(exposure_string);
         if (metadata_view_settings.show_iso)            result.push_back(to_string(metadata.iso) + " ISO");
