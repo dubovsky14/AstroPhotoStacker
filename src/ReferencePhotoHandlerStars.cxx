@@ -56,16 +56,12 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerStars::calculate_align
         keep_only_stars_above_size(&stars, m_minimal_number_of_pixels_per_star*0.6);
         sort_stars_by_size(&stars);
 
-        FWHMCalculator fwhm_calculator(brightness, width, height, stars, threshold);
-        const float fwhm = fwhm_calculator.calculate_fwhm();
-
         if (stars.size() > 25) {
             stars.resize(25);
         }
 
         unique_ptr<AlignmentResultBase> result = plate_solve(stars);
         FrameScore frame_score = FrameRankingTool::get_ranking_for_deep_sky_objects(brightness, width, height, threshold);
-        frame_score.stars_fwhm = fwhm;
         result->set_frame_score(frame_score);
         return result;
     }

@@ -55,6 +55,8 @@ namespace AstroPhotoStacker   {
         protected:
             ReferencePhotoHandlerComet() : ReferencePhotoHandlerStars() { define_configuration_settings(); };
 
+            virtual void define_configuration_settings() override;
+
             InputFrame  m_reference_input_frame;
             std::pair<float,float> calculate_expected_comet_position(int timestamp) const;
 

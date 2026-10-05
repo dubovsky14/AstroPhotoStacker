@@ -1,7 +1,8 @@
 #include "../headers/ReferencePhotoHandlerComet.h"
 #include "../headers/GeometricTransformations.h"
 #include "../headers/InputFrameReader.h"
-#include "../headers/PhotoRanker.h"
+#include "../headers/FrameRankingTool.h"
+
 
 using namespace AstroPhotoStacker;
 using namespace std;
@@ -36,7 +37,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerComet::calculate_align
         const int height = input_frame_reader.get_height();
 
         const vector<PixelType> brightness = input_frame_reader.get_monochrome_data();
-        const PixelType threshold = get_threshold_value(brightness.data(), width*height, 0.002);
+        const PixelType threshold = get_threshold_value(brightness.data(), width*height, m_threshold_fraction);
 
         vector<tuple<float,float,int> > clusters = get_stars(brightness.data(), width, height, threshold); // one if these "stars" should be the comet
         keep_only_stars_above_size(&clusters, 9);
@@ -71,7 +72,9 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerComet::calculate_align
         shift_y -= comet_position.second - m_comet_position_reference_frame.second;
 
         plate_solving_result->set_parameters(shift_x, shift_y, rotation_center_x, rotation_center_y, rotation, zoom);
-        plate_solving_result->set_ranking_score(PhotoRanker::calculate_frame_ranking(input_frame));
+
+        FrameScore frame_score = FrameRankingTool::get_ranking_for_deep_sky_objects(brightness, width, height, threshold);
+        plate_solving_result->set_frame_score(frame_score);
 
         return plate_solving_result;
     }
@@ -147,4 +150,10 @@ std::pair<float,float> ReferencePhotoHandlerComet::calculate_expected_comet_posi
     const float expected_x = m_comet_initial_position.first + m_comet_velocity.first * dt;
     const float expected_y = m_comet_initial_position.second + m_comet_velocity.second * dt;
     return std::make_pair(expected_x, expected_y);
+}
+
+void ReferencePhotoHandlerComet::define_configuration_settings() {
+    m_threshold_fraction = 0.002; // we usually need higher threshold to see the comet
+    ReferencePhotoHandlerStars::define_configuration_settings();
+    m_configurable_algorithm_settings.add_additional_setting_numerical("threshold fraction", &m_threshold_fraction, 0.0001, 0.005, 0.0001);
 }

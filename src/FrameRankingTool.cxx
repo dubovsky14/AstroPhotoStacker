@@ -3,6 +3,7 @@
 #include "../headers/StarFinder.h"
 #include "../headers/PhotoRanker.h"
 #include "../headers/CommonImageOperations.h"
+#include "../headers/FWHMCalculator.h"
 
 #include <stdexcept>
 #include <algorithm>
@@ -28,9 +29,23 @@ FrameScore FrameRankingTool::get_ranking_for_deep_sky_objects(const std::vector<
 
     sort(cluster_excentricities.begin(), cluster_excentricities.end());
 
+    vector<tuple<float,float,int>> stars(clusters.size(), std::make_tuple(0.0f, 0.0f, 0));
+    for (size_t i_cluster = 0; i_cluster < clusters.size(); ++i_cluster) {
+        for (const std::tuple<int,int> &pixel : clusters.at(i_cluster)) {
+            get<0>(stars.at(i_cluster)) += std::get<0>(pixel);
+            get<1>(stars.at(i_cluster)) += std::get<1>(pixel);
+        }
+        get<0>(stars.at(i_cluster)) /= clusters.at(i_cluster).size();
+        get<1>(stars.at(i_cluster)) /= clusters.at(i_cluster).size();
+        get<2>(stars.at(i_cluster)) = static_cast<int>(clusters.at(i_cluster).size());
+    }
+
+    FWHMCalculator fwhm_calculator(brightness, width, height, stars, cluster_threshold);
+    const float fwhm = fwhm_calculator.calculate_fwhm();
 
     FrameScore result;
     result.stars_excentricity = cluster_excentricities.at(cluster_excentricities.size() / 5);
+    result.stars_fwhm = fwhm;
     result = add_brighness_info(brightness, result);
     return result;
 };

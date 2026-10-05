@@ -142,6 +142,11 @@ float FWHMCalculator::calculate_fwhm_for_star(std::array<int, 2> star_position, 
 
     const double step_size = sqrt(direction[0] * direction[0] + direction[1] * direction[1]);
     // Collect pixel values along the specified direction
+    if (star_position[0] < 0 || star_position[0] >= m_width || star_position[1] < 0 || star_position[1] >= m_height) {
+        return -1.0f; // Invalid star position
+    }
+
+    const float upper_limit = 0.95 * m_brightness->at(star_position[1] * m_width + star_position[0]); // we don't want to consider values near maximum, as these might be clipped
     for (int i_direction = 0; i_direction < 2; i_direction++) {
         int n_used_pixels = 0;
         for (int i = i_direction; i <= 200; i++) {
@@ -153,6 +158,7 @@ float FWHMCalculator::calculate_fwhm_for_star(std::array<int, 2> star_position, 
             if (x >= 0 && x < m_width && y >= 0 && y < m_height) {
                 PixelType brighness = m_brightness->at(y * m_width + x);
                 if (brighness <= m_background_threshold) break;
+                if (brighness >= upper_limit) break;
                 values_x.push_back(i * step_size);
                 values_y.push_back(static_cast<double>(brighness) - m_background_threshold);
                 n_used_pixels++;
