@@ -59,26 +59,17 @@ int main(int argc, char **argv) {
 
     const std::string input_address = argv[1];
     const std::string output_address = argv[2];
-    std::vector<std::string> file_paths = get_file_paths(argv[1]);
-    for (const string &input_file : file_paths)  {
-        // get file name
-        const string raw_file = input_file.substr(input_file.find_last_of("/\\") + 1);
 
-        // drop extension
-        const string raw_file_wo_extension = raw_file.substr(0, raw_file.find_last_of("."));
+    int width, height;
+    InputFrame input_frame(input_address);
+    InputFrameReader reader(input_frame);
+    reader.debayer();
+    reader.get_photo_resolution(&width, &height);
+    vector<vector<PixelType>> rgb_image = reader.get_rgb_data();
+    scale_to_8_bits(&rgb_image, width, height);
 
-        const string output_file = output_address + "/" + raw_file_wo_extension + ".jpg";
+    create_color_image(&rgb_image[0][0],&rgb_image[1][0], &rgb_image[2][0], width, height, output_address);
 
-        int width, height;
-        InputFrame input_frame(input_file);
-        InputFrameReader reader(input_frame);
-        reader.get_photo_resolution(&width, &height);
-        vector<PixelType> brightness = reader.get_raw_data();
-        vector<vector<PixelType>> rgb_image = reader.get_rgb_data();
-        scale_to_8_bits(&rgb_image, width, height);
-
-        create_color_image(&rgb_image[0][0],&rgb_image[1][0], &rgb_image[2][0], width, height, output_file);
-    }
 
     return 0;
 }

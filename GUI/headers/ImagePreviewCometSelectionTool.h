@@ -21,7 +21,11 @@ class ImagePreviewCometSelectionTool : public ImagePreview {
 
         void set_comet_position(float x, float y);
 
+        void set_fraction_of_pixels_for_threshold(float fraction) { m_thresholding_fraction = fraction; };
+
     protected:
+        float m_thresholding_fraction = 0.002;
+
         const std::string c_comet_layer_name = "comet";
 
         std::vector<std::pair<float,float>> calculate_star_positions();

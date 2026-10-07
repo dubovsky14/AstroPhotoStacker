@@ -26,13 +26,16 @@ class CometSelectionFrame : public wxDialog  {
          * @param filelist_handler_gio_interface pointer to the filelist handler GUI interface object
          * @param stack_settings pointer to the stack settings object
          */
-        CometSelectionFrame(AlignmentFrame *parent, std::map<AstroPhotoStacker::InputFrame, std::pair<float,float>> *comet_positions_storage, std::vector<AstroPhotoStacker::InputFrame> frames_to_select_from);
+        CometSelectionFrame(AlignmentFrame *parent, std::map<AstroPhotoStacker::InputFrame, std::pair<float,float>> *comet_positions_storage, std::vector<AstroPhotoStacker::InputFrame> frames_to_select_from, float thresholding_fraction);
 
     private:
 
         std::map<AstroPhotoStacker::InputFrame, std::pair<float,float>> *m_comet_positions_storage = nullptr;
 
         std::unique_ptr<ImagePreviewCometSelectionTool> m_image_preview_comet_selection_tool = nullptr;
+        float m_thresholding_fraction = 0.002;
+
+        void recalculate_comet_positions_into_corrected_coordinates();
 
         std::vector<AstroPhotoStacker::InputFrame> m_frames_to_select_from;
         int m_current_frame_index = -1;

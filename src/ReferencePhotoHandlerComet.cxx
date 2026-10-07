@@ -32,11 +32,10 @@ bool ReferencePhotoHandlerComet::add_comet_position(const InputFrame &input_fram
 
 std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerComet::calculate_alignment(const InputFrame &input_frame) const {
     try {
-        InputFrameReader input_frame_reader(input_frame);
-        const int width = input_frame_reader.get_width();
-        const int height = input_frame_reader.get_height();
 
-        const vector<PixelType> brightness = input_frame_reader.get_monochrome_data();
+        int width, height;
+        const vector<PixelType> brightness = read_image_monochrome(input_frame, &width, &height);
+
         const PixelType threshold = get_threshold_value(brightness.data(), width*height, m_threshold_fraction);
 
         vector<tuple<float,float,int> > clusters = get_stars(brightness.data(), width, height, threshold); // one if these "stars" should be the comet
@@ -47,6 +46,7 @@ std::unique_ptr<AlignmentResultBase> ReferencePhotoHandlerComet::calculate_align
 
         std::unique_ptr<AlignmentResultPlateSolving> plate_solving_result = plate_solve(clusters);
 
+        InputFrameReader input_frame_reader(input_frame, false);
         std::pair<float,float> expected_comet_position = calculate_expected_comet_position(input_frame_reader.get_metadata().timestamp);
         std::pair<float,float> closest_cluster;
         float minimal_distance_squared = 1e10;

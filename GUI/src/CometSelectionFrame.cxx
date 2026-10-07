@@ -4,16 +4,17 @@
 #include "../headers/SettingsCustomization.h"
 
 #include "../../headers/InputFrameReader.h"
+#include "../../headers/LensCorrectionDictionary.h"
 
 using namespace std;
 using namespace AstroPhotoStacker;
 
-CometSelectionFrame::CometSelectionFrame(AlignmentFrame *parent, std::map<InputFrame, std::pair<float,float>> *comet_positions_storage, std::vector<AstroPhotoStacker::InputFrame> frames_to_select_from) :
+CometSelectionFrame::CometSelectionFrame(AlignmentFrame *parent, std::map<InputFrame, std::pair<float,float>> *comet_positions_storage, std::vector<AstroPhotoStacker::InputFrame> frames_to_select_from, float thresholding_fraction) :
     wxDialog(parent, wxID_ANY, "Select comet position in frame (right-click)",  wxDefaultPosition, wxSize(700, 800))   {
 
     m_comet_positions_storage = comet_positions_storage;
     m_frames_to_select_from = frames_to_select_from;
-
+    m_thresholding_fraction = thresholding_fraction;
 
     m_main_vertical_sizer = new wxBoxSizer(wxVERTICAL);
     SetSizer(m_main_vertical_sizer);
@@ -43,6 +44,8 @@ void CometSelectionFrame::add_image_preview()    {
 void CometSelectionFrame::add_exposure_correction_spin_ctrl()   {
     m_color_stretcher.add_luminance_stretcher(std::make_shared<IndividualColorStretchingBlackCorrectionWhite>());
     m_image_preview_comet_selection_tool->set_stretcher(&m_color_stretcher);
+    m_image_preview_comet_selection_tool->set_fraction_of_pixels_for_threshold(m_thresholding_fraction);
+    cout << "Thresholding fraction: " << m_thresholding_fraction << endl;
 
     m_exposure_correction_slider = make_unique<FloatingPointSlider>(
         this,
@@ -146,6 +149,7 @@ void CometSelectionFrame::add_control_buttons() {
             // save last comet position
             (*m_comet_positions_storage)[m_frames_to_select_from[m_current_frame_index]] = comet_position;
         }
+        recalculate_comet_positions_into_corrected_coordinates();
 
         if (m_comet_positions_storage->size() < 2) {
             wxMessageDialog dialog(this, "Please select at least two comet positions.", "Error", wxOK | wxICON_ERROR);
@@ -189,4 +193,21 @@ void CometSelectionFrame::update_image_preview(int frame_index) {
     }
     m_current_frame_index = frame_index;
     update_summary_text();
+};
+
+void CometSelectionFrame::recalculate_comet_positions_into_corrected_coordinates() {
+
+    for (const auto &[frame, comet_position_uncorrected] : *m_comet_positions_storage) {
+        std::shared_ptr<const LensCorrectionTool> lens_correction_tool =  LensCorrectionDictionary::get_instance().get_lens_correction_tool(frame);
+
+        if (lens_correction_tool == nullptr) {
+            (*m_comet_positions_storage)[frame] = comet_position_uncorrected;
+        }
+        else {
+            float x = get<0>(comet_position_uncorrected);
+            float y = get<1>(comet_position_uncorrected);
+            lens_correction_tool->transform_from_sensor_to_undistorted(&x, &y);
+            (*m_comet_positions_storage)[frame] = std::make_pair(x, y);
+        }
+    }
 };

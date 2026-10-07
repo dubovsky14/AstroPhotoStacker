@@ -178,7 +178,18 @@ void AlignmentFrame::add_button_align_files(MyFrame *parent)    {
 
         if (m_stack_settings->get_alignment_method() == "comet") {
             std::map<InputFrame, std::pair<float,float>> comet_positions_storage;
-            CometSelectionFrame comet_selection_frame(this, &comet_positions_storage, m_frames_to_align);
+
+
+            const std::string threshold_key = "threshold fraction"; // this is defined in ReferencePhotoHandlerComet
+            float thresholding_fraction = 0.002;
+            if (m_configurable_algorithm_settings_map.numerical_settings.find(threshold_key) == m_configurable_algorithm_settings_map.numerical_settings.end()) {
+                cout << __FILE__ << ":" << __LINE__ << ": Threshold fraction setting is missing in the map." << endl;
+            }
+            else {
+                thresholding_fraction = m_configurable_algorithm_settings_map.numerical_settings.at(threshold_key);
+            }
+
+            CometSelectionFrame comet_selection_frame(this, &comet_positions_storage, m_frames_to_align, thresholding_fraction);
 
             // wait until the comet selection frame is closed
             if (comet_selection_frame.ShowModal() != wxID_OK) {
