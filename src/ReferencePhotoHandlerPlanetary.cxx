@@ -2,7 +2,6 @@
 #include "../headers/ReferencePhotoHandlerPlanetary.h"
 #include "../headers/InputFrameReader.h"
 #include "../headers/StarFinder.h"
-#include "../headers/ImageRanking.h"
 #include "../headers/Common.h"
 #include "../headers/CommonImageOperations.h"
 #include "../headers/AlignmentResultTranslationOnly.h"
