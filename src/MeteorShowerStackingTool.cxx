@@ -3,7 +3,7 @@
 #include "../headers/StarFinder.h"
 #include "../headers/TaskScheduler.hxx"
 #include "../headers/InputFrameReader.h"
-#include "../headers/PhotoRanker.h"
+#include "../headers/ClusterAlgebra.h"
 #include "../headers/CalibratedPhotoHandler.h"
 #include "../headers/Common.h"
 
@@ -33,7 +33,7 @@ void MeteorShowerStackingTool::extend_cluster(const FrameAndGroup &frame, size_t
     std::vector<std::vector<std::tuple<int, int> > > &clusters = m_frame_clusters_map[frame].clusters;
     if (cluster_id >= clusters.size()) return;
     std::vector<std::tuple<int, int> > &cluster = clusters[cluster_id];
-    const std::vector<std::vector<float>> covariance_matrix = PhotoRanker::get_covariance_matrix(cluster);
+    const std::vector<std::vector<float>> covariance_matrix = ClusterAlgebra::get_covariance_matrix(cluster);
 
     const int width = m_frame_clusters_map[frame].frame_width;
     const int height = m_frame_clusters_map[frame].frame_height;
@@ -136,14 +136,14 @@ void MeteorShowerStackingTool::recalculate_clusters(const FrameAndGroup &frame, 
     cluster_info.frame_height = height;
     keep_clusters_with_at_least_n_pixels(&clusters, 10);
     for (const std::vector<std::tuple<int, int> > &cluster : clusters) {
-        const float excentricity = PhotoRanker::get_cluster_excentricity(cluster);
-        const float cov_eigenval_ratio_sqrt = PhotoRanker::get_covariance_eigenvalues_ratio_sqrt(cluster);
+        const float excentricity = ClusterAlgebra::get_cluster_excentricity(cluster);
+        const float cov_eigenval_ratio_sqrt = ClusterAlgebra::get_covariance_eigenvalues_ratio_sqrt(cluster);
         if (excentricity < minimal_excentricity) continue;
         if (cov_eigenval_ratio_sqrt < minimal_eigenval_ratio) continue;
         cluster_info.clusters.push_back(cluster);
         cluster_info.clusters_selected.push_back(false);
         cluster_info.clusters_excentricity.push_back(excentricity);
-        cluster_info.clusters_correlation.push_back(PhotoRanker::get_cluster_correlation(cluster));
+        cluster_info.clusters_correlation.push_back(ClusterAlgebra::get_cluster_correlation(cluster));
         cluster_info.clusters_cov_eigenval_ratio_sqrt.push_back(cov_eigenval_ratio_sqrt);
     }
     m_frame_clusters_map[frame] = cluster_info;
@@ -347,12 +347,12 @@ void MeteorShowerStackingTool::load_selected_clusters_from_file(const std::strin
                         cluster.emplace_back(x, y);
                     }
                 }
-                const float excentricity = PhotoRanker::get_cluster_excentricity(cluster);
-                const float cov_eigenval_ratio_sqrt = PhotoRanker::get_covariance_eigenvalues_ratio_sqrt(cluster);
+                const float excentricity = ClusterAlgebra::get_cluster_excentricity(cluster);
+                const float cov_eigenval_ratio_sqrt = ClusterAlgebra::get_covariance_eigenvalues_ratio_sqrt(cluster);
                 current_cluster_info.clusters.push_back(cluster);
                 current_cluster_info.clusters_selected.push_back(true);
                 current_cluster_info.clusters_excentricity.push_back(excentricity);
-                current_cluster_info.clusters_correlation.push_back(PhotoRanker::get_cluster_correlation(cluster));
+                current_cluster_info.clusters_correlation.push_back(ClusterAlgebra::get_cluster_correlation(cluster));
                 current_cluster_info.clusters_cov_eigenval_ratio_sqrt.push_back(cov_eigenval_ratio_sqrt);
             }
         }

@@ -4,7 +4,6 @@
 #include "../headers/StackerKappaSigmaBase.h"
 #include "../headers/StackerMeanValue.h"
 #include "../headers/InputArgumentsParser.h"
-#include "../headers/PhotoRanker.h"
 #include "../headers/FlatFrameHandler.h"
 
 #include <thread>

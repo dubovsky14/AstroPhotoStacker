@@ -1,7 +1,7 @@
 #include "../headers/FrameRankingTool.h"
 
 #include "../headers/StarFinder.h"
-#include "../headers/PhotoRanker.h"
+#include "../headers/ClusterAlgebra.h"
 #include "../headers/CommonImageOperations.h"
 #include "../headers/FWHMCalculator.h"
 
@@ -20,7 +20,7 @@ FrameScore FrameRankingTool::get_ranking_for_deep_sky_objects(const std::vector<
     vector<float> cluster_excentricities;
     for (const auto &cluster : clusters) {
         if (cluster.size() < 20)    continue;
-        cluster_excentricities.push_back(PhotoRanker::get_cluster_excentricity(cluster));
+        cluster_excentricities.push_back(ClusterAlgebra::get_cluster_excentricity(cluster));
     }
 
     if (cluster_excentricities.size() == 0) {
