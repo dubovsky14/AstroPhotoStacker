@@ -12,6 +12,7 @@ using namespace std;
 
 
 const std::string YamlNode::OUTPUT_INDENTATION = "  ";
+const std::string YamlNode::OUTPUT_INDENTATION_LIST = "- ";
 
 
 std::ostream& AstroPhotoStacker::operator <<(std::ostream &os, const YamlNodeDataType &node_type) {
@@ -46,7 +47,15 @@ YamlNode AstroPhotoStacker::load_yaml_file(const std::string &yaml_address) {
             continue;
         }
         if (first_hash != std::string::npos && first_hash > first_non_whitespace)   {
-            line = line.substr(0, first_hash);
+            int n_double_quotes(0), n_single_quotes(0);
+            for (size_t i = 0; i < line.size(); ++i) {
+                if (line[i] == '"') ++n_double_quotes;
+                if (line[i] == '\'') ++n_single_quotes;
+                if (n_double_quotes % 2 == 0 && n_single_quotes % 2 == 0 && line[i] == '#') {
+                    line = line.substr(0, i);
+                    break;
+                }
+            }
         }
         valid_lines.push_back(line);
     }
@@ -97,8 +106,25 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
             m_value_bool = compare_case_insensitive(first_line, "true");
         }
         else {
+            const std::pair<string,string> key_value = split_key_value(first_line);
+            if (!key_value.first.empty()) {
+                m_data_type = YamlNodeDataType::MAP;
+                m_map[key_value.first] = YamlNode({key_value.second});
+                return;
+            }
+
+            size_t first_non_whitespace = first_line.find_first_not_of(" \t");
+            if (first_non_whitespace != std::string::npos && first_line[first_non_whitespace] == '-') {
+                m_data_type = YamlNodeDataType::LIST;
+                first_line[first_non_whitespace] = ' ';
+                strip_string_and_remove_quotation_marks(&first_line);
+                m_list.push_back(YamlNode({first_line}));
+                return;
+            }
+
             m_data_type = YamlNodeDataType::STRING;
             m_value_string = first_line;
+
         }
         return;
     }
@@ -124,31 +150,7 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
 
         const auto [this_line_indentation_length, this_indentation_wo_hypen] = get_indentation_length(line);
 
-        if (this_line_indentation_length > initial_indentation_length) {
-            reading_nested_block = true;
-            nested_block_lines.push_back(line);
-            continue;
-        }
-        if (reading_nested_block && (this_line_indentation_length == initial_indentation_length)) {
-            reading_nested_block = false;
-
-            if (previous_key.empty() && !is_list) {
-                throw std::runtime_error("Previous key is empty while reading nested block on line: " + line);
-            }
-            if (!previous_key.empty() && !nested_block_lines.empty()) {
-                throw std::runtime_error("Found invalid nested block: " + line);
-            }
-            if (previous_key.size() != 0)   {
-                m_map[previous_key] = YamlNode(nested_block_lines);
-            }
-            else if (is_list) {
-                m_list.push_back(YamlNode(nested_block_lines));
-            }
-            nested_block_lines.clear();
-        }
-
-        // now we can read the line assuming we are not reading a nested block
-        const bool this_line_starts_new_list_element = (this_indentation_wo_hypen < this_line_indentation_length);
+        const bool this_line_starts_new_list_element = (this_indentation_wo_hypen < this_line_indentation_length) && is_list && (this_line_indentation_length == initial_indentation_length);
         if (is_list) {
             if (this_line_starts_new_list_element) {
                 if (!current_list_element.empty()) {
@@ -162,8 +164,33 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
             else {
                 current_list_element.push_back(line);
             }
+            continue;
         }
-        else {
+
+        if (this_line_indentation_length > initial_indentation_length) {
+            reading_nested_block = true;
+            nested_block_lines.push_back(line);
+            continue;
+        }
+        if (reading_nested_block && (this_line_indentation_length == initial_indentation_length)) {
+            reading_nested_block = false;
+
+            if (previous_key.empty() && !is_list) {
+                throw std::runtime_error("Previous key is empty while reading nested block on line: " + line);
+            }
+            if (previous_key.empty() && !nested_block_lines.empty() && !is_list) {
+                throw std::runtime_error("Found invalid nested block: " + line);
+            }
+            if (previous_key.size() != 0)   {
+                m_map[previous_key] = YamlNode(nested_block_lines);
+            }
+            else if (is_list) {
+                m_list.push_back(YamlNode(nested_block_lines));
+            }
+            nested_block_lines.clear();
+        }
+
+        if (!is_list) {
             const string trimmed_line = line.substr(this_indentation_wo_hypen);
             auto colon_pos = trimmed_line.find(':');
             if (colon_pos == std::string::npos) {
@@ -318,8 +345,12 @@ std::string YamlNode::to_string(const std::string &initial_indentation) const {
     if (this->get_data_type() == YamlNodeDataType::LIST) {
         std::string result = "\n";
         for (const auto& value : m_list) {
-            result += value.to_string(initial_indentation + OUTPUT_INDENTATION) + "\n";
+            string list_string = value.to_string(initial_indentation + OUTPUT_INDENTATION);
+            list_string[(initial_indentation + OUTPUT_INDENTATION).size()-1] = '-';
+            result += list_string + "\n";
         }
+
+        result.resize(result.size() - 1); // Remove the last newline character
         return result;
     }
     return "";
@@ -447,4 +478,21 @@ std::vector<std::string> YamlNode::parse_list_elements(const std::string &list_s
     }
 
     return elements;
+};
+
+
+std::pair<std::string,std::string> YamlNode::split_key_value(const std::string &line) {
+    int n_double_quotes(0), n_single_quotes(0);
+    for (size_t i = 0; i < line.size(); ++i) {
+        if (line[i] == '"') ++n_double_quotes;
+        if (line[i] == '\'') ++n_single_quotes;
+        if (n_double_quotes % 2 == 0 && n_single_quotes % 2 == 0 && line[i] == ':') {
+            string key = line.substr(0, i);
+            strip_string_and_remove_quotation_marks(&key);
+            string value = line.substr(i + 1);
+            strip_string(&value);
+            return {key, value};
+        }
+    }
+    return {"", ""};
 };

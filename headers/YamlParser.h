@@ -70,6 +70,7 @@ namespace AstroPhotoStacker {
 
 
             static const std::string OUTPUT_INDENTATION;
+            static const std::string OUTPUT_INDENTATION_LIST;
 
             void clean_up();
 
@@ -79,6 +80,8 @@ namespace AstroPhotoStacker {
             static bool remove_matching_list_brackets(std::string *input_string, bool throw_on_mismatch = true);
 
             static std::vector<std::string> parse_list_elements(const std::string &list_string);
+
+            static std::pair<std::string,std::string> split_key_value(const std::string &line);
 
     };
 
