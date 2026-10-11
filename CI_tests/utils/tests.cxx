@@ -6,6 +6,7 @@
 #include "../headers/TestFitFileSaver.h"
 #include "../headers/TestAlignmentResult.h"
 #include "../headers/AsterismHashTests.h"
+#include "../headers/YamlParserTest.h"
 
 #include "../headers/TestUtils.h"
 
@@ -127,6 +128,8 @@ int main(int argc, const char **argv)   {
         },
         std::vector<float>{0.23, 0.45, 0.67, 0.89},
         3,1,0,2);
+
+    test_runner.run_test("Yaml parser", test_yaml_parser);
 
     test_runner.summarize_tests();
 
