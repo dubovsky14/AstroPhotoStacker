@@ -16,6 +16,8 @@ namespace AstroPhotoStacker {
         BOOL
     };
 
+    std::ostream& operator <<(std::ostream &os, const YamlNodeDataType &node_type);
+
     class YamlNode {
         public:
             YamlNode() = default;

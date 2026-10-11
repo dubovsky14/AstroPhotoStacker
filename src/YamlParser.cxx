@@ -14,6 +14,21 @@ using namespace std;
 const std::string YamlNode::OUTPUT_INDENTATION = "  ";
 
 
+std::ostream& AstroPhotoStacker::operator <<(std::ostream &os, const YamlNodeDataType &node_type) {
+    switch (node_type) {
+        case YamlNodeDataType::EMPTY: os << "EMPTY"; break;
+        case YamlNodeDataType::MAP: os << "MAP"; break;
+        case YamlNodeDataType::LIST: os << "LIST"; break;
+        case YamlNodeDataType::STRING: os << "STRING"; break;
+        case YamlNodeDataType::INT: os << "INT"; break;
+        case YamlNodeDataType::FLOAT: os << "FLOAT"; break;
+        case YamlNodeDataType::BOOL: os << "BOOL"; break;
+        default: os << "UNKNOWN"; break;
+    }
+    return os;
+}
+
+
 YamlNode AstroPhotoStacker::load_yaml_file(const std::string &yaml_address) {
     std::ifstream file(yaml_address);
     if (!file.is_open()) {
@@ -27,8 +42,12 @@ YamlNode AstroPhotoStacker::load_yaml_file(const std::string &yaml_address) {
         if (first_non_whitespace == std::string::npos) {
             continue;
         }
-        if (first_hash != std::string::npos && first_hash < first_non_whitespace)
+        if (first_hash <= first_non_whitespace) {
+            continue;
+        }
+        if (first_hash != std::string::npos && first_hash > first_non_whitespace)   {
             line = line.substr(0, first_hash);
+        }
         valid_lines.push_back(line);
     }
     file.close();
@@ -66,6 +85,14 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
     else {
         m_data_type = YamlNodeDataType::MAP;
     }
+
+    cout << "Processing multiline YAML node" << std::endl;
+    for (const string &line : valid_lines) {
+        cout << "Line: " << line << std::endl;
+    }
+    cout << "Node type: " << m_data_type << std::endl;
+    cout << endl;
+
 
     vector<string> nested_block_lines;
     vector<string> current_list_element;
@@ -112,6 +139,7 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
                 string line_copy = line;
                 line_copy[this_indentation_wo_hypen] = ' ';
                 current_list_element.push_back(line_copy);
+                cout << "Starting new list element with line: \n" << line_copy << std::endl;
             }
             else {
                 current_list_element.push_back(line);
@@ -134,11 +162,9 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
 
     if (is_list && !current_list_element.empty()) {
         m_list.push_back(YamlNode(current_list_element));
-        current_list_element.clear();
     }
     if (!previous_key.empty() && !nested_block_lines.empty()) {
         m_map[previous_key] = YamlNode(nested_block_lines);
-        nested_block_lines.clear();
     }
 }
 
@@ -307,9 +333,10 @@ std::pair<size_t, size_t> YamlNode::get_indentation_length(const std::string &li
         } else if (c == '\t') {
             ++indentation_length;
         } else if (c == '-') {
-            indentation_before_hypen = indentation_length;
+            if (indentation_before_hypen == -1) {
+                indentation_before_hypen = indentation_length;
+            }
             ++indentation_length;
-            break;
         } else {
             break;
         }

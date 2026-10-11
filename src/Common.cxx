@@ -37,6 +37,7 @@ bool AstroPhotoStacker::ends_with(const string &main_string, const string &suffi
 
 
 bool AstroPhotoStacker::string_is_int(const string &x)    {
+    if (x.find_first_of(".") != std::string::npos) return false;
     try {
         std::stoi(x);
     }

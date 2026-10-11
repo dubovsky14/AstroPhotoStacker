@@ -77,6 +77,10 @@ How to run the code:
 The recommended way of running the code is via GUI (inside of GUI folder). Please see the instruction on how to build it inside its folder.
 For historical reasons there is also terminal based interface, but it has only a limited set of avaliable features.
 
+If you want to get familiar with AstroPhotoStacker, but you do not have your own input files, you can use photos and videos used in CI tests,
+which can be found in `AstroPhotoStacker_test_files` submodule.
+However do not expect to get a nice output image from those - you would need significantly more input photos to get a good looking stacked image.
+
 Running via terminal
 ---------------------
 
