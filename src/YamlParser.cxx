@@ -64,11 +64,8 @@ YamlNode AstroPhotoStacker::load_yaml_file(const std::string &yaml_address) {
 }
 
 // #TODO:
-// 1. Proper handling of quotation marks in strings
-// 2. One line lists
-// 3. One line maps
-// 4. better error messages
-// 5. Handling '#' within strings
+// 1. One line maps
+// 2. better error messages
 
 YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
     if (valid_lines.empty()) {
@@ -227,40 +224,51 @@ const std::vector<YamlNode>& YamlNode::get_list() const {
     return m_list;
 }
 
-const std::string &YamlNode::get_string() const {
-    if (this->get_data_type() != YamlNodeDataType::STRING) {
-        throw std::runtime_error("YamlNode is not a string");
+template<>
+int YamlNode::get_value<int>() const {
+    if (this->get_data_type() == YamlNodeDataType::INT) {
+        return m_value_int;
     }
-    return m_value_string;
+    if (this->get_data_type() == YamlNodeDataType::FLOAT) {
+        return static_cast<int>(m_value_float);
+    }
+    throw std::runtime_error("YamlNode is not an int");
 }
 
-int YamlNode::get_int() const {
-    if (this->get_data_type() != YamlNodeDataType::INT) {
-        throw std::runtime_error("YamlNode is not an int");
+template<>
+float YamlNode::get_value<float>() const {
+    if (this->get_data_type() == YamlNodeDataType::FLOAT) {
+        return m_value_float;
     }
-    return m_value_int;
+    if (this->get_data_type() == YamlNodeDataType::INT) {
+        return static_cast<float>(m_value_int);
+    }
+    throw std::runtime_error("YamlNode is not a float");
 }
 
-float YamlNode::get_float() const {
-    if (this->get_data_type() != YamlNodeDataType::FLOAT) {
-        throw std::runtime_error("YamlNode is not a float");
-    }
-    return m_value_float;
-}
-
-bool YamlNode::get_bool() const {
+template<>
+bool YamlNode::get_value<bool>() const {
     if (this->get_data_type() != YamlNodeDataType::BOOL) {
         throw std::runtime_error("YamlNode is not a bool");
     }
     return m_value_bool;
 }
 
+template<>
+std::string YamlNode::get_value<std::string>() const {
+    if (this->get_data_type() != YamlNodeDataType::STRING) {
+        throw std::runtime_error("YamlNode is not a string");
+    }
+    return m_value_string;
+}
+
+
 YamlNode& YamlNode::operator[](const std::string &key) {
     if (this->get_data_type() != YamlNodeDataType::MAP) {
         throw std::runtime_error("YamlNode is not a map");
     }
     if (m_map.find(key) == m_map.end()) {
-        throw std::runtime_error("Key not found in YamlNode map");
+        throw std::runtime_error("Key not found in YamlNode map: " + key);
     }
     return m_map.at(key);
 }
@@ -270,7 +278,7 @@ YamlNode& YamlNode::operator[](size_t index) {
         throw std::runtime_error("YamlNode is not a list");
     }
     if (index >= m_list.size()) {
-        throw std::runtime_error("Index out of bounds in YamlNode list");
+        throw std::runtime_error("Index out of bounds in YamlNode list: " + std::to_string(index));
     }
     return m_list.at(index);
 }
@@ -279,7 +287,7 @@ const YamlNode& YamlNode::operator[](const std::string &key) const {
         throw std::runtime_error("YamlNode is not a map");
     }
     if (m_map.find(key) == m_map.end()) {
-        throw std::runtime_error("Key not found in YamlNode map");
+        throw std::runtime_error("Key not found in YamlNode map: " + key);
     }
     return m_map.at(key);
 }
@@ -289,7 +297,7 @@ const YamlNode& YamlNode::operator[](size_t index) const {
         throw std::runtime_error("YamlNode is not a list");
     }
     if (index >= m_list.size()) {
-        throw std::runtime_error("Index out of bounds in YamlNode list");
+        throw std::runtime_error("Index out of bounds in YamlNode list: " + std::to_string(index));
     }
     return m_list.at(index);
 }

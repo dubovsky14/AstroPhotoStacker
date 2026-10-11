@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 #include <utility>
+#include <stdexcept>
+#include <optional>
 
 namespace AstroPhotoStacker {
     enum class YamlNodeDataType {
@@ -22,8 +24,6 @@ namespace AstroPhotoStacker {
         public:
             YamlNode() = default;
 
-            //explicit YamlNode(const std::string &yaml_address);
-
             YamlNode(const std::vector<std::string>& valid_lines);
 
             YamlNodeDataType get_data_type() const { return m_data_type; };
@@ -32,14 +32,45 @@ namespace AstroPhotoStacker {
 
             const std::vector<YamlNode>& get_list() const;
 
-            const std::string& get_string() const;
+            template<typename ValueType>
+            ValueType get_value() const;
 
-            int get_int() const;
+            template<typename ValueType>
+            ValueType get_value_at_index(const size_t &index, const std::optional<ValueType> &default_value = std::nullopt) const  {
+                if (m_data_type != YamlNodeDataType::LIST) {
+                    throw std::runtime_error("Node is not a list");
+                }
 
-            float get_float() const;
+                if (index >= m_list.size()) {
+                    if (!default_value.has_value()) {
+                        throw std::runtime_error("Index " + std::to_string(index) + " out of bounds and no default value provided");
+                    }
+                    return default_value.value();
+                }
+                const YamlNode &node = m_list[index];
+                if (!node.matches_type<ValueType>()) {
+                    throw std::runtime_error("Type mismatch at index " + std::to_string(index));
+                }
+                return node.get_value<ValueType>();
+            };
 
-            bool get_bool() const;
-
+            template<typename ValueType>
+            ValueType get_value_at_key(const std::string &key, const std::optional<ValueType> &default_value = std::nullopt) const  {
+                if (m_data_type != YamlNodeDataType::MAP) {
+                    throw std::runtime_error("Node is not a map");
+                }
+                if (m_map.find(key) == m_map.end()) {
+                    if (!default_value.has_value()) {
+                        throw std::runtime_error("Key " + key + " not found and no default value provided");
+                    }
+                    return default_value.value();
+                }
+                const YamlNode &node = m_map.at(key);
+                if (!node.matches_type<ValueType>()) {
+                    throw std::runtime_error("Type mismatch for key " + key);
+                }
+                return node.get_value<ValueType>();
+            };
             YamlNode& operator[](const std::string &key);
 
             YamlNode& operator[](size_t index);
@@ -83,8 +114,37 @@ namespace AstroPhotoStacker {
 
             static std::pair<std::string,std::string> split_key_value(const std::string &line);
 
+            template<typename ValueType>
+            bool matches_type() const;
+
     };
 
     YamlNode load_yaml_file(const std::string &yaml_address);
+
+    template<>
+    int YamlNode::get_value<int>() const;
+
+    template<>
+    float YamlNode::get_value<float>() const;
+
+    template<>
+    bool YamlNode::get_value<bool>() const;
+
+    template<>
+    std::string YamlNode::get_value<std::string>() const;
+
+
+    template<>
+    bool YamlNode::matches_type<int>() const { return m_data_type == YamlNodeDataType::INT || m_data_type == YamlNodeDataType::FLOAT; };
+
+    template<>
+    bool YamlNode::matches_type<float>() const { return m_data_type == YamlNodeDataType::FLOAT || m_data_type == YamlNodeDataType::INT; };
+
+    template<>
+    bool YamlNode::matches_type<bool>() const { return m_data_type == YamlNodeDataType::BOOL; };
+
+    template<>
+    bool YamlNode::matches_type<std::string>() const { return m_data_type == YamlNodeDataType::STRING; };
+
 
 }
