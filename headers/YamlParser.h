@@ -76,6 +76,10 @@ namespace AstroPhotoStacker {
             // @brief Get the indentation length with a hypen and without it
             static std::pair<size_t, size_t> get_indentation_length(const std::string &line);
 
+            static bool remove_matching_list_brackets(std::string *input_string, bool throw_on_mismatch = true);
+
+            static std::vector<std::string> parse_list_elements(const std::string &list_string);
+
     };
 
     YamlNode load_yaml_file(const std::string &yaml_address);

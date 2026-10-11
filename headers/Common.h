@@ -286,6 +286,25 @@ namespace AstroPhotoStacker {
     int find_nth_occurrence(const std::string &main_string, const std::string &substring, int n);
 
     /**
+     * @brief Remove surrounding matching characters from the input string if present
+     *
+     * @param input_string Pointer to the input string to be modified
+     * @param matching_char The character to check for surrounding the string
+     * @param throw_on_mismatch Whether to throw an exception if the surrounding characters do not match
+     * @return bool True if the string had surrounding matching characters that were removed, false otherwise
+     */
+    bool remove_matching_chars(std::string *input_string, char matching_char, bool throw_on_mismatch = true);
+
+    /**
+     * @brief Strip leading and trailing whitespace from the input string and remove surrounding quotation marks if present
+     *
+     * @param input_string Pointer to the input string to be modified
+     * @param throw_on_mismatch Whether to throw an exception if the surrounding quotation marks do not match
+     * @return bool True if the string had surrounding quotation marks that were removed, false otherwise
+     */
+    bool strip_string_and_remove_quotation_marks(std::string *input_string, bool throw_on_mismatch = true);
+
+    /**
      * @brief Get the list of raw files in a folder
      *
      * @param folder_address The address of the folder

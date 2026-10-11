@@ -143,6 +143,32 @@ int AstroPhotoStacker::find_nth_occurrence(const std::string &main_string, const
     return static_cast<int>(pos - substring.length()); // Return the position of the n-th occurrence
 }
 
+bool AstroPhotoStacker::remove_matching_chars(std::string *input_string, char matching_char, bool throw_on_mismatch) {
+    if (input_string->size() >= 2 && (*input_string)[0] == matching_char) {
+        if ((*input_string)[input_string->size() - 1] == matching_char) {
+            *input_string = input_string->substr(1, input_string->size() - 2);
+            return true;
+        }
+        else {
+            if (throw_on_mismatch) {
+                throw std::runtime_error("Mismatched surrounding characters in string: " + *input_string);
+            }
+        }
+    }
+    return false;
+}
+
+bool AstroPhotoStacker::strip_string_and_remove_quotation_marks(std::string *input_string, bool throw_on_mismatch) {
+    strip_string(input_string, " \t\n\r");
+    if (remove_matching_chars(input_string, '"', throw_on_mismatch)) {
+        return true;
+    }
+    if (remove_matching_chars(input_string, '\'', throw_on_mismatch)) {
+        return true;
+    }
+    return false;
+}
+
 std::vector<std::string> AstroPhotoStacker::get_frame_files_in_folder(const std::string &folder_address)  {
     vector<string> result;
     for (const auto &entry : filesystem::directory_iterator(folder_address)) {

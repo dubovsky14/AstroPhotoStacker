@@ -54,6 +54,13 @@ YamlNode AstroPhotoStacker::load_yaml_file(const std::string &yaml_address) {
     return YamlNode(valid_lines);
 }
 
+// #TODO:
+// 1. Proper handling of quotation marks in strings
+// 2. One line lists
+// 3. One line maps
+// 4. better error messages
+// 5. Handling '#' within strings
+
 YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
     if (valid_lines.empty()) {
         return;
@@ -61,16 +68,36 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
 
     // in this case, the line is only the value, so we just need to get its type, convert it and store it
     if (valid_lines.size() == 1) {
-        if (string_is_int(valid_lines[0])) {
-            m_data_type = YamlNodeDataType::INT;
-            m_value_int = std::stoi(valid_lines[0]);
-        } else if (string_is_float(valid_lines[0])) {
-            m_data_type = YamlNodeDataType::FLOAT;
-            m_value_float = std::stof(valid_lines[0]);
-        } else {
+        std::string first_line = valid_lines[0];
+        const bool had_quotation_marks = strip_string_and_remove_quotation_marks(&first_line);
+        if (had_quotation_marks) {
             m_data_type = YamlNodeDataType::STRING;
-            std::string first_line = valid_lines[0];
-            strip_string(&first_line, "\"'");
+            m_value_string = first_line;
+            return;
+        }
+        else if (remove_matching_list_brackets(&first_line)) {
+            m_data_type = YamlNodeDataType::LIST;
+
+            // parsing the list elements from the string
+            std::vector<std::string> list_elements = parse_list_elements(first_line);
+            for (const std::string &element : list_elements) {
+                m_list.push_back(YamlNode({element}));
+            }
+        }
+        else if (string_is_int(first_line)) {
+            m_data_type = YamlNodeDataType::INT;
+            m_value_int = std::stoi(first_line);
+        }
+        else if (string_is_float(first_line)) {
+            m_data_type = YamlNodeDataType::FLOAT;
+            m_value_float = std::stof(first_line);
+        }
+        else if (compare_case_insensitive(first_line, "true") || compare_case_insensitive(first_line, "false")) {
+            m_data_type = YamlNodeDataType::BOOL;
+            m_value_bool = compare_case_insensitive(first_line, "true");
+        }
+        else {
+            m_data_type = YamlNodeDataType::STRING;
             m_value_string = first_line;
         }
         return;
@@ -85,14 +112,6 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
     else {
         m_data_type = YamlNodeDataType::MAP;
     }
-
-    cout << "Processing multiline YAML node" << std::endl;
-    for (const string &line : valid_lines) {
-        cout << "Line: " << line << std::endl;
-    }
-    cout << "Node type: " << m_data_type << std::endl;
-    cout << endl;
-
 
     vector<string> nested_block_lines;
     vector<string> current_list_element;
@@ -139,7 +158,6 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
                 string line_copy = line;
                 line_copy[this_indentation_wo_hypen] = ' ';
                 current_list_element.push_back(line_copy);
-                cout << "Starting new list element with line: \n" << line_copy << std::endl;
             }
             else {
                 current_list_element.push_back(line);
@@ -348,3 +366,85 @@ std::pair<size_t, size_t> YamlNode::get_indentation_length(const std::string &li
     size_t indentation_before_hypen_size_t = static_cast<size_t>(indentation_before_hypen);
     return {indentation_length, indentation_before_hypen_size_t};
 }
+
+bool YamlNode::remove_matching_list_brackets(std::string *input_string, bool throw_on_mismatch) {
+    if (input_string->size() >= 2 && (*input_string)[0] == '[') {
+        if ((*input_string)[input_string->size() - 1] == ']') {
+            *input_string = input_string->substr(1, input_string->size() - 2);
+            return true;
+        }
+        else {
+            if (throw_on_mismatch) {
+                throw std::runtime_error("Mismatched surrounding list brackets in string: " + *input_string);
+            }
+        }
+    }
+    return false;
+}
+
+
+std::vector<std::string> YamlNode::parse_list_elements(const std::string &list_string)    {
+    std::vector<std::string> elements;
+    std::string current_element;
+
+    const vector<pair<char,char>> surounding_chars_pairs = {
+        {'[', ']'},
+        {'{', '}'},
+        {'\'', '\''},
+        {'"', '"'}
+    };
+    int current_surrounding_char_index = -1;
+
+    auto surrounding_index_starts = [&surounding_chars_pairs, &current_surrounding_char_index](char c) -> bool {
+        for (size_t i = 0; i < surounding_chars_pairs.size(); ++i) {
+            if (current_surrounding_char_index != -1) {
+                return false;
+            }
+            if (c == surounding_chars_pairs[i].first) {
+                current_surrounding_char_index = static_cast<int>(i);
+                return true;
+            }
+        }
+        return false;
+    };
+
+    auto surrounding_index_ends = [&surounding_chars_pairs, &current_surrounding_char_index](char c) -> bool {
+        if (current_surrounding_char_index == -1) {
+            return false;
+        }
+        if (c == surounding_chars_pairs[current_surrounding_char_index].second) {
+            current_surrounding_char_index = -1;
+            return true;
+        }
+        return false;
+    };
+
+    for (char c : list_string) {
+        if (current_surrounding_char_index == -1 && (c == ' ' || c == '\t')) {
+            continue;
+        }
+
+        if (surrounding_index_starts(c)) {
+            current_element += c;
+            continue;
+        }
+        if (surrounding_index_ends(c)) {
+            current_element += c;
+            continue;
+        }
+        if (c == ',' && !current_element.empty() && current_surrounding_char_index == -1) {
+            elements.push_back(current_element);
+            current_element.clear();
+            continue;
+        }
+        current_element += c;
+
+        // TODO: handle cases like [ab"asb", "a"] ...
+    }
+
+    if (!current_element.empty()) {
+        elements.push_back(current_element);
+    }
+
+    return elements;
+};
