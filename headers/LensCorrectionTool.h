@@ -15,6 +15,8 @@ namespace AstroPhotoStacker {
 
         LensCorrectionTool(const std::string &initialization_string);
 
+        std::string get_summary_string() const;
+
         float c_x = 0; // x-coordinate of lens' optical axis in pixels
         float c_y = 0; // y-coordinate of lens' optical axis in pixels
         float k1 = 0; // Term associated to r^2

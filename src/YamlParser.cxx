@@ -364,9 +364,21 @@ std::string YamlNode::to_string(const std::string &initial_indentation) const {
     return "";
 }
 
+size_t YamlNode::size() const {
+    if (m_data_type == YamlNodeDataType::MAP) {
+        return m_map.size();
+    } else if (m_data_type == YamlNodeDataType::LIST) {
+        return m_list.size();
+    }
+    throw std::runtime_error("Node is not iterable");
+}
 
-
-
+bool YamlNode::has_key(const std::string &key) const {
+    if (m_data_type != YamlNodeDataType::MAP) {
+        throw std::runtime_error("Node is not a dictionary");
+    }
+    return m_map.find(key) != m_map.end();
+}
 
 
 void YamlNode::clean_up() {

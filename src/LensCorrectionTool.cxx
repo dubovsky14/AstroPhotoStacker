@@ -35,6 +35,16 @@ LensCorrectionTool::LensCorrectionTool(const std::string &initialization_string)
     }
 };
 
+std::string LensCorrectionTool::get_summary_string() const {
+    string result = "c_x=" + std::to_string(c_x) +
+                    ";c_y=" + std::to_string(c_y) +
+                    ";k1=" + std::to_string(k1);
+    if (k2 != 0) {result += ";k2=" + std::to_string(k2);}
+    if (k3 != 0) {result += ";k3=" + std::to_string(k3);}
+    result += ";sensor_half_diagonal_squared=" + std::to_string(sensor_half_diagonal_squared);
+    return result;
+};
+
 void LensCorrectionTool::transform_from_sensor_to_undistorted(float *x, float *y) const {
     const double x_distorted = *x - c_x;
     const double y_distorted = *y - c_y;

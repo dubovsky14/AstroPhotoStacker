@@ -89,6 +89,10 @@ namespace AstroPhotoStacker {
 
             std::string to_string(const std::string &initial_indentation = "") const;
 
+            size_t size() const;
+
+            bool has_key(const std::string &key) const;
+
         private:
             std::map<std::string, YamlNode> m_map;
             std::vector<YamlNode>           m_list;
@@ -134,16 +138,16 @@ namespace AstroPhotoStacker {
     std::string YamlNode::get_value<std::string>() const;
 
 
-    template<>
+    template<> inline
     bool YamlNode::matches_type<int>() const { return m_data_type == YamlNodeDataType::INT || m_data_type == YamlNodeDataType::FLOAT; };
 
-    template<>
+    template<> inline
     bool YamlNode::matches_type<float>() const { return m_data_type == YamlNodeDataType::FLOAT || m_data_type == YamlNodeDataType::INT; };
 
-    template<>
+    template<> inline
     bool YamlNode::matches_type<bool>() const { return m_data_type == YamlNodeDataType::BOOL; };
 
-    template<>
+    template<> inline
     bool YamlNode::matches_type<std::string>() const { return m_data_type == YamlNodeDataType::STRING; };
 
 

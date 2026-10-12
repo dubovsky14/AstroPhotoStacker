@@ -6,6 +6,7 @@
 #include "../headers/AlignmentResultFactory.h"
 #include "../headers/PhotoAlignmentHandler.h"
 #include "../headers/LensCorrectionDictionary.h"
+#include "../headers/YamlParser.h"
 
 #include <algorithm>
 #include <fstream>
@@ -439,22 +440,42 @@ void FilelistHandler::add_empty_group(int group_number) {
 
 void FilelistHandler::save_filelist_to_file(const std::string &output_address)   {
     std::ofstream output_file(output_address);
+    output_file << "frames:" << std::endl;
+    const string indentation = "    ";
+    const string indentation_new_item = "  - ";
+
+    const LensCorrectionDictionary& lens_correction_dictionary = LensCorrectionDictionary::get_instance();
     for (const auto &group : m_frames_list)   {
         for (const auto &type : group.second)   {
             const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
             for (const auto &frame : frames)   {
                 const FrameInfo &frame_info = frame.second;
-                output_file << frame_info.input_frame.get_file_address() << " | "
-                            << frame_info.input_frame.get_frame_number() << " | "
-                            << to_string(frame_info.type) << " | "
-                            << frame_info.group_number << " | "
-                            << frame_info.is_checked << std::endl;
+                output_file << indentation_new_item << "file: \"" << frame_info.input_frame.get_file_address() << "\"" << endl;
+                if (frame_info.input_frame.get_frame_number() >= 0) {
+                    output_file << indentation << "frame_number: " << frame_info.input_frame.get_frame_number() << endl;
+                }
+                output_file << indentation << "group: " << frame_info.group_number << endl;
+                output_file << indentation << "type: \"" << to_string(frame_info.type) << "\"" << endl;
+                output_file << indentation << "is_checked: " << (frame_info.is_checked ? "True" : "False") << endl;
+
+                if (frame_info.type == FrameType::LIGHT) {
+                    // lens corrections
+                    const std::shared_ptr<const LensCorrectionTool> lens_correction_tool = lens_correction_dictionary.get_lens_correction_tool(frame_info.input_frame);
+                    if (lens_correction_tool) {
+                        output_file << indentation << "lens_corrections: \"" << lens_correction_tool->get_summary_string() << "\"" << endl;
+                    }
+
+                    // alignment results
+                    if (frame_info.alignment_result->is_valid()) {
+                        output_file << indentation << "alignment: \"" << frame_info.alignment_result->get_description_string() << "\"" << endl;
+                    }
+                }
             }
         }
     }
 };
 
-void FilelistHandler::load_filelist_from_file(const std::string &input_address, std::map<FrameType, InputFrame> *last_read_frames)  {
+void FilelistHandler::load_filelist_from_text_file(const std::string &input_address, std::map<FrameType, InputFrame> *last_read_frames)  {
     m_frames_list.clear();
     std::ifstream input_file(input_address);
     std::string line;
@@ -481,6 +502,62 @@ void FilelistHandler::load_filelist_from_file(const std::string &input_address, 
         }
     }
 };
+
+void FilelistHandler::load_filelist_from_yaml_file(const std::string &input_address, std::map<FrameType, InputFrame> *last_read_frames)  {
+    m_frames_list.clear();
+    YamlNode yaml_file = load_yaml_file(input_address);
+    if (yaml_file.get_data_type() != YamlNodeDataType::MAP) {
+        throw std::runtime_error("Invalid YAML file format");
+    }
+    if (!yaml_file.has_key("frames")) {
+        throw std::runtime_error("YAML file does not contain 'frames' key");
+    }
+    const YamlNode &frames_node = yaml_file["frames"];
+    if (frames_node.get_data_type() != YamlNodeDataType::LIST) {
+        throw std::runtime_error("'frames' key in YAML file is not a list");
+    }
+    const vector<YamlNode> &frame_nodes = frames_node.get_list();
+
+
+    const AstroPhotoStacker::AlignmentResultFactory &alignment_result_factory = AstroPhotoStacker::AlignmentResultFactory::get_instance();
+    for (const YamlNode &frame_node : frame_nodes)   {
+        try {
+            const std::string file_address  = frame_node["file"].get_value<std::string>();
+            const int frame_number          = frame_node.get_value_at_key<int>("frame_number", -1);
+            const int group_number          = frame_node["group"].get_value<int>();
+            const FrameType type            = string_to_filetype(frame_node["type"].get_value<std::string>());
+            const bool is_checked           = frame_node.get_value_at_key<bool>("is_checked", true);
+            const std::string alignment_str = frame_node.get_value_at_key<std::string>("alignment", "");
+            const std::string lens_corrections = frame_node.get_value_at_key<std::string>("lens_corrections", "");
+
+            const InputFrame input_frame(file_address, frame_number);
+
+            if (!std::filesystem::exists(file_address)) continue;
+            if (type == FrameType::UNKNOWN)             continue;
+
+            const Metadata metadata        = AstroPhotoStacker::read_metadata(input_frame);
+
+            if (alignment_str.empty()) {
+                add_frame(input_frame, type, group_number, is_checked, AlignmentResultDummy(), metadata);
+            }
+            else {
+                add_frame(input_frame, type, group_number, is_checked, *alignment_result_factory.create_alignment_result_from_description_string(alignment_str), metadata);
+            }
+
+            if (last_read_frames) {
+                (*last_read_frames)[type] = input_frame;
+            }
+
+            if (!lens_corrections.empty()) {
+                LensCorrectionDictionary::get_instance().add_corrections(input_frame, lens_corrections);
+            }
+        }
+        catch (const std::exception &e) {
+            throw std::runtime_error("Error processing frame node: " + frame_node.to_string() + "\n" + e.what());
+        }
+    }
+};
+
 
 void FilelistHandler::check_unaligned_frames() {
     for (auto &group : m_frames_list)   {

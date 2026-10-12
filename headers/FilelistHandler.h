@@ -258,7 +258,9 @@ namespace AstroPhotoStacker {
 
             void save_filelist_to_file(const std::string &output_address);
 
-            void load_filelist_from_file(const std::string &input_address, std::map<FrameType, InputFrame> *last_read_frames = nullptr);
+            void load_filelist_from_text_file(const std::string &input_address, std::map<FrameType, InputFrame> *last_read_frames = nullptr);
+
+            void load_filelist_from_yaml_file(const std::string &input_address, std::map<FrameType, InputFrame> *last_read_frames = nullptr);
 
             void check_unaligned_frames();
 
