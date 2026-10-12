@@ -109,6 +109,8 @@ void MyFrame::add_file_menu()  {
     m_file_menu->Append(id, "Open dark frames", "Open dark frames");
     Bind(wxEVT_MENU, &MyFrame::on_open_darks, this, id);
 
+    m_file_menu->AppendSeparator();
+
     id = unique_counter();
     m_file_menu->Append(id, "Save stacked file", "Save stacked file");
     Bind(wxEVT_MENU,  &MyFrame::save_stacked_with_post_process, this, id);
@@ -117,6 +119,9 @@ void MyFrame::add_file_menu()  {
     m_file_menu->Append(id, "Save stacked file without post-processing", "Save stacked file without post-processing");
     Bind(wxEVT_MENU,  &MyFrame::save_stacked_without_post_process, this, id);
 
+
+    m_file_menu->AppendSeparator();
+
     id = unique_counter();
     m_file_menu->Append(id, "Save selected files as FIT", "Save selected files as FIT");
     Bind(wxEVT_MENU, &MyFrame::on_save_selected_as_fit, this, id);
@@ -124,6 +129,8 @@ void MyFrame::add_file_menu()  {
     id = unique_counter();
     m_file_menu->Append(id, "Save selected files as SER", "Save selected files as SER");
     Bind(wxEVT_MENU, &MyFrame::on_save_selected_as_ser, this, id);
+
+    m_file_menu->AppendSeparator();
 
     id = unique_counter();
     m_file_menu->Append(id, "Load lens corrections", "Load lens corrections");
@@ -139,6 +146,7 @@ void MyFrame::add_file_menu()  {
     }, id);
 
 
+    m_file_menu->AppendSeparator();
     m_file_menu->Append(wxID_EXIT);
     Bind(wxEVT_MENU, &MyFrame::on_exit,  this, wxID_EXIT);
 
@@ -165,7 +173,7 @@ void MyFrame::add_filelist_menu()    {
     filelist_menu->Append(id, "Load filelist", "Load filelist");
     Bind(wxEVT_MENU, [this](wxCommandEvent&){
         const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
-        wxFileDialog dialog(this, "Load filelist", "", default_path, "Text files |*.yaml;*.yml;*.txt;*.TXT;", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+        wxFileDialog dialog(this, "Load filelist", "", default_path, "Text files |*.yaml;*.yml;", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
             std::map<FrameType, InputFrame> last_read_frames;
@@ -239,6 +247,7 @@ void MyFrame::add_alignment_menu()  {
         }
     }, id);
 
+    alignment_menu->AppendSeparator();
 
     id = unique_counter();
     alignment_menu->Append(id, "Enable stack without alignment", "Enable stack without alignment");
@@ -247,6 +256,7 @@ void MyFrame::add_alignment_menu()  {
         update_alignment_status();
     }, id);
 
+    alignment_menu->AppendSeparator();
 
     id = unique_counter();
     alignment_menu->Append(id, "Show alignment points", "Show alignment points");
