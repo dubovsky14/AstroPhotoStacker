@@ -166,7 +166,7 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
 
         if (this_line_indentation_length > initial_indentation_length) {
             reading_nested_block = true;
-            nested_block_lines.push_back(line);
+            nested_block_lines.push_back(line.substr(initial_indentation_length));
             continue;
         }
         if (reading_nested_block && (this_line_indentation_length == initial_indentation_length)) {
@@ -404,8 +404,11 @@ std::pair<size_t, size_t> YamlNode::get_indentation_length(const std::string &li
         } else if (c == '-') {
             if (indentation_before_hypen == -1) {
                 indentation_before_hypen = indentation_length;
+                ++indentation_length;
             }
-            ++indentation_length;
+            else {
+                break;
+            }
         } else {
             break;
         }
