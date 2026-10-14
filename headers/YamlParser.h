@@ -207,7 +207,6 @@ namespace AstroPhotoStacker {
 
 
             static const std::string OUTPUT_INDENTATION;
-            static const std::string OUTPUT_INDENTATION_LIST;
 
             void clean_up();
 
@@ -222,6 +221,8 @@ namespace AstroPhotoStacker {
 
             template<typename ValueType>
             bool matches_type() const;
+
+            bool is_multiline_block() const;
 
     };
 

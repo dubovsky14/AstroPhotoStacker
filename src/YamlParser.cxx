@@ -12,7 +12,6 @@ using namespace std;
 
 
 const std::string YamlNode::OUTPUT_INDENTATION = "  ";
-const std::string YamlNode::OUTPUT_INDENTATION_LIST = "- ";
 
 
 std::ostream& AstroPhotoStacker::operator <<(std::ostream &os, const YamlNodeDataType &node_type) {
@@ -189,13 +188,12 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
 
         if (!is_list) {
             const string trimmed_line = line.substr(this_indentation_wo_hypen);
-            auto colon_pos = trimmed_line.find(':');
-            if (colon_pos == std::string::npos) {
+
+            auto [key, value] = split_key_value(line);
+            if (key.empty()) {
                 throw std::runtime_error("Invalid line format: " + line);
             }
-            previous_key = trimmed_line.substr(0, colon_pos);
-            std::string value = trimmed_line.substr(colon_pos + 1);
-            strip_string(&value, " \t");
+            previous_key = key;
             if (!value.empty()) {
                 m_map[previous_key] = YamlNode({value});
             }
@@ -344,17 +342,23 @@ std::string YamlNode::to_string(const std::string &initial_indentation) const {
         return initial_indentation + (m_value_bool ? "True" : "False");
     }
     if (this->get_data_type() == YamlNodeDataType::MAP) {
-        std::string result = "\n";
+        std::string result = "";
         for (const auto& [key, value] : m_map) {
-            result += initial_indentation + OUTPUT_INDENTATION + key + ": " + value.to_string(initial_indentation + OUTPUT_INDENTATION) + "\n";
+            result += initial_indentation + key + ": "
+            + (value.is_multiline_block() ? "\n" : "")
+            + value.to_string(value.is_multiline_block() ? (initial_indentation + OUTPUT_INDENTATION) : "") + "\n";
         }
+        if (!result.empty() && result.back() == '\n') {
+            result.pop_back();
+        }
+
         return result;
     }
     if (this->get_data_type() == YamlNodeDataType::LIST) {
-        std::string result = "\n";
+        std::string result = "";
         for (const auto& value : m_list) {
             string list_string = value.to_string(initial_indentation + OUTPUT_INDENTATION);
-            list_string[(initial_indentation + OUTPUT_INDENTATION).size()-1] = '-';
+            list_string[(initial_indentation + OUTPUT_INDENTATION).size()-2] = '-';
             result += list_string + "\n";
         }
 
@@ -518,4 +522,8 @@ std::pair<std::string,std::string> YamlNode::split_key_value(const std::string &
         }
     }
     return {"", ""};
+};
+
+bool YamlNode::is_multiline_block() const {
+    return m_data_type == YamlNodeDataType::MAP || m_data_type == YamlNodeDataType::LIST;
 };
