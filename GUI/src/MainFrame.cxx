@@ -1,7 +1,6 @@
 #include "../headers/MainFrame.h"
 #include "../headers/AlignmentFrame.h"
 #include "../headers/ListFrame.h"
-#include "../headers/StackerConfigureTool.h"
 #include "../headers/ThreePointSlider.h"
 #include "../headers/AlignedImagesProducerGUI.h"
 #include "../headers/ProgressBarWindow.h"
@@ -24,6 +23,7 @@
 #include "../../headers/CalibratedPhotoHandler.h"
 #include "../../headers/AdditionalStackerSettingNumerical.h"
 #include "../../headers/FramesToSERVideoConvertor.h"
+#include "../../headers/StackerConfigureTool.h"
 
 #include <wx/spinctrl.h>
 #include <wx/progdlg.h>
@@ -869,7 +869,7 @@ void MyFrame::add_button_bar()   {
             }
         }
 
-        m_stacker = get_configured_stacker(*m_stack_settings, m_filelist_handler_gui_interface);
+        m_stacker = AstroPhotoStacker::get_configured_stacker(*m_stack_settings, m_filelist_handler_gui_interface);
         if (this->m_stack_settings->use_hot_pixel_correction()) {
             m_stacker->set_hot_pixels(m_hot_pixel_identifier->get_hot_pixels());
         }

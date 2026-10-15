@@ -510,9 +510,10 @@ std::vector<std::string> YamlNode::parse_list_elements(const std::string &list_s
 
 std::pair<std::string,std::string> YamlNode::split_key_value(const std::string &line) {
     int n_double_quotes(0), n_single_quotes(0);
+    bool previous_was_slash = false;
     for (size_t i = 0; i < line.size(); ++i) {
-        if (line[i] == '"') ++n_double_quotes;
-        if (line[i] == '\'') ++n_single_quotes;
+        if (!previous_was_slash && line[i] == '"') ++n_double_quotes;
+        if (!previous_was_slash && line[i] == '\'') ++n_single_quotes;
         if (n_double_quotes % 2 == 0 && n_single_quotes % 2 == 0 && line[i] == ':') {
             string key = line.substr(0, i);
             strip_string_and_remove_quotation_marks(&key);
@@ -520,6 +521,7 @@ std::pair<std::string,std::string> YamlNode::split_key_value(const std::string &
             strip_string(&value);
             return {key, value};
         }
+        previous_was_slash = (line[i] == '\\' && !previous_was_slash);
     }
     return {"", ""};
 };

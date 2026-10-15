@@ -2,7 +2,6 @@
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
 #include "../headers/Common.h"
 #include "../headers/PhotoGroupingTool.h"
-#include "../headers/StackerConfigureTool.h"
 
 #include "../headers/StackSettings.h"
 

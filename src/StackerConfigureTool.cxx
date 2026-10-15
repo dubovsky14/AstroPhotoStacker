@@ -1,20 +1,20 @@
 #include "../headers/StackerConfigureTool.h"
 
-#include "../../headers/ImageFilesInputOutput.h"
-#include "../../headers/StackerKappaSigmaBase.h"
-#include "../../headers/StackerMeanValue.h"
+#include "../headers/ImageFilesInputOutput.h"
+#include "../headers/StackerKappaSigmaBase.h"
+#include "../headers/StackerMeanValue.h"
 
-#include "../../headers/FlatFrameHandler.h"
-#include "../../headers/DarkFrameHandler.h"
-#include "../../headers/InputFrameReader.h"
+#include "../headers/FlatFrameHandler.h"
+#include "../headers/DarkFrameHandler.h"
+#include "../headers/InputFrameReader.h"
 
 #include <memory>
 
 using namespace std;
 using namespace AstroPhotoStacker;
 
-std::unique_ptr<AstroPhotoStacker::StackerBase> get_configured_stacker(const StackSettings& stack_settings, const FilelistHandlerGUIInterface& filelist_handler)    {
-    FilelistHandlerGUIInterface filelist_handler_only_checked = filelist_handler.get_filelist_with_checked_frames();
+std::unique_ptr<AstroPhotoStacker::StackerBase> AstroPhotoStacker::get_configured_stacker(const StackSettings& stack_settings, const FilelistHandler& filelist_handler)    {
+    FilelistHandler filelist_handler_only_checked = filelist_handler.get_filelist_with_checked_frames();
     std::unique_ptr<AstroPhotoStacker::StackerBase> stacker = nullptr;
 
     vector<int> group_numbers = filelist_handler_only_checked.get_group_numbers();
