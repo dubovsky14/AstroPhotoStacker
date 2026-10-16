@@ -73,6 +73,16 @@ namespace AstroPhotoStacker {
         }
 
 
+        // now let's test this:     one_liner: {"key1": "value1", "key2": [1, 2, 3,[2,3,5,{'abc' : "value", 'cde' : "another_value", "one_more_dict": {'a' : 0, 'b' : 'bcd'}}]], "key3": "value3" }
+        if (yaml["one_liner"]["key2"][3][1].get_value<int>() != 3) {
+            error_message += "yaml[\"one_liner\"][\"key2\"][3][1] != 3\n";
+        }
+        if (yaml["one_liner"]["key2"][3][3]["abc"].get_value<string>() != "value") {
+            error_message += "yaml[\"one_liner\"][\"key2\"][3][3][\"abc\"] != \"value\"\n";
+        }
+        if (yaml["one_liner"]["key2"][3][3]["one_more_dict"]["a"].get_value<int>() != 0) {
+            error_message += "yaml[\"one_liner\"][\"key2\"][3][3][\"one_more_dict\"][\"a\"] != 0\n";
+        }
 
         if (error_message.empty()) {
             return TestResult(true, "Yaml parser test passed.");

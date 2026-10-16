@@ -80,13 +80,23 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
             m_value_string = first_line;
             return;
         }
-        else if (remove_matching_list_brackets(&first_line)) {
+        else if (remove_matching_list_brackets(&first_line, true, {{'[', ']'}})) {
             m_data_type = YamlNodeDataType::LIST;
 
             // parsing the list elements from the string
-            std::vector<std::string> list_elements = parse_list_elements(first_line);
+            std::vector<std::string> list_elements = get_elements_of_nested_structure(first_line);
             for (const std::string &element : list_elements) {
                 m_list.push_back(YamlNode({element}));
+            }
+        }
+        else if (remove_matching_list_brackets(&first_line, true, {{'{', '}'}})) {
+            m_data_type = YamlNodeDataType::MAP;
+            const vector<string> map_elements = get_elements_of_nested_structure(first_line);
+            for (const std::string &element : map_elements) {
+                const std::pair<string,string> key_value = split_key_value(element);
+                if (!key_value.first.empty()) {
+                    m_map[key_value.first] = YamlNode({key_value.second});
+                }
             }
         }
         else if (string_is_int(first_line)) {
@@ -425,88 +435,22 @@ std::pair<size_t, size_t> YamlNode::get_indentation_length(const std::string &li
     return {indentation_length, indentation_before_hypen_size_t};
 }
 
-bool YamlNode::remove_matching_list_brackets(std::string *input_string, bool throw_on_mismatch) {
-    if (input_string->size() >= 2 && (*input_string)[0] == '[') {
-        if ((*input_string)[input_string->size() - 1] == ']') {
-            *input_string = input_string->substr(1, input_string->size() - 2);
-            return true;
-        }
-        else {
-            if (throw_on_mismatch) {
-                throw std::runtime_error("Mismatched surrounding list brackets in string: " + *input_string);
+bool YamlNode::remove_matching_list_brackets(std::string *input_string, bool throw_on_mismatch, const std::vector<std::pair<char, char>> &matching_brackets) {
+    for (const auto &bracket_pair : matching_brackets) {
+        if (input_string->size() >= 2 && (*input_string)[0] == bracket_pair.first) {
+            if ((*input_string)[input_string->size() - 1] == bracket_pair.second) {
+                *input_string = input_string->substr(1, input_string->size() - 2);
+                return true;
+            }
+            else {
+                if (throw_on_mismatch) {
+                    throw std::runtime_error("Mismatched surrounding list brackets in string: " + *input_string);
+                }
             }
         }
     }
     return false;
 }
-
-
-std::vector<std::string> YamlNode::parse_list_elements(const std::string &list_string)    {
-    std::vector<std::string> elements;
-    std::string current_element;
-
-    const vector<pair<char,char>> surounding_chars_pairs = {
-        {'[', ']'},
-        {'{', '}'},
-        {'\'', '\''},
-        {'"', '"'}
-    };
-    int current_surrounding_char_index = -1;
-
-    auto surrounding_index_starts = [&surounding_chars_pairs, &current_surrounding_char_index](char c) -> bool {
-        for (size_t i = 0; i < surounding_chars_pairs.size(); ++i) {
-            if (current_surrounding_char_index != -1) {
-                return false;
-            }
-            if (c == surounding_chars_pairs[i].first) {
-                current_surrounding_char_index = static_cast<int>(i);
-                return true;
-            }
-        }
-        return false;
-    };
-
-    auto surrounding_index_ends = [&surounding_chars_pairs, &current_surrounding_char_index](char c) -> bool {
-        if (current_surrounding_char_index == -1) {
-            return false;
-        }
-        if (c == surounding_chars_pairs[current_surrounding_char_index].second) {
-            current_surrounding_char_index = -1;
-            return true;
-        }
-        return false;
-    };
-
-    for (char c : list_string) {
-        if (current_surrounding_char_index == -1 && (c == ' ' || c == '\t')) {
-            continue;
-        }
-
-        if (surrounding_index_starts(c)) {
-            current_element += c;
-            continue;
-        }
-        if (surrounding_index_ends(c)) {
-            current_element += c;
-            continue;
-        }
-        if (c == ',' && !current_element.empty() && current_surrounding_char_index == -1) {
-            elements.push_back(current_element);
-            current_element.clear();
-            continue;
-        }
-        current_element += c;
-
-        // TODO: handle cases like [ab"asb", "a"] ...
-    }
-
-    if (!current_element.empty()) {
-        elements.push_back(current_element);
-    }
-
-    return elements;
-};
-
 
 std::pair<std::string,std::string> YamlNode::split_key_value(const std::string &line) {
     int n_double_quotes(0), n_single_quotes(0);
@@ -529,3 +473,64 @@ std::pair<std::string,std::string> YamlNode::split_key_value(const std::string &
 bool YamlNode::is_multiline_block() const {
     return m_data_type == YamlNodeDataType::MAP || m_data_type == YamlNodeDataType::LIST;
 };
+
+std::vector<std::string> YamlNode::get_elements_of_nested_structure(const std::string &input_string) {
+    std::vector<std::string> elements;
+    std::string current_element;
+    std::vector<char> previous_separators;
+
+    // get first and last non-whitespace characters of the input string
+    size_t first_non_whitespace = input_string.find_first_not_of(" \t");
+    size_t last_non_whitespace = input_string.find_last_not_of(" \t");
+    if (first_non_whitespace == std::string::npos || last_non_whitespace == std::string::npos) {
+        return {};
+    }
+
+    string_view trimmed_input(input_string.c_str() + first_non_whitespace, last_non_whitespace - first_non_whitespace + 1);
+
+    bool previous_char_was_slash = false;
+    for (char c : trimmed_input) {
+
+        // if we are reading string inside quotes
+        if (!previous_separators.empty() && (previous_separators.back() == '"' || previous_separators.back() == '\'')) {
+            if (c == previous_separators.back() && !previous_char_was_slash) {
+                previous_separators.pop_back();
+            }
+            else if (c == '/') {
+                previous_char_was_slash = !previous_char_was_slash;
+            }
+            else {
+                current_element += c;
+            }
+            continue;
+        }
+
+        if (c == ' ' || c == '\t') {
+            continue;
+        }
+
+        // we care only about the outermost level for commas
+        if (c == ',' && !current_element.empty() && previous_separators.empty()) {
+            elements.push_back(current_element);
+            current_element.clear();
+            continue;
+        }
+
+        if (c == '{' || c == '[') {
+            previous_separators.push_back(c);
+        }
+
+        if (c == '}' || c == ']') {
+            if (previous_separators.empty() || (c == '}' && previous_separators.back() != '{') || (c == ']' && previous_separators.back() != '[')) {
+                throw std::runtime_error("Unexpected closing character in nested structure");
+            }
+            previous_separators.pop_back();
+        }
+        current_element += c;
+    }
+
+    if (!current_element.empty()) {
+        elements.push_back(current_element);
+    }
+    return elements;
+}

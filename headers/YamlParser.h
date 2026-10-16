@@ -195,6 +195,7 @@ namespace AstroPhotoStacker {
              */
             bool has_key(const std::string &key) const;
 
+
         private:
             std::map<std::string, YamlNode> m_map;
             std::vector<YamlNode>           m_list;
@@ -213,9 +214,7 @@ namespace AstroPhotoStacker {
             // @brief Get the indentation length with a hypen and without it
             static std::pair<size_t, size_t> get_indentation_length(const std::string &line);
 
-            static bool remove_matching_list_brackets(std::string *input_string, bool throw_on_mismatch = true);
-
-            static std::vector<std::string> parse_list_elements(const std::string &list_string);
+            static bool remove_matching_list_brackets(std::string *input_string, bool throw_on_mismatch, const std::vector<std::pair<char, char>> &matching_brackets);
 
             static std::pair<std::string,std::string> split_key_value(const std::string &line);
 
@@ -223,6 +222,8 @@ namespace AstroPhotoStacker {
             bool matches_type() const;
 
             bool is_multiline_block() const;
+
+            static std::vector<std::string> get_elements_of_nested_structure(const std::string &input_string);
 
     };
 
