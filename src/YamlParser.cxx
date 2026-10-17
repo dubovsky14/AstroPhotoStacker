@@ -13,7 +13,6 @@ using namespace std;
 
 const std::string YamlNode::OUTPUT_INDENTATION = "  ";
 
-
 std::ostream& AstroPhotoStacker::operator <<(std::ostream &os, const YamlNodeDataType &node_type) {
     switch (node_type) {
         case YamlNodeDataType::EMPTY: os << "EMPTY"; break;
@@ -59,14 +58,15 @@ YamlNode AstroPhotoStacker::load_yaml_file(const std::string &yaml_address) {
         valid_lines.push_back(line);
     }
     file.close();
-    return YamlNode(valid_lines);
+    std::map<std::string, std::shared_ptr<YamlNode>> anchors;
+    return YamlNode(valid_lines, anchors);
 }
 
 // #TODO:
 // 1. One line maps
 // 2. better error messages
 
-YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
+YamlNode::YamlNode(const std::vector<std::string>& valid_lines, std::map<std::string, std::shared_ptr<YamlNode>> anchors) {
     if (valid_lines.empty()) {
         return;
     }
@@ -86,7 +86,7 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
             // parsing the list elements from the string
             std::vector<std::string> list_elements = get_elements_of_nested_structure(first_line);
             for (const std::string &element : list_elements) {
-                m_list.push_back(YamlNode({element}));
+                m_list.push_back(YamlNode({element}, anchors));
             }
         }
         else if (remove_matching_list_brackets(&first_line, true, {{'{', '}'}})) {
@@ -95,7 +95,7 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
             for (const std::string &element : map_elements) {
                 const std::pair<string,string> key_value = split_key_value(element);
                 if (!key_value.first.empty()) {
-                    m_map[key_value.first] = YamlNode({key_value.second});
+                    m_map[key_value.first] = YamlNode({key_value.second}, anchors);
                 }
             }
         }
@@ -112,19 +112,32 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
             m_value_bool = compare_case_insensitive(first_line, "true");
         }
         else {
-            const std::pair<string,string> key_value = split_key_value(first_line);
-            if (!key_value.first.empty()) {
-                m_data_type = YamlNodeDataType::MAP;
-                m_map[key_value.first] = YamlNode({key_value.second});
+
+            const size_t first_non_whitespace = first_line.find_first_not_of(" \t");
+            if (first_non_whitespace != std::string::npos && first_line[first_non_whitespace] == '*') {
+                const size_t anchor_start = first_non_whitespace + 1;
+                const size_t anchor_end = first_line.find_first_of(" \t", anchor_start);
+                const string anchor_name = first_line.substr(anchor_start, anchor_end - anchor_start);
+
+                if (anchors.find(anchor_name) == anchors.end()) {
+                    throw std::runtime_error("Undefined anchor: \'" + anchor_name + "\'");
+                }
+                *this = *(anchors[anchor_name]);
                 return;
             }
 
-            size_t first_non_whitespace = first_line.find_first_not_of(" \t");
+            const std::pair<string,string> key_value = split_key_value(first_line);
+            if (!key_value.first.empty()) {
+                m_data_type = YamlNodeDataType::MAP;
+                m_map[key_value.first] = YamlNode({key_value.second}, anchors);
+                return;
+            }
+
             if (first_non_whitespace != std::string::npos && first_line[first_non_whitespace] == '-') {
                 m_data_type = YamlNodeDataType::LIST;
                 first_line[first_non_whitespace] = ' ';
                 strip_string_and_remove_quotation_marks(&first_line);
-                m_list.push_back(YamlNode({first_line}));
+                m_list.push_back(YamlNode({first_line}, anchors));
                 return;
             }
 
@@ -149,6 +162,7 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
     vector<string> current_list_element;
     bool reading_nested_block = false;
     string previous_key = "";
+    string anchor_name = "";
     for (const std::string &line : valid_lines) {
         if (line.size() <= initial_indentation_length) {
             throw std::runtime_error("Line is shorter than initial indentation");
@@ -160,7 +174,7 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
         if (is_list) {
             if (this_line_starts_new_list_element) {
                 if (!current_list_element.empty()) {
-                    m_list.push_back(YamlNode(current_list_element));
+                    m_list.push_back(YamlNode(current_list_element, anchors));
                     current_list_element.clear();
                 }
                 string line_copy = line;
@@ -188,10 +202,14 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
                 throw std::runtime_error("Found invalid nested block: " + line);
             }
             if (previous_key.size() != 0)   {
-                m_map[previous_key] = YamlNode(nested_block_lines);
+                m_map[previous_key] = YamlNode(nested_block_lines, anchors);
+                if (!anchor_name.empty()) {
+                    anchors[anchor_name] = std::make_shared<YamlNode>(m_map[previous_key]);
+                    anchor_name.clear();
+                }
             }
             else if (is_list) {
-                m_list.push_back(YamlNode(nested_block_lines));
+                m_list.push_back(YamlNode(nested_block_lines, anchors));
             }
             nested_block_lines.clear();
         }
@@ -205,16 +223,32 @@ YamlNode::YamlNode(const std::vector<std::string>& valid_lines) {
             }
             previous_key = key;
             if (!value.empty()) {
-                m_map[previous_key] = YamlNode({value});
+                size_t first_non_whitespace = value.find_first_not_of(" \t");
+                if (first_non_whitespace != std::string::npos && value[first_non_whitespace] == '&') {
+                    size_t anchor_end = value.find_first_of(" \t", first_non_whitespace + 1);
+                    anchor_name = value.substr(first_non_whitespace + 1, anchor_end - (first_non_whitespace + 1));
+                    cout << "Found anchor: \'" << anchor_name << "\'" << endl;
+                }
+                else {
+                    m_map[previous_key] = YamlNode({value}, anchors);
+                    if (!anchor_name.empty()) {
+                        anchors[anchor_name] = std::make_shared<YamlNode>(m_map[previous_key]);
+                        anchor_name.clear();
+                    }
+                }
             }
         }
     }
 
     if (is_list && !current_list_element.empty()) {
-        m_list.push_back(YamlNode(current_list_element));
+        m_list.push_back(YamlNode(current_list_element, anchors));
     }
     if (!previous_key.empty() && !nested_block_lines.empty()) {
-        m_map[previous_key] = YamlNode(nested_block_lines);
+        m_map[previous_key] = YamlNode(nested_block_lines, anchors);
+        if (!anchor_name.empty()) {
+            anchors[anchor_name] = std::make_shared<YamlNode>(m_map[previous_key]);
+            anchor_name.clear();
+        }
     }
 }
 

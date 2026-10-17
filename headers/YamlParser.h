@@ -6,6 +6,7 @@
 #include <utility>
 #include <stdexcept>
 #include <optional>
+#include <memory>
 
 namespace AstroPhotoStacker {
     enum class YamlNodeDataType {
@@ -30,7 +31,7 @@ namespace AstroPhotoStacker {
         public:
             YamlNode() = default;
 
-            YamlNode(const std::vector<std::string>& valid_lines);
+            YamlNode(const std::vector<std::string>& valid_lines, std::map<std::string, std::shared_ptr<YamlNode>> anchors);
 
             /**
              * @brief Get the data type of the YAML node (dict, list, float, int, string, etc.).
@@ -224,6 +225,8 @@ namespace AstroPhotoStacker {
             bool is_multiline_block() const;
 
             static std::vector<std::string> get_elements_of_nested_structure(const std::string &input_string);
+
+            //static std::map<std::string, YamlNode> m_anchors;
 
     };
 
