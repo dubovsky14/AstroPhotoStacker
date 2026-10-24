@@ -268,6 +268,8 @@ namespace AstroPhotoStacker {
 
             void add_lens_corrections_for_checked_light_frames_from_text_file(const std::string &file_address);
 
+            void remove_lens_corrections_for_checked_light_frames();
+
         protected:
             const std::map<int, std::map<FrameType, std::map<AstroPhotoStacker::InputFrame,FrameInfo>>>     &get_frames_list() const {
                 return m_frames_list;

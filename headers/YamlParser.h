@@ -225,9 +225,6 @@ namespace AstroPhotoStacker {
             bool is_multiline_block() const;
 
             static std::vector<std::string> get_elements_of_nested_structure(const std::string &input_string);
-
-            //static std::map<std::string, YamlNode> m_anchors;
-
     };
 
     template<>

@@ -591,7 +591,6 @@ void FilelistHandler::add_lens_corrections_for_checked_light_frames_from_summary
     }
 };
 
-
 void FilelistHandler::add_lens_corrections_for_checked_light_frames_from_text_file(const std::string &file_address) {
     std::ifstream input_file(file_address);
     std::string line;
@@ -610,4 +609,20 @@ void FilelistHandler::add_lens_corrections_for_checked_light_frames_from_text_fi
         return;
     }
     throw std::runtime_error("No valid lens correction summary string found in file: " + file_address);
+};
+
+void FilelistHandler::remove_lens_corrections_for_checked_light_frames() {
+    for (auto &group : m_frames_list) {
+        for (auto &type : group.second) {
+            if (type.first != FrameType::LIGHT) {
+                continue;
+            }
+            std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames = group.second.at(type.first);
+            for (auto &frame : frames) {
+                if (frame.second.is_checked) {
+                    LensCorrectionDictionary::get_instance().remove_corrections(frame.first);
+                }
+            }
+        }
+    }
 };

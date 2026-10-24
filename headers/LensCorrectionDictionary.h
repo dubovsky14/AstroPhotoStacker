@@ -32,6 +32,10 @@ namespace AstroPhotoStacker {
                 m_corrections_map[frame] = m_corrections_summary_string_to_correction_tool_map[correction_summary_string];
             };
 
+            void remove_corrections(const InputFrame& frame) {
+                m_corrections_map.erase(frame);
+            };
+
             std::shared_ptr<const LensCorrectionTool> get_lens_correction_tool(const InputFrame& frame) const {
                 auto it = m_corrections_map.find(frame);
                 if (it != m_corrections_map.end()) {

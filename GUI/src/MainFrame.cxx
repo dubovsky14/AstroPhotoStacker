@@ -145,6 +145,12 @@ void MyFrame::add_file_menu()  {
         }
     }, id);
 
+    id = unique_counter();
+    m_file_menu->Append(id, "Remove lens corrections for checked frames", "Remove lens corrections for checked frames");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        m_filelist_handler_gui_interface.remove_lens_corrections_for_checked_light_frames();
+        update_files_to_stack_checkbox();
+    }, id);
 
     m_file_menu->AppendSeparator();
     m_file_menu->Append(wxID_EXIT);
