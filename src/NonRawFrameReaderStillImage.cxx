@@ -76,7 +76,7 @@ Metadata NonRawFrameReaderStillImage::read_metadata_without_cache() {
     const string input_file = m_input_frame.get_file_address();
     Metadata metadata;
     try {
-        Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(input_file);
+        Exiv2::Image::UniquePtr image = Exiv2::ImageFactory::open(input_file);
         if (image.get() == 0)   {
             throw std::runtime_error("Failed to open the file"s + input_file);
 
@@ -87,7 +87,7 @@ Metadata NonRawFrameReaderStillImage::read_metadata_without_cache() {
         if (exifData.empty()) {
             std::string error(input_file);
             error += ": No EXIF data found in the file";
-            throw Exiv2::Error(Exiv2::kerErrorMessage, error);
+            throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, error);
         }
 
         // Aperture
@@ -105,7 +105,7 @@ Metadata NonRawFrameReaderStillImage::read_metadata_without_cache() {
         // ISO Speed
         const auto isoSpeed = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ISOSpeedRatings"));
         if (isoSpeed != exifData.end()) {
-            metadata.iso = isoSpeed->toLong();
+            metadata.iso = isoSpeed->toInt64();
         }
 
         // Focal Length
@@ -123,7 +123,7 @@ Metadata NonRawFrameReaderStillImage::read_metadata_without_cache() {
         // Max Value
         const auto maxValue = exifData.findKey(Exiv2::ExifKey("Exif.Photo.ExposureBiasValue"));
         if (maxValue != exifData.end()) {
-            metadata.max_value = maxValue->toLong();
+            metadata.max_value = maxValue->toInt64();
         }
 
         // camera model
@@ -150,7 +150,7 @@ Metadata NonRawFrameReaderStillImage::read_metadata_without_cache() {
             }
         }
 
-    } catch (Exiv2::AnyError& e) {
+    } catch (Exiv2::Error& e) {
         std::cerr << "Error reading file " << input_file << ": " << e.what() << std::endl;
     }
     return metadata;

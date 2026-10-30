@@ -109,7 +109,7 @@ Metadata NonRawFrameReaderVideo::read_metadata_without_cache() {
     metadata.monochrome = (n_colors == 1);
 
     try {
-        Exiv2::Image::AutoPtr image = Exiv2::ImageFactory::open(video_address);
+        Exiv2::Image::UniquePtr image = Exiv2::ImageFactory::open(video_address);
         if (image.get() == 0) {
             throw std::runtime_error("Failed to open the file " + video_address);
         }
@@ -119,7 +119,7 @@ Metadata NonRawFrameReaderVideo::read_metadata_without_cache() {
         if (exifData.empty()) {
             std::string error(video_address);
             error += ": No EXIF data found in the file";
-            throw Exiv2::Error(Exiv2::kerErrorMessage, error);
+            throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, error);
         }
 
         // Date and Time
@@ -130,7 +130,7 @@ Metadata NonRawFrameReaderVideo::read_metadata_without_cache() {
             std::cerr << "DateTimeOriginal not found in the metadata." << std::endl;
         }
 
-    } catch (Exiv2::AnyError& e) {
+    } catch (Exiv2::Error& e) {
         std::cerr << "Error reading file " << video_address << ": " << e.what() << std::endl;
 
         // get at least the timestamp

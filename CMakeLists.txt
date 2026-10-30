@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.6)
 project(AstroPhotoStacker)
 find_package(OpenCV)
 find_package(exiv2)
