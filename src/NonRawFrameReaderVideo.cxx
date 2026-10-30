@@ -1,5 +1,6 @@
 #include "../headers/NonRawFrameReaderVideo.h"
 #include "../headers/MetadataCommon.h"
+#include "../headers/ExifAliases.h"
 
 #include <exiv2/exiv2.hpp>
 #include <opencv2/opencv.hpp>
@@ -109,7 +110,7 @@ Metadata NonRawFrameReaderVideo::read_metadata_without_cache() {
     metadata.monochrome = (n_colors == 1);
 
     try {
-        Exiv2::Image::UniquePtr image = Exiv2::ImageFactory::open(video_address);
+        Exiv2Compat::ImagePtr image = Exiv2::ImageFactory::open(video_address);
         if (image.get() == 0) {
             throw std::runtime_error("Failed to open the file " + video_address);
         }
@@ -119,7 +120,7 @@ Metadata NonRawFrameReaderVideo::read_metadata_without_cache() {
         if (exifData.empty()) {
             std::string error(video_address);
             error += ": No EXIF data found in the file";
-            throw Exiv2::Error(Exiv2::ErrorCode::kerErrorMessage, error);
+            throw Exiv2::Error(Exiv2CompatErrorMessage, error);
         }
 
         // Date and Time
@@ -130,7 +131,7 @@ Metadata NonRawFrameReaderVideo::read_metadata_without_cache() {
             std::cerr << "DateTimeOriginal not found in the metadata." << std::endl;
         }
 
-    } catch (Exiv2::Error& e) {
+    } catch (Exiv2Compat::Error &e) {
         std::cerr << "Error reading file " << video_address << ": " << e.what() << std::endl;
 
         // get at least the timestamp

@@ -1,5 +1,6 @@
 #include "../headers/SummaryYamlCreator.h"
 #include "../headers/Common.h"
+#include "../headers/ExifAliases.h"
 
 #include <exiv2/exiv2.hpp>
 
@@ -192,7 +193,7 @@ std::string SummaryYamlCreator::block_to_string(const std::vector<std::string> &
 
 void SummaryYamlCreator::add_as_exif_metadata(const std::string &output_address, const PostProcessingTool *post_processing_tool) const  {
     // Open with Exiv2
-    Exiv2::Image::UniquePtr img = Exiv2::ImageFactory::open(output_address);
+    Exiv2Compat::ImagePtr img = Exiv2::ImageFactory::open(output_address);
     img->readMetadata();
     Exiv2::ExifData &exif_data = img->exifData();
 
