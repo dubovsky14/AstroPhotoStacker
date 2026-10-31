@@ -15,7 +15,7 @@ namespace AstroPhotoStacker {
              *
              * @param mutex The mutex to lock
             */
-            CustomScopeMutex(std::mutex *mutex) : m_mutex(mutex) {
+            [[nodiscard]] explicit CustomScopeMutex(std::mutex *mutex) : m_mutex(mutex) {
                 m_is_locked = m_mutex->try_lock();
             }
 

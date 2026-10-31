@@ -4,7 +4,7 @@ project(AstroPhotoStackerGUI)
 find_package(wxWidgets REQUIRED COMPONENTS net core base adv)
 find_package(OpenCV)
 find_package(exiv2 REQUIRED CONFIG)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${OpenCV_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} SYSTEM ${OpenCV_INCLUDE_DIRS}) # include OpenCV headers as system headers to suppress warnings
 
 # we need it also here because of some preprocessor directives in the headers
 find_package(CUDAToolkit)

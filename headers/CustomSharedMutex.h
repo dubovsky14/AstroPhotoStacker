@@ -8,9 +8,9 @@ namespace AstroPhotoStacker {
      * RAII class for shared mutex. Constructor locks the mutex in shared mode (read mode),
      * and destructor unlocks it.
      */
-    class   SharedMutexRAIIShared  {
+    class SharedMutexRAIIShared  {
         public:
-            SharedMutexRAIIShared(std::shared_mutex *mutex) : m_mutex(mutex) {
+            [[nodiscard]] explicit SharedMutexRAIIShared(std::shared_mutex *mutex) : m_mutex(mutex){
                 m_mutex->lock_shared();
             }
 
@@ -27,9 +27,9 @@ namespace AstroPhotoStacker {
      * RAII class for shared mutex. Constructor locks the mutex in exclusive mode (write mode),
      * and destructor unlocks it.
      */
-    class   SharedMutexRAIIExclusive  {
+    class  SharedMutexRAIIExclusive  {
         public:
-            SharedMutexRAIIExclusive(std::shared_mutex *mutex) : m_mutex(mutex) {
+            [[nodiscard]] explicit SharedMutexRAIIExclusive(std::shared_mutex *mutex) : m_mutex(mutex){
                 m_mutex->lock();
             }
 

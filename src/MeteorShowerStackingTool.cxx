@@ -506,7 +506,7 @@ void MeteorShowerStackingTool::process_one_frame(FrameAndGroup frame, const File
 
     // at this point we prepared everything we could in multithreaded mode, time to lock the mutex
     {
-        std::scoped_lock{m_stacking_mutex};
+        std::scoped_lock this_lock{m_stacking_mutex};
         // firstly we need the median values around the cluster for background estimation
         vector<vector<float>> values_around_in_background(rgb_data_calibrated.size());
         for (const SelectedPixelInformation &pixel_info : selected_pixels_information)  {
