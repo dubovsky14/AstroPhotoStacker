@@ -237,7 +237,7 @@ void MeteorShowerStackingGUI::update_cluster_list() {
         for (const std::tuple<int,int> &pixel : cluster_info.clusters[i]) {
             const int x = std::get<0>(pixel);
             const int y = std::get<1>(pixel);
-            m_cluster_kd_tree->add_point({x,y}, i);
+            m_cluster_kd_tree->add_point(std::array<int,2>{x,y}, i);
         }
     }
     m_cluster_kd_tree->build_tree_structure();
