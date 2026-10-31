@@ -26,7 +26,7 @@ std::vector<LocalShift> LocalShiftsClusteringTool::cluster_local_shifts(const st
     KDTree<float,2, int> kd_tree;
     for (unsigned int i = 0; i < valid_local_shifts.size(); i++) {
         const LocalShift &shift = valid_local_shifts.at(i);
-        kd_tree.add_point( {float(shift.x), float(shift.y)}, i);
+        kd_tree.add_point( std::array<float, 2>{float(shift.x), float(shift.y)}, i);
     }
     kd_tree.build_tree_structure();
 

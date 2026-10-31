@@ -86,6 +86,19 @@ namespace AstroPhotoStacker   {
                 return m_nodes;
             };
 
+            /**
+             * @brief Add point (node) to the tree. The tree structure must not be built yet.
+             *
+             * @param coordinates
+             * @param value - these are the additional data associated with the node
+             */
+            void add_point(const std::array<CoordinateType, NumberOfCoordinates> &coordinates, const ValueType &value)    {
+                if (m_tree_structure_built) {
+                    throw std::runtime_error("KDTree::add_point: tree structure already built.");
+                }
+
+                add_point(coordinates.data(), value);
+            };
 
             /**
              * @brief Add point (node) to the tree. The tree structure must not be built yet.
@@ -104,22 +117,6 @@ namespace AstroPhotoStacker   {
                 add_point(coordinates.data(), value);
             };
 
-
-            /**
-             * @brief Add point (node) to the tree. The tree structure must not be built yet.
-             *
-             * @param coordinates
-             * @param value - these are the additional data associated with the node
-             */
-            void add_point(const CoordinateType *coordinates, const ValueType &value)   {
-                KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType> node;
-                for (unsigned int i = 0; i < m_n_dim; ++i)  {
-                    node.m_coordinates[i] = coordinates[i];
-                }
-                node.m_value = value;
-
-                m_nodes.push_back(node);
-            }
 
             /**
              * @brief Add points (nodes) to the tree. The tree structure must not be built yet.
@@ -392,6 +389,23 @@ namespace AstroPhotoStacker   {
                     distance += (coordinates_1[i] - coordinates_2[i]) * (coordinates_1[i] - coordinates_2[i]);
                 }
                 return distance;
+            };
+
+
+            /**
+             * @brief Add point (node) to the tree. The tree structure must not be built yet.
+             *
+             * @param coordinates
+             * @param value - these are the additional data associated with the node
+             */
+            void add_point(const CoordinateType *coordinates, const ValueType &value)   {
+                KDTreeNode<CoordinateType, NumberOfCoordinates, ValueType> node;
+                for (unsigned int i = 0; i < m_n_dim; ++i)  {
+                    node.m_coordinates[i] = coordinates[i];
+                }
+                node.m_value = value;
+
+                m_nodes.push_back(node);
             };
     };
 

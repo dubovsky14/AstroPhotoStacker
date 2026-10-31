@@ -85,7 +85,7 @@ void ReferencePhotoHandlerStars::calculate_and_store_hashes()  {
     map<tuple<unsigned int,unsigned int,unsigned int,unsigned int>, char > used_hashes;
 
     // we want to calculate the hashes for all possible combinations of 4 stars
-    vector<float> asterism_hash_buffer;
+    std::array<float, 4> asterism_hash_buffer;
     for (unsigned int i_star1 = 0; i_star1 < n_stars; i_star1++)   {
         for (unsigned int i_star2 = i_star1+1; i_star2 < n_stars; i_star2++)   {
             for (unsigned int i_star3 = i_star2+1; i_star3 < n_stars; i_star3++)   {

@@ -14,6 +14,7 @@
 #include <iostream>
 #include <string>
 #include <stdexcept>
+#include <array>
 
 using namespace std;
 using namespace AstroPhotoStacker;
@@ -106,7 +107,7 @@ int main(int argc, const char **argv)   {
             {1  , 1  , 3},
             {1.5, 2.5, 4},
         },
-        std::vector<float>{0.231, 0.154, 0.538, 0.692},
+        std::array<float,4>{0.231, 0.154, 0.538, 0.692},
         1, 0, 3, 2);
 
     test_runner.run_test("Asterism hash test #2", test_asterism_hasher,
@@ -116,7 +117,7 @@ int main(int argc, const char **argv)   {
             {0.95128, 4.77509, 1},
             {0.48508, 5.92898, 1},
         },
-        std::vector<float>{0.23, 0.45, 0.67, 0.89},
+        std::array<float,4>{0.23, 0.45, 0.67, 0.89},
         0,1,2,3);
 
     test_runner.run_test("Asterism hash test #3", test_asterism_hasher,
@@ -126,7 +127,7 @@ int main(int argc, const char **argv)   {
             {0.48508, 5.92898, 1},
             {1.6, 4.0, 1},
         },
-        std::vector<float>{0.23, 0.45, 0.67, 0.89},
+        std::array<float,4>{0.23, 0.45, 0.67, 0.89},
         3,1,0,2);
 
     test_runner.run_test("Yaml parser", test_yaml_parser);

@@ -10,7 +10,7 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 // for more details see chapter 2.2 here: https://arxiv.org/pdf/0910.2233.pdf
-bool AstroPhotoStacker::calculate_asterism_hash(const vector<tuple<float, float, int> > &stars, vector<float> *result,
+bool AstroPhotoStacker::calculate_asterism_hash(const vector<tuple<float, float, int> > &stars, array<float, 4> *result,
     unsigned int *index_star_A, unsigned int *index_star_B, unsigned int *index_star_C, unsigned int *index_star_D)  {
 
     if (stars.size() != 4)  {
@@ -67,20 +67,18 @@ bool AstroPhotoStacker::calculate_asterism_hash(const vector<tuple<float, float,
         if (index_star_B != nullptr)    {*index_star_B = starA;}
     }
 
-    result->resize(4);
-
     // breaking symmetry for C <-> D swapping
     if (Xc <= Xd)   {
-        result->at(0) = Xc;
-        result->at(1) = Yc;
-        result->at(2) = Xd;
-        result->at(3) = Yd;
+        (*result)[0] = Xc;
+        (*result)[1] = Yc;
+        (*result)[2] = Xd;
+        (*result)[3] = Yd;
     }
     else {
-        result->at(0) = Xd;
-        result->at(1) = Yd;
-        result->at(2) = Xc;
-        result->at(3) = Yc;
+        (*result)[0] = Xd;
+        (*result)[1] = Yd;
+        (*result)[2] = Xc;
+        (*result)[3] = Yc;
 
         if (index_star_C != nullptr)    {*index_star_C = starD;}
         if (index_star_D != nullptr)    {*index_star_D = starC;}

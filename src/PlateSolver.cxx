@@ -38,7 +38,7 @@ AlignmentResultPlateSolving PlateSolver::plate_solve(const std::vector<std::tupl
 
                     vector<tuple<float,float,int> > four_stars_positions = {stars[i_star1], stars[i_star2], stars[i_star3], stars[i_star4]};
                     vector<unsigned int> four_stars_indices = {i_star1, i_star2, i_star3, i_star4};
-                    vector<float> asterism_hash(4);
+                    std::array<float, 4> asterism_hash;
 
                     unsigned int starA, starB, starC, starD;
                     const bool hash_is_valid = calculate_asterism_hash(four_stars_positions, &asterism_hash, &starA, &starB, &starC, &starD);

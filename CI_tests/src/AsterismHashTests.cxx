@@ -9,13 +9,13 @@ using namespace std;
 using namespace AstroPhotoStacker;
 
 
-TestResult AstroPhotoStacker::test_asterism_hasher(const std::vector<std::tuple<float,float,int>> &stars, const std::vector<float> &expected_hash,
+TestResult AstroPhotoStacker::test_asterism_hasher(const std::vector<std::tuple<float,float,int>> &stars, const std::array<float, 4> &expected_hash,
                                     unsigned int expected_index_star_A, unsigned int expected_index_star_B,
                                     unsigned int expected_index_star_C, unsigned int expected_index_star_D) {
 
     string error_message;
 
-    vector<float> result;
+    array<float, 4> result;
     unsigned int index_star_A, index_star_B, index_star_C, index_star_D;
     const bool hash_success = calculate_asterism_hash(stars, &result, &index_star_A, &index_star_B, &index_star_C, &index_star_D);
 
@@ -28,7 +28,7 @@ TestResult AstroPhotoStacker::test_asterism_hasher(const std::vector<std::tuple<
     for (unsigned int i = 0; i < expected_hash.size(); i++) {
         if (fabs(result[i] - expected_hash[i]) > 1e-3) {
             error_message += "Hash values do not match: ";
-            auto hash_to_string = [](const vector<float> &hash) {
+            auto hash_to_string = [](const array<float, 4> &hash) {
                 vector<string> numbers_as_strings;
                 for (const auto &number : hash) {
                     numbers_as_strings.push_back(to_string(number));
