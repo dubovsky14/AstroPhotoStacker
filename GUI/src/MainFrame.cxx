@@ -378,6 +378,53 @@ void MyFrame::add_hot_pixel_menu()  {
         }
     }, id);
 
+    hot_pixel_menu->AppendSeparator();
+
+    id = unique_counter();
+    hot_pixel_menu->Append(id, "Identify hot pixels", "Identify hot pixels");
+    Bind(wxEVT_MENU, [this](wxCommandEvent&){
+        update_checked_files_in_filelist();
+        vector<InputFrame> frames;
+
+        const vector<int> group_indices = m_filelist_handler_gui_interface.get_group_numbers();
+        for (int group_index : group_indices) {
+            for (FrameType type : {FrameType::LIGHT, FrameType::DARK, FrameType::FLAT, FrameType::BIAS})   {
+                const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames_map = m_filelist_handler_gui_interface.get_frames(type, group_index);
+                for (const auto &frame : frames_map)   {
+                    if (frame.second.is_checked)   {
+                        frames.push_back(frame.first);
+                    }
+                }
+            }
+        }
+
+        if (frames.empty()) {
+            wxMessageDialog *dialog = new wxMessageDialog(this, "No frames have been selected. Please select them first!", "Hot pixel identification warning.");
+            dialog->ShowModal();
+            return;
+        }
+
+        m_hot_pixel_identifier = make_unique<AstroPhotoStacker::HotPixelIdentifier>();
+        m_hot_pixel_identifier->set_n_cpu(m_stack_settings->get_n_cpus());
+        const std::atomic<int> &n_processed = m_hot_pixel_identifier->get_number_of_processed_photos();
+        const int files_total = frames.size();
+
+        run_task_with_progress_dialog(  "Hot pixel identification",
+                                        "Processed",
+                                        "frames",
+                                        n_processed,
+                                        files_total,
+                                        [this, frames](){
+                                            m_hot_pixel_identifier->add_photos(frames);
+                                        });
+
+        m_hot_pixel_identifier->compute_hot_pixels();
+
+        std::vector<std::tuple<int,int>> hot_pixels = m_hot_pixel_identifier->get_hot_pixels();
+
+        update_status_icon(m_hot_pixel_status_icon, true);
+    }, id);
+
     m_menu_bar->Append(hot_pixel_menu, "&Hot pixels");
 };
 
@@ -759,7 +806,7 @@ void MyFrame::add_button_bar()   {
     wxButton *button_check_all      = new wxButton(this, wxID_ANY, "Check all");
     wxButton *button_remove_checked = new wxButton(this, wxID_ANY, "Remove checked");
     wxButton *button_align_files    = new wxButton(this, wxID_ANY, "Align files");
-    wxButton *button_hot_pixel_id   = new wxButton(this, wxID_ANY, "Identify hot pixels");
+    wxButton *button_stack_calib    = new wxButton(this, wxID_ANY, "Stack calibration frames only");
     wxButton *button_stack_files    = new wxButton(this, wxID_ANY, "Stack files");
 
     button_check_all->Bind(wxEVT_BUTTON, [this, button_check_all](wxCommandEvent&){
@@ -806,47 +853,10 @@ void MyFrame::add_button_bar()   {
             update_files_to_stack_checkbox();
     });
 
-    button_hot_pixel_id->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+    button_stack_calib->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         update_checked_files_in_filelist();
-        vector<InputFrame> frames;
-
-        const vector<int> group_indices = m_filelist_handler_gui_interface.get_group_numbers();
-        for (int group_index : group_indices) {
-            for (FrameType type : {FrameType::LIGHT, FrameType::DARK, FrameType::FLAT, FrameType::BIAS})   {
-                const std::map<AstroPhotoStacker::InputFrame, FrameInfo> &frames_map = m_filelist_handler_gui_interface.get_frames(type, group_index);
-                for (const auto &frame : frames_map)   {
-                    if (frame.second.is_checked)   {
-                        frames.push_back(frame.first);
-                    }
-                }
-            }
-        }
-
-        if (frames.empty()) {
-            wxMessageDialog *dialog = new wxMessageDialog(this, "No frames have been selected. Please select them first!", "Hot pixel identification warning.");
-            dialog->ShowModal();
-            return;
-        }
-
-        m_hot_pixel_identifier = make_unique<AstroPhotoStacker::HotPixelIdentifier>();
-        m_hot_pixel_identifier->set_n_cpu(m_stack_settings->get_n_cpus());
-        const std::atomic<int> &n_processed = m_hot_pixel_identifier->get_number_of_processed_photos();
-        const int files_total = frames.size();
-
-        run_task_with_progress_dialog(  "Hot pixel identification",
-                                        "Processed",
-                                        "frames",
-                                        n_processed,
-                                        files_total,
-                                        [this, frames](){
-                                            m_hot_pixel_identifier->add_photos(frames);
-                                        });
-
-        m_hot_pixel_identifier->compute_hot_pixels();
-
-        std::vector<std::tuple<int,int>> hot_pixels = m_hot_pixel_identifier->get_hot_pixels();
-
-        update_status_icon(m_hot_pixel_status_icon, true);
+        stack_calibration_frames();
+        update_input_numbers_overview();
     });
 
     button_stack_files->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
@@ -901,7 +911,7 @@ void MyFrame::add_button_bar()   {
     m_sizer_button_bar->Add(button_check_all, 1, wxALL, 5);
     m_sizer_button_bar->Add(button_remove_checked,  1, wxALL, 5);
     m_sizer_button_bar->Add(button_align_files, 1, wxALL, 5);
-    m_sizer_button_bar->Add(button_hot_pixel_id,1, wxALL, 5);
+    m_sizer_button_bar->Add(button_stack_calib, 1, wxALL, 5);
     m_sizer_button_bar->Add(button_stack_files, 1, wxALL, 5);
 };
 
