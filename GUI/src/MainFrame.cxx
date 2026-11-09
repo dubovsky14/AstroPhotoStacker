@@ -10,8 +10,7 @@
 #include "../headers/SettingsCustomization.h"
 #include "../headers/LightPollutionRemovalToolGUI.h"
 #include "../headers/MeteorShowerStackingGUI.h"
-
-
+#include "../headers/FramesSelectionTool.h"
 
 #include "../headers/IndividualColorStretchingBlackMidtoneWhite.h"
 #include "../headers/IndividualColorStretchingBlackCorrectionWhite.h"
@@ -660,6 +659,14 @@ void MyFrame::add_files_to_stack_checkbox()  {
         }
     });
     header_sizer->Add(button_check_unaligned, 0, wxTOP, 5);
+
+    wxButton *button_frames_selector = new wxButton(header_panel, wxID_ANY, "Select frames", wxDefaultPosition, wxDefaultSize);
+    button_frames_selector->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
+        FramesSelectionTool *selection_tool = new FramesSelectionTool(this, &m_filelist_handler_gui_interface);
+        selection_tool->Show(true);
+
+    });
+    header_sizer->Add(button_frames_selector, 0, wxTOP, 5);
 
 
 

@@ -13,7 +13,7 @@ SettingsCustomizationGUI::SettingsCustomizationGUI(MyFrame *parent, const std::f
 
 
     this->SetTitle("Settings Customization");
-    this->SetSize(wxSize(400, 600));
+    this->SetSize(wxSize(400, 800));
     this->SetMinSize(wxSize(400, 400));
 
 
