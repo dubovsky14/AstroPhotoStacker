@@ -1,18 +1,9 @@
 #include "../headers/FramesSelectionTool.h"
-#include "../headers/ProgressBarWindow.h"
-#include "../headers/CometSelectionFrame.h"
-#include "../headers/SettingsCustomization.h"
 
-#include "../../headers/PhotoAlignmentHandler.h"
 #include "../../headers/InputFrame.h"
-#include "../../headers/ReferencePhotoHandlerFactory.h"
-#include "../../headers/LensCorrectionTool.h"
 #include "../../headers/Common.h"
 
-#include <wx/progdlg.h>
-
 #include <vector>
-#include <iostream>
 #include <functional>
 #include <stdexcept>
 

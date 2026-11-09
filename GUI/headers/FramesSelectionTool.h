@@ -2,14 +2,11 @@
 
 #include "../headers/FilelistHandlerGUIInterface.h"
 #include "../headers/MainFrame.h"
-#include "../headers/FloatingPointSlider.h"
 
 #include <wx/wx.h>
-#include <wx/spinctrl.h>
 
 #include <vector>
 #include <string>
-#include <memory>
 #include <utility>
 #include <functional>
 
