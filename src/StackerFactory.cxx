@@ -5,6 +5,7 @@
 #include "../headers/StackerMedian.h"
 #include "../headers/StackerKappaSigmaClipping.h"
 #include "../headers/StackerKappaSigmaMedian.h"
+#include "../headers/StackerQuantilKappaSigma.h"
 #include "../headers/StackerCutOffAverage.h"
 #include "../headers/StackerMaximum.h"
 #include "../headers/StackerMinimum.h"
@@ -30,6 +31,8 @@ std::unique_ptr<StackerBase> AstroPhotoStacker::create_stacker(const std::string
         return std::make_unique<StackerKappaSigmaMedian>(number_of_colors, width, height, interpolate_colors);
     } else if (stacker_type == "cut-off average") {
         return std::make_unique<StackerCutOffAverage>(number_of_colors, width, height, interpolate_colors);
+    } else if (stacker_type == "central quantil & kappa-sigma") {
+        return std::make_unique<StackerQuantilKappaSigma>(number_of_colors, width, height, interpolate_colors);
     }
     else if (stacker_type == "maximum") {
         return std::make_unique<StackerMaximum>(number_of_colors, width, height, interpolate_colors);

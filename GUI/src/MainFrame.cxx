@@ -354,7 +354,7 @@ void MyFrame::add_hot_pixel_menu()  {
         if (m_hot_pixel_identifier == nullptr)  {
             return;
         }
-        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "");
+        const std::string default_path = m_recent_paths_handler->get_recent_file_path(FrameType::LIGHT, "") + "/hot_pixels.txt";
         wxFileDialog dialog(this, "Save hot pixel info", "", default_path, "*.txt", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
         if (dialog.ShowModal() == wxID_OK) {
             const std::string file_address = dialog.GetPath().ToStdString();
