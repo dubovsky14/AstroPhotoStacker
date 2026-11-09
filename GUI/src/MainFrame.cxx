@@ -790,6 +790,7 @@ void MyFrame::update_files_to_stack_checkbox()   {
     }
 
     m_files_to_stack_checkbox->SetSelection(index);
+    update_input_numbers_overview();
 };
 
 bool MyFrame::update_checked_files_in_filelist() {

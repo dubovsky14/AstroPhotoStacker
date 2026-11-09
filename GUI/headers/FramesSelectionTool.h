@@ -48,11 +48,11 @@ class FramesSelectionTool : public wxFrame  {
 
         void initialize_comparison_functions_vector();
 
-        void add_value_type_dropdown();
-
         void add_selection_line();
 
         void add_apply_button();
+
+        void add_frame_types_checkboxes();
 
         std::vector<std::pair<std::string, std::function<bool(const AstroPhotoStacker::FrameInfo&, const std::string&, ComparisonEnum)>>> m_selection_functions;
 
@@ -74,6 +74,12 @@ class FramesSelectionTool : public wxFrame  {
         wxTextCtrl* m_value_input = nullptr;
         int m_comparison_operator_selection = 0;
         int m_value_type_selection = 0;
+
+        std::map<AstroPhotoStacker::FrameType, bool> m_frames_checked = {
+            {AstroPhotoStacker::FrameType::LIGHT, true},
+            {AstroPhotoStacker::FrameType::DARK, false},
+            {AstroPhotoStacker::FrameType::FLAT, false}
+        };
 
         MyFrame *m_parent_my_frame = nullptr;
 

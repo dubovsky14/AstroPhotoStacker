@@ -128,6 +128,8 @@ namespace AstroPhotoStacker {
              */
             void keep_only_frames_satisfying_condition(const std::function<bool(FrameType, int, const FrameInfo&)> &keep_condition);
 
+            void check_frames_based_on_condition(const std::function<bool(const FrameInfo&)> &check_condition);
+
             /**
              * @brief Get the frames
              *

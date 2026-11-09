@@ -99,6 +99,15 @@ void FilelistHandler::keep_only_frames_satisfying_condition(const std::function<
     }
 };
 
+void FilelistHandler::check_frames_based_on_condition(const std::function<bool(const FrameInfo&)> &check_condition) {
+    for (auto &group : m_frames_list) {
+        for (auto &type : group.second) {
+            for (auto &frame : type.second) {
+                frame.second.is_checked = check_condition(frame.second);
+            }
+        }
+    }
+}
 
 const std::map<AstroPhotoStacker::InputFrame,FrameInfo> &FilelistHandler::get_frames(FrameType type, int group)    const  {
     if (m_frames_list.find(group) == m_frames_list.end())   {
