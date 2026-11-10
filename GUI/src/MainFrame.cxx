@@ -569,35 +569,49 @@ void MyFrame::add_files_to_stack_checkbox()  {
     wxBitmap arrow_down_bitmap(s_gui_folder_path + "data/png/arrows/arrow_down_20x10.png", wxBITMAP_TYPE_PNG);
     wxBitmap arrow_up_bitmap(s_gui_folder_path + "data/png/arrows/arrow_up_20x10.png", wxBITMAP_TYPE_PNG);
 
-    auto add_sorting_option = [this, &arrow_down_bitmap, &arrow_up_bitmap, header_panel, header_sizer]
-        (const std::string &text, void (FilelistHandlerGUIInterface::*sorting_method)(bool)) {
-        wxStaticText* static_text = new wxStaticText(header_panel, wxID_ANY, text, wxDefaultPosition);
-        wxBitmapButton* arrow_up_button = new wxBitmapButton(header_panel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, wxSize(40, 20));
-        wxBitmapButton* arrow_down_button = new wxBitmapButton(header_panel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, wxSize(40, 20));
 
-        // Create a vertical sizer for the arrows
-        wxBoxSizer* arrow_sizer = new wxBoxSizer(wxVERTICAL);
-        arrow_sizer->Add(arrow_up_button,   0, wxTOP    | wxLEFT | wxRIGHT, 5);
-        arrow_sizer->Add(arrow_down_button, 0, wxBOTTOM | wxLEFT | wxRIGHT, 5);
-
-        arrow_up_button->Bind(wxEVT_BUTTON, [this, sorting_method](wxCommandEvent&) {
-            (m_filelist_handler_gui_interface.*sorting_method)(true);
-            update_files_to_stack_checkbox();
-        });
-        arrow_down_button->Bind(wxEVT_BUTTON, [this, sorting_method](wxCommandEvent&) {
-            (m_filelist_handler_gui_interface.*sorting_method)(false);
-            update_files_to_stack_checkbox();
-        });
-
-        // Add the static texts and arrow sizers to the header sizer
-        header_sizer->Add(static_text, 0, wxTOP, 5);
-        header_sizer->Add(arrow_sizer, 0, wxTOP, 5);
+    vector<wxString> sorting_options_strings;
+    vector<void(FilelistHandlerGUIInterface::*)(bool)> sorting_methods;
+    auto add_sorting_option_to_vectors = [&sorting_options_strings, &sorting_methods](const wxString &text, void (FilelistHandlerGUIInterface::* method)(bool)) {
+        sorting_options_strings.push_back(text);
+        sorting_methods.push_back(method);
     };
-    add_sorting_option("Sort by Name",          &FilelistHandlerGUIInterface::sort_by_name);
-    add_sorting_option("Sort by Score",         &FilelistHandlerGUIInterface::sort_by_ranking);
-    add_sorting_option("Sort by Group",         &FilelistHandlerGUIInterface::sort_by_group);
-    add_sorting_option("Sort by Brightness",    &FilelistHandlerGUIInterface::sort_by_mean_brightness);
-    add_sorting_option("Sort by FWHM",          &FilelistHandlerGUIInterface::sort_by_fwhm);
+
+    add_sorting_option_to_vectors("Sort by Name",          &FilelistHandlerGUIInterface::sort_by_name);
+    add_sorting_option_to_vectors("Sort by Score",         &FilelistHandlerGUIInterface::sort_by_ranking);
+    add_sorting_option_to_vectors("Sort by Group",         &FilelistHandlerGUIInterface::sort_by_group);
+    add_sorting_option_to_vectors("Sort by Brightness",    &FilelistHandlerGUIInterface::sort_by_mean_brightness);
+    add_sorting_option_to_vectors("Sort by FWHM",          &FilelistHandlerGUIInterface::sort_by_fwhm);
+
+    wxChoice* sorting_choice = new wxChoice(header_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, sorting_options_strings.size(), sorting_options_strings.data());
+    sorting_choice->SetSelection(0);
+    header_sizer->Add(sorting_choice, 0, wxTOP, 5);
+
+    wxBitmapButton* arrow_up_button = new wxBitmapButton(header_panel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, wxSize(40, 20));
+    wxBitmapButton* arrow_down_button = new wxBitmapButton(header_panel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, wxSize(40, 20));
+
+    // Create a vertical sizer for the arrows
+    wxBoxSizer* arrow_sizer = new wxBoxSizer(wxVERTICAL);
+    arrow_sizer->Add(arrow_up_button,   0, wxTOP    | wxLEFT | wxRIGHT, 5);
+    arrow_sizer->Add(arrow_down_button, 0, wxBOTTOM | wxLEFT | wxRIGHT, 5);
+
+    arrow_up_button->Bind(wxEVT_BUTTON, [this, sorting_methods, sorting_choice](wxCommandEvent&) {
+        int selection = sorting_choice->GetSelection();
+        if (selection >= 0 && selection < static_cast<int>(sorting_methods.size())) {
+            (m_filelist_handler_gui_interface.*sorting_methods[selection])(true);
+            update_files_to_stack_checkbox();
+        }
+    });
+    arrow_down_button->Bind(wxEVT_BUTTON, [this, sorting_methods, sorting_choice](wxCommandEvent&) {
+        int selection = sorting_choice->GetSelection();
+        if (selection >= 0 && selection < static_cast<int>(sorting_methods.size())) {
+            (m_filelist_handler_gui_interface.*sorting_methods[selection])(false);
+            update_files_to_stack_checkbox();
+        }
+    });
+
+    // Add the static texts and arrow sizers to the header sizer
+    header_sizer->Add(arrow_sizer, 0, wxTOP, 5);
 
     // button for keeping only best N files
     wxButton *button_keep_best = new wxButton(header_panel, wxID_ANY, "Keep best N", wxDefaultPosition, wxDefaultSize);
