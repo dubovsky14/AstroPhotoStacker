@@ -62,6 +62,7 @@ void SummaryYamlCreator::create_and_save_yaml_file(const std::string &output_add
 std::vector<std::string> SummaryYamlCreator::get_group_summary(int group_number) const   {
     std::vector<std::string> result;
     result.push_back(s_indent_new_item +  "group_number: " + std::to_string(group_number));
+    result.push_back(s_indent +  "frame_types:");
     for (AstroPhotoStacker::FrameType frame_type : FilelistHandler::s_file_types_ordering)   {
         const std::vector<std::string> group_and_type_summary = get_group_and_type_summary(group_number, frame_type);
         if (group_and_type_summary.empty())   {
@@ -132,6 +133,7 @@ std::vector<std::string> SummaryYamlCreator::get_group_and_type_summary(int grou
         return {};
     }
     result.insert(result.begin() + 1, s_indent + "number_of_frames: " + std::to_string(n_frames));
+    result.insert(result.begin() + 2, s_indent + "frames:");
     return result;
 };
 
