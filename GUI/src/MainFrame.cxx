@@ -62,7 +62,7 @@ MyFrame::MyFrame()
     m_sizer_top         = new wxBoxSizer(wxHORIZONTAL);
     m_sizer_button_bar  = new wxBoxSizer(wxHORIZONTAL);
     m_sizer_main_frame->Add(m_sizer_top,        9, wxEXPAND | wxALL, 5);
-    m_sizer_main_frame->Add(m_sizer_button_bar, 1, wxEXPAND | wxALL, 5);
+    m_sizer_main_frame->Add(m_sizer_button_bar, 1, wxEXPAND | wxLEFT | wxRIGHT, 5);
 
     m_sizer_top_left    = new wxBoxSizer(wxVERTICAL);
     m_sizer_top_center  = new wxBoxSizer(wxVERTICAL);
@@ -569,6 +569,8 @@ void MyFrame::add_files_to_stack_checkbox()  {
     wxBitmap arrow_down_bitmap(s_gui_folder_path + "data/png/arrows/arrow_down_20x10.png", wxBITMAP_TYPE_PNG);
     wxBitmap arrow_up_bitmap(s_gui_folder_path + "data/png/arrows/arrow_up_20x10.png", wxBITMAP_TYPE_PNG);
 
+    const int arrow_height = 20;
+    const int padding_width = 5;
 
     vector<wxString> sorting_options_strings;
     vector<void(FilelistHandlerGUIInterface::*)(bool)> sorting_methods;
@@ -583,17 +585,18 @@ void MyFrame::add_files_to_stack_checkbox()  {
     add_sorting_option_to_vectors("Sort by Brightness",    &FilelistHandlerGUIInterface::sort_by_mean_brightness);
     add_sorting_option_to_vectors("Sort by FWHM",          &FilelistHandlerGUIInterface::sort_by_fwhm);
 
-    wxChoice* sorting_choice = new wxChoice(header_panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, sorting_options_strings.size(), sorting_options_strings.data());
+    const wxSize choice_box_size(wxDefaultSize.GetWidth(), arrow_height * 2);
+    wxChoice* sorting_choice = new wxChoice(header_panel, wxID_ANY, wxDefaultPosition, choice_box_size, sorting_options_strings.size(), sorting_options_strings.data());
     sorting_choice->SetSelection(0);
     header_sizer->Add(sorting_choice, 0, wxTOP, 5);
 
-    wxBitmapButton* arrow_up_button = new wxBitmapButton(header_panel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, wxSize(40, 20));
-    wxBitmapButton* arrow_down_button = new wxBitmapButton(header_panel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, wxSize(40, 20));
+    wxBitmapButton* arrow_up_button = new wxBitmapButton(header_panel, wxID_ANY, arrow_up_bitmap, wxDefaultPosition, wxSize(2*arrow_height, arrow_height));
+    wxBitmapButton* arrow_down_button = new wxBitmapButton(header_panel, wxID_ANY, arrow_down_bitmap, wxDefaultPosition, wxSize(2*arrow_height, arrow_height));
 
     // Create a vertical sizer for the arrows
     wxBoxSizer* arrow_sizer = new wxBoxSizer(wxVERTICAL);
-    arrow_sizer->Add(arrow_up_button,   0, wxTOP    | wxLEFT | wxRIGHT, 5);
-    arrow_sizer->Add(arrow_down_button, 0, wxBOTTOM | wxLEFT | wxRIGHT, 5);
+    arrow_sizer->Add(arrow_up_button,   0, wxLEFT | wxRIGHT, padding_width);
+    arrow_sizer->Add(arrow_down_button, 0, wxLEFT | wxRIGHT, padding_width);
 
     arrow_up_button->Bind(wxEVT_BUTTON, [this, sorting_methods, sorting_choice](wxCommandEvent&) {
         int selection = sorting_choice->GetSelection();
@@ -613,8 +616,10 @@ void MyFrame::add_files_to_stack_checkbox()  {
     // Add the static texts and arrow sizers to the header sizer
     header_sizer->Add(arrow_sizer, 0, wxTOP, 5);
 
+    header_sizer->AddStretchSpacer();
+
     // button for keeping only best N files
-    wxButton *button_keep_best = new wxButton(header_panel, wxID_ANY, "Keep best N", wxDefaultPosition, wxDefaultSize);
+    wxButton *button_keep_best = new wxButton(header_panel, wxID_ANY, "Keep best N frames", wxDefaultPosition, wxSize(-1, arrow_height * 2));
     button_keep_best->SetToolTip("Keep only the best N files based on their ranking (N will be selected in the dialog after clicking on this button). Useful for removing bad quality frames (with star trails or bad seeing).");
     button_keep_best->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         const int n_files = m_filelist_handler_gui_interface.get_number_of_all_frames();
@@ -627,8 +632,8 @@ void MyFrame::add_files_to_stack_checkbox()  {
 
         // sizer for the checkbox
         wxBoxSizer *checkbox_sizer = new wxBoxSizer(wxVERTICAL);
-        checkbox_sizer->Add(checkbox_remove_permanently, 0, wxALL, 5);
-        dialog.GetSizer()->Add(checkbox_sizer, 0, wxEXPAND | wxALL, 5);
+        checkbox_sizer->Add(checkbox_remove_permanently, 0, wxALL, padding_width);
+        dialog.GetSizer()->Add(checkbox_sizer, 0, wxEXPAND | wxALL, padding_width);
 
         if (dialog.ShowModal() == wxID_OK) {
             bool remove_permanently = checkbox_remove_permanently->IsChecked();
@@ -662,25 +667,27 @@ void MyFrame::add_files_to_stack_checkbox()  {
             }
         }
     });
-    header_sizer->Add(button_keep_best, 0, wxTOP, 5);
+    header_sizer->Add(button_keep_best, 0, wxTOP | wxALL, 5);
 
 
-    wxButton *button_check_unaligned= new wxButton(header_panel, wxID_ANY, "Check unaligned frames", wxDefaultPosition, wxDefaultSize);
+    wxButton *button_check_unaligned= new wxButton(header_panel, wxID_ANY, "Check unaligned frames", wxDefaultPosition, wxSize(-1, arrow_height * 2));
     button_check_unaligned->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         m_filelist_handler_gui_interface.check_unaligned_frames();
         for (unsigned int i = 0; i < m_files_to_stack_checkbox->GetCount(); ++i) {
             m_files_to_stack_checkbox->Check(i, m_filelist_handler_gui_interface.frame_is_checked(i));
         }
     });
-    header_sizer->Add(button_check_unaligned, 0, wxTOP, 5);
+    header_sizer->Add(button_check_unaligned, 0, wxTOP | wxALL, padding_width);
 
-    wxButton *button_frames_selector = new wxButton(header_panel, wxID_ANY, "Select frames", wxDefaultPosition, wxDefaultSize);
+    wxButton *button_frames_selector = new wxButton(header_panel, wxID_ANY, "Apply frames selection", wxDefaultPosition, wxSize(-1, arrow_height * 2));
     button_frames_selector->Bind(wxEVT_BUTTON, [this](wxCommandEvent&){
         FramesSelectionTool *selection_tool = new FramesSelectionTool(this, &m_filelist_handler_gui_interface);
         selection_tool->Show(true);
 
     });
-    header_sizer->Add(button_frames_selector, 0, wxTOP, 5);
+    header_sizer->Add(button_frames_selector, 0, wxTOP | wxALL, padding_width);
+
+    header_sizer->AddStretchSpacer();
 
 
 
@@ -691,7 +698,7 @@ void MyFrame::add_files_to_stack_checkbox()  {
         m_filelist_handler_gui_interface.set_show_metadata(checkbox_show_metadata->IsChecked());
         update_files_to_stack_checkbox();
     });
-    header_sizer->Add(checkbox_show_metadata, 0, wxRIGHT, 5);
+    header_sizer->Add(checkbox_show_metadata, 0, wxALIGN_CENTER, padding_width);
 
     // show group checkbox
     wxCheckBox *checkbox_show_group = new wxCheckBox(header_panel, wxID_ANY, "Show Group");
@@ -700,7 +707,7 @@ void MyFrame::add_files_to_stack_checkbox()  {
         m_filelist_handler_gui_interface.set_show_group(checkbox_show_group->IsChecked());
         update_files_to_stack_checkbox();
     });
-    header_sizer->Add(checkbox_show_group, 0, wxRIGHT, 5);
+    header_sizer->Add(checkbox_show_group, 0, wxALIGN_CENTER, padding_width);
 
     // show frame statistics checkbox
     wxCheckBox *checkbox_show_frame_stats = new wxCheckBox(header_panel, wxID_ANY, "Show Frame Statistics");
@@ -709,7 +716,7 @@ void MyFrame::add_files_to_stack_checkbox()  {
         m_filelist_handler_gui_interface.set_show_statistics(checkbox_show_frame_stats->IsChecked());
         update_files_to_stack_checkbox();
     });
-    header_sizer->Add(checkbox_show_frame_stats, 0, wxRIGHT, 5);
+    header_sizer->Add(checkbox_show_frame_stats, 0, wxALIGN_CENTER, padding_width);
 
     wxArrayString files;
     m_files_to_stack_checkbox = new wxCheckListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, files, wxLB_MULTIPLE);
@@ -720,11 +727,11 @@ void MyFrame::add_files_to_stack_checkbox()  {
 
     // Create a new sizer for the header and the checkbox list
     wxBoxSizer* checkboxSizer = new wxBoxSizer(wxVERTICAL);
-    checkboxSizer->Add(header_panel, 0, wxEXPAND | wxALL, 5);
-    checkboxSizer->Add(m_files_to_stack_checkbox, 1, wxEXPAND | wxALL, 5);
+    checkboxSizer->Add(header_panel, 0, wxEXPAND | wxLEFT | wxRIGHT, padding_width);
+    checkboxSizer->Add(m_files_to_stack_checkbox, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, padding_width);
 
     // Add the new sizer to the main frame's sizer
-    m_sizer_main_frame->Add(checkboxSizer, 9, wxEXPAND | wxALL, 5);
+    m_sizer_main_frame->Add(checkboxSizer, 9, wxEXPAND | wxLEFT | wxRIGHT, padding_width);
 
     m_files_to_stack_checkbox->Bind(wxEVT_LISTBOX, [this](wxCommandEvent &event){
         const int index = event.GetSelection();
@@ -930,11 +937,11 @@ void MyFrame::add_button_bar()   {
         update_status_icon(m_stacked_status_icon, true);
     });
 
-    m_sizer_button_bar->Add(button_check_all, 1, wxALL, 5);
-    m_sizer_button_bar->Add(button_remove_checked,  1, wxALL, 5);
-    m_sizer_button_bar->Add(button_align_files, 1, wxALL, 5);
-    m_sizer_button_bar->Add(button_stack_calib, 1, wxALL, 5);
-    m_sizer_button_bar->Add(button_stack_files, 1, wxALL, 5);
+    m_sizer_button_bar->Add(button_check_all, 1, wxRIGHT | wxLEFT, 5);
+    m_sizer_button_bar->Add(button_remove_checked,  1, wxRIGHT | wxLEFT, 5);
+    m_sizer_button_bar->Add(button_align_files, 1, wxRIGHT | wxLEFT, 5);
+    m_sizer_button_bar->Add(button_stack_calib, 1, wxRIGHT | wxLEFT, 5);
+    m_sizer_button_bar->Add(button_stack_files, 1, wxRIGHT | wxLEFT, 5);
 };
 
 void MyFrame::add_stack_settings_preview()   {
