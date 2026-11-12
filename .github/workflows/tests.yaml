@@ -134,7 +134,7 @@ jobs:
         with:
           name: artifact-produce-alignment-file-stars
           path: output/.
-      - run: python3 CI_tests/python/compare_files.py output/test_alignment.txt AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/reference_files/alignment.txt
+      - run: python3 CI_tests/python/compare_alignment_files.py output/test_alignment.txt AstroPhotoStacker_test_files/data/CanonEOS6DMarkII_Andromeda/reference_files/alignment.txt
         name: validate-alignment-file
 
   validate-alignment-file-planetary:
@@ -152,7 +152,7 @@ jobs:
         with:
           name: artifact-produce-alignment-file-planetary
           path: output/.
-      - run: python3 CI_tests/python/compare_files.py output/Jupiter_short_alignment.txt AstroPhotoStacker_test_files/data/Jupiter_video/Jupiter_short_alignment.txt
+      - run: python3 CI_tests/python/compare_alignment_files.py output/Jupiter_short_alignment.txt AstroPhotoStacker_test_files/data/Jupiter_video/Jupiter_short_alignment.txt
         name: validate-alignment-file
 
   produce-stacked-image-stars:
