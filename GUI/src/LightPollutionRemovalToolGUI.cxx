@@ -102,6 +102,20 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
     m_space_as_fraction_of_window_size_slider->add_sizer(m_grid_settings_sizer, 0, wxEXPAND, 5);
 
 
+    m_border_as_fraction_image_size_slider = make_unique<FloatingPointSlider>(
+        this,
+        "Border as fraction of image size: ",
+        0.0,
+        0.1,
+        m_border_as_fraction_image_size,
+        0.005,
+        2,
+        [this](float value){
+            m_border_as_fraction_image_size = value;
+        }
+    );
+    m_border_as_fraction_image_size_slider->add_sizer(m_grid_settings_sizer, 0, wxEXPAND, 5);
+
     wxSizer *sizer_buttons_grid = new wxBoxSizer(wxHORIZONTAL);
 
     wxButton *generate_sample_windows_button = new wxButton(this, wxID_ANY, "Generate sample windows");
@@ -230,20 +244,22 @@ void LightPollutionRemovalToolGUI::add_grid_generation_settings() {
 
 void LightPollutionRemovalToolGUI::generate_sample_windows() {
     vector<SampleWindow> sample_windows;
-    const int window_size = m_width / (m_n_samples_per_row * (1 + m_space_as_fraction_of_window_size) + m_space_as_fraction_of_window_size);
-    const int space_between_windows = window_size * m_space_as_fraction_of_window_size;
+    const int border = m_border_as_fraction_image_size * m_width;
+    const float window_width = ((m_width  - 2 * border) / m_n_samples_per_row) * ((m_n_samples_per_row * (1 + m_space_as_fraction_of_window_size)) / (m_n_samples_per_row + (m_n_samples_per_row-1)*m_space_as_fraction_of_window_size)) * (1. / (1 + m_space_as_fraction_of_window_size));
+    const float space_between_windows = window_width * m_space_as_fraction_of_window_size;
+    const int number_of_columns = static_cast<int>((static_cast<float>(m_height) / window_width) + 0.5);
+    const int window_height = ((m_height + space_between_windows - 2 * border) / number_of_columns ) - space_between_windows;
 
-    const int step_size_x = window_size + space_between_windows;
+    const float step_size_x = window_width + space_between_windows;
+    const float step_size_y = window_height + space_between_windows;
 
-    const int n_windows_per_column = (m_height - space_between_windows) / step_size_x;
-    const int window_height = (m_height - space_between_windows) / n_windows_per_column - space_between_windows;
-    const int step_size_y = window_height + space_between_windows;
-
-    for (int y = space_between_windows; y <= m_height - step_size_y; y += step_size_y) {
-        for (int x = space_between_windows; x <= m_width - step_size_x; x += step_size_x) {
+    for (int i_y = 0; i_y < number_of_columns; i_y++) {
+        const int y = border + i_y * step_size_y;
+        for (int i_x = 0; i_x < m_n_samples_per_row; i_x++) {
+            int x = border + i_x * step_size_x;
             SampleWindow window;
             window.top_left = {x, y};
-            window.bottom_right = {min(x + window_size, m_width), min(y + window_height, m_height)};
+            window.bottom_right = {min<int>(x + window_width, m_width), min<int>(y + window_height, m_height)};
             sample_windows.push_back(window);
         }
     }

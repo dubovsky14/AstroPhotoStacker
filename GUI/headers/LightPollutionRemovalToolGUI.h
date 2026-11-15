@@ -35,6 +35,7 @@ class LightPollutionRemovalToolGUI : public wxFrame  {
 
         std::unique_ptr<FloatingPointSlider> m_number_of_windows_slider     = nullptr;
         std::unique_ptr<FloatingPointSlider> m_space_as_fraction_of_window_size_slider = nullptr;
+        std::unique_ptr<FloatingPointSlider> m_border_as_fraction_image_size_slider = nullptr;
         std::string m_gradient_function_type = "polynomial3n";
 
         MyFrame *m_parent = nullptr;
@@ -46,6 +47,7 @@ class LightPollutionRemovalToolGUI : public wxFrame  {
 
         int m_n_samples_per_row = 10;
         float m_space_as_fraction_of_window_size = 0.05;
+        float m_border_as_fraction_image_size = 0.02;
 
         wxButton *m_select_deselect_all_windows_button = nullptr;
         bool m_all_windows_selected_status = true;
